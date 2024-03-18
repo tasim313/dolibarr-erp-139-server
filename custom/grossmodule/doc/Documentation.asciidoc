@@ -1,0 +1,56 @@
+= GROSSMODULE =
+:subtitle: GROSSMODULE DOCUMENTATION
+:source-highlighter: rouge
+:companyname: A I Khan Lab Ltd.
+:corpname: A I Khan Lab Ltd.
+:orgname: A I Khan Lab Ltd.
+:creator: Mostasim Mostasim Mahmud
+:title: Documentation of module GrossModule
+:subject: This document is the document of module GrossModule.
+:keywords: GrossModule
+// Date du document :
+:docdate: 2024-03-17
+:toc: manual
+:toc-placement: preamble
+
+
+== TOPIC OF DOCUMENT
+
+This is the documentation of module GrossModule
+
+
+*Log of versions of document*
+
+[options="header",format="csv"]
+|=== 
+Author, Date, Version
+--- Mostasim Mostasim Mahmud  mostasim.m@aikhanlab.com ---, 2024-03-17, Version 1.0
+|===
+
+
+[NOTE]
+==============
+This document was generated using Dolibarr ERP CRM process
+==============
+
+
+:toc: manual
+:toc-placement: preamble
+
+<<<
+
+== INTRODUCTION
+
+//include::README.md[]
+__README__
+
+== DATA SPECIFICATIONS
+
+__DATA_SPECIFICATION__
+
+
+== CHANGELOG
+
+//include::ChangeLog.md[]
+__CHANGELOG__
+
