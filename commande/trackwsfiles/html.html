@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
+
+  <!-- include barcode scanner library -->
+  <!-- <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script> -->
+
+</head>
+<body>
+  <link rel="stylesheet" type="text/css" href="trackwsfiles/css.css"  />
+  <script src="trackwsfiles/js.js"></script>
+
+  <section class="design-process-section" id="process-tab">
+    <!-- <div id="qr-reader" style="width: 600px">Scan Using Phone:</div> -->
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12"> 
+          <!-- design process steps--> 
+          <!-- Nav tabs -->
+          <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+            <li role="presentation" class="active"><a href="#discover" aria-controls="discover" role="tab" data-toggle="tab"><i class="fa fa-search" aria-hidden="true"></i>
+              <p>Find Status</p>
+              </a></li>
+
+              <li role="presentation" class=""><a href="#status1" aria-controls="discover" role="tab" data-toggle="tab"><i class="fa fa-scissors" aria-hidden="true"></i>
+                <p>Gross Completed</p>
+                </a></li>
+              <li role="presentation" class=""><a href="#status2" aria-controls="discover" role="tab" data-toggle="tab"><i class="fa fa-keyboard-o" aria-hidden="true"></i>
+                <p>Gross Entry Done</p>
+                </a></li>
+              <li role="presentation" class=""><a href="#status3" aria-controls="discover" role="tab" data-toggle="tab"><i class="fa fa-eraser" aria-hidden="true"></i>
+                <p>Slides<br>Prepared</p>
+                </a></li>
+              <li role="presentation" class=""><a href="#status4n5" aria-controls="discover" role="tab" data-toggle="tab"><i class="fa fa-pause-circle-o" aria-hidden="true"></i>
+                <p>Waiting</p>
+                </a></li>
+
+            <li role="presentation"><a href="#status6n8" aria-controls="strategy" role="tab" data-toggle="tab"><i class="fa fa-code-fork" aria-hidden="true"></i>
+              <p>Special<br>Work<br> Requested</p>
+              </a></li>
+            <li role="presentation"><a href="#status7n9n12" aria-controls="optimization" role="tab" data-toggle="tab"><i class="fa fa-trello" aria-hidden="true"></i>
+              <p>Special<br>Work<br>Done</p>
+              </a></li>
+            <li role="presentation"><a href="#status10" aria-controls="content" role="tab" data-toggle="tab"><i class="fa fa-gavel" aria-hidden="true"></i>
+              <p>Diagnosis Completed</p>
+              </a></li>
+            <li role="presentation"><a href="#status11" aria-controls="reporting" role="tab" data-toggle="tab"><i class="fa fa-envelope-o" aria-hidden="true"></i>
+              <p>Report<br>Ready</p>
+              </a></li>
+            <li role="presentation"><a href="#status13" aria-controls="reportdel" role="tab" data-toggle="tab"><i class="fa fa-share" aria-hidden="true"></i>
+              <p>Report<br>Delivered</p>
+              </a></li>            
+          </ul>
+          <!-- end design process steps--> 
+
+          <form name="readlabno" id="readlabno" action="">
+            <label for="labno">Lab No:</label>
+            <input type="text" id="labno" name="labno" autofocus>
+            
+          </form>
+          <form name="readinvno" id="readinvno" action="">
+              <label for="invno">Invoice No: SI</label>
+              <input type="text" id="invno" name="invno" >
+          </form>
+            <!-- <br> -->
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+
+              <div role="tabpanel" class="tab-pane active" id="discover">
+                <div class="design-process-content" id="lookuplabno">
+                  <h3 class="semi-bold">Lookup Current Status</h3>
+                </div>
+              </div>            
+              <div role="tabpanel" class="tab-pane" id="status1">
+                <div class="design-process-content" id="lookuplabno1">
+                  <h3 class="semi-bold">Set Status: Gross Completed |
+                    <label for="consultant"> Case Owner:</label>
+                      <select name="consultant" id="consultant">
+                        <option value="0"></option>
+                        <option value="63">Dr. Afsana Papry</option>
+                        <option value="58">Dr. Asaduzzaman</option>
+                        <option value="62">Dr. Farhana Yusuf</option>
+                        <option value="60">Dr. Imran Hassan</option>
+                        <option value="59">Dr. Mainul Islam</option>
+                        <!-- <option value="56">Dr. Md. Munirul Islam</option> -->
+                        <option value="57">Dr. Md. Shafikul Alam Tanim</option>
+                        <option value="61">Dr. Md. Shajjad Hossain</option>
+                        <option value="65">Dr. Nafisa Abedin</option>
+                        <option value="64">Dr. Syeeda Shiraz Mahmuda Happy</option>
+                      </select>
+                  </h3>
+                </div>
+              </div>            
+              <div role="tabpanel" class="tab-pane" id="status2">
+                <div class="design-process-content" id="lookuplabno2">
+                  <h3 class="semi-bold">Set Status: Gross Entry Done</h3>
+                </div>
+              </div>            
+              <div role="tabpanel" class="tab-pane" id="status3">
+                <div class="design-process-content" id="lookuplabno3">
+                  <h3 class="semi-bold">Set Status: Slides Prepared</h3>
+                </div>
+              </div>
+
+              <div role="tabpanel" class="tab-pane" id="status4n5">
+                <div class="design-process-content" id="lookuplabno4">
+                  <h3 class="semi-bold">Set Status: 
+                  <div class="form-waiting">
+                    <input class="form-waiting-input" type="radio" name="flexRadioWaiting" id="status4" checked value="4" href="#status4">
+                    <label class="form-waiting-label" for="status4">
+                      Waiting for Patient History / Investigations
+                    </label>
+                  </div>
+                  <div class="form-waiting">
+                    <input class="form-waiting-input" type="radio" name="flexRadioWaiting" id="status5" value="5">
+                    <label class="form-waiting-label" for="status5">
+                      Waiting for Study
+                    </label>
+                  </div></h3>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="status6n8">
+                <div class="design-process-content">
+                  <h3 class="semi-bold">Set Status: 
+                    <div class="form-addreq">
+                      <input class="form-addreq-input" type="radio" name="flexRadioAddReq" id="status6" checked value="6">
+                      <label class="form-addreq-label" for="status6">
+                        Regross Requested
+                      </label>
+                    </div>
+                    <div class="form-addreq">
+                      <input class="form-addreq-input" type="radio" name="flexRadioAddReq" id="status8" value="8">
+                      <label class="form-addreq-label" for="status8">
+                        Recut or Special Stain Requested
+                      </label>
+                    </div>
+                  </h3>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="status7n9n12">
+                <div class="design-process-content">
+                  <h3 class="semi-bold">Set Status: 
+                    <div class="form-adddone">
+                      <input class="form-adddone-input" type="radio" name="flexRadioAddDone" id="status7" checked value="7">
+                      <label class="form-adddone-label" for="status7">
+                        Regross Done
+                      </label>
+                    </div>
+                    <div class="form-adddone">
+                      <input class="form-adddone-input" type="radio" name="flexRadioAddDone" id="status12" value="12">
+                      <label class="form-adddone-label" for="status12">
+                        Regross Slides Prepared
+                      </label>
+                    </div>                     
+                    <div class="form-adddone">
+                      <input class="form-adddone-input" type="radio" name="flexRadioAddDone" id="status9" value="9">
+                      <label class="form-adddone-label" for="status9">
+                        Recut or Special Stain Done
+                      </label>
+                    </div>                   
+                  </h3>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="status10">
+                <div class="design-process-content">
+                  <h3 class="semi-bold">Set Status: Diagnosis Completed</h3>
+                  </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="status11">
+                <div class="design-process-content">
+                  <h3 class="semi-bold">Set Status: Report Ready</h3>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="status13">
+                <div class="design-process-content">
+                  <h3 class="semi-bold">Set Status: Report Delivered</h3>
+                </div>
+              </div>              
+        </div>
+      </div>
+    </div>
+  </section>
+    
+</body>
+</html>
+
+
+
