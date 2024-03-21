@@ -60,7 +60,72 @@ print '</form>';
 print("<br><br><br>");
 print("</div>");
 
+print("<script>
+fetch('shortcuts.json')
+    .then(response => response.json())
+    .then(shortcuts => {
+        function handleShortcutInput(inputElement) {
+            let inputValue = inputElement.value.toLowerCase();
+            for (let shortcut in shortcuts) {
+                if (inputValue.includes(shortcut)) {
+                    inputElement.value = inputValue.replace(shortcut, shortcuts[shortcut]);
+                    break; 
+                }
+            }
+        }
 
+        document.getElementById('summary').addEventListener('input', function() {
+            let textarea = this;
+            let cursorPosition = textarea.selectionStart;
+            for (let shortcut in shortcuts) {
+                if (textarea.value.includes(shortcut)) {
+                    textarea.value = textarea.value.replace(shortcut, shortcuts[shortcut]);
+                    textarea.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                    break; 
+                }
+            }
+        });
+
+        document.getElementById('shortcutInput').addEventListener('input', function() {
+            handleShortcutInput(this);
+        });
+    })
+    .catch(error => console.error('Error loading shortcuts:', error));
+</script>");
+
+
+print("<script>
+fetch('shortcuts.json')
+    .then(response => response.json())
+    .then(shortcuts => {
+        function handleShortcutInput(inputElement) {
+            let inputValue = inputElement.value.toLowerCase();
+            for (let shortcut in shortcuts) {
+                if (inputValue.includes(shortcut)) {
+                    inputElement.value = inputValue.replace(shortcut, shortcuts[shortcut]);
+                    break; 
+                }
+            }
+        }
+
+        document.getElementById('ink_code').addEventListener('input', function() {
+            let textarea = this;
+            let cursorPosition = textarea.selectionStart;
+            for (let shortcut in shortcuts) {
+                if (textarea.value.includes(shortcut)) {
+                    textarea.value = textarea.value.replace(shortcut, shortcuts[shortcut]);
+                    textarea.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                    break; 
+                }
+            }
+        });
+
+        document.getElementById('shortcutInput').addEventListener('input', function() {
+            handleShortcutInput(this);
+        });
+    })
+    .catch(error => console.error('Error loading shortcuts:', error));
+</script>");
 ?>
 
 

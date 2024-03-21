@@ -116,17 +116,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo '<h2>Generated Section Codes:</h2>';
         echo '<form method="post" action="gross_specimen_section_create.php">';
         for ($k = 0; $k < count($sectionCodes); $k++) {
-            $GrossId = $_GET['fk_gross_id'];
-            echo '<input type="hidden" name="fk_gross_id[]" value="' . $GrossId . '">';
-            echo 'Section Code: ' . $sectionCodes[$k] . '<br>';
-            echo '<br>';
-            echo ' Cassette Number: ' . $cassetteNumbers[$k] . '<br>';
-            echo '<input type="hidden" name="sectionCode[]" value="' . $sectionCodes[$k] . '">';
-            echo '<input type="hidden" name="cassetteNumber[]" value="' . $cassetteNumbers[$k] . '">';
-            echo '<label for="specimen_section_description' . $k . '">Description: </label>';
-            echo '<textarea name="specimen_section_description[]" id="specimen_section_description' . $k . '"required>' . $descriptions[$k] . '</textarea><br>'; 
-            echo '<br><br>';
-        }
+          $GrossId = $_GET['fk_gross_id'];
+          $specimen_section_description_id = 'specimen_section_description' . $k;
+          echo '<input type="hidden" name="fk_gross_id[]" value="' . $GrossId . '">';
+          echo 'Section Code: ' . $sectionCodes[$k] . '<br>';
+          echo '<br>';
+          echo 'Cassette Number: ' . $cassetteNumbers[$k] . '<br>';
+          echo '<input type="hidden" name="sectionCode[]" value="' . $sectionCodes[$k] . '">';
+          echo '<input type="hidden" name="cassetteNumber[]" value="' . $cassetteNumbers[$k] . '">';
+          echo '<label for="' . $specimen_section_description_id . '">Description: </label>';
+          echo '<textarea name="specimen_section_description[]" id="' . $specimen_section_description_id . '" required>' . $descriptions[$k] . '</textarea><br>'; 
+          echo '<br><br>';
+      }
         print("<br>");
         echo '<input type="submit" value="Next">';
         print("<br><br><br>");
@@ -206,3 +207,28 @@ input[type=submit]:hover {
   }
 }
 </style>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('shortcuts.json')
+      .then(response => response.json())
+      .then(shortcuts => {
+          document.querySelectorAll('textarea[name="specimen_section_description[]"]').forEach(textarea => {
+              textarea.addEventListener('input', function() {
+                  let cursorPosition = this.selectionStart;
+                  for (let shortcut in shortcuts) {
+                      if (this.value.includes(shortcut)) {
+                          this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                          this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                          break;
+                      }
+                  }
+              });
+          });
+      })
+      .catch(error => console.error('Error loading shortcuts:', error));
+});
+
+
+</script>
