@@ -201,6 +201,35 @@ button{
     print '<input type="submit" value="Next">';
     print '</div>';
     print '</form>';
+
+    print("<script>
+    fetch('shortcuts.json')
+        .then(response => response.json())
+        .then(shortcuts => {
+            function handleShortcutInput(inputElement) {
+                let inputValue = inputElement.value.toLowerCase();
+                for (let shortcut in shortcuts) {
+                    if (inputValue.includes(shortcut)) {
+                        inputElement.value = inputValue.replace(shortcut, shortcuts[shortcut]);
+                        break; 
+                    }
+                }
+            }
+
+            document.getElementById('$text_area_id').addEventListener('input', function() {
+                let textarea = this;
+                let cursorPosition = textarea.selectionStart;
+                for (let shortcut in shortcuts) {
+                    if (textarea.value.includes(shortcut)) {
+                        textarea.value = textarea.value.replace(shortcut, shortcuts[shortcut]);
+                        textarea.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                        break; 
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading shortcuts:', error));
+</script>");
     ?>
 </div>
 
@@ -226,3 +255,27 @@ document.getElementById('click_to_convert').addEventListener(
 );
 </script> -->
 
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('shortcuts.json')
+      .then(response => response.json())
+      .then(shortcuts => {
+          document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
+              textarea.addEventListener('input', function() {
+                  let cursorPosition = this.selectionStart;
+                  for (let shortcut in shortcuts) {
+                      if (this.value.includes(shortcut)) {
+                          this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                          this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                          break;
+                      }
+                  }
+              });
+          });
+      })
+      .catch(error => console.error('Error loading shortcuts:', error));
+});
+
+
+</script>
