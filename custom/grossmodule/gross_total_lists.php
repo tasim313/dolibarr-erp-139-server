@@ -220,6 +220,21 @@ list($total_gross_current_month, $total_gross_current_year) = get_total_gross_va
 
 list($total_gross_current_month_doctor, $total_gross_current_year_doctor) = get_total_gross_values_for_doctor($loggedInUsername);
 
+// Access control using switch statement
+switch (true) {
+  case $hasGrossAssistants:
+      // Gross Assistant has access, continue with the page content...
+      break;
+  case $hasConsultants:
+      // Doctor has access, continue with the page content...
+      break;
+  default:
+      echo "<h1>Access Denied</h1>";
+      echo "<p>You are not authorized to view this page.</p>";
+      exit; // Terminate script execution
+}
+
+
 
 print('<div class="row">');
 print('<div class="column">');

@@ -51,6 +51,7 @@ $loggedInUsername = $user->login;
 $isGrossAssistant = false;
 $isDoctor = false;
 
+
 $assistants = get_gross_assistant_list();
 foreach ($assistants as $assistant) {
     if ($assistant['username'] == $loggedInUsername) {
@@ -66,6 +67,22 @@ foreach ($doctors as $doctor) {
         break;
     }
 }
+
+// Access control using switch statement
+switch (true) {
+    case $isGrossAssistant:
+        // Gross Assistant has access, continue with the page content...
+        break;
+    case $isDoctor:
+        // Doctor has access, continue with the page content...
+        break;
+    default:
+        echo "<h1>Access Denied</h1>";
+        echo "<p>You are not authorized to view this page.</p>";
+        exit; // Terminate script execution
+}
+
+
 
 ?>
 
