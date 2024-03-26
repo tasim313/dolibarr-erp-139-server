@@ -1,244 +1,203 @@
 <?php
-include('connection.php');
-include('gross_common_function.php');
+// Include TCPDF library
+require_once('TCPDF/tcpdf.php');
 
-if (isset($_SERVER['HTTPS']) &&
-    ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1) ||
-    isset($_SERVER['HTTP_X_FORWARDED_PROTO']) &&
-    $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
-  $ssl = 'https';
+// Extend TCPDF class to customize functionality
+class MYPDF extends TCPDF {
+
+    public function MultiRow($left, $right) {
+        // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0)
+        // Custom function to display two cells in a row
+        $page_start = $this->getPage();
+        $y_start = $this->GetY();
+
+        // write the left cell
+        $this->MultiCell(40, 0, $left, 1, 'R', 1, 2, '', '', true, 0);
+
+        $page_end_1 = $this->getPage();
+        $y_end_1 = $this->GetY();
+
+        $this->setPage($page_start);
+
+        // write the right cell
+        $this->MultiCell(0, 0, $right, 1, 'J', 0, 1, $this->GetX(), $y_start, true, 0);
+
+        $page_end_2 = $this->getPage();
+        $y_end_2 = $this->GetY();
+
+        // set the new row position by case
+        if (max($page_end_1,$page_end_2) == $page_start) {
+            $ynew = max($y_end_1, $y_end_2);
+        } elseif ($page_end_1 == $page_end_2) {
+            $ynew = max($y_end_1, $y_end_2);
+        } elseif ($page_end_1 > $page_end_2) {
+            $ynew = $y_end_1;
+        } else {
+            $ynew = $y_end_2;
+        }
+
+        $this->setPage(max($page_end_1,$page_end_2));
+        $this->SetXY($this->GetX(),$ynew);
+    }
+
 }
-else {
-  $ssl = 'http';
+
+// Create a new TCPDF instance
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// Set document information
+$pdf->SetCreator('SETUPORG');
+$pdf->SetAuthor('SETUPORG');
+$pdf->SetTitle('PRODUCT LIST');
+$pdf->SetSubject('DISPLAY');
+$pdf->SetKeywords('PRODUCT, DISPLAY, SETUPORG');
+
+// Set default header and footer data
+$pdf->setPrintHeader(false);
+$pdf->setFooterData(array(0, 64, 0), array(0, 64, 128));
+$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+
+// Add a page
+$pdf->AddPage();
+$pdf->setMargins(10, 20, 10);
+
+// Set font
+$pdf->SetFont('helvetica', '', 12);
+
+function generateBarcode($code, $type = 'C39') {
+    // Include TCPDF library
+    require_once('TCPDF/tcpdf.php');
+
+    // Create a new TCPDF instance
+    $pdf = new TCPDF();
+
+    // Start buffering
+    ob_start();
+
+    // Generate barcode
+    $pdf->write1DBarcode($code, $type, '', '', '', 18, 0.4, array(0, 0, 0), 'N');
+
+    // Get buffer contents
+    $barcodeImageData = ob_get_clean();
+
+    return $barcodeImageData;
 }
- 
-$app_url = ($ssl  )
-          . "://".$_SERVER['HTTP_HOST']
-          . (dirname($_SERVER["SCRIPT_NAME"]) == DIRECTORY_SEPARATOR ? "" : "/")
-          . trim(str_replace("\\", "/", dirname($_SERVER["SCRIPT_NAME"])), "/");
 
+// Usage example:
+$barcode1 = generateBarcode("2402-03393", "C39"); // Generate barcode image data for the first barcode
+$barcode2 = generateBarcode("1234-56789", "C39");
 
-header("Access-Control-Allow-Origin: *");
+// HTML content with the table and header
+$htmlContent = '
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+            padding: 2px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: left;
+            font-style: italic;
+            font-size: 12px;
+            font-family: "Times New Roman", Times, serif;
+            margin: 0;
+            padding: 0;
+            display: inline;
+        }
 
-?>
+        .barcode-container {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
 
-<!DOCTYPE html>
-<html>
-<head>
-	 
-	<title> HISTOPATHOLOGY REPORT </title>
-
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-
-	<meta name="description" content="This ">
-
-	<meta name="author" content="Code With Mark">
-	<meta name="authorUrl" content="http://codewithmark.com">
-
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> 
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
-
-
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script> 
-
-
-	<script src="<?php echo $app_url?>/js/af.min.js"></script> 
-  
- 	
- 	<style>
-	.invoice-box {
-        margin: auto;
-        padding: 30px;
-        font-size: 16px;
-        line-height: 24px;
-        font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-        color: #555;
-    }
-
-    .invoice-box table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background-color: white; 
-    }
-
-    .invoice-box th, .invoice-box td {
-        border: 1px solid #000; 
-        padding: 8px;
-        color: #000; 
-    }
-
-    .invoice-box th {
-        font-weight: bold;
-        text-align: left;
-    }
-
-    .invoice-box tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-
-    .invoice-box tr:hover {
-        background-color: #f2f2f2;
-    }
-
-    .invoice-box th, .invoice-box td {
-        padding: 15px;
-        text-align: left;
-    }
-
-    .invoice-box h2 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    
-    .invoice-box table table {
-        margin: 0;
-        padding: 0;
-        border-collapse: collapse;
-    }
-
-    .invoice-box table table th,
-    .invoice-box table table td {
-        padding: 0;
-        border: none;
-    }
-
-    .invoice-box table table th {
-        font-weight: normal;
-    }
-    
-
-	@media only screen and (max-width: 600px) {
-		.invoice-box table tr.top table td {
-			width: 100%;
-			display: block;
-			text-align: center;
-		}
-
-		.invoice-box table tr.information table td {
-			width: 100%;
-			display: block;
-			text-align: center;
-		}
-	}
-
-	/** RTL **/
-	.invoice-box.rtl {
-		direction: rtl;
-		font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-	}
-
-	.invoice-box.rtl table {
-		text-align: right;
-	}
-
-	.invoice-box.rtl table tr td:nth-child(2) {
-		text-align: left;
-	}
-	</style>
-
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js" ></script>
-
- 
-
-	<script type="text/javascript">
-	$(document).ready(function($) 
-	{ 
-
-		$(document).on('click', '.btn_print', function(event) 
-		{
-			event.preventDefault();
-			
-			var element = document.getElementById('container_content'); 
-
-			//easy
-			//html2pdf().from(element).save();
-
-			//custom file name
-			//html2pdf().set({filename: 'code_with_mark_'+js.AutoCode()+'.pdf'}).from(element).save();
-
-
-			//more custom settings
-			var opt = 
-			{
-			  margin:       1,
-			  filename:     'pageContent_'+js.AutoCode()+'.pdf',
-			  image:        { type: 'jpeg', quality: 0.98 },
-			  html2canvas:  { scale: 2 },
-			  jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-			};
-
-			html2pdf().set(opt).from(element).save();
-
-			 
-		});
-
- 
- 
-	});
-	</script>
-
-	 
-
-</head>
-<body>
-
-<div class="text-center" style="padding:20px;">
-	<input type="button" id="rep" value="Print" class="btn btn-info btn_print">
-</div>
-
-
-<div class="container_content" id="container_content">
-    <div class="invoice-box">
-        <h2>HISTOPATHOLOGY REPORT</h2>
-            <table>
-                <tr>
-                    <th>Lab No:</th>
-                    <td>HPL2402-03393</td>
-                    <th>SI No:</th>
-                    <td>2212-45226</td>
-                </tr>
-                <tr>
-                    <th>Patient:</th>
-                    <td>Ms. Mim</td>
-                    <td colspan="5">
-                        <table>
-                            <tr>
-                                <th>Age:</th>
-                                <td>15 Yrs</td>
-                                <th>Sex:</th>
-                                <td>Female</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Refd. by:</th>
-                    <td>PAN PACIFIC HOSPITAL</td>
-                    <th>Specimen:</th>
-                    <td>Tissue from ...</td>
-                </tr>
-                <tr>
-                    <th colspan="2">Clinical Details:</th>
-                    <td colspan="4">[Your dynamic clinical details here]</td>
-                </tr>
-                <tr>
-                    <th>Specimen received on:</th>
-                    <td>05/02/2024 11:58 AM</td>
-                    <th>Reported on:</th>
-                    <td>[Your dynamic reported on date here]</td>
-                </tr>
-            </table>
-    </div>
     <div>
-        <h2>Gross description:</h2>
+        <h1>HISTOPATHOLOGY REPORT</h1>
+        <div class="barcode-container">
+            ' . $pdf->write1DBarcode('HPL2402-03393', 'C39', '', '', '', 18, 0.4, array(0, 0, 0), 'N') . '
+        </div>
+        <div class="barcode-container">
+            ' . $pdf->write1DBarcode('2212-45226', 'C39', '', '', '', 18, 0.4, array(0, 0, 0), 'N') . '
+        </div>
     </div>
-</div>
+    <table>
+        <tr>
+            <td><strong>Lab No:</strong><span>HPL2402-03393</span></td>
+            <td><strong>SI No:</strong><span>2212-45226</span></td>
+        </tr>
+        <tr>
+            <td><strong>Patient Name:</strong><span>Ms. Mim</span></td>
+            <td><strong>Patient Code:</strong><span>PT2402-00331</span></td>
+        </tr>
+        <tr>
+            <td><strong>Age:</strong><span>15 Yrs</span></td>
+            <td><strong>Gender:</strong><span>Female</span></td>
+        </tr>
+        <tr>
+            <td><strong>Refd. by:</strong><span>Asst. Prof.Dr. Md. Nazmul Haque, MBBS, FCPS(Surgery), MS(Urology)</span></td>
+            <td><strong>Refd. From:</strong><span>PAN PACIFIC HOSPITAL</span></td>
+        </tr>
+        <tr>
+            <td><strong>Received on:</strong><span>05/02/2024 11:58 AM</span></td>
+            <td><strong>Reported on:</strong><span>05/02/2024 11:58 AM</span></td>
+        </tr>
+    </table>';
 
+// Write HTML content to PDF
+$pdf->writeHTML($htmlContent, true, false, true, false, '');
+// Calculate the width for the left and right content in the MultiCell
+$leftWidth = 40; // Adjust as needed
+$rightWidth = 40; // Adjust as needed
 
+// Calculate the remaining width for the barcodes
+$barcodeWidth = 100 - $leftWidth - $rightWidth; // Adjust as needed
 
+// Generate barcode HTML for the left barcode
+$leftBarcodeHTML = $pdf->write1DBarcode("2402-03393", "EAN13", '', '', '', 18, 0.4, $style, "N");
 
+// Generate barcode HTML for the right barcode
+$rightBarcodeHTML = $pdf->write1DBarcode("1234-56789", "EAN13", '', '', '', 18, 0.4, $style, "N");
 
-</body>
-</html>
+// Calculate the height of the MultiCell based on the tallest barcode
+$barcodeHeight = max($leftBarcodeHTML['h'], $rightBarcodeHTML['h']);
+
+// Set the height of the MultiCell to accommodate the barcodes
+$pdf->SetCellHeightRatio($barcodeHeight / 4); // Adjust the denominator as needed
+
+// Start the MultiCell
+$pdf->MultiCell($leftWidth + $barcodeWidth + $rightWidth, $barcodeHeight, '', 1, 'C', 0, 0, '', '', true, 0, false, true, $barcodeHeight, 'M');
+
+// Set the position for the left barcode
+$pdf->SetXY($pdf->GetX() + $leftWidth, $pdf->GetY() - $barcodeHeight);
+
+// Output the left barcode
+$pdf->write1DBarcode("2402-03393", "EAN13", '', '', '', 18, 0.4, $style, "N");
+
+// Set the position for the right barcode
+$pdf->SetXY($pdf->GetX() + $barcodeWidth, $pdf->GetY());
+
+// Output the right barcode
+$pdf->write1DBarcode("1234-56789", "EAN13", '', '', '', 18, 0.4, $style, "N");
+
+// Reset the height of the MultiCell to its default value
+$pdf->setCellHeightRatio(1);
+
+// Set the position for the content
+$pdf->SetXY($pdf->GetX() - $leftWidth - $barcodeWidth, $pdf->GetY() + $barcodeHeight);
+
+// Write the content for the left part of the MultiCell
+$pdf->MultiCell($leftWidth, 0, 'Left Content', 0, 'C');
+
+// Set the position for the content
+$pdf->SetXY($pdf->GetX() + $leftWidth + $barcodeWidth, $pdf->GetY());
+
+// Write the content for the right part of the MultiCell
+$pdf->MultiCell($rightWidth, 0, 'Right Content', 0, 'C');
+// Output the PDF
+$pdf->Output('histopathology_report.pdf', 'I');
