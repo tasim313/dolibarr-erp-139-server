@@ -2,6 +2,45 @@
 // Include TCPDF library
 require_once('TCPDF/tcpdf.php');
 
+class MYPDF extends TCPDF {
+
+    public function MultiRow($left, $right) {
+        // MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1, $x='', $y='', $reseth=true, $stretch=0)
+
+        $page_start = $this->getPage();
+        $y_start = $this->GetY();
+
+        // write the left cell
+        $this->MultiCell(40, 0, $left, 1, 'R', 1, 2, '', '', true, 0);
+
+        $page_end_1 = $this->getPage();
+        $y_end_1 = $this->GetY();
+
+        $this->setPage($page_start);
+
+        // write the right cell
+        $this->MultiCell(0, 0, $right, 1, 'J', 0, 1, $this->GetX(), $y_start, true, 0);
+
+        $page_end_2 = $this->getPage();
+        $y_end_2 = $this->GetY();
+
+        // set the new row position by case
+        if (max($page_end_1,$page_end_2) == $page_start) {
+            $ynew = max($y_end_1, $y_end_2);
+        } elseif ($page_end_1 == $page_end_2) {
+            $ynew = max($y_end_1, $y_end_2);
+        } elseif ($page_end_1 > $page_end_2) {
+            $ynew = $y_end_1;
+        } else {
+            $ynew = $y_end_2;
+        }
+
+        $this->setPage(max($page_end_1,$page_end_2));
+        $this->SetXY($this->GetX(),$ynew);
+    }
+
+}
+
 // Create a new TCPDF instance
 $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
 
@@ -9,16 +48,37 @@ $pdf->setPrintHeader(false);
 $pdf->setFooterData(array(0,64,0), array(0,64,128));
 $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-$pdf->setBarcode(date('Y-m-d H:i:s'));
+
+
+
 // Add a page
 $pdf->AddPage();
 $pdf->setMargins(10, 20, 10);
 // Set font
-$pdf->SetFont('helvetica', '', 12);
+$pdf->SetFont('helvetica', '', 10);
+$pdf->setPrintFooter(true);
 
+// Define barcode style
+$style = array(
+    'position' => '',
+    'align' => 'C',
+    'stretch' => false,
+    'fitwidth' => true,
+    'cellfitalign' => '',
+    'border' => false,
+    'hpadding' => 'auto',
+    'vpadding' => 'auto',
+    'fgcolor' => array(0, 0, 0),
+    'bgcolor' => false, //array(255,255,255),
+    'text' => true,
+    'font' => 'helvetica',
+    'fontsize' => 8,
+    'stretchtext' => 4
+);
 
 
 // Define the content of the PDF document
+
 $htmlContent = '
     <style>
         table {
@@ -31,30 +91,12 @@ $htmlContent = '
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        h1 {
-            text-align: center;
-        }
-
-        .key {
-            display: inline-block;
-            text-align: left;
-            font-weight: bold;
-            width: 100px; 
-        }
         
-        .value {
-            display: inline-block;
-            width: auto; 
-            text-align: left;
-            
-        }
+        
         
         
     </style>
-    <br><br>
- 
-        <h1>HISTOPATHOLOGY REPORT</h1>
-   
+        <br><br>
     <table>
         <tr>
             <td><strong>Lab No:</strong><span>HPL2402-03393</span></td>
@@ -77,114 +119,152 @@ $htmlContent = '
             <td><strong>Received on:</strong><span>05/02/2024 11:58 AM</span></td>
             <td><strong>Reported on:</strong><span>05/02/2024 11:58 AM</span></td>
         </tr>
-    </table>
-    <div>
-    <br><br>
-    <table style="border: none; width: auto; ">
-    <tr>
-        <td class="key">Specimen</td>
-        <td><span class="value">: Right breast with axillary lymph node. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in 
-        the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and 
-        more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</span></td>
+        <tr>
         
-    </tr>
-    <tr>
-        <td class="key">Clinical Details</td>
-        <td>
-        <span class="value">: Carcinoma right breast. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of 
-        Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </span>
-        </td>
-    </tr>
-    <tr>
-        <td class="key">Gross</td>
-        <td>
-        <span class="value">: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s, 
-        when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, 
-        but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets 
-        containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </span>
-        <br>
-            <table style="border: none;">
-                <tr>
-                    <td class="key">Section Code</td>
-                    <td>
-                    <span class="value">: A1-A2: Sections from the</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 130px; font-weight: bold;">Summary Of Sections</td>
-                    <td>
-                    <span class="value">:Two pieces embedded in two blocks.</span>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-    <br>
-    <tr>
-        <td class="key">Micro</td>
-        <td>
-        <span class="value">: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s,
-        when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with 
-        the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </span>
-        </td>
-    </tr>
-    <tr>
-        <td class="key">Diagnosis</td>
-        <td>
-        <span class="value">: Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry standard dummy text ever since the 1500s, 
-        when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s 
-        with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-        </span>
-        </td>
-    </tr>
-</table>
+        </tr>
+       
 
-    </div>
-    <div class="">
-    <div class="">
-        <p><strong>Assisted by:</strong> Dr.Md.Mahabub Alam</p>
-        <p><strong>Qualification:</strong> MBBS, MD(Pathology, BSMMU)</p>
-        <p><strong>Position:</strong> Junior Consultant, A I Khan Lab Ltd</p>
-    </div>
-    <div class="">
-        <p><strong>Finalized by:</strong> Prof. Dr. Md. Aminul Islam Khan</p>
-        <p><strong>Qualification:</strong> MBBS (DMC), Board Certified in Pathology</p>
-        <p><strong>Position:</strong> Chief Consultant, A I Khan Lab Ltd.</p>
-    </div>
+    </table>
     
-</div>
-
-
+    
+    
 ';
 
-// EAN 13
-$pdf->Cell(0, 0, '', 0, 1);
-$pdf->write1DBarcode('1234567890128', 'EAN13', '', '', '', 18, 0.4, $style, 'N');
 
-$pdf->Ln();
+$verticalOffset = 15;
+
+// Add spacing before the barcode
+$pdf->Ln(35); 
+
+// Generate and output the barcode HTML
+$leftBarcodeHTML = $pdf->write1DBarcode("2402-03393", "EAN13", '', '', '', 18, 0.4, $style, "N");
+$pdf->writeHTMLCell(0, 0, '', '', $leftBarcodeHTML, 0, 1, false, true, 'C', true);
+
+// Calculate the Y position for the h1 tag
+$h1Y = $pdf->GetY() - $verticalOffset;
+
+// Add the h1 tag
+$pdf->writeHTMLCell(0, 0, '', $h1Y, '<h1 style="text-align: center; font-style: italic; font-size: 12px; font-family: "Times New Roman", Times, serif;">HISTOPATHOLOGY REPORT</h1>', 0, 1, false, true, 'C', true);
+
+// Update the current Y position
+$currentY = $pdf->GetY();
+
+// Calculate the width for columns
+$columnWidth = ($pdf->GetPageWidth() - $pdf->getMargins()['left'] - $pdf->getMargins()['right']) / 2;
+$columnSpacing = 10; // Adjust as needed for the desired spacing between columns
+
+// Calculate the width for columns
+$columnWidth = ($pdf->GetPageWidth() - $pdf->getMargins()['left'] - $pdf->getMargins()['right']) / 2;
+$columnSpacing = 10; // Adjust as needed for the desired spacing between columns
 
 
-// CODE 11
-$pdf->Cell(0, 0, 'CODE 11', 0, 1);
-$pdf->write1DBarcode('123-456-789', 'CODE11', '', '', '', 18, 0.4, $style, 'N');
+$tableContent = array(
+    array("Specimen", " Right breast with axillary lymph node."),
+    array("Clinical Details", "Carcinoma right breast. "),
+    array("Gross", "Lorem Ipsum is simply dummy text of the printing",
+    
+    ),
+    array("Section Code", "<li>A1-A2: Sections from the</li><li>A1-A2: Sections from the</li>",
+    
+    ),
+    array("Summary Of Sections", "Two pieces embedded in two blocks.",
+    
+    ),
+    array("Micro", " Lorem Ipsum is simply dummy text of the printing and typesetting industry."),
+   
+    array("Diagnosis", "Specimens A infected myomatous polyp, biopsy: Progestin effect on endometrium. Please see microscopic description"),
+);
 
-$pdf->Ln();
 
-// PHARMACODE
-$pdf->Cell(0, 0, 'PHARMACODE', 0, 1);
-$pdf->write1DBarcode('789', 'PHARMA', '', '', '', 18, 0.4, $style, 'N');
-
-$pdf->Ln();
-
-// PHARMACODE TWO-TRACKS
-$pdf->Cell(0, 0, 'PHARMACODE TWO-TRACKS', 0, 1);
-$pdf->write1DBarcode('105', 'PHARMA2T', '', '', '', 18, 2, $style, 'N');
 
 // Write HTML content to PDF
 $pdf->writeHTML($htmlContent, true, false, true, false, '');
+
+
+// // Find the maximum width for the left column
+$maxLeftWidth = 0;
+foreach ($tableContent as $row) {
+    $maxLeftWidth = max($maxLeftWidth, strlen($row[0]));
+}
+
+// Find the maximum width for the right column
+$maxRightWidth = 0;
+foreach ($tableContent as $row) {
+    $maxRightWidth = max($maxRightWidth, strlen($row[1]));
+}
+
+// Calculate the width of the left column based on the maximum content length
+$leftWidth = 40 + $maxLeftWidth * 0.2; 
+
+foreach ($tableContent as $row) {
+    // Set the cell height ratio to make the content centered vertically
+    $pdf->setCellHeightRatio(1.5);
+
+    // Left cell without border
+    $pdf->MultiCell($leftWidth, 0, $row[0], 0, 'R', 0, 0, '', '', true, 0, false, true, 0);
+
+    // Check if the right cell content contains list items
+    if (strpos($row[1], '<li>') !== false) {
+        // Calculate the width of the right column based on the length of the content
+        $rightWidth = 180 + strlen($row[1]) * 0.2; // Adjust the multiplier as needed
+
+        // Right cell with border and HTML content
+        $pdf->writeHTMLCell($rightWidth, 0, '', '', ':<br>' . $row[1], 0, 1, false, true, 'J', true);
+    } else {
+        // Right cell without border
+        if ($row[0] === "Summary Of Sections") {
+            // If it's "Summary Of Sections", set a width that allows the content to be printed on a single line
+            $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
+        } else {
+            // For other rows, use the default width
+            $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
+        }
+    }
+
+    // Reset the cell height ratio
+    $pdf->setCellHeightRatio(1);
+}
+
+
+
+
+// <div class="">
+//         <div style="width:'.$columnWidth.'px; float:left;">
+//             <p><strong>Assisted by:</strong> Dr.Md.Mahabub Alam</p>
+//             <p><strong>Qualification:</strong> MBBS, MD(Pathology, BSMMU)</p>
+//             <p><strong>Position:</strong> Junior Consultant, A I Khan Lab Ltd</p>
+//         </div>
+//         <div style="width:'.$columnWidth.'px; float:left; margin-left:'.$columnSpacing.'px;">
+//             <p><strong>Finalized by:</strong> Prof. Dr. Md. Aminul Islam Khan</p>
+//             <p><strong>Qualification:</strong> MBBS (DMC), Board Certified in Pathology</p>
+//             <p><strong>Position:</strong> Chief Consultant, A I Khan Lab Ltd.</p>
+//         </div>
+//     </div>
+
+// foreach ($tableContent as $row) {
+//     // Set the cell height ratio to make the content centered vertically
+//     $pdf->setCellHeightRatio(1.5);
+
+//     // Left cell without border
+//     $pdf->MultiCell(40, 0, $row[0], 0, 'R', 0, 0, '', '', true, 0, false, true, 0);
+
+//     // Check if the right cell content contains list items
+//     if (strpos($row[1], '<li>') !== false) {
+//         // Right cell with border and HTML content
+//         $pdf->writeHTMLCell(0, 0, '', '', ':<br>' . $row[1], 0, 1, false, true, 'J', true);
+//     } else {
+//         // Right cell without border
+//         $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
+//     }
+
+//     // Reset the cell height ratio
+//     $pdf->setCellHeightRatio(1);
+// }
+
+
+
+    
+
 
 // Get the PDF content as a string  
 $pdfContent = $pdf->Output('', 'S');
