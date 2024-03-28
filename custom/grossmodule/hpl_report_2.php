@@ -39,17 +39,76 @@ class MYPDF extends TCPDF {
         $this->SetXY($this->GetX(),$ynew);
     }
 
+      
+    public function Footer() {
+        // Position at 15 mm from bottom
+        $this->SetY(-30);
+        
+        // Set font for the footer content
+        $this->SetFont('helvetica', '', 8);
+        
+        // Add spacing between lines
+        $this->Ln(5);
+        
+        // Get the current date/time
+        $currentDateTime = date('Y-m-d H:i:s');
+        
+        // Lab number
+        $labNumber = 'HPL2402-03393';
+        
+        // Construct the footer content string for left side
+        $leftFooterContent = 'Printed By: Tasim | Printed On: ' . $currentDateTime;
+        
+        // Get the page number information
+        $pageNumberContent = 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages();
+        
+        // Calculate the width of the middle section
+        $middleWidth = $this->GetStringWidth($labNumber);
+        
+        // Calculate the width of the left section
+        $leftWidth = $this->GetStringWidth($leftFooterContent);
+        
+        // Calculate the width of the right section (to align with the right margin)
+        $rightWidth = $this->GetStringWidth($pageNumberContent);
+        
+        // Add the left footer content
+        $this->Cell($leftWidth, 5, $leftFooterContent, 0, 0, 'L');
+        
+        // Add spacing between sections
+        $this->Cell(($this->w - $rightWidth - $leftWidth - $middleWidth - 10) / 2);
+        
+        // Add the lab number in the middle
+        $this->Cell($middleWidth, 5, $labNumber, 0, 0, 'C');
+        
+        // Add spacing between sections
+        $this->Cell(($this->w - $rightWidth - $leftWidth - $middleWidth - 10) / 2);
+        
+        // Add the page number on the right side
+        $this->Cell($rightWidth, 5, $pageNumberContent, 0, 1, 'R');
+    }
+    
+    
+    
+    
 }
 
+
 // Create a new TCPDF instance
-$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+
+// Set document information
+$pdf->SetCreator('A I KHAN LAB LTD');
+$pdf->SetAuthor('A I KHAN LAB LTD');
+$pdf->SetTitle('HISTOPATHOLOGY REPORT');
+$pdf->SetSubject('DISPLAY');
+$pdf->SetKeywords('HISTOPATHOLOGY REPORT, DISPLAY, A I KHAN LAB LTD');
 
 $pdf->setPrintHeader(false);
 $pdf->setFooterData(array(0,64,0), array(0,64,128));
 $pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 $pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
 
-
+$pdf->SetFooterMargin(0);
 
 // Add a page
 $pdf->AddPage();
@@ -92,19 +151,11 @@ $htmlContent = '
             background-color: #f2f2f2;
         }
         
-        
-        
-        
     </style>
-        <br><br>
+    
     <table>
         <tr>
-            <td><strong>Lab No:</strong><span>HPL2402-03393</span></td>
-            
-            <td><strong>SI No:</strong><span>2212-45226</span></td>
-        </tr>
-        <tr>
-            <td><strong>Patient Name:</strong><span>Ms. Mim</span></td>
+            <td><strong>Patient Name:</strong><span>Lorem Ipsum is simply dummy text of the </span></td>
             <td><strong>Patient Code:</strong><span>PT2402-00331</span></td>
         </tr>
         <tr>
@@ -122,149 +173,113 @@ $htmlContent = '
         <tr>
         
         </tr>
-       
-
     </table>
-    
-    
     
 ';
 
 
-$verticalOffset = 15;
+$verticalOffset = 22;
 
 // Add spacing before the barcode
 $pdf->Ln(35); 
 
 // Generate and output the barcode HTML
-$leftBarcodeHTML = $pdf->write1DBarcode("2402-03393", "EAN13", '', '', '', 18, 0.4, $style, "N");
+$leftBarcodeHTML = $pdf->write1DBarcode("12345678901", "EAN13", '', '', '', 12, 0.4, $style, "N");
 $pdf->writeHTMLCell(0, 0, '', '', $leftBarcodeHTML, 0, 1, false, true, 'C', true);
 
 // Calculate the Y position for the h1 tag
 $h1Y = $pdf->GetY() - $verticalOffset;
 
 // Add the h1 tag
-$pdf->writeHTMLCell(0, 0, '', $h1Y, '<h1 style="text-align: center; font-style: italic; font-size: 12px; font-family: "Times New Roman", Times, serif;">HISTOPATHOLOGY REPORT</h1>', 0, 1, false, true, 'C', true);
+$pdf->writeHTMLCell(0, 0, '', $h1Y, '<h1 style="text-align: center; font-style: bold; font-size: 14px; font-family: "URW Chancery L", cursive;">HISTOPATHOLOGY REPORT</h1>', 0, 1, false, true, 'C', true);
 
 // Update the current Y position
 $currentY = $pdf->GetY();
 
-// Calculate the width for columns
-$columnWidth = ($pdf->GetPageWidth() - $pdf->getMargins()['left'] - $pdf->getMargins()['right']) / 2;
-$columnSpacing = 10; // Adjust as needed for the desired spacing between columns
+$secondBarcodeX = 150; // Adjust the X position as needed
 
-// Calculate the width for columns
-$columnWidth = ($pdf->GetPageWidth() - $pdf->getMargins()['left'] - $pdf->getMargins()['right']) / 2;
-$columnSpacing = 10; // Adjust as needed for the desired spacing between columns
+// Add spacing before the second barcode
+$pdf->SetXY($secondBarcodeX, $currentY);
 
-
-$tableContent = array(
-    array("Specimen", " Right breast with axillary lymph node."),
-    array("Clinical Details", "Carcinoma right breast. "),
-    array("Gross", "Lorem Ipsum is simply dummy text of the printing",
-    
-    ),
-    array("Section Code", "<li>A1-A2: Sections from the</li><li>A1-A2: Sections from the</li>",
-    
-    ),
-    array("Summary Of Sections", "Two pieces embedded in two blocks.",
-    
-    ),
-    array("Micro", " Lorem Ipsum is simply dummy text of the printing and typesetting industry."),
-   
-    array("Diagnosis", "Specimens A infected myomatous polyp, biopsy: Progestin effect on endometrium. Please see microscopic description"),
-);
-
-
+// Generate and output the second barcode HTML
+$secondBarcodeHTML = $pdf->write1DBarcode("12345678901", "EAN13", '', '', '', 12, 0.4, $style, "N");
+$pdf->writeHTMLCell(0, 0, '', '', $secondBarcodeHTML, 0, 1, false, true, 'C', true);
 
 // Write HTML content to PDF
 $pdf->writeHTML($htmlContent, true, false, true, false, '');
+$tbl = <<<EOD
+<table border="0" cellpadding="2" cellspacing="2" nobr="true">
+ 
+ <tr>
+  <td style="text-align: center; font-weight: bold;">Specimen History:</td>
+  <td>Right breast with axillary lymph node.
+  </td>
+ </tr>
+ <tr>
+  <td style="text-align: center; font-weight: bold;">Clinical Details:</td>
+  <td>Carcinoma right breast.
+  </td>
+  
+ </tr>
+ 
+</table>
+EOD;
 
+$pdf->writeHTML($tbl, true, false, false, false, '');
 
-// // Find the maximum width for the left column
-$maxLeftWidth = 0;
-foreach ($tableContent as $row) {
-    $maxLeftWidth = max($maxLeftWidth, strlen($row[0]));
-}
+$tbl = <<<EOD
+<table border="0" cellpadding="2" cellspacing="2" nobr="true">
+ <tr>
+  <td style="text-align: center; font-weight: bold;">Gross Description:</td>
+  <td>Lorem Ipsum is simply dummy text of the printing. 
+  <h4>Section Code</h4>
+  <p><li>A1-A2: Sections from the</li><li>A1-A2: Sections from the</li></p>
+  <h4>Summary Of Sections</h4>
+  <p>Two pieces embedded in two blocks.</p>
+  </td>
+ </tr>
+</table>
+EOD;
 
-// Find the maximum width for the right column
-$maxRightWidth = 0;
-foreach ($tableContent as $row) {
-    $maxRightWidth = max($maxRightWidth, strlen($row[1]));
-}
+$pdf->writeHTML($tbl, true, false, false, false, '');
 
-// Calculate the width of the left column based on the maximum content length
-$leftWidth = 40 + $maxLeftWidth * 0.2; 
+$tbl = <<<EOD
+<table border="0" cellpadding="2" cellspacing="2" nobr="true">
+ <tr>
+  <td style="text-align: center; font-weight: bold;">Micro Description:</td>
+  <td>Lorem Ipsum is simply dummy text of the printing. New Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+  </td>
+ </tr>
+ <tr>
+  <td style="text-align: center; font-weight: bold;">Diagnosis:</td>
+  <td>Lorem Ipsum is simply dummy text of the printing. New Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+  </td>
+ </tr>
+</table>
+EOD;
 
-foreach ($tableContent as $row) {
-    // Set the cell height ratio to make the content centered vertically
-    $pdf->setCellHeightRatio(1.5);
+$pdf->writeHTML($tbl, true, false, false, false, '');
 
-    // Left cell without border
-    $pdf->MultiCell($leftWidth, 0, $row[0], 0, 'R', 0, 0, '', '', true, 0, false, true, 0);
+$tbl = <<<EOD
+<table border="0" cellpadding="1" cellspacing="1" align="center">
 
-    // Check if the right cell content contains list items
-    if (strpos($row[1], '<li>') !== false) {
-        // Calculate the width of the right column based on the length of the content
-        $rightWidth = 180 + strlen($row[1]) * 0.2; // Adjust the multiplier as needed
-
-        // Right cell with border and HTML content
-        $pdf->writeHTMLCell($rightWidth, 0, '', '', ':<br>' . $row[1], 0, 1, false, true, 'J', true);
-    } else {
-        // Right cell without border
-        if ($row[0] === "Summary Of Sections") {
-            // If it's "Summary Of Sections", set a width that allows the content to be printed on a single line
-            $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
-        } else {
-            // For other rows, use the default width
-            $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
-        }
-    }
-
-    // Reset the cell height ratio
-    $pdf->setCellHeightRatio(1);
-}
-
-
-
-
-// <div class="">
-//         <div style="width:'.$columnWidth.'px; float:left;">
-//             <p><strong>Assisted by:</strong> Dr.Md.Mahabub Alam</p>
-//             <p><strong>Qualification:</strong> MBBS, MD(Pathology, BSMMU)</p>
-//             <p><strong>Position:</strong> Junior Consultant, A I Khan Lab Ltd</p>
-//         </div>
-//         <div style="width:'.$columnWidth.'px; float:left; margin-left:'.$columnSpacing.'px;">
-//             <p><strong>Finalized by:</strong> Prof. Dr. Md. Aminul Islam Khan</p>
-//             <p><strong>Qualification:</strong> MBBS (DMC), Board Certified in Pathology</p>
-//             <p><strong>Position:</strong> Chief Consultant, A I Khan Lab Ltd.</p>
-//         </div>
-//     </div>
-
-// foreach ($tableContent as $row) {
-//     // Set the cell height ratio to make the content centered vertically
-//     $pdf->setCellHeightRatio(1.5);
-
-//     // Left cell without border
-//     $pdf->MultiCell(40, 0, $row[0], 0, 'R', 0, 0, '', '', true, 0, false, true, 0);
-
-//     // Check if the right cell content contains list items
-//     if (strpos($row[1], '<li>') !== false) {
-//         // Right cell with border and HTML content
-//         $pdf->writeHTMLCell(0, 0, '', '', ':<br>' . $row[1], 0, 1, false, true, 'J', true);
-//     } else {
-//         // Right cell without border
-//         $pdf->MultiCell(0, 0, ': ' . $row[1], 0, 'J', 0, 1, '', '', true, 0, false, true, 0);
-//     }
-
-//     // Reset the cell height ratio
-//     $pdf->setCellHeightRatio(1);
-// }
+ <tr nobr="true">
+  <td>Assisted by:<br /><br /><br />Dr.Md.Mahabub Alam</td>
+  
+  <td>Finalized by:<br /><br /><br />Prof. Dr. Md. Aminul Islam Khan</td>
+ </tr>
+ 
+ <tr nobr="true">
+  <td><br />MBBS, MD(Pathology, BSMMU)<br/>Junior Consultant, A I Khan Lab Ltd</td>
+ 
+  <td><br />MBBS (DMC), Board Certified in Pathology<br/>Chief Consultant, A I Khan Lab Ltd.</td>
+ </tr>
+</table>
+EOD;
 
 
 
-    
-
+$pdf->writeHTML($tbl, true, false, false, false, '');
 
 // Get the PDF content as a string  
 $pdfContent = $pdf->Output('', 'S');
