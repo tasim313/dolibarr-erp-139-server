@@ -43,96 +43,38 @@ class MYPDF extends TCPDF {
     public function Footer() {
         // Position at 15 mm from bottom
         $this->SetY(-30);
-        
+    
         // Set font for the footer content
         $this->SetFont('helvetica', '', 8);
-        
+    
         // Add spacing between lines
         $this->Ln(5);
-        
+    
         // Get the current date/time
         $currentDateTime = date('Y-m-d H:i:s');
-        
-        // Lab number
-        $labNumber = 'HPL2402-03393';
-        
+    
         // Construct the footer content string for left side
-        $leftFooterContent = 'Tasim |' . $currentDateTime;
-        
+        $leftFooterContent = 'Tasim | ' . $currentDateTime;
+    
         // Get the page number information
-        $pageNumberContent = 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages();
-        
-        // Calculate the width of the middle section
-        $middleWidth = $this->GetStringWidth($labNumber);
-        
+        $pageNumberContent = 'Page ' . $this->getAliasNumPage() . ' Of ' . $this->getAliasNbPages();
+    
         // Calculate the width of the left section
         $leftWidth = $this->GetStringWidth($leftFooterContent);
-        
+    
         // Calculate the width of the right section (to align with the right margin)
         $rightWidth = $this->GetStringWidth($pageNumberContent);
-        
+    
         // Add the left footer content
         $this->Cell($leftWidth, 5, $leftFooterContent, 0, 0, 'L');
-        
+    
         // Add spacing between sections
-        $this->Cell(($this->w - $rightWidth - $leftWidth - $middleWidth - 10) / 2);
-        
-        // Add the lab number in the middle
-        $this->Cell($middleWidth, 5, $labNumber, 0, 0, 'C');
-        
-        // Add spacing between sections
-        $this->Cell(($this->w - $rightWidth - $leftWidth - $middleWidth - 10) / 2);
-        
+        $this->Cell(($this->w - $rightWidth - $leftWidth - 10));
+    
         // Add the page number on the right side
         $this->Cell($rightWidth, 5, $pageNumberContent, 0, 1, 'R');
-        
     }
       
-    // public function Footer() {
-    //     // Position at 15 mm from bottom
-    //     $this->SetY(-30);
-        
-    //     // Set font for the footer content
-    //     $this->SetFont('helvetica', '', 8);
-        
-    //     // Add spacing between lines
-    //     $this->Ln(5);
-        
-    //     // Get the current date/time
-    //     $currentDateTime = date('Y-m-d H:i:s');
-        
-    //     // Lab number
-    //     $labNumber = 'HPL2402-03393';
-        
-    //     // Construct the footer content string for left side
-    //     $leftFooterContent = 'Tasim |' . $currentDateTime;
-        
-    //     // Get the page number information
-    //     $pageNumberContent = 'Page ' . $this->getAliasNumPage() . '/' . $this->getAliasNbPages();
-        
-    //     // Calculate the width of the middle section
-    //     $middleWidth = $this->GetStringWidth($labNumber);
-        
-    //     // Calculate the width of the left section
-    //     $leftWidth = $this->GetStringWidth($leftFooterContent);
-        
-    //     // Calculate the width of the right section (to align with the right margin)
-    //     $rightWidth = $this->GetStringWidth($pageNumberContent);
-        
-    //     // Add the left footer content
-    //     $this->Cell($leftWidth, 5, $leftFooterContent, 0, 0, 'L');
-        
-    //     // Add the lab number in the middle
-    //     $this->Cell($middleWidth, 5, $labNumber, 0, 0, 'C');
-        
-    //     // Add the QR code including the lab number
-    //     $qrCodeContent = $labNumber; // Include lab number in QR code content
-    //     $this->write2DBarcode($qrCodeContent, 'QRCODE,L', '', '', 50, 50, $style, 'N');
-        
-    //     // Add the page number on the right side
-    //     $this->Cell($rightWidth, 5, $pageNumberContent, 0, 1, 'R');
-    // }
-    
 }
 
 
@@ -275,15 +217,13 @@ $tbl = <<<EOD
   <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
   <td style="text-align: left; width: 70%;">Specimen received in formalin in a container with name, age and sample name: 
     Specimen consists of left breast with overlying skin with nipple and areola with axillary tail. Specimen measuring: 22x10x6 cm. Overlying skin measuring: 16x9 cm. Cut surface shows a grayish-white and grayish-yellowish nodular area measuring: 2.5x2 cm at 12.0 to 1.0 clock position at upper outer quadrant. It is 4 cm from nipple, 3 cm from deep resection margin and 2 cm from superior soft tissue resection margin. 
-  <h4>Section Code</h4>
+  <h4>Section Code: </h4>
   <p><li>A1-A3: Sections from the grayish-white area </li><li>A4: Sections from the deep resection margin</li>
   <li>A5: Sections from the skin with superior soft tissue resection margin</li>
   <li>A6: Sections from the areola</li>
   <li>A7: Sections from the nipple</li>
   <li>A11-A12: Sections from the lymph nodes</li>
   </p>
-  <h4>Summary Of Sections</h4>
-  <p>Multiple pieces embedded in twelve blocks</p>
   </td>
  </tr>
 </table>
@@ -295,8 +235,7 @@ $tbl = <<<EOD
 <table border="0" cellpadding="2" cellspacing="2" nobr="true">
  <tr>
   <td style="text-align: left; font-weight: bold; width: 25%;">Micro Description:</td>
-  <td style="text-align: left; width: 70%;">Sections of the breast tissue show marked hyalinization, fibrosis, infiltration of chronic inflammatory cells, 
-   
+  <td style="text-align: left; width: 70%;">Sections of the breast tissue show marked hyalinization, fibrosis, infiltration of chronic inflammatory cells,   
   </td>
  </tr>
  <tr>
@@ -322,9 +261,9 @@ $tbl = <<<EOD
  </tr>
  
  <tr nobr="true">
-  <td style=" width: 28%;">MBBS, MD(Pathology, BSMMU)<br/>Junior Consultant, A I Khan Lab Ltd</td>
+  <td style="text-align: left; width: 28%;">MBBS, MD(Pathology, BSMMU)<br/>Junior Consultant, A I Khan Lab Ltd</td>
  
-  <td style=" width: 111%;">MBBS (DMC), Board Certified in Pathology<br/>Chief Consultant, A I Khan Lab Ltd.</td>
+  <td style="text-align: right; width: 74%;">MBBS (DMC), Board Certified in Pathology<br/>Chief Consultant, A I Khan Lab Ltd.</td>
  </tr>
 </table>
 EOD;
@@ -333,7 +272,23 @@ EOD;
 
 $pdf->writeHTML($tbl, true, false, false, false, '');
 
+$style = array(
+    'width' => 10, // Initial width value
+    'height' => 10, // Initial height value
+);
 
+// Calculate bottom margin and center position
+$bottomMargin = 40;
+$bottomY = $pdf->getPageHeight() - $bottomMargin;
+
+// New height and width for the QR code
+$newWidth = $style['width'] * 1.5; // Increase width by 50%
+$newHeight = $style['height'] * 1.5; // Increase height by 50%
+
+$centerX = ($pdf->getPageWidth() - $newWidth) / 2; // Adjust center based on new width
+
+// Add the QR code at the bottom center with new dimensions
+$pdf->write2DBarcode('PT2402-00335', 'QRCODE,Q', $centerX, $bottomY, $newWidth, $newHeight, $style, 'N');
 
 
 
