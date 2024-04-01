@@ -94,6 +94,38 @@ $form = new Form($db);
 $formfile = new FormFile($db);
 
 llxHeader("", $langs->trans("GrossModuleArea"));
+$loggedInUserId = $user->id;
+
+
+$loggedInUsername = $user->login;
+
+$userGroupNames = getUserGroupNames($loggedInUserId);
+
+$hasGrossAssistants = false;
+$hasConsultants = false;
+
+foreach ($userGroupNames as $group) {
+    if ($group['group'] === 'Gross assistants') {
+        $hasGrossAssistants = true;
+    } elseif ($group['group'] === 'Consultants') {
+        $hasConsultants = true;
+    }
+}
+
+// Access control using switch statement
+switch (true) {
+  case $hasGrossAssistants:
+      // Gross Assistant has access, continue with the page content...
+      break;
+  case $hasConsultants:
+      // Doctor has access, continue with the page content...
+      break;
+  default:
+      echo "<h1>Access Denied</h1>";
+      echo "<p>You are not authorized to view this page.</p>";
+      exit; // Terminate script execution
+}
+
 
 print load_fiche_titre($langs->trans(""), '', 'grossmodule.png@grossmodule');
 
