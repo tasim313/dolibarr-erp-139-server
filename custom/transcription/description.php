@@ -1,6 +1,7 @@
 <?php 
 include('connection.php');
 include('common_function.php');
+include('../grossmodule/gross_common_function.php');
 $res = 0;
 
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
@@ -44,9 +45,8 @@ $loggedInUserId = $user->id;
 $loggedInUsername = $user->login;
 
 $fk_gross_id = $_GET['fk_gross_id'];
-
-print("Description");
-print("gross_id". $fk_gross_id);
+$LabNumber = get_lab_number($fk_gross_id);
+$LabNumberWithoutPrefix = substr($LabNumber, 3);
 
 print('<style>
 * {
@@ -107,7 +107,7 @@ width: 75%;
 margin-top: 6px;
 }
 
-#gross_description{
+#description{
 width: 100%;
 height: 200px;
 border-radius: 10px;
@@ -144,11 +144,17 @@ margin-top: 0;
 
 
 <div class="container">
-    <?php 
-    $lab_number = get_gross_specimens_list($LabNumber);
-    $number_of_specimens = $lab_number[0]['number_of_specimens'];
+<?php 
+    $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
+    $lab_number = $LabNumber;
+    $created_user = $loggedInUsername;
+    $status = "Done";
+    
+    $number_of_specimens = $specimens_list[0]['number_of_specimens'];
+    
     $alphabet_string = numberToAlphabet($number_of_specimens);
     print('<div class="row">');
+    print('<h4>Micro Description</h4>');
     print('<div class="col-25">');
     print('<label for="Specimen">Specimen</label>');
     print('</div>');
@@ -156,11 +162,11 @@ margin-top: 0;
     print("<p>  " . $alphabet_string . "</p>");
     print('</div>');
     print('</div>');
-    print('<form method="post" action="gross_specimens_create.php">');
-    foreach ($lab_number as $key => $specimen) {
+    print('<form id="microDescriptionForm" method="post" action="micro_description_create.php">');
+    foreach ($specimens_list as $key => $specimen) {
 
       $button_id = 'click_to_convert' . $key;
-      $text_area_id = 'gross_description' . $key;
+      $text_area_id = 'description' . $key;
 
 
       echo '<div class="row">';
@@ -168,38 +174,20 @@ margin-top: 0;
       echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
       echo '</div>';
       echo '<div class="col-75">';
-      echo '<textarea id="' . $text_area_id . '" name="gross_description[]" cols="60" rows="10" required>';
-      print('</textarea>');
-      print('<button id="' . $button_id . '">Voice </button>');
+      echo '<textarea id="' . $text_area_id . '" name="description[]" cols="60" rows="10" required></textarea>';
       echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
-      $gross_instances = get_gross_instance($LabNumber);
-      $current_gross_instance = array_shift($gross_instances);
-      echo '<input type="hidden" name="fk_gross_id[]" value="' . $current_gross_instance['gross_id'] . '">';
+      echo '<input type="hidden" name="fk_gross_id[]" value="' . $fk_gross_id . '">';
+      echo '<input type="hidden" name="created_user[]" value="' . $created_user . '">';
+      echo '<input type="hidden" name="status[]" value="' . $status . '">';
+      echo '<input type="hidden" name="lab_number[]" value="' . $lab_number . '">';
       echo '</div>';
       echo '</div>';
-      echo "<script>
-          document.getElementById('$button_id').addEventListener('click', function(event) {
-            event.preventDefault();
-            var speech = true;
-            window.SpeechRecognition = window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.interimResults = true;
-            
-            recognition.addEventListener('result', e=>{
-                const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript)
-                document.getElementById('$text_area_id').innerHTML = transcript;
-            })
-
-            if(speech == true){
-                recognition.start();
-            }
-          });
-          </script>";
+     
   }
 
     echo '<div class="row">';
     print '<br>';
-    print '<input type="submit" value="Next">';
+    print '<input type="submit" id="microDescriptionSaveButton" value="Next" >';
     print '</div>';
     print '</form>';
 
@@ -240,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
   fetch('shortcuts.json')
       .then(response => response.json())
       .then(shortcuts => {
-          document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
+          document.querySelectorAll('textarea[name="description[]"]').forEach(textarea => {
               textarea.addEventListener('input', function() {
                   let cursorPosition = this.selectionStart;
                   for (let shortcut in shortcuts) {
@@ -258,3 +246,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 </script>
+
+
