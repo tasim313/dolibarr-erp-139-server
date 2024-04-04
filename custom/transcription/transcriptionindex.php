@@ -3,6 +3,7 @@
 // Load Dolibarr environment
 include('connection.php');
 include('common_function.php');
+include('../grossmodule/gross_common_function.php');
 $res = 0;
 // Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
@@ -258,10 +259,13 @@ print load_fiche_titre($langs->trans("TranscriptionArea"), '', 'transcription.pn
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
-
+$pending = get_pending_transcription_value();
+$complete = get_complete_transcription_value();
+$month = get_complete_transcription_value_current_month();
+$year = get_complete_transcription_value_current_year();
 print('<div class="row">');
 print('<div class="column">');
-print('<h2>Gross Complete Summary</h2>');
+print('<h2>Transcription Complete Summary</h2>');
 print('<table id="customers">');
 print('<tr>');
 print('<th>'. date("F") .'</th>');
@@ -269,10 +273,31 @@ print('<th>' . date('Y') . '</th>');
         
 print('</tr>');
 print('<tr>');
-// if ($hasGrossAssistants) {
-//    print('<td>' .$total_gross_current_month. '</td>');
-//    print('<td>' .$total_gross_current_year. '</td>');
-// }
+if ($hasTranscriptionist) {
+   print('<td>' .$month. '</td>');
+   print('<td>' .$year. '</td>');
+}
+// if ($hasConsultants) {
+//   print('<td>' .$total_gross_current_month_doctor. '</td>');
+//   print('<td>' .$total_gross_current_year_doctor. '</td>');
+// }     
+print('</tr>');
+      
+print('</table>');
+print('</div>');
+print('<div class="column">');
+print('<h2>Transcription Total Summary</h2>');
+print('<table id="customers">');
+print('<tr>');
+print('<th> Pending </th>');
+print('<th> Completed </th>');
+        
+print('</tr>');
+print('<tr>');
+if ($hasTranscriptionist) {
+   print('<td>' .$pending. '</td>');
+   print('<td>' .$complete. '</td>');
+}
 // if ($hasConsultants) {
 //   print('<td>' .$total_gross_current_month_doctor. '</td>');
 //   print('<td>' .$total_gross_current_year_doctor. '</td>');
