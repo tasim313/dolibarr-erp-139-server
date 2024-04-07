@@ -557,7 +557,7 @@ function get_gross_list_by_doctor($loggedInUsername) {
 
 function get_gross_specimen_description($fk_gross_id) {
     global $pg_con;
-    $sql = "SELECT specimen, gross_description FROM llx_gross_specimen WHERE fk_gross_id = $1";
+    $sql = "SELECT specimen_id, specimen, gross_description FROM llx_gross_specimen WHERE fk_gross_id = $1";
     $result = pg_query_params($pg_con, $sql, array($fk_gross_id));
 
     $specimens = array();
