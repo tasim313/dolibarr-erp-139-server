@@ -434,12 +434,13 @@ $LabNumberWithoutPrefix = substr($LabNumber, 3);
                 echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
                 echo '</div>';
                 echo '<div class="col-75">';
-                echo '<textarea id="' . $text_area_id . '" name="description[]" cols="60" rows="10" required>' . htmlspecialchars($existingDescription['description']) . '</textarea>';
+                echo '<textarea id="' . $text_area_id . '" name="description[]" data-index="' . $key . '" cols="60" rows="10" required>' . htmlspecialchars($existingDescription['description']) . '</textarea>';
                 echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
                 echo '<input type="hidden" name="fk_gross_id[]" value="' . $existingDescription['fk_gross_id'] . '">';
                 echo '<input type="hidden" name="created_user[]" value="' . $existingDescription['created_user'] . '">';
                 echo '<input type="hidden" name="status[]" value="' . $existingDescription['status'] . '">';
                 echo '<input type="hidden" name="lab_number[]" value="' . $existingDescription['lab_number'] . '">';
+                echo '<input type="hidden" name="row_id[]" value="' . $existingDescription['row_id'] . '">';
                 echo '</div>';
                 echo '</div>';
                 
@@ -457,33 +458,31 @@ $LabNumberWithoutPrefix = substr($LabNumber, 3);
 </div>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
-  fetch('shortcuts.json')
-      .then(response => response.json())
-      .then(shortcuts => {
-          document.querySelectorAll('textarea[name="description[]"]').forEach(textarea => {
-              textarea.addEventListener('input', function() {
-                  let cursorPosition = this.selectionStart;
-                  for (let shortcut in shortcuts) {
-                      if (this.value.includes(shortcut)) {
-                          this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-                          this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-                          break;
-                      }
-                  }
-              });
-          });
-      })
-      .catch(error => console.error('Error loading shortcuts:', error));
+    fetch('shortcuts.json')
+        .then(response => response.json())
+        .then(shortcuts => {
+            document.querySelectorAll('textarea[name="description[]"]').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    let cursorPosition = this.selectionStart;
+                    let index = this.getAttribute('data-index'); // Get the index from the data attribute
+                    for (let shortcut in shortcuts) {
+                        if (this.value.includes(shortcut)) {
+                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                            // Update the corresponding textarea value in the formData
+                            const formData = new FormData(document.getElementById('microDescriptionForm'));
+                            formData.set('description[' + index + ']', this.value);
+                            break;
+                        }
+                    }
+                });
+            });
+        })
+        .catch(error => console.error('Error loading shortcuts:', error));
 });
 
-
-</script>
-
-
-<script>
-    document.getElementById("microDescriptionForm").addEventListener("submit", function(event) {
+document.getElementById("microDescriptionForm").addEventListener("submit", function(event) {
     event.preventDefault();
     const formData = new FormData(this);
     
@@ -500,4 +499,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
