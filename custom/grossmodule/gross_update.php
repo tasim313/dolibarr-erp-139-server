@@ -126,6 +126,9 @@ foreach ($specimens as $specimen) {
     echo '<label for="specimen">Specimen</label>';
     echo '</div>';
     echo '<div class="col-75">';
+    echo '<input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>';
+    echo '</div>';
+    echo '<div class="col-75">';
     echo '<input type="text" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" readonly>';
     echo '</div>';
     echo '</div>';
