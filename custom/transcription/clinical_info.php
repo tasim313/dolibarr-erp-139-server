@@ -1,5 +1,4 @@
 <?php 
-// Load Dolibarr environment
 include('connection.php');
 include('common_function.php');
 include('../grossmodule/gross_common_function.php');
@@ -104,8 +103,8 @@ $LabNumber = $_GET['lab_number'];
 $LabNumberWithoutPrefix = substr($LabNumber, 3);
 $patient_information = get_patient_details_information($LabNumberWithoutPrefix);
 $specimenIformation   = get_gross_specimens_list($LabNumberWithoutPrefix);
-print("<style>
 
+print("<style>
 * {
     box-sizing: border-box;
     }
@@ -291,96 +290,71 @@ button {
 #searchInputAssign:focus {
     border-color: #007bff; 
   }
-</style>");
+</style>
+");
 
+print("<div style='margin-right: 20px;'>
+<form id='clinicalDetailsForm' method='post' action='clinical_details.php'>
+    <div class='row'>
+        <div class='col-25'>
+            <label style='font-weight: bold;' for='clinical_details'>Clinical Details</label>
+        </div>
+        <div class='col-75'>
+            <textarea id='clinicalDetailsTextarea' name='clinical_details' cols='60' rows='10'></textarea>
+            <input type='hidden' id='labNumberInput' name='lab_number' value='$LabNumber'>
+            <input type='hidden' id='createdUserInput' name='created_user' value='$loggedInUsername'>
+            <button style='background-color: rgb(118, 145, 225);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            transition: box-shadow 0.3s ease;' id='saveBtn' type='submit'>Save</button>
+            <button id='updateBtn' type='submit' style='display: none;'>Update</button>
+        </div>
+    </div>
+</form>
+</div>");
 
-if ($hasTranscriptionist) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<table id="pendingTable">');
-    print('<tr>
-	<th>Histopathology Report Modify</th>
-	
-	<th>Action</th></tr>');
-    print('
-        <tr>
-            <td>Patient Information</td>
-            <td><a href="patient_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Specimen Information</td>
-            <td><a href="specimen_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Clinical Details</td>
-            <td><a href="clinical_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Gross Description</td>
-            <td><a href="gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Micro Description</td>
-            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Diagnosis Description</td>
-            <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Report</td>
-            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
-        </tr>
-        
-        ');
-  
-    print('</table>');
-    print('</div>');
-    print '</div>';
-}
-
-if ($hasConsultants) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<table id="pendingTable">');
-    print('<tr>
-	<th>Histopathology Report Modify</th>
-	
-	<th>Action</th></tr>');
-    print('
-        <tr>
-            <td>Patient Information</td>
-            <td><a href="patient_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Specimen Information</td>
-            <td><a href="specimen_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Clinical Details</td>
-            <td><a href="clinical_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Gross Description</td>
-            <td><a href="gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Micro Description</td>
-            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Diagnosis Description</td>
-            <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Report</td>
-            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
-        </tr>
-        ');
-  
-    print('</table>');
-    print('</div>');
-    print '</div>';
-}
 
 ?>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    // Fetch existing clinical details using AJAX when the page loads
+    fetchExistingClinicalDetails();
+
+    function fetchExistingClinicalDetails() {
+        // Get the lab number from the hidden input field
+        var labNumber = document.getElementById("labNumberInput").value;
+
+        // Make an AJAX request to fetch existing clinical details
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "get_clinical_details.php?lab_number=" + labNumber, true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                // Parse the JSON response
+                var response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    // Populate the textarea with existing clinical details
+                    document.getElementById("clinicalDetailsTextarea").value = response.data.clinical_details;
+                    // Toggle visibility of Save and Update buttons based on whether data exists
+                    if (response.data.clinical_details) {
+                        document.getElementById("saveBtn").style.display = "none";
+                        document.getElementById("updateBtn").style.display = "inline-block";
+                    } else {
+                        document.getElementById("saveBtn").style.display = "inline-block";
+                        document.getElementById("updateBtn").style.display = "none";
+                    }
+                } else {
+                    console.error("Error fetching existing clinical details:", response.error);
+                }
+            }
+        };
+        xhr.send();
+    }
+});
+
+</script>
