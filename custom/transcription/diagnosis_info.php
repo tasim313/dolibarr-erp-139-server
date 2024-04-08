@@ -1,5 +1,5 @@
 <?php 
-// Load Dolibarr environment
+
 include('connection.php');
 include('common_function.php');
 include('../grossmodule/gross_common_function.php');
@@ -104,8 +104,8 @@ $LabNumber = $_GET['lab_number'];
 $LabNumberWithoutPrefix = substr($LabNumber, 3);
 $patient_information = get_patient_details_information($LabNumberWithoutPrefix);
 $specimenIformation   = get_gross_specimens_list($LabNumberWithoutPrefix);
-print("<style>
 
+print("<style>
 * {
     box-sizing: border-box;
     }
@@ -291,96 +291,101 @@ button {
 #searchInputAssign:focus {
     border-color: #007bff; 
   }
-</style>");
+</style>
+");
 
 
-if ($hasTranscriptionist) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<table id="pendingTable">');
-    print('<tr>
-	<th>Histopathology Report Modify</th>
-	
-	<th>Action</th></tr>');
-    print('
-        <tr>
-            <td>Patient Information</td>
-            <td><a href="patient_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Specimen Information</td>
-            <td><a href="specimen_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Clinical Details</td>
-            <td><a href="clinical_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Gross Description</td>
-            <td><a href="gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Micro Description</td>
-            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Diagnosis Description</td>
-            <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Report</td>
-            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
-        </tr>
-        
-        ');
-  
-    print('</table>');
-    print('</div>');
-    print '</div>';
-}
-
-if ($hasConsultants) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<table id="pendingTable">');
-    print('<tr>
-	<th>Histopathology Report Modify</th>
-	
-	<th>Action</th></tr>');
-    print('
-        <tr>
-            <td>Patient Information</td>
-            <td><a href="patient_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Specimen Information</td>
-            <td><a href="specimen_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Clinical Details</td>
-            <td><a href="clinical_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Gross Description</td>
-            <td><a href="gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Micro Description</td>
-            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Diagnosis Description</td>
-            <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Report</td>
-            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
-        </tr>
-        ');
-  
-    print('</table>');
-    print('</div>');
-    print '</div>';
-}
 
 ?>
+
+
+
+<div class="container">
+<?php 
+    // Retrieve existing diagnosis descriptions
+    $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
+    $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
+    // Ensure $existingDiagnosisDescriptions is an array
+    if (!is_array($existingDiagnosisDescriptions)) {
+        $existingDiagnosisDescriptions = array();
+    }
+    print('<form id="diagnosisDescriptionForm">');
+    // Loop through specimens list to generate form fields
+    foreach ($specimens_list as $key => $specimen) {
+        $text_area_id = 'description' . $key;
+        
+        // Loop through existing micro descriptions to find matching specimen
+        foreach ($existingDiagnosisDescriptions as $existingDescription) {
+            // Check if the specimen in $existingDescription matches the current specimen
+            if ($existingDescription['specimen'] === $specimen['specimen']) {
+                echo '<div class="row">';
+                echo '<div class="col-25">';
+                echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
+                echo '</div>';
+                echo '<div class="col-75">';
+                echo '<textarea id="' . $text_area_id . '" name="description[]" data-index="' . $key . '" cols="60" rows="10" required>' . htmlspecialchars($existingDescription['description']) . '</textarea>';
+                echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
+                echo '<input type="hidden" name="fk_gross_id[]" value="' . $existingDescription['fk_gross_id'] . '">';
+                echo '<input type="hidden" name="created_user[]" value="' . $existingDescription['created_user'] . '">';
+                echo '<input type="hidden" name="status[]" value="' . $existingDescription['status'] . '">';
+                echo '<input type="hidden" name="lab_number[]" value="' . $existingDescription['lab_number'] . '">';
+                echo '<input type="hidden" name="row_id[]" value="' . $existingDescription['row_id'] . '">';
+                echo '</div>';
+                echo '</div>';
+                
+                // Once a match is found, break out of the loop
+                break;
+            }
+        }
+    }
+    
+?>
+    <div class="row">
+        <input style='margin-right: 300px;' type="submit" id="diagnosisDescriptionSaveButton" value="update">
+    </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('shortcuts.json')
+        .then(response => response.json())
+        .then(shortcuts => {
+            document.querySelectorAll('textarea[name="description[]"]').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    let cursorPosition = this.selectionStart;
+                    let index = this.getAttribute('data-index'); // Get the index from the data attribute
+                    for (let shortcut in shortcuts) {
+                        if (this.value.includes(shortcut)) {
+                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                            // Update the corresponding textarea value in the formData
+                            const formData = new FormData(document.getElementById('diagnosisDescriptionForm'));
+                            formData.set('description[' + index + ']', this.value);
+                            break;
+                        }
+                    }
+                });
+            });
+        })
+        .catch(error => console.error('Error loading shortcuts:', error));
+});
+
+document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const formData = new FormData(this);
+    
+    fetch("update_diagnosis_descriptions.php", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(data => {
+        console.log(data); 
+        window.location.href = "list.php"
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+});
+</script>

@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $row_ids = isset($_POST['row_id']) ? $_POST['row_id'] : [];
 
     // Prepare update statement (excluding lab_number update)
-    $stmt = pg_prepare($pg_con, "update_statement", "UPDATE llx_micro SET fk_gross_id = $1, specimen = $2, description = $3, created_user = $4, status = $5 WHERE row_id = $6");
+    $stmt = pg_prepare($pg_con, "update_statement", "UPDATE llx_diagnosis SET fk_gross_id = $1, specimen = $2, description = $3, created_user = $4, status = $5 WHERE row_id = $6");
 
     if (!$stmt) {
         echo "Error preparing statement: " . pg_last_error($pg_con);
@@ -38,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
+    
     if ($success) {
         // Redirect after successful update
         echo '<script>alert("Data updated successfully!");</script>';

@@ -749,4 +749,27 @@ function get_assigned_gross_value_done_by_doctor($loggedInUsername) {
     return $count;
 }
 
+function get_patient_invoice_number($lab_number){
+    global $pg_con;
+
+    $sql = "SELECT f.ref AS invoice
+    FROM llx_facture AS f 
+    JOIN llx_societe s ON f.fk_soc = s.rowid 
+    JOIN llx_commande AS c ON c.fk_soc = s.rowid 
+    WHERE c.ref = '$lab_number';";
+    $result = pg_query($pg_con, $sql);
+  
+    if ($result) {
+        $row = pg_fetch_assoc($result);
+        $invoice_number = $row['invoice'];
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+        $count = 0; 
+    }
+  
+    return $invoice_number;
+
+}
+
 ?>
