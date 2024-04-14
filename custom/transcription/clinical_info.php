@@ -68,7 +68,7 @@ $now = dol_now();
 $form = new Form($db);
 $formfile = new FormFile($db);
 
-llxHeader("", $langs->trans("TranscriptionArea"));
+llxHeader("", $langs->trans("Transcription Area"));
 
 $loggedInUserId = $user->id;
 $loggedInUsername = $user->login;

@@ -390,7 +390,7 @@ if ($clinical_details_result) {
 
 // Write HTML content to PDF
 $pdf->writeHTML($htmlContent, true, false, true, false, '');
-$tbl = <<<EOD
+$tbl_spceimen = <<<EOD
 <table border="0" cellpadding="2" cellspacing="2" nobr="true">
  
  <tr>
@@ -407,6 +407,7 @@ $tbl = <<<EOD
  
 </table>
 EOD;
+$pdf->writeHTML($tbl_spceimen, true, false, true, false, '');
 
 //  sql opertaion for dynamic data 
 $fk_gross_id = "SELECT gross_id FROM llx_gross WHERE lab_number = '$LabNumber'";
@@ -438,7 +439,7 @@ if ($gross_description_result) {
         $gross_description = $row['gross_description'];
         $gross_description_list .= $gross_description . "<br>";
         
-        // Store the patient information in a session variable for later use
+        // Store the gross information in a session variable for later use
         $_SESSION['gross_description_list'] = $gross_description_list;
     }
 } else {
@@ -446,60 +447,109 @@ if ($gross_description_result) {
     die("Query failed for gross description Information: " . pg_last_error());
 }
 
-$clinical_details_info  = "select clinical_details from llx_clinical_details where lab_number = '$LabNumber'";
+// Initialize variables to store section code and description pairs
+$section_pairs = array();
 
-$clinical_details_result = pg_query($pg_con, $clinical_details_info);
+// Fetch section information from the database
+$sections_info = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_gross_specimen_section WHERE fk_gross_id = $1";
+
+$stmt = pg_prepare($pg_con, "sections_info_query", $sections_info);
+
+$sections_info_result = pg_execute($pg_con, "sections_info_query", array($fk_gross_id));
+
 // Check if the query was successful
-if ($clinical_details_result) {
+if ($sections_info_result) {
     // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($clinical_details_result)) {
-        // Process each row as needed
-        $clinical_details = $row['clinical_details'];
-        
-        // Store the patient information in a session variable for later use
-        $_SESSION['clinical_details'] = $clinical_details;
+    while ($row = pg_fetch_assoc($sections_info_result)) {
+        // Store section code and description pairs
+        $section_code = $row['section_code'];
+        $specimen_section_description = $row['specimen_section_description'];
+        $section_pairs[$section_code] = $specimen_section_description;
     }
+
+    // Store the section information in session variables for later use
+    $_SESSION['section_pairs'] = $section_pairs;
 } else {
     // Handle query error
-    die("Query failed for clinical_details: " . pg_last_error());
+    die("Query failed for sections_info: " . pg_last_error());
 }
 
-// end of sql operations
+// Construct the section code and description list
+$section_code_list = '';
+foreach ($section_pairs as $section_code => $specimen_section_description) {
+    $section_code_list .= "<li>$section_code: $specimen_section_description</li>";
+}
 
-$pdf->writeHTML($tbl, true, false, false, false, '');
+// Remove the trailing comma and space
+$section_code_list = rtrim($section_code_list, ', ');
 
+// Construct the table HTML with the fetched section information
 $tbl = <<<EOD
 <table border="0" cellpadding="1" cellspacing="1" nobr="true">
  <tr>
   <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
-  <td style="text-align: left; width: 70%;">$gross_description_list 
-  <h4>Section Code: </h4>
-  <p><li>A1-A3: Sections from the grayish-white area </li><li>A4: Sections from the deep resection margin</li>
-  <li>A5: Sections from the skin with superior soft tissue resection margin</li>
-  <li>A6: Sections from the areola</li>
-  <li>A7: Sections from the nipple</li>
-  <li>A11-A12: Sections from the lymph nodes</li>
-  </p>
+  <td style="text-align: left; width: 70%;">$gross_description_list<span style="text-align: left; font-weight: bold;">Section Code:</span> 
+  $section_code_list
   </td>
  </tr>
 </table>
 EOD;
 
+
 $pdf->writeHTML($tbl, true, false, false, false, '');
+
+
+// sql opertaion for dynamic data 
+
+$micro_details_info  = "SELECT  description FROM llx_micro WHERE lab_number = '$LabNumber'";
+
+$micro_details_result = pg_query($pg_con, $micro_details_info);
+// Check if the query was successful
+if ($micro_details_result) {
+    // Fetch the results (if any)
+    while ($row = pg_fetch_assoc($micro_details_result)) {
+        // Process each row as needed
+        $description = $row['description'];
+        $description_list .= $description . "<br>";
+        // Store the patient information in a session variable for later use
+        $_SESSION['description_list'] = $description_list;
+    }
+} else {
+    // Handle query error
+    die("Query failed for micro_details: " . pg_last_error());
+}
+
+$diagnosis_details_info  = "SELECT  description FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
+
+$diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
+// Check if the query was successful
+if ($diagnosis_details_result) {
+    // Fetch the results (if any)
+    while ($row = pg_fetch_assoc($diagnosis_details_result)) {
+        // Process each row as needed
+        $description = $row['description'];
+        $diagnosis_description_list .= $description . "<br>";
+        // Store the patient information in a session variable for later use
+        $_SESSION['diagnosis_description_list'] = $diagnosis_description_list;
+    }
+} else {
+    // Handle query error
+    die("Query failed for diagnosis_details: " . pg_last_error());
+}
+
+// end of sql operations
+
 
 $tbl = <<<EOD
 <table border="0" cellpadding="2" cellspacing="2" nobr="true">
  <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Micro Description:</td>
-  <td style="text-align: left; width: 70%;">Sections of the breast tissue show marked hyalinization, fibrosis, infiltration of chronic inflammatory cells,   
+  <td style="text-align: left; font-weight: bold; width: 25%;">Microscopic Description:</td>
+  <td style="text-align: left; width: 70%;">$description_list  
   </td>
  </tr>
  <tr>
   <td style="text-align: left; font-weight: bold; width: 25%;">Diagnosis:</td>
-  <td style="text-align: left; width: 70%;">Left breast with axillary tail, mastectomy: 
-  - No residual tumor
-  - Fibrosis and foreign-body giant cell reaction.
-  - Complete therapeutic response to breast and lymph node.
+  <td style="text-align: left; width: 70%;">$diagnosis_description_list
   </td>
  </tr>
 </table>
@@ -507,26 +557,41 @@ EOD;
 
 $pdf->writeHTML($tbl, true, false, false, false, '');
 
-$tbl = <<<EOD
-<table border="0" cellpadding="1" cellspacing="1" align="center">
 
+
+$signaturesTableHTML = <<<EOD
+<table border="0" cellpadding="1" cellspacing="1" align="center">
  <tr nobr="true">
   <td style="text-align: left; font-weight: bold; width: 35%;"><br /><br /><br/>Dr.Md.Mahabub Alam</td>
-  
   <td style="text-align: right; font-weight: bold; width: 60%;"><br /><br /><br/>Prof. Dr. Md. Aminul Islam Khan</td>
  </tr>
- 
  <tr nobr="true">
   <td style="text-align: left; width: 28%;">MBBS, MD(Pathology, BSMMU)<br/>Junior Consultant, A I Khan Lab Ltd</td>
- 
   <td style="text-align: right; width: 74%;">MBBS (DMC), Board Certified in Pathology<br/>Chief Consultant, A I Khan Lab Ltd.</td>
  </tr>
 </table>
 EOD;
 
 
+ 
+// Check if there's enough space for the signatures table
+$spaceNeeded = $pdf->getStringHeight($signaturesTableHTML, '', $pdf->getPageWidth());
+$spaceAvailable = $pdf->getPageHeight() - $pdf->GetY();
+$bottomMargin = 80; // Adjust this value as needed
 
-$pdf->writeHTML($tbl, true, false, false, false, '');
+// Check if there's enough space on the current page
+if ($spaceNeeded > $spaceAvailable - $bottomMargin) {
+    // Not enough space, add a new page
+    $pdf->AddPage();
+}
+
+// Position the cursor at the bottom margin
+$pdf->SetY($pdf->getPageHeight() - $bottomMargin);
+
+// Write the signatures table HTML
+$pdf->writeHTML($signaturesTableHTML, true, false, false, false, '');
+
+
 
 $style = array(
     'width' => 10, // Initial width value
@@ -545,8 +610,6 @@ $centerX = ($pdf->getPageWidth() - $newWidth) / 2; // Adjust center based on new
 
 // Add the QR code at the bottom center with new dimensions
 $pdf->write2DBarcode('PT2402-00335', 'QRCODE,Q', $centerX, $bottomY, $newWidth, $newHeight, $style, 'N');
-
-
 
 // Get the PDF content as a string  
 $pdfContent = $pdf->Output('', 'S');
