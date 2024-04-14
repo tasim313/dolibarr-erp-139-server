@@ -202,10 +202,15 @@ foreach ($managements as $management) {
         print('<div class="table-container">');
         print('<h2>Doctors List</h2>');
         print('<table id="customers">');
-        print('<tr><th>Name</th><th>Login Name</th></tr>');
+        print('<tr><th>Name</th><th>Login Name</th><th>Designation</th></tr>');
         
         foreach ($doctors as $doctor) {
-            print('<tr><td>' . $doctor['doctor_name'] . '</td><td>' . $doctor['doctor_username'] . '</td></tr>');
+            print('<tr>
+            <td>' . $doctor['doctor_name'] . 
+            '</td><td>' . $doctor['doctor_username'] . 
+            '</td><td><a href="doctor_designation.php?username=' . $doctor['doctor_username'] . '"><button onclick="myFunction()">Edit</button>
+            </a>
+            </tr>');
         }
         print('</table>');
         print('</div>');

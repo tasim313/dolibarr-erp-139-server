@@ -772,4 +772,52 @@ function get_patient_invoice_number($lab_number){
 
 }
 
+
+function get_single_doctor_information($username) {
+    global $pg_con;
+
+    $sql = "SELECT rowid, firstname, lastname, login FROM llx_user 
+            WHERE login = '$username'";
+    $result = pg_query($pg_con, $sql);
+
+    $doctors = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $doctors[] = ['doctor_name' =>$row['firstname'] . ' ' . $row['lastname'], 'doctor_username' => $row['login'], 'userId' => $row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $doctors;
+}
+
+function get_single_doctor_details($username) {
+    global $pg_con;
+
+    $sql = "select username, doctor_name, education, designation 
+            from llx_doctor_degination
+            WHERE username = '$username'";
+    $result = pg_query($pg_con, $sql);
+
+    $doctors = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $doctors[] = ['doctor_name' =>$row['doctor_name'], 'username' => $row['username'], 
+            'education' => $row['education'], 'designation' => $row['designation']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $doctors;
+}
+
+
 ?>

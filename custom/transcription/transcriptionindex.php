@@ -255,7 +255,7 @@ print('#searchInput {
 print("</style>");
 
 
-print load_fiche_titre($langs->trans("TranscriptionArea"), '', 'transcription.png@transcription');
+print load_fiche_titre($langs->trans("Transcription Area"), '', 'transcription.png@transcription');
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
@@ -315,7 +315,7 @@ $gross_list = get_done_gross_list();
 if ($hasTranscriptionist) {
     print '<div class="row">';
     print('<div class="column">');
-    print('<h2>Gross List</h2>');
+    print('<h2>Transcription List</h2>');
     print('<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for lab numbers...">');
     print('<table id="pendingTable">');
     print('<tr>
