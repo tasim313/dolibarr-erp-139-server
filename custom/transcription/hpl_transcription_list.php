@@ -328,6 +328,10 @@ if ($hasTranscriptionist) {
             <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
         </tr>
         <tr>
+            <td>Doctor Signature</td>
+            <td><a href="doctor_signature.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
+        </tr>
+        <tr>
             <td>Report</td>
             <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
         </tr>
