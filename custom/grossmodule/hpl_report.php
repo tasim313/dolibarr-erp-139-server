@@ -557,20 +557,97 @@ EOD;
 
 $pdf->writeHTML($tbl, true, false, false, false, '');
 
+// sql opertaion for dynamic data 
+
+$assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+dd.designation as designation
+FROM llx_doctor_degination AS dd
+INNER JOIN llx_doctor_assisted_by_signature AS ds ON dd.username = ds.doctor_username
+WHERE ds.lab_number  = '$LabNumber'";
+
+$assisted_by_result = pg_query($pg_con, $assisted_by);
+// Check if the query was successful
+if ($assisted_by_result) {
+    // Fetch the results (if any)
+    while ($row = pg_fetch_assoc($assisted_by_result)) {
+        // Process each row as needed
+        $assisted_doctor_name = $row['doctor_name'];
+        $assisted_education = $row['education'];
+        $assisted_designation = $row['designation'];
+        // Store the assisted in a session variable for later use
+        $_SESSION['doctor_name'] = $assisted_doctor_name;
+        $_SESSION['education'] = $assisted_education;
+        $_SESSION['designation '] = $assisted_designation;
+    }
+} else {
+    // Handle query error
+    die("Query failed for assisted_by: " . pg_last_error());
+}
+
+$finalized_by_info  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+                            dd.designation as designation
+                            FROM llx_doctor_degination AS dd
+                            INNER JOIN llx_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
+                            WHERE ds.lab_number = '$LabNumber'";
+
+$finalized_by_info_result = pg_query($pg_con, $finalized_by_info);
+// Check if the query was successful
+if ($finalized_by_info_result) {
+    // Fetch the results (if any)
+    while ($row = pg_fetch_assoc($finalized_by_info_result)) {
+        // Process each row as needed
+        $finalized_by_doctor_name = $row['doctor_name'];
+        $finalized_by_education = $row['education'];
+        $finalized_by_designation = $row['designation'];
+        // Store the assisted in a session variable for later use
+        $_SESSION['doctor_name'] = $finalized_by_doctor_name;
+        $_SESSION['education'] = $finalized_by_education;
+        $_SESSION['designation '] = $finalized_by_designation;
+    }
+} else {
+    // Handle query error
+    die("Query failed for finalized_by: " . pg_last_error());
+}
+
+// end of sql operations
+
+$signaturesTableHTML = '<style>
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-table th, .custom-table td {
+  padding: 8px;
+  text-align: left;
+}
+
+.custom-table th {
+  font-weight: bold;
+}
 
 
-$signaturesTableHTML = <<<EOD
-<table border="0" cellpadding="1" cellspacing="1" align="center">
- <tr nobr="true">
-  <td style="text-align: left; font-weight: bold; width: 35%;"><br /><br /><br/>Dr.Md.Mahabub Alam</td>
-  <td style="text-align: right; font-weight: bold; width: 60%;"><br /><br /><br/>Prof. Dr. Md. Aminul Islam Khan</td>
- </tr>
- <tr nobr="true">
-  <td style="text-align: left; width: 28%;">MBBS, MD(Pathology, BSMMU)<br/>Junior Consultant, A I Khan Lab Ltd</td>
-  <td style="text-align: right; width: 74%;">MBBS (DMC), Board Certified in Pathology<br/>Chief Consultant, A I Khan Lab Ltd.</td>
- </tr>
-</table>
-EOD;
+</style>
+
+<table class="custom-table">
+<tr>
+  <th colspan="2">'.$assisted_doctor_name.'</th>
+  <th colspan="2"></th>
+  <th colspan="2">'.$finalized_by_doctor_name.'</th>
+</tr>
+<tr>
+<th colspan="2">'.$assisted_education.'</th>
+<th colspan="2"></th>
+<th colspan="2">'.$finalized_by_education.'</th>
+</tr>
+<tr>
+  <th colspan="2">'.$assisted_designation.'</th>
+  <th colspan="2"></th>
+  <th colspan="2">'.$finalized_by_designation.'</th>
+ 
+</tr>
+</table>';
+
 
 
  
