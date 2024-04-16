@@ -632,18 +632,18 @@ $signaturesTableHTML = '<style>
 <table class="custom-table">
 <tr>
   <th colspan="2">'.$assisted_doctor_name.'</th>
-  <th colspan="2"></th>
-  <th colspan="2">'.$finalized_by_doctor_name.'</th>
+  
+  <th colspan="2" style="text-align:center">'.$finalized_by_doctor_name.'</th>
 </tr>
 <tr>
 <th colspan="2">'.$assisted_education.'</th>
-<th colspan="2"></th>
-<th colspan="2">'.$finalized_by_education.'</th>
+
+<th colspan="2" style="text-align:right-center">'.$finalized_by_education.'</th>
 </tr>
 <tr>
   <th colspan="2">'.$assisted_designation.'</th>
-  <th colspan="2"></th>
-  <th colspan="2">'.$finalized_by_designation.'</th>
+  
+  <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
  
 </tr>
 </table>';
@@ -686,7 +686,7 @@ $newHeight = $style['height'] * 1.5; // Increase height by 50%
 $centerX = ($pdf->getPageWidth() - $newWidth) / 2; // Adjust center based on new width
 
 // Add the QR code at the bottom center with new dimensions
-$pdf->write2DBarcode('PT2402-00335', 'QRCODE,Q', $centerX, $bottomY, $newWidth, $newHeight, $style, 'N');
+$pdf->write2DBarcode($code_client, 'QRCODE,Q', $centerX, $bottomY, $newWidth, $newHeight, $style, 'N');
 
 // Get the PDF content as a string  
 $pdfContent = $pdf->Output('', 'S');
