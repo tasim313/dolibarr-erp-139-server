@@ -21,7 +21,18 @@ $dolibarr_main_db_type='pgsql';
 $dolibarr_main_db_character_set='UTF8';
 $dolibarr_main_db_collation='en_US.utf8';
 // Authentication settings
-$dolibarr_main_authentication='dolibarr';
+//$dolibarr_main_authentication='dolibarr';
+$dolibarr_main_authentication='ldap,dolibarr';   // To be able to login with both the LDAP or the Dolibarr password (if there is problem with the LDAP server, keep a non LDAP password for one admin user !)
+$dolibarr_main_auth_ldap_host='ldap://192.168.1.206'; // Plusieurs serveurs peuvent être ajouter en séparant par une virgule.
+$dolibarr_main_auth_ldap_port='389';    // Port
+$dolibarr_main_auth_ldap_version='3';
+$dolibarr_main_auth_ldap_servertype='openldap';  // openldap, activedirectory or egroupware
+$dolibarr_main_auth_ldap_login_attribute='uid';  // Ex: uid or samaccountname for active directory
+$dolibarr_main_auth_ldap_dn='ou=Department,dc=prantor,dc=local'; // Ex: ou=users,dc=my-domain,dc=com
+//$dolibarr_main_auth_ldap_filter = '';            // If defined, two previous parameters are not used to find a user into LDAP. Ex: (uid=%1%) or &(uid=%1%)(isMemberOf=$
+$dolibarr_main_auth_ldap_admin_login='uid=Manager,dc=prantor,dc=local';     // Required only if anonymous bind disabled. Ex: cn=admin,dc=example,dc=com
+$dolibarr_main_auth_ldap_admin_pass='secret';            // Required only if anonymous bind disabled. Ex: secret
+$dolibarr_main_auth_ldap_debug='false';
 
 //$dolibarr_main_demo='autologin,autopass';
 // Security settings
