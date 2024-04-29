@@ -41,11 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$result) { 
-            $error_message = "Error updating data for section " . ($i + 1) . ": " . pg_last_error($pg_con);
+            $error_message = "Error updating data for section : " . pg_last_error($pg_con);
             error_log($error_message);
             echo "<script>alert('$error_message');</script>";
         } else {
-            echo '<script>alert("Data for section ' . ($i + 1) . ' updated successfully!");</script>';
+            echo '<script>alert("Data for section  updated successfully!");</script>';
         }
 
     // Redirect to the summary page after updating all data
