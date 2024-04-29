@@ -59,84 +59,15 @@ $specimen_count_value = number_of_specimen($GrossId);
 
 $alphabet_string = numberToAlphabet($specimen_count_value); 
 print("<div class='container'>");
-print("<p> Specimen : " . $alphabet_string . "</p>");
-
-
-echo '<form method="post">';
-print '<input type="hidden" name="token" value="'.newToken().'">';
 
 for ($i = 1; $i <= $specimen_count_value; $i++) {
     $specimenLetter = chr($i + 64); 
+    $button_id =  "add-more-" . $i ;
     echo '<label for="specimen' . $i . '">Specimen ' . $specimenLetter . ': </label>';
-    echo '<input type="text" name="specimen' . $i . '" id="specimen' . $i . '" required>';
-    echo '<br>';
+    echo '<button type="submit" id="' . $button_id . '" data-specimen-letter="' . $specimenLetter . '" onclick="handleButtonClick(this)">Generate Section Codes</button>';
+    echo '<br><br>';
 }
-print("<br>");
-echo '<input type="submit" value="Generate Section Codes">';
-print("<br><br><br>");
-echo '</form>';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-   
-
-    $sectionCodes = [];
-    $cassetteNumbers = [];
-    $descriptions = [];
-
-    $allFieldsFilled = true;
-    for ($i = 1; $i <= $specimen_count_value; $i++) {
-        $specimenInput = $_POST['specimen' . $i];
-        if (empty($specimenInput)) {
-            $allFieldsFilled = false;
-            break;
-        }
-    }
-
-    if ($allFieldsFilled) {
-        
-        for ($i = 1; $i <= $specimen_count_value; $i++) {
-            $specimenInput = $_POST['specimen' . $i];
-            $specimenSectionDescription = isset($_POST['specimen_section_description']) ? $_POST['specimen_section_description'] : ''; 
-            
-            if (is_numeric($specimenInput) && $specimenInput > 0) {
-                $specimenLetter = chr($i + 64);
-
-                
-                for ($j = 1; $j <= $specimenInput; $j++) {
-                    $cassetteNumber = $specimenLetter . $j . '-' . $last_value . '/24';
-                    $sectionCodes[] = $specimenLetter . $j;
-                    $cassetteNumbers[] = $cassetteNumber;
-                    $descriptions[] = $specimenSectionDescription; 
-                }
-            }
-        }
-
-        
-        echo '<h2>Generated Section Codes:</h2>';
-        echo '<form method="post" action="gross_specimen_section_create.php">';
-        for ($k = 0; $k < count($sectionCodes); $k++) {
-          $GrossId = $_GET['fk_gross_id'];
-          $specimen_section_description_id = 'specimen_section_description' . $k;
-          echo '<input type="hidden" name="fk_gross_id[]" value="' . $GrossId . '">';
-          echo 'Section Code: ' . $sectionCodes[$k] . '<br>';
-          echo '<br>';
-          echo 'Cassette Number: ' . $cassetteNumbers[$k] . '<br>';
-          echo '<input type="hidden" name="sectionCode[]" value="' . $sectionCodes[$k] . '">';
-          echo '<input type="hidden" name="cassetteNumber[]" value="' . $cassetteNumbers[$k] . '">';
-          echo '<label for="' . $specimen_section_description_id . '">Description: </label>';
-          echo '<textarea name="specimen_section_description[]" id="' . $specimen_section_description_id . '" required>' . $descriptions[$k] . '</textarea><br>'; 
-          echo '<br><br>';
-      }
-        print("<br>");
-        echo '<input type="submit" value="Next">';
-        print("<br><br><br>");
-        echo '</form>';
-        print('</div>');
-    } else {
-        echo '<p style="color: red;">Please fill in all required fields before submitting.</p>';
-    }
-}
 
 ?>
 
@@ -173,6 +104,19 @@ input[type=submit]:hover {
   background-color: rgb(118, 145, 225);
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
+button[type=submit] {
+        background-color: rgb(118, 145, 225);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: center;
+        transition: box-shadow 0.3s ease;
+    }
+button[type=submit]:hover {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
+}
 
 .container {
   border-radius: 5px;
@@ -208,27 +152,108 @@ input[type=submit]:hover {
 }
 </style>
 
+
+<!-- This div Generate automatic Form By Using Script Tag -->
+<form id='specimen_section_form' method="post" action="gross_specimen_section_create.php">
+    <div id="fields-container"> 
+    </div>
+    <br>
+    <button id="saveButton" style="display: none;">Save</button>
+</form>
+    
 <script>
+    const buttonClickCounts = {};
+    
+    document.getElementById("saveButton").addEventListener("click", function(event) {
+        // Prevent the default form submission behavior
+        event.preventDefault();
 
-document.addEventListener('DOMContentLoaded', function() {
-  fetch('shortcuts.json')
-      .then(response => response.json())
-      .then(shortcuts => {
-          document.querySelectorAll('textarea[name="specimen_section_description[]"]').forEach(textarea => {
-              textarea.addEventListener('input', function() {
-                  let cursorPosition = this.selectionStart;
-                  for (let shortcut in shortcuts) {
-                      if (this.value.includes(shortcut)) {
-                          this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-                          this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-                          break;
-                      }
-                  }
-              });
-          });
-      })
-      .catch(error => console.error('Error loading shortcuts:', error));
-});
+        // Get the form element
+        const form = document.getElementById("specimen_section_form");
 
+        // Submit the form
+        form.submit();
+    });
 
+    function handleButtonClick(button) {
+        const buttonId = button.id;
+        const specimenIndex = button.id.split("-")[1]; 
+        const specimenLetter = button.getAttribute('data-specimen-letter');
+        buttonClickCounts[buttonId] = (buttonClickCounts[buttonId] || 0) + 1;
+        const section_text = 'Section from the ';
+        const specimen_count_value = <?php echo $specimen_count_value; ?>;
+        const last_value = "<?php echo $last_value; ?>";
+        const fk_gross_id = "<?php echo $GrossId;?>";
+        const fieldsContainer = document.getElementById("fields-container");
+        const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
+        const currentYear = new Date().getFullYear();
+        const lastTwoDigits = currentYear.toString().slice(-2);
+
+        // Create a new field set for each entry
+        const fieldSet = document.createElement("fieldset");
+        fieldSet.classList.add("field-group"); // Add a class for styling (optional)
+        let sectionCodes = [];
+        let cassetteNumbers = [];
+        let descriptions = [];
+
+        const fkGrossIdInput = document.createElement("input");
+        fkGrossIdInput.type = "hidden";
+        fkGrossIdInput.name = "fk_gross_id"; // Set the name attribute to identify the input
+        fkGrossIdInput.value = "<?php echo $GrossId;?>";
+        fieldSet.appendChild(fkGrossIdInput);
+            
+        // Create the label and input for Section Code
+           
+        const sectionCodeLabel = document.createElement("label");
+        sectionCodeLabel.textContent = 'Section Code: ' + specimenLetter + buttonClickCounts[buttonId];
+        const inputSectionCode = document.createElement("input");
+        inputSectionCode.type = "hidden";
+        inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
+        inputSectionCode.value = specimenLetter + buttonClickCounts[buttonId];
+        fieldSet.appendChild(sectionCodeLabel);
+        fieldSet.appendChild(inputSectionCode);
+
+        // Create the label and input for cassetteNumbers
+        const cassetteNumberLabel = document.createElement("label");
+        cassetteNumberLabel.textContent = "Cassette Number: " + specimenLetter + buttonClickCounts[buttonId] + '-' + last_value + '/' + lastTwoDigits;
+        const cassetteNumberInput = document.createElement("input");
+        cassetteNumberInput.type = "hidden";
+        cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
+        cassetteNumberInput.value = specimenLetter + buttonClickCounts[buttonId] + '-' + last_value + '/' + lastTwoDigits;
+        fieldSet.appendChild(cassetteNumberLabel);
+        fieldSet.appendChild(cassetteNumberInput );
+
+        // Create the label and input for Description
+        const descriptionLabel = document.createElement("label");
+        descriptionLabel.textContent = "Description:";
+        const descriptionInput = document.createElement("input");
+        descriptionInput.type = "text"; // Use "text" for Description input
+        descriptionInput.name = "specimen_section_description[]"; // Assign unique name based on count
+        descriptionInput.value = section_text;
+        descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json'); // Specify the shortcut JSON file
+        descriptionInput.addEventListener('input', function() {
+            const shortcutsFile = this.getAttribute('data-shortcut-file');
+            fetch(shortcutsFile)
+                .then(response => response.json())
+                .then(shortcuts => {
+                    let cursorPosition = this.selectionStart;
+                    for (let shortcut in shortcuts) {
+                        if (this.value.includes(shortcut)) {
+                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                            break;
+                        }
+                    }
+                })
+                .catch(error => console.error('Error loading shortcuts:', error));
+        });
+        
+
+        const saveButton = document.getElementById("saveButton");
+        saveButton.style.display = "block";
+        
+        fieldSet.appendChild(descriptionLabel);
+        fieldSet.appendChild(descriptionInput);
+        fieldsContainer.appendChild(fieldSet);
+    }
 </script>

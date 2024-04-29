@@ -346,44 +346,6 @@ if ($hasTranscriptionist) {
 
 }
 
-if ($hasConsultants) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<h2>Gross List</h2>');
-    print('<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for lab numbers...">');
-    print('<table id="pendingTable">');
-    print('<tr>
-	<th>Lab Number</th>
-	<th>Patient Code</th>
-	<th>Gross Station Type</th>
-	<th>Assistant Name</th>
-	<th>Doctor Name</th>
-	<th>Created Date</th>
-	<th>Action</th></tr>');
-        
-    foreach ($gross_list_by_doctor as $list) {
-		$dateString = $list['gross_create_date'];
-        $date = new DateTime($dateString);
-        $formattedDate = $date->format('d F l Y');
-        print('
-        <tr><td>' . $list['lab_number'] . 
-        '</td><td>' . $list['patient_code'] . 
-        '</td><td>' . $list['gross_station_type'] . 
-        '</td><td>' . $list['gross_assistant_name'] . 
-		'</td><td>' . $list['gross_doctor_name'] .
-		'</td><td>' . $formattedDate .
-		'</td>
-		
-        <td><a href="gross_update.php?fk_gross_id=' . $list['gross_id']. '"><button>View</button></a></td></tr>
-        ');
-    }
-    print('</table>');
-    print('</div>');
-    print '</div>';
-    
-
-}
-
 print("<script>
 
 function searchTable() {

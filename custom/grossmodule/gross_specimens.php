@@ -87,7 +87,7 @@ input[type=submit] {
 
 input[type=submit]:hover {
   background-color: rgb(118, 145, 225);
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);`
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
 .container {
@@ -256,26 +256,30 @@ document.getElementById('click_to_convert').addEventListener(
 </script> -->
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
-  fetch('shortcuts.json')
-      .then(response => response.json())
-      .then(shortcuts => {
-          document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
-              textarea.addEventListener('input', function() {
-                  let cursorPosition = this.selectionStart;
-                  for (let shortcut in shortcuts) {
-                      if (this.value.includes(shortcut)) {
-                          this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-                          this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-                          break;
-                      }
-                  }
-              });
-          });
-      })
-      .catch(error => console.error('Error loading shortcuts:', error));
+    fetch('shortcuts.json')
+        .then(response => response.json())
+        .then(shortcuts => {
+            document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    let cursorPosition = this.selectionStart;
+                    for (let shortcut in shortcuts) {
+                        if (this.value.includes(shortcut)) {
+                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                            break;
+                        }
+                    }
+                });
+
+                textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault(); // Prevent default behavior of Enter key
+                        this.closest('form').submit(); // Submit the form containing the textarea
+                    }
+                });
+            });
+        })
+        .catch(error => console.error('Error loading shortcuts:', error));
 });
-
-
 </script>

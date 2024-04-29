@@ -21,13 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-   
+    $fk_gross_id = $_POST['fk_gross_id'];
+    $section_codes = $_POST['sectionCode'];
+    $specimen_section_descriptions = $_POST['specimen_section_description'];
+    $cassette_numbers = $_POST['cassetteNumber'];
 
-    for ($i = 0; $i < count($_POST['sectionCode']); $i++) {
-        $section_code = $_POST['sectionCode'][$i];
-        $specimen_section_description = $_POST['specimen_section_description'][$i];
-        $cassette_number = $_POST['cassetteNumber'][$i];
-        $fk_gross_id = $_POST['fk_gross_id'][$i];
+    // Insert each specimen section data
+    foreach ($section_codes as $key => $section_code) {
+        $specimen_section_description = $specimen_section_descriptions[$key];
+        $cassette_number = $cassette_numbers[$key];
+
         $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, $specimen_section_description, $cassette_number]);
 
         if (!$result) {
@@ -35,19 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Error inserting data.";
             exit();
         }
-        echo '<script>';
-        echo 'window.location.href = "gross_summary_of_section.php?fk_gross_id=' . $fk_gross_id . '";'; 
-        echo '</script>';
     }
+
+    echo '<script>';
+    echo 'window.location.href = "gross_summary_of_section.php?fk_gross_id=' . $fk_gross_id . '";'; 
+    echo '</script>';
 
     pg_close($pg_con);
 
-   
 } else {
     header("Location: gross_specimens.php");
     exit();
 }
-
-
-
 ?>

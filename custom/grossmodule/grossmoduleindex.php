@@ -351,10 +351,7 @@ if ($hasGrossAssistants) {
    print('<td>' .$total_assigned_task_pending. '</td>');
    print('<td>' .$total_assigned_task_complete. '</td>');
 }
-if ($hasConsultants) {
-  print('<td>' .$total_assigned_task_pending_by_doctor. '</td>');
-  print('<td>' .$total_assigned_task_complete_by_doctor. '</td>');
-}     
+    
 print('</tr>');
       
 print('</table>');
@@ -385,27 +382,7 @@ if ($hasGrossAssistants) {
     
 }
 
-if ($hasConsultants) {
-    print '<div class="row">';
-    print('<div class="column">');
-    print('<h2>Assigned List</h2>');
-    print('<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for lab numbers...">');
-    print('<table id="pendingTable">');
-    print('<tr><th>Lab Number</th><th>Assistant Name</th><th>Doctor Name</th><th>Status</th><th>Action</th></tr>');
-        
-    foreach ($doctors as $doctor) {
-        print('
-        <tr><td>' . $doctor['lab_number'] . 
-        '</td><td>' . $doctor['gross_assistant_name'] . 
-        '</td><td>' . $doctor['gross_doctor_name'] . 
-        '</td><td>' . $doctor['gross_status'] . '</td>
-        <td><a href="gross_create.php?lab_number=' . $doctor['lab_number'] . '&assistant_name=' .$doctor['gross_assistant_name']. '"><button>Start</button></a></td></tr>
-        ');
-    }
-    print('</table>');
-    print('</div>');
-    print '</div>';
-}
+
 print '</div><div class="fichetwothirdright">';
 
 

@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Redirect after successful update
         echo '<script>alert("Data updated successfully!");</script>';
         echo '<script>';
-        echo 'window.location.href = "list.php";';
+        // echo 'window.location.href = "list.php";';
         echo '</script>';
         exit();
     }

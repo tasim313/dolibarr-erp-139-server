@@ -38,14 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Execute the prepared statement with the parameters
         $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, $specimen_section_description, $cassette_number]);
 
-        if (!$result) {
+    }
+
+    if (!$result) { 
             $error_message = "Error updating data for section " . ($i + 1) . ": " . pg_last_error($pg_con);
             error_log($error_message);
             echo "<script>alert('$error_message');</script>";
         } else {
             echo '<script>alert("Data for section ' . ($i + 1) . ' updated successfully!");</script>';
         }
-    }
 
     // Redirect to the summary page after updating all data
     $fk_gross_id = $_POST['fk_gross_id'][0]; // Assuming fk_gross_id is the same for all sections

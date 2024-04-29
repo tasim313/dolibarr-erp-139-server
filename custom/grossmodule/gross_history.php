@@ -73,10 +73,8 @@ class MYPDF extends TCPDF {
         // Get the current date/time
         $currentDateTime = date('Y-m-d H:i:s');
 
-        $loggedInUser = isset($_SESSION['dol_login']) ? $_SESSION['dol_login'] : 'Unknown';
-       
         // Construct the footer content string for left side
-        $leftFooterContent = $loggedInUser . ' | '. $currentDateTime;
+        $leftFooterContent = $currentDateTime;
     
         // Get the page number information
         $pageNumberContent = 'Page ' . $this->getAliasNumPage() . ' Of ' . $this->getAliasNbPages();
@@ -106,9 +104,9 @@ $pdf = new MYPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8',
 // Set document information
 $pdf->SetCreator('A I KHAN LAB LTD');
 $pdf->SetAuthor('A I KHAN LAB LTD');
-$pdf->SetTitle('HISTOPATHOLOGY REPORT');
+$pdf->SetTitle('Gross Description');
 $pdf->SetSubject('DISPLAY');
-$pdf->SetKeywords('HISTOPATHOLOGY REPORT, DISPLAY, A I KHAN LAB LTD');
+$pdf->SetKeywords('Gross Description, DISPLAY, A I KHAN LAB LTD');
 
 $pdf->setPrintHeader(false);
 $pdf->setFooterData(array(0,64,0), array(0,64,128));
@@ -323,7 +321,7 @@ $pdf->writeHTMLCell(0, 0, '', '', $leftBarcodeHTML, 0, 1, false, true, 'C', true
 $h1Y = $pdf->GetY() - $verticalOffset;
 
 // Add the h1 tag
-$pdf->writeHTMLCell(0, 0, '', $h1Y, '<h1 style="text-align: center; font-style: bold; font-size: 14px; font-family: "URW Chancery L", cursive;">HISTOPATHOLOGY REPORT</h1>', 0, 1, false, true, 'C', true);
+$pdf->writeHTMLCell(0, 0, '', $h1Y, '<h1 style="text-align: center; font-style: bold; font-size: 14px; font-family: "URW Chancery L", cursive;">GROSS DESCRIPTION</h1>', 0, 1, false, true, 'C', true);
 
 // Update the current Y position
 $currentY = $pdf->GetY();
@@ -370,48 +368,6 @@ if ($Site_Of_Specimen_result) {
     die("Query failed for Site of Specimen Information: " . pg_last_error());
 }
 
-$clinical_details_info  = "select clinical_details from llx_clinical_details where lab_number = '$LabNumber'";
-
-$clinical_details_result = pg_query($pg_con, $clinical_details_info);
-// Check if the query was successful
-if ($clinical_details_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($clinical_details_result)) {
-        // Process each row as needed
-        $clinical_details = $row['clinical_details'];
-        
-        // Store the patient information in a session variable for later use
-        $_SESSION['clinical_details'] = $clinical_details;
-    }
-} else {
-    // Handle query error
-    die("Query failed for clinical_details: " . pg_last_error());
-}
-
-// end of sql operations
-
-// Write HTML content to PDF
-$pdf->writeHTML($htmlContent, true, false, true, false, '');
-$tbl_spceimen = <<<EOD
-<table border="0" cellpadding="2" cellspacing="2" nobr="true">
- 
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Site Of Specimen:</td>
-  <td style="text-align: left; width: 70%;">$specimen_list
-  </td>
- </tr>
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Clinical Details:</td>
-  <td style="text-align: left; width: 70%;">$clinical_details 
-  </td>
-  
- </tr>
- 
-</table>
-EOD;
-$pdf->writeHTML($tbl_spceimen, true, false, true, false, '');
-
-//  sql opertaion for dynamic data 
 $fk_gross_id = "SELECT gross_id FROM llx_gross WHERE lab_number = '$LabNumber'";
 
 $fk_gross_id_result = pg_query($pg_con, $fk_gross_id);
@@ -449,6 +405,7 @@ if ($gross_description_result) {
     die("Query failed for gross description Information: " . pg_last_error());
 }
 
+
 // Initialize variables to store section code and description pairs
 $section_pairs = array();
 
@@ -484,10 +441,17 @@ foreach ($section_pairs as $section_code => $specimen_section_description) {
 
 // Remove the trailing comma and space
 $section_code_list = rtrim($section_code_list, ', ');
+// end of sql operations
 
-// Construct the table HTML with the fetched section information
-$tbl = <<<EOD
-<table border="0" cellpadding="1" cellspacing="1" nobr="true">
+// Write HTML content to PDF
+$pdf->writeHTML($htmlContent, true, false, true, false, '');
+$tbl_spceimen = <<<EOD
+<table border="0" cellpadding="2" cellspacing="2" nobr="true">
+ <tr>
+  <td style="text-align: left; font-weight: bold; width: 25%;">Site Of Specimen:</td>
+  <td style="text-align: left; width: 70%;">$specimen_list
+  </td>
+ </tr>
  <tr>
   <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
   <td style="text-align: left; width: 70%;">$gross_description_list<span style="text-align: left; font-weight: bold;">Section Code:</span> 
@@ -496,163 +460,83 @@ $tbl = <<<EOD
  </tr>
 </table>
 EOD;
+$pdf->writeHTML($tbl_spceimen, true, false, true, false, '');
 
+//  sql opertaion for dynamic data 
 
-$pdf->writeHTML($tbl, true, false, false, false, '');
+$gross_history = "SELECT specimen_id, specimen, gross_description FROM llx_gross_specimen_history WHERE fk_gross_id = '$fk_gross_id'";
 
-
-// sql opertaion for dynamic data 
-
-$micro_details_info  = "SELECT  description FROM llx_micro WHERE lab_number = '$LabNumber'";
-
-$micro_details_result = pg_query($pg_con, $micro_details_info);
+$gross_history_result = pg_query($pg_con, $gross_history);
 // Check if the query was successful
-if ($micro_details_result) {
+if ($gross_history_result) {
     // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($micro_details_result)) {
+    while ($row = pg_fetch_assoc($gross_history_result)) {
         // Process each row as needed
-        $description = $row['description'];
-        $description_list .= $description . "<br>";
-        // Store the patient information in a session variable for later use
-        $_SESSION['description_list'] = $description_list;
+        $gross_history = $row['gross_description'];
+        $gross_history_list .= $gross_history . "<br>";
+        
+        // Store the gross information in a session variable for later use
+        $_SESSION['gross_history_list'] = $gross_history_list;
     }
 } else {
     // Handle query error
-    die("Query failed for micro_details: " . pg_last_error());
+    die("Query failed for gross history Information: " . pg_last_error());
 }
 
-$diagnosis_details_info  = "SELECT  description FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
 
-$diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
+// Initialize variables to store section code and description pairs
+$specimen_section_pairs_history = array();
+
+// Fetch section information from the database
+$specimen_sections_info_history = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_gross_specimen_section_history WHERE fk_gross_id = $1";
+
+$stmt = pg_prepare($pg_con, "specimen_sections_info_query", $specimen_sections_info_history);
+
+$specimen_sections_info_history_result = pg_execute($pg_con, "specimen_sections_info_query", array($fk_gross_id));
+
 // Check if the query was successful
-if ($diagnosis_details_result) {
+if ($specimen_sections_info_history_result) {
     // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($diagnosis_details_result)) {
-        // Process each row as needed
-        $description = $row['description'];
-        $diagnosis_description_list .= $description . "<br>";
-        // Store the patient information in a session variable for later use
-        $_SESSION['diagnosis_description_list'] = $diagnosis_description_list;
+    while ($row = pg_fetch_assoc($specimen_sections_info_history_result)) {
+        // Store section code and description pairs
+        $specimen_section_code_history = $row['section_code'];
+        $specimen_specimen_section_description_history = $row['specimen_section_description'];
+        $specimen_section_pairs_history[$specimen_section_code_history] = $specimen_specimen_section_description_history;
     }
+
+    // Store the section information in session variables for later use
+    $_SESSION['specimen_section_pairs_history'] = $specimen_section_pairs_history;
 } else {
     // Handle query error
-    die("Query failed for diagnosis_details: " . pg_last_error());
+    die("Query failed for sections_info: " . pg_last_error());
 }
 
-// end of sql operations
+// Construct the section code and description list
+$abc = '';
+foreach ($specimen_section_pairs_history as $specimen_section_code_history => $specimen_specimen_section_description_history) {
+    $abc .= "<li>$specimen_section_code_history: $specimen_specimen_section_description_history</li>";
+}
+
+// Remove the trailing comma and space
+$abc = rtrim($abc, ', ');
 
 
+// Construct the table HTML with the fetched section information
 $tbl = <<<EOD
-<table border="0" cellpadding="2" cellspacing="2" nobr="true">
+<table border="0" cellpadding="1" cellspacing="1" nobr="true">
  <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Microscopic Description:</td>
-  <td style="text-align: left; width: 70%;">$description_list  
-  </td>
- </tr>
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Diagnosis:</td>
-  <td style="text-align: left; width: 70%;">$diagnosis_description_list
+  <td style="text-align: left; font-weight: bold; width: 25%;">Gross History:</td>
+  <td style="text-align: left; width: 70%;">$gross_history_list<span style="text-align: left; font-weight: bold;">Section Code:</span> 
+  $abc
   </td>
  </tr>
 </table>
 EOD;
 
+
 $pdf->writeHTML($tbl, true, false, false, false, '');
 
-// sql opertaion for dynamic data 
 
-$assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-dd.designation as designation
-FROM llx_doctor_degination AS dd
-INNER JOIN llx_doctor_assisted_by_signature AS ds ON dd.username = ds.doctor_username
-WHERE ds.lab_number  = '$LabNumber'";
-
-$assisted_by_result = pg_query($pg_con, $assisted_by);
-// Check if the query was successful
-if ($assisted_by_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($assisted_by_result)) {
-        // Process each row as needed
-        $assisted_doctor_name = $row['doctor_name'];
-        $assisted_education = $row['education'];
-        $assisted_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $assisted_doctor_name;
-        $_SESSION['education'] = $assisted_education;
-        $_SESSION['designation '] = $assisted_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for assisted_by: " . pg_last_error());
-}
-
-$finalized_by_info  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-                            dd.designation as designation
-                            FROM llx_doctor_degination AS dd
-                            INNER JOIN llx_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
-                            WHERE ds.lab_number = '$LabNumber'";
-
-$finalized_by_info_result = pg_query($pg_con, $finalized_by_info);
-// Check if the query was successful
-if ($finalized_by_info_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($finalized_by_info_result)) {
-        // Process each row as needed
-        $finalized_by_doctor_name = $row['doctor_name'];
-        $finalized_by_education = $row['education'];
-        $finalized_by_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $finalized_by_doctor_name;
-        $_SESSION['education'] = $finalized_by_education;
-        $_SESSION['designation '] = $finalized_by_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for finalized_by: " . pg_last_error());
-}
-
-// end of sql operations
-
-$signaturesTableHTML = '<style>
-.custom-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.custom-table th, .custom-table td {
-  padding: 8px;
-  text-align: left;
-}
-
-.custom-table th {
-  font-weight: bold;
-}
-
-
-</style>
-
-<table class="custom-table">
-<tr>
-  <th colspan="2">'.$assisted_doctor_name.'</th>
-  
-  <th colspan="2" style="text-align:center">'.$finalized_by_doctor_name.'</th>
-</tr>
-<tr>
-<th colspan="2">'.$assisted_education.'</th>
-
-<th colspan="2" style="text-align:right-center">'.$finalized_by_education.'</th>
-</tr>
-<tr>
-  <th colspan="2">'.$assisted_designation.'</th>
-  
-  <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
- 
-</tr>
-</table>';
-
-
-
- 
 // Check if there's enough space for the signatures table
 $spaceNeeded = $pdf->getStringHeight($signaturesTableHTML, '', $pdf->getPageWidth());
 $spaceAvailable = $pdf->getPageHeight() - $pdf->GetY();

@@ -493,4 +493,29 @@ function get_doctor_finalized_by_signature_details($labNumber) {
     return $existingdata;
 }
 
+
+function get_report_delivery_date_list() {
+    global $pg_con;
+    $existingdata = array();
+
+    $sql = "select ref, date_commande, date_livraison from llx_commande where date_commande BETWEEN '2024-04-01' AND CURRENT_DATE";
+
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'ref' => $row['ref'],
+                'date_commande' => $row['date_commande'],
+                'date_livraison' => $row['date_livraison']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>

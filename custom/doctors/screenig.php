@@ -1,8 +1,10 @@
 <?php 
-// Load Dolibarr environment
 include('connection.php');
-include('common_function.php');
+include('../transcription/common_function.php');
 include('../grossmodule/gross_common_function.php');
+include('list_of_function.php');
+
+// Load Dolibarr environment
 $res = 0;
 // Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
@@ -36,13 +38,13 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 
 // Load translation files required by the page
-$langs->loadLangs(array("transcription@transcription"));
+$langs->loadLangs(array("doctors@doctors"));
 
 $action = GETPOST('action', 'aZ09');
 
 
 // Security check
-// if (! $user->rights->transcription->myobject->read) {
+// if (! $user->rights->doctors->myobject->read) {
 // 	accessforbidden();
 // }
 $socid = GETPOST('socid', 'int');
@@ -61,7 +63,6 @@ $now = dol_now();
 
 // None
 
-
 /*
  * View
  */
@@ -69,41 +70,37 @@ $now = dol_now();
 $form = new Form($db);
 $formfile = new FormFile($db);
 
-llxHeader("", $langs->trans("TranscriptionArea"));
+llxHeader("", $langs->trans("DoctorsArea"));
 
 $loggedInUserId = $user->id;
 $loggedInUsername = $user->login;
 
 $userGroupNames = getUserGroupNames($loggedInUserId);
 
-$hasTranscriptionist = false;
 $hasConsultants = false;
 
 foreach ($userGroupNames as $group) {
-    if ($group['group'] === 'Transcription') {
-        $hasTranscriptionist = true;
-    } elseif ($group['group'] === 'Consultants') {
+    if ($group['group'] === 'Consultants') {
         $hasConsultants = true;
-    }
+    } 
 }
 
 // Access control using switch statement
 switch (true) {
-  case $hasTranscriptionist:
-      // Transcription  has access, continue with the page content...
-      break;
   case $hasConsultants:
-      // Doctor has access, continue with the page content...
+      // Consultants  has access, continue with the page content...
       break;
   default:
       echo "<h1>Access Denied</h1>";
       echo "<p>You are not authorized to view this page.</p>";
       exit; // Terminate script execution
 }
-$LabNumber = $_GET['lab_number'];
+
+
+$fk_gross_id = $_GET['fk_gross_id'];
+$LabNumber = get_lab_number($fk_gross_id);
 $LabNumberWithoutPrefix = substr($LabNumber, 3);
-$patient_information = get_patient_details_information($LabNumberWithoutPrefix);
-$specimenIformation   = get_gross_specimens_list($LabNumberWithoutPrefix);
+
 print("<style>
 
 * {
@@ -294,42 +291,18 @@ button {
 </style>");
 
 
-if ($hasTranscriptionist) {
+if ($hasConsultants) {
     print '<div class="row">';
     print('<div class="column">');
     print('<table id="pendingTable">');
     print('<tr>
-	<th>Histopathology Report Modify</th>
-	
-	<th>Action</th></tr>');
+            <th>Histopathology </th>
+            <th>Action</th>
+        </tr>');
     print('
         <tr>
-            <td>Patient Information</td>
-            <td><a href="patient_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Specimen Information</td>
-            <td><a href="specimen_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Clinical Details</td>
-            <td><a href="clinical_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Gross Description</td>
-            <td><a href="gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Micro Description</td>
-            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Diagnosis Description</td>
-            <td><a href="diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
-        </tr>
-        <tr>
-            <td>Doctor Signature</td>
-            <td><a href="doctor_signature.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
+            <td>Gross History</td>
+            <td><a href="../grossmodule/gross_history.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
         </tr>
         <tr>
             <td>Report</td>
@@ -342,5 +315,7 @@ if ($hasTranscriptionist) {
     print('</div>');
     print '</div>';
 }
+
+
 
 ?>

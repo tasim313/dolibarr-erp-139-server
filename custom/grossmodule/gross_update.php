@@ -142,16 +142,13 @@ foreach ($specimens as $specimen) {
     echo '</div>';
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-print('<br>');
 echo '<input type="submit" value="Update">';
 echo '</form>';
-print("<br><br>");
-
 
 $sections = get_gross_specimen_section($fk_gross_id);
 
-print("<br><br>");
-print('<form method="post" action="update_gross_specimen_section.php">');
+print('<div id="form-container">');
+print('<form id="section-code-form" method="post" action="update_gross_specimen_section.php">');
 foreach ($sections as $section) {
     echo '<div class="row">';
     echo '<div class="col-25">';
@@ -179,14 +176,12 @@ foreach ($sections as $section) {
     echo '</div>';
     echo '</div>';
 }
-print('<br>');
 echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
 echo '<input type="submit" value="Update">';
 echo '</form>';
-print("<br><br>");
+print("</div>");
 
 $summaries = get_gross_summary_of_section($fk_gross_id);
-print("<br><br>");
 print('<form method="post" action="update_gross_summary.php">');
 foreach ($summaries as $summary) {
     echo '<div class="row">';
@@ -208,7 +203,6 @@ foreach ($summaries as $summary) {
     echo '<input type="hidden" name="gross_summary_id" value="' . htmlspecialchars($summary['gross_summary_id']) . '">';
     echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-print('<br>');
 echo '<input type="submit" value="Update">';
 echo '</form>';
 
@@ -231,6 +225,13 @@ document.addEventListener('DOMContentLoaded', function() {
                           break;
                       }
                   }
+              });
+
+              textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault(); // Prevent default behavior of Enter key
+                        this.closest('form').submit(); // Submit the form containing the textarea
+                    }
               });
           });
       })
@@ -258,6 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
                       }
                   }
               });
+            textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault(); // Prevent default behavior of Enter key
+                        this.closest('form').submit(); // Submit the form containing the textarea
+                    }
+            });
+
           });
       })
       .catch(error => console.error('Error loading shortcuts:', error));
@@ -296,7 +304,16 @@ fetch('shortcuts.json')
         document.getElementById('shortcutInput').addEventListener('input', function() {
             handleShortcutInput(this);
         });
-    })
+        // Listen for Enter key press event
+        document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault(); // Prevent default behavior of Enter key
+                        this.closest('form').submit(); // Submit the form containing the textarea
+                    }
+                });
+            });
+        })
     .catch(error => console.error('Error loading shortcuts:', error));
 </script>
 
@@ -330,6 +347,15 @@ fetch('shortcuts.json')
         document.getElementById('shortcutInput').addEventListener('input', function() {
             handleShortcutInput(this);
         });
-    })
+        
+        document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault(); // Prevent default behavior of Enter key
+                        this.closest('form').submit(); // Submit the form containing the textarea
+                    }
+                });
+            });
+        })
     .catch(error => console.error('Error loading shortcuts:', error));
 </script>

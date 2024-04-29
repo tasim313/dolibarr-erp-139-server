@@ -1,28 +1,10 @@
 <?php
-/* Copyright (C) 2001-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2015 Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@inodbox.com>
- * Copyright (C) 2015      Jean-François Ferry	<jfefe@aternatik.fr>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
- */
 
-/**
- *	\file       doctors/doctorsindex.php
- *	\ingroup    doctors
- *	\brief      Home page of doctors top menu
- */
+// database connection and function file
+include('connection.php');
+include('../transcription/common_function.php');
+include('../grossmodule/gross_common_function.php');
+include('list_of_function.php');
 
 // Load Dolibarr environment
 $res = 0;
@@ -83,7 +65,6 @@ $now = dol_now();
 
 // None
 
-
 /*
  * View
  */
@@ -93,85 +74,235 @@ $formfile = new FormFile($db);
 
 llxHeader("", $langs->trans("DoctorsArea"));
 
-print load_fiche_titre($langs->trans("DoctorsArea"), '', 'doctors.png@doctors');
+// print load_fiche_titre($langs->trans("DoctorsArea"), '', 'doctors.png@doctors');
+
+// CSS
+print("<style>");
+print(' .container {
+    margin: 20px;
+    padding: 10px;
+    border: 0px solid #ccc;
+}');
+print('* {
+    box-sizing: border-box;
+  }
+  
+  .row {
+    display: flex;
+    margin-left:-5px;
+    margin-right:-5px;
+  }
+  
+  .column {
+    flex: 50%;
+    padding: 5px;
+  }
+  
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    border: 1px solid #ddd;
+  }
+  
+  th, td {
+    text-align: left;
+    padding: 16px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }');
+print('.table-container {
+    width: 48%; /* Adjust the width of each table container */
+    overflow: auto; /* Add scrolling if needed */
+    margin: 0 1%; /* Add some margin between the tables */
+}');
+print('.table-container {
+    width: 48%; /* Adjust the width of each table container */
+    overflow: auto; /* Add scrolling if needed */
+    margin: 0 1%; /* Add some margin between the tables */
+}
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table-container th, .table-container td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}  
+  
+  ');
+
+print('#customers {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #customers td, #customers th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  #customers tr:nth-child(even){
+    background-color: #f2f2f2;
+  }
+  
+  #customers tr:hover {
+    background-color: #ddd;
+  }
+  
+  #customers th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #046aaa;
+    color: white;
+}');
+print('button {
+    background-color: rgb(118, 145, 225);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    float: right;
+    transition: box-shadow 0.3s ease;
+}');
+print('#pendingTable {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #pendingTable td, #pendingTable th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  #pendingTable tr:nth-child(even){
+    background-color: #f2f2f2;
+  }
+  
+  #pendingTable tr:hover {
+    background-color: #ddd;
+  }
+  
+  #pendingTable th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #046aaa;
+    color: white;
+}');
+print('#searchInput {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    font-size: 16px;
+    outline: none;
+  }
+  
+  #searchInput:focus {
+    border-color: #007bff; 
+  }');
+  print('#searchInputAssign {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    box-sizing: border-box;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    font-size: 16px;
+    outline: none;
+  }
+  
+  #searchInputAssign:focus {
+    border-color: #007bff; 
+  }'
+);
+print('.today {
+  color: red;
+}
+
+.tomorrow {
+  color: yellow;
+}');
+
+print("</style>");
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
+$loggedInUserId = $user->id;
+$loggedInUsername = $user->login;
 
-/* BEGIN MODULEBUILDER DRAFT MYOBJECT
-// Draft MyObject
-if (! empty($conf->doctors->enabled) && $user->rights->doctors->read)
-{
-	$langs->load("orders");
+$userGroupNames = getUserGroupNames($loggedInUserId);
 
-	$sql = "SELECT c.rowid, c.ref, c.ref_client, c.total_ht, c.tva as total_tva, c.total_ttc, s.rowid as socid, s.nom as name, s.client, s.canvas";
-	$sql.= ", s.code_client";
-	$sql.= " FROM ".MAIN_DB_PREFIX."commande as c";
-	$sql.= ", ".MAIN_DB_PREFIX."societe as s";
-	if (! $user->rights->societe->client->voir && ! $socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-	$sql.= " WHERE c.fk_soc = s.rowid";
-	$sql.= " AND c.fk_statut = 0";
-	$sql.= " AND c.entity IN (".getEntity('commande').")";
-	if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = ".((int) $user->id);
-	if ($socid)	$sql.= " AND c.fk_soc = ".((int) $socid);
+$hasConsultants = false;
 
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$total = 0;
-		$num = $db->num_rows($resql);
-
-		print '<table class="noborder centpercent">';
-		print '<tr class="liste_titre">';
-		print '<th colspan="3">'.$langs->trans("DraftMyObjects").($num?'<span class="badge marginleftonlyshort">'.$num.'</span>':'').'</th></tr>';
-
-		$var = true;
-		if ($num > 0)
-		{
-			$i = 0;
-			while ($i < $num)
-			{
-
-				$obj = $db->fetch_object($resql);
-				print '<tr class="oddeven"><td class="nowrap">';
-
-				$myobjectstatic->id=$obj->rowid;
-				$myobjectstatic->ref=$obj->ref;
-				$myobjectstatic->ref_client=$obj->ref_client;
-				$myobjectstatic->total_ht = $obj->total_ht;
-				$myobjectstatic->total_tva = $obj->total_tva;
-				$myobjectstatic->total_ttc = $obj->total_ttc;
-
-				print $myobjectstatic->getNomUrl(1);
-				print '</td>';
-				print '<td class="nowrap">';
-				print '</td>';
-				print '<td class="right" class="nowrap">'.price($obj->total_ttc).'</td></tr>';
-				$i++;
-				$total += $obj->total_ttc;
-			}
-			if ($total>0)
-			{
-
-				print '<tr class="liste_total"><td>'.$langs->trans("Total").'</td><td colspan="2" class="right">'.price($total)."</td></tr>";
-			}
-		}
-		else
-		{
-
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("NoOrder").'</td></tr>';
-		}
-		print "</table><br>";
-
-		$db->free($resql);
-	}
-	else
-	{
-		dol_print_error($db);
-	}
+foreach ($userGroupNames as $group) {
+    if ($group['group'] === 'Consultants') {
+        $hasConsultants = true;
+    } 
 }
-END MODULEBUILDER DRAFT MYOBJECT */
 
+// Access control using switch statement
+switch (true) {
+	case $hasConsultants:
+		// Doctor has access, continue with the page content...
+		break;
+	default:
+		echo "<h1>Access Denied</h1>";
+		echo "<p>You are not authorized to view this page.</p>";
+		exit; // Terminate script execution
+}
+
+
+$gross_list = get_done_gross_list_for_doctor();
+
+if ($hasConsultants) {
+    print '<div class="row">';
+    print('<div class="column">');
+    print('<h2>Screening List</h2>');
+    print('<input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for lab numbers...">');
+    print('<table id="pendingTable">');
+    print('<tr>
+          <th>Lab Number</th>
+          <th>Patient Code</th>
+          <th>Received Date</th>
+          <th>Delivery Date</th>
+          <th>Action</th></tr>');
+        
+    foreach ($gross_list as $list) {
+        $dateString = $list['delivery_date'];
+        $date = new DateTime($dateString);
+        $formattedDate = $date->format('F d, Y h:i A');
+
+        $received_dateString = $list['date'];
+        $received_date = new DateTime($received_dateString);
+        $received_formattedDate = $received_date->format('F d, Y h:i A');
+        
+        print('<tr>');
+        print('<td class="' . $deliveryDateClass . '">' . $list['lab_number'] . '</td>');
+        print('<td>' . $list['patient_code'] . '</td>');
+        print('<td>' . $received_formattedDate . '</td>');
+        print('<td id="calendar">' . $formattedDate . '</td>');
+		    print('<td><a href="screenig.php?fk_gross_id=' . $list['gross_id']. '"><button type="submit" id="nextButton">Next</button></a></td>');
+        print('</tr>');
+       
+    }
+    print('</table>');
+    print('</div>');
+    print '</div>';
+    
+
+}
 
 print '</div><div class="fichetwothirdright">';
 
@@ -179,62 +310,62 @@ print '</div><div class="fichetwothirdright">';
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 
-/* BEGIN MODULEBUILDER LASTMODIFIED MYOBJECT
-// Last modified myobject
-if (! empty($conf->doctors->enabled) && $user->rights->doctors->read)
-{
-	$sql = "SELECT s.rowid, s.ref, s.label, s.date_creation, s.tms";
-	$sql.= " FROM ".MAIN_DB_PREFIX."doctors_myobject as s";
-	//if (! $user->rights->societe->client->voir && ! $socid) $sql.= ", ".MAIN_DB_PREFIX."societe_commerciaux as sc";
-	$sql.= " WHERE s.entity IN (".getEntity($myobjectstatic->element).")";
-	//if (! $user->rights->societe->client->voir && ! $socid) $sql.= " AND s.rowid = sc.fk_soc AND sc.fk_user = ".((int) $user->id);
-	//if ($socid)	$sql.= " AND s.rowid = $socid";
-	$sql .= " ORDER BY s.tms DESC";
-	$sql .= $db->plimit($max, 0);
 
-	$resql = $db->query($sql);
-	if ($resql)
-	{
-		$num = $db->num_rows($resql);
-		$i = 0;
-
-		print '<table class="noborder centpercent">';
-		print '<tr class="liste_titre">';
-		print '<th colspan="2">';
-		print $langs->trans("BoxTitleLatestModifiedMyObjects", $max);
-		print '</th>';
-		print '<th class="right">'.$langs->trans("DateModificationShort").'</th>';
-		print '</tr>';
-		if ($num)
-		{
-			while ($i < $num)
-			{
-				$objp = $db->fetch_object($resql);
-
-				$myobjectstatic->id=$objp->rowid;
-				$myobjectstatic->ref=$objp->ref;
-				$myobjectstatic->label=$objp->label;
-				$myobjectstatic->status = $objp->status;
-
-				print '<tr class="oddeven">';
-				print '<td class="nowrap">'.$myobjectstatic->getNomUrl(1).'</td>';
-				print '<td class="right nowrap">';
-				print "</td>";
-				print '<td class="right nowrap">'.dol_print_date($db->jdate($objp->tms), 'day')."</td>";
-				print '</tr>';
-				$i++;
-			}
-
-			$db->free($resql);
-		} else {
-			print '<tr class="oddeven"><td colspan="3" class="opacitymedium">'.$langs->trans("None").'</td></tr>';
-		}
-		print "</table><br>";
-	}
-}
-*/
 
 print '</div></div>';
+print('<script>
+
+function searchTable() {
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("searchInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("pendingTable");
+  tr = table.getElementsByTagName("tr");
+
+  for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[0]; 
+      if (td) {
+          txtValue = td.textContent || td.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              tr[i].style.display = "";
+          } else {
+              tr[i].style.display = "none";
+          }
+      }
+  }
+}
+document.addEventListener("DOMContentLoaded", function() {
+  var searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+      searchInput.focus(); 
+  }
+});
+
+function highlightDates() {
+  const calendar = document.getElementById("calendar");
+  const deliveryDateCells = document.querySelectorAll("#pendingTable td#calendar");
+
+  deliveryDateCells.forEach(function(cell) {
+    const deliveryDate = new Date(cell.textContent);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    if (deliveryDate.toDateString() === today.toDateString()) {
+      cell.style.backgroundColor = "rgb(220, 20, 60)";
+      cell.style.color = "white";
+      
+    } else if (deliveryDate.toDateString() === tomorrow.toDateString()) {
+      cell.style.backgroundColor = "yellow"; 
+      cell.style.color = "black";
+    } 
+  });
+
+}
+
+highlightDates();
+
+</script>');
 
 // End of page
 llxFooter();
