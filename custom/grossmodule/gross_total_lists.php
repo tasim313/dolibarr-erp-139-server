@@ -249,11 +249,7 @@ print('<tr>');
 if ($hasGrossAssistants) {
    print('<td>' .$total_gross_current_month. '</td>');
    print('<td>' .$total_gross_current_year. '</td>');
-}
-if ($hasConsultants) {
-  print('<td>' .$total_gross_current_month_doctor. '</td>');
-  print('<td>' .$total_gross_current_year_doctor. '</td>');
-}     
+}    
 print('</tr>');
       
 print('</table>');

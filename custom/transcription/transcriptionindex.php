@@ -93,9 +93,6 @@ switch (true) {
   case $hasTranscriptionist:
       // Transcription  has access, continue with the page content...
       break;
-  case $hasConsultants:
-      // Doctor has access, continue with the page content...
-      break;
   default:
       echo "<h1>Access Denied</h1>";
       echo "<p>You are not authorized to view this page.</p>";
