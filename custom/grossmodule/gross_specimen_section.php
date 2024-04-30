@@ -45,6 +45,7 @@ $help_url = '';
 llxHeader('', $title, $help_url);
 
 $GrossId = $_GET['fk_gross_id'];
+$fk_gross_id = $GrossId;
 
 $lab_number = get_lab_number($GrossId);
 
@@ -54,6 +55,7 @@ if ($lab_number !== null) {
     echo 'Error: Lab number not found';
 }
 
+$sections = get_gross_specimen_section($GrossId);
 
 $specimen_count_value = number_of_specimen($GrossId);
 
@@ -175,6 +177,37 @@ button[type=submit]:hover {
         form.submit();
     });
 
+    let sections = <?php echo json_encode($sections); ?>;
+    let lastSectionCodes = {};
+
+    // Iterate over each section to find the last section code for each specimen
+    sections.forEach(function(section) {
+        let specimenLetter = section.section_code.charAt(0); // Extract the specimen letter
+        let sectionCode = section.section_code;
+        
+        // If the last section code for this specimen is not already set or the current section code is greater
+        if (!lastSectionCodes[specimenLetter] || sectionCode > lastSectionCodes[specimenLetter]) {
+            lastSectionCodes[specimenLetter] = sectionCode; // Update the last section code for this specimen
+        }
+    });
+
+    
+    function generateNextSectionCode(specimenLetter) {
+        // Check if lastSectionCodes for the current specimenLetter exists
+        if (!lastSectionCodes.hasOwnProperty(specimenLetter)) {
+            // If lastSectionCodes for the current specimenLetter doesn't exist, generate the first section code
+            return specimenLetter + '1';
+        } else {
+            // Retrieve the last section code for the given specimenLetter
+            const lastSectionCode = lastSectionCodes[specimenLetter];
+            
+            // Generate the next section code based on the last section code
+            const lastSectionNumber = parseInt(lastSectionCode.replace(specimenLetter, ''), 10);
+            const nextSectionNumber = isNaN(lastSectionNumber) ? 1 : lastSectionNumber + 1;
+            return specimenLetter + nextSectionNumber;
+        }
+    }
+    
     function handleButtonClick(button) {
         const buttonId = button.id;
         const specimenIndex = button.id.split("-")[1]; 
@@ -183,11 +216,18 @@ button[type=submit]:hover {
         const section_text = 'Section from the ';
         const specimen_count_value = <?php echo $specimen_count_value; ?>;
         const last_value = "<?php echo $last_value; ?>";
-        const fk_gross_id = "<?php echo $GrossId;?>";
+        const fk_gross_id = "<?php echo $fk_gross_id;?>";
         const fieldsContainer = document.getElementById("fields-container");
         const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
         const currentYear = new Date().getFullYear();
         const lastTwoDigits = currentYear.toString().slice(-2);
+
+        // Generate the next section code
+        let sectionCode = generateNextSectionCode(specimenLetter);
+        
+        // Update the last generated section code
+        lastSectionCodes[specimenLetter] = sectionCode;
+      
 
         // Create a new field set for each entry
         const fieldSet = document.createElement("fieldset");
@@ -199,29 +239,28 @@ button[type=submit]:hover {
         const fkGrossIdInput = document.createElement("input");
         fkGrossIdInput.type = "hidden";
         fkGrossIdInput.name = "fk_gross_id"; // Set the name attribute to identify the input
-        fkGrossIdInput.value = "<?php echo $GrossId;?>";
+        fkGrossIdInput.value = "<?php echo $fk_gross_id;?>";
         fieldSet.appendChild(fkGrossIdInput);
-            
+
         // Create the label and input for Section Code
-           
         const sectionCodeLabel = document.createElement("label");
-        sectionCodeLabel.textContent = 'Section Code: ' + specimenLetter + buttonClickCounts[buttonId];
+        sectionCodeLabel.textContent = 'Section Code: ' + sectionCode;
         const inputSectionCode = document.createElement("input");
-        inputSectionCode.type = "hidden";
+        inputSectionCode.type = "text"; // Use "text" for Section Code input
         inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
-        inputSectionCode.value = specimenLetter + buttonClickCounts[buttonId];
+        inputSectionCode.value = sectionCode;
         fieldSet.appendChild(sectionCodeLabel);
         fieldSet.appendChild(inputSectionCode);
 
         // Create the label and input for cassetteNumbers
         const cassetteNumberLabel = document.createElement("label");
-        cassetteNumberLabel.textContent = "Cassette Number: " + specimenLetter + buttonClickCounts[buttonId] + '-' + last_value + '/' + lastTwoDigits;
+        cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
         const cassetteNumberInput = document.createElement("input");
-        cassetteNumberInput.type = "hidden";
+        cassetteNumberInput.type = "text"; // Use "text" for Cassette Number input
         cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
-        cassetteNumberInput.value = specimenLetter + buttonClickCounts[buttonId] + '-' + last_value + '/' + lastTwoDigits;
+        cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
         fieldSet.appendChild(cassetteNumberLabel);
-        fieldSet.appendChild(cassetteNumberInput );
+        fieldSet.appendChild(cassetteNumberInput);
 
         // Create the label and input for Description
         const descriptionLabel = document.createElement("label");
@@ -247,7 +286,6 @@ button[type=submit]:hover {
                 })
                 .catch(error => console.error('Error loading shortcuts:', error));
         });
-        
 
         const saveButton = document.getElementById("saveButton");
         saveButton.style.display = "block";
@@ -256,4 +294,178 @@ button[type=submit]:hover {
         fieldSet.appendChild(descriptionInput);
         fieldsContainer.appendChild(fieldSet);
     }
+</script>
+
+
+<form id="specimen_section_edit_from" method="post" action="update_gross_specimen_section_generate.php">
+<div id="fields-container-edit"> 
+
+</div>
+<br>
+<button id="editButton" style="display: none;">Update</button>
+</form>
+
+
+<style>
+  .card-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .card {
+    flex: 0 0 calc(50% - 10px);
+    margin-bottom: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-text {
+    margin-bottom: 1rem;
+  }
+
+  .text-body-secondary {
+    color: #6c757d;
+  }
+</style>
+
+
+
+<script>
+  const newButtonClickCounts = {};
+  let sections_edit = <?php echo json_encode($sections); ?>;
+
+  
+  // Check if the sections array is empty
+  if (sections_edit.length === 0) {
+    console.log('Value is empty');
+  } else {
+    // Create "Next" and "Previous" buttons
+    const nextButton = document.createElement('button');
+    nextButton.textContent = 'Next';
+    nextButton.style.float = 'right'; // Align to the right side
+    nextButton.style.marginBottom = '20px';
+    nextButton.addEventListener('click', function(event) {
+        // Handle next button click event
+        // This function will be called when the "Next" button is clicked
+        // You can add logic to handle the navigation to the next section here
+    });
+
+    const prevButton = document.createElement('button');
+    prevButton.textContent = 'Previous';
+    prevButton.style.float = 'right'; // Align to the right side
+    prevButton.style.marginBottom = '20px';
+    prevButton.addEventListener('click', function(event) {
+        // Handle previous button click event
+        // This function will be called when the "Previous" button is clicked
+        // You can add logic to handle the navigation to the previous section here
+    });
+
+    
+    
+    const form = document.getElementById('specimen_section_edit_from');
+    // Append buttons to the form
+    form.prepend(prevButton);
+    form.prepend(nextButton);
+
+    // Create a card group
+    const cardGroup = document.createElement('div');
+    cardGroup.classList.add('card-group')
+    
+    // Append the card group to the form
+    form.appendChild(cardGroup);
+
+    // Loop through each section object in the sections array
+    sections_edit.forEach(section => {
+
+      const card = document.createElement('div');
+      card.classList.add('card');
+
+      const cardBody = document.createElement('div');
+      cardBody.classList.add('card-body');
+      
+      // Create a new field set for each section
+      const fieldSet = document.createElement('fieldset');
+      
+      // Create inputs for "Section Code", "Cassettes Numbers", and "Description"
+      // If these properties are present in the section object
+
+      if (section.hasOwnProperty('fk_gross_id')) {
+        const fkGrossIdInput = document.createElement("input");
+        fkGrossIdInput.type = "hidden";
+        fkGrossIdInput.name = "fk_gross_id[]"; // Set the name attribute to identify the input
+        fkGrossIdInput.value = section['fk_gross_id'];
+        fieldSet.appendChild(fkGrossIdInput);
+      }
+
+      // Create card title
+      if (section.hasOwnProperty('section_code')) {
+        const sectionCodeLabel = document.createElement('label');
+        sectionCodeLabel.textContent = 'Section Code: ';
+        cardBody.appendChild(sectionCodeLabel);
+
+        const sectionCodeInput = document.createElement('input');
+        sectionCodeInput.type = 'text';
+        sectionCodeInput.value = section['section_code'];
+        sectionCodeInput.readOnly = true;
+        cardBody.appendChild(sectionCodeInput);
+        cardBody.appendChild(document.createElement('br')); 
+      }
+
+      
+      
+      if (section.hasOwnProperty('cassettes_numbers')) {
+        const cassettesNumbersLabel = document.createElement('label');
+        cassettesNumbersLabel.textContent = 'Cassettes Numbers: ';
+        fieldSet.appendChild(cassettesNumbersLabel);
+
+        const cassettesNumbersInput = document.createElement('input');
+        cassettesNumbersInput.type = 'text';
+        cassettesNumbersInput.name = 'cassetteNumber[]';
+        cassettesNumbersInput.value = section['cassettes_numbers'];
+        cassettesNumbersInput.readOnly = true;
+        fieldSet.appendChild(cassettesNumbersInput);
+        fieldSet.appendChild(document.createElement('br')); 
+      }
+      
+      if (section.hasOwnProperty('specimen_section_description')) {
+        const descriptionLabel = document.createElement('label');
+        descriptionLabel.textContent = 'Description: ';
+        fieldSet.appendChild(descriptionLabel);
+
+        const descriptionInput = document.createElement('input');
+        descriptionInput.type = 'text';
+        descriptionInput.name = 'specimen_section_description[]';
+        descriptionInput.value = section['specimen_section_description'];
+        fieldSet.appendChild(descriptionInput);
+        fieldSet.appendChild(document.createElement('br')); 
+
+        descriptionInput.addEventListener('keypress', function(event) {
+          if (event.key === 'Enter') {
+            // Prevent default form submission
+            event.preventDefault();
+            
+            // Trigger form submission
+            form.submit();
+          }
+        });
+      }
+
+       // Append card body to card
+      card.appendChild(cardBody);
+
+      // Append card to card group
+      cardGroup.appendChild(card);
+      
+    });
+  }
 </script>
