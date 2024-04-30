@@ -438,8 +438,6 @@ fetch('shortcuts.json')
         return sectionCode;
     }
     
-    console.log("Last section codes:", lastSectionCodes);
-
     function handleButtonClick(button) {
         const buttonId = button.id;
         const specimenIndex = button.id.split("-")[1]; 
