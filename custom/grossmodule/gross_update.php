@@ -194,6 +194,14 @@ foreach ($sections as $section) {
     echo '</div>';
     echo '<div class="row">';
     echo '<div class="col-25">';
+    echo '<label for="tissue">Tissue</label>';
+    echo '</div>';
+    echo '<div class="col-75">';
+    echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" ';
+    echo '</div>';
+    echo '</div>';
+    echo '<div class="row">';
+    echo '<div class="col-25">';
     echo '<label for="specimen_section_description">Description</label>';
     echo '</div>';
     echo '<div class="col-75">';
