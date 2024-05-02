@@ -333,7 +333,7 @@ if ($hasTranscriptionist) {
         </tr>
         <tr>
             <td>Report</td>
-            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Preview</button></td>
+            <td><a href="../grossmodule/hpl_report.php?lab_number=' . $LabNumber. '" target="_blank"><button class="btn btn-primary">Preview</button></td>
         </tr>
         
         ');

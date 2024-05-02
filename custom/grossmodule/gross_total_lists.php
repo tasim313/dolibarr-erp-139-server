@@ -290,9 +290,9 @@ if ($hasGrossAssistants) {
 		'</td><td>' . $formattedDate .
 		'</td>
 		
-        <td><a href="gross_update.php?fk_gross_id='.$list['gross_id'].'"><button>View</button></a></td>
+        <td><a href="gross_update.php?fk_gross_id='.$list['gross_id'].'"><button>Edit</button></a></td>
         <td>
-        <a href="hpl_report.php?lab_number='.$list['lab_number'].'"><button class="btn btn-primary">Preview</button>
+        <a href="hpl_report.php?lab_number='.$list['lab_number'].'" target="_blank"><button class="btn btn-primary">Preview</button>
         </td>
         </tr>
         ');
