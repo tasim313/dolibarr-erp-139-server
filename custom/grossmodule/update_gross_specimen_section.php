@@ -2,7 +2,7 @@
 include("connection.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required_fields = ['gross_specimen_section_Id', 'sectionCode', 'specimen_section_description', 'cassetteNumber'];
+    $required_fields = ['gross_specimen_section_Id', 'sectionCode', 'specimen_section_description', 'cassetteNumber', 'tissue'];
     $missing_fields = array_diff($required_fields, array_keys($_POST));
 
     if (!empty($missing_fields)) {
@@ -14,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql = "UPDATE llx_gross_specimen_section
             SET section_code = $2,
                 specimen_section_description = $3,
-                cassettes_numbers = $4
+                cassettes_numbers = $4,
+                tissue = $5
             WHERE gross_specimen_section_Id = $1";
 
     $stmt = pg_prepare($pg_con, "update_specimen_section", $sql);
@@ -32,11 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $section_code = $_POST['sectionCode'][$i];
         $specimen_section_description = pg_escape_string($pg_con, $_POST['specimen_section_description'][$i]); // Sanitize user input
         $cassette_number = $_POST['cassetteNumber'][$i];
+        $tissue = $_POST['tissue'][$i];
 
         
 
         // Execute the prepared statement with the parameters
-        $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, $specimen_section_description, $cassette_number]);
+        $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, $specimen_section_description, $cassette_number, $tissue]);
 
     }
 

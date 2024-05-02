@@ -578,7 +578,7 @@ function get_gross_specimen_section($fk_gross_id) {
     global $pg_con;
     $sql = "select gross_specimen_section_id, 
     fk_gross_id, section_code, 
-    specimen_section_description, cassettes_numbers from llx_gross_specimen_section WHERE fk_gross_id = $1";
+    specimen_section_description, cassettes_numbers, tissue from llx_gross_specimen_section WHERE fk_gross_id = $1";
     $result = pg_query_params($pg_con, $sql, array($fk_gross_id));
 
     $specimens = array();

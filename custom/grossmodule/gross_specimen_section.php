@@ -246,7 +246,7 @@ button[type=submit]:hover {
         const sectionCodeLabel = document.createElement("label");
         sectionCodeLabel.textContent = 'Section Code: ' + sectionCode;
         const inputSectionCode = document.createElement("input");
-        inputSectionCode.type = "text"; // Use "text" for Section Code input
+        inputSectionCode.type = "hidden"; // Use "text" for Section Code input
         inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
         inputSectionCode.value = sectionCode;
         fieldSet.appendChild(sectionCodeLabel);
@@ -256,11 +256,20 @@ button[type=submit]:hover {
         const cassetteNumberLabel = document.createElement("label");
         cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
         const cassetteNumberInput = document.createElement("input");
-        cassetteNumberInput.type = "text"; // Use "text" for Cassette Number input
+        cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
         cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
         cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
         fieldSet.appendChild(cassetteNumberLabel);
         fieldSet.appendChild(cassetteNumberInput);
+
+        const tissueLabel = document.createElement("label");
+        tissueLabel.textContent = "Tissue:" 
+        const tissueInput = document.createElement("input");
+        tissueInput.type = "text"; // Use "text" for Cassette Number input
+        tissueInput.name = "tissue[]"; // Assign unique name based on count
+        tissueInput.value = '';
+        fieldSet.appendChild(tissueLabel);
+        fieldSet.appendChild(tissueInput);
 
         // Create the label and input for Description
         const descriptionLabel = document.createElement("label");
@@ -350,6 +359,7 @@ button[type=submit]:hover {
     console.log('Value is empty');
   } else {
     // Create "Next" and "Previous" buttons
+    console.log('section ', sections_edit);
     const nextButton = document.createElement('button');
     nextButton.textContent = 'Next';
     nextButton.style.float = 'right'; // Align to the right side
@@ -413,11 +423,11 @@ button[type=submit]:hover {
       // Create card title
       if (section.hasOwnProperty('section_code')) {
         const sectionCodeLabel = document.createElement('label');
-        sectionCodeLabel.textContent = 'Section Code: ';
+        sectionCodeLabel.textContent = 'Section Code: ' + section['section_code'] + " " + ", "+ 'Cassettes Numbers: ' + section['cassettes_numbers'];
         cardBody.appendChild(sectionCodeLabel);
 
         const sectionCodeInput = document.createElement('input');
-        sectionCodeInput.type = 'text';
+        sectionCodeInput.type = 'hidden';
         sectionCodeInput.name = 'sectionCode[]';
         sectionCodeInput.value = section['section_code'];
         sectionCodeInput.readOnly = true;
@@ -429,16 +439,39 @@ button[type=submit]:hover {
       
       if (section.hasOwnProperty('cassettes_numbers')) {
         const cassettesNumbersLabel = document.createElement('label');
-        cassettesNumbersLabel.textContent = 'Cassettes Numbers: ';
+        cassettesNumbersLabel.textContent = 'Cassettes Numbers: ' + section['cassettes_numbers'];
+        cassettesNumbersLabel.style.display = 'none';
         cardBody.appendChild(cassettesNumbersLabel);
 
         const cassettesNumbersInput = document.createElement('input');
-        cassettesNumbersInput.type = 'text';
+        cassettesNumbersInput.type = 'hidden';
         cassettesNumbersInput.name = 'cassetteNumber[]';
         cassettesNumbersInput.value = section['cassettes_numbers'];
         cassettesNumbersInput.readOnly = true;
         cardBody.appendChild(cassettesNumbersInput);
         cardBody.appendChild(document.createElement('br')); 
+      }
+
+      if (section.hasOwnProperty('tissue')) {
+        const tissueLabel = document.createElement('label');
+        tissueLabel.textContent = 'Tissue: ';
+        cardBody.appendChild(tissueLabel);
+
+        const tissueInput = document.createElement('input');
+        tissueInput.type = 'test';
+        tissueInput.name = 'tissue[]';
+        tissueInput.value = section['tissue'];
+        cardBody.appendChild(tissueInput);
+        cardBody.appendChild(document.createElement('br'));
+        tissueInput.addEventListener('keypress', function(event) {
+          if (event.key === 'Enter') {
+            // Prevent default form submission
+            event.preventDefault();
+            
+            // Trigger form submission
+            form.submit();
+          }
+        });
       }
       
       if (section.hasOwnProperty('specimen_section_description')) {
