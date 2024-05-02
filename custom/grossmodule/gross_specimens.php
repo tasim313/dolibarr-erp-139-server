@@ -44,6 +44,7 @@ $help_url = '';
 llxHeader('', $title, $help_url);
 
 $LabNumber = $_GET['LabNumber'];
+$fk_gross_id = get_gross_instance($LabNumber);
 
 
 ?>
@@ -144,6 +145,8 @@ button{
 
 <div class="container">
     <?php 
+    $specimens = get_gross_specimen_description($fk_gross_id);
+    
     $lab_number = get_gross_specimens_list($LabNumber);
     $number_of_specimens = $lab_number[0]['number_of_specimens'];
     $alphabet_string = numberToAlphabet($number_of_specimens);
@@ -156,52 +159,51 @@ button{
     print('</div>');
     print('</div>');
     print('<form method="post" action="gross_specimens_create.php">');
-    foreach ($lab_number as $key => $specimen) {
+          foreach ($lab_number as $key => $specimen) {
 
-      $button_id = 'click_to_convert' . $key;
-      $text_area_id = 'gross_description' . $key;
+            $button_id = 'click_to_convert' . $key;
+            $text_area_id = 'gross_description' . $key;
 
 
-      echo '<div class="row">';
-      echo '<div class="col-25">';
-      echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
-      echo '</div>';
-      echo '<div class="col-75">';
-      echo '<textarea id="' . $text_area_id . '" name="gross_description[]" cols="60" rows="10" required>';
-      print('</textarea>');
-      print('<button id="' . $button_id . '">Voice </button>');
-      echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
-      $gross_instances = get_gross_instance($LabNumber);
-      $current_gross_instance = array_shift($gross_instances);
-      echo '<input type="hidden" name="fk_gross_id[]" value="' . $current_gross_instance['gross_id'] . '">';
-      echo '</div>';
-      echo '</div>';
-      echo "<script>
-          document.getElementById('$button_id').addEventListener('click', function(event) {
-            event.preventDefault();
-            var speech = true;
-            window.SpeechRecognition = window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.interimResults = true;
-            
-            recognition.addEventListener('result', e=>{
-                const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript)
-                document.getElementById('$text_area_id').innerHTML = transcript;
-            })
+            echo '<div class="row">';
+            echo '<div class="col-25">';
+            echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
+            echo '</div>';
+            echo '<div class="col-75">';
+            echo '<textarea id="' . $text_area_id . '" name="gross_description[]" cols="60" rows="10" required>';
+            print('</textarea>');
+            print('<button id="' . $button_id . '">Voice </button>');
+            echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
+            $gross_instances = get_gross_instance($LabNumber);
+            $current_gross_instance = array_shift($gross_instances);
+            echo '<input type="hidden" name="fk_gross_id[]" value="' . $current_gross_instance['gross_id'] . '">';
+            echo '</div>';
+            echo '</div>';
+            echo "<script>
+                document.getElementById('$button_id').addEventListener('click', function(event) {
+                  event.preventDefault();
+                  var speech = true;
+                  window.SpeechRecognition = window.webkitSpeechRecognition;
+                  const recognition = new SpeechRecognition();
+                  recognition.interimResults = true;
+                  
+                  recognition.addEventListener('result', e=>{
+                      const transcript = Array.from(e.results).map(result => result[0]).map(result => result.transcript)
+                      document.getElementById('$text_area_id').innerHTML = transcript;
+                  })
 
-            if(speech == true){
-                recognition.start();
-            }
-          });
-          </script>";
-  }
+                  if(speech == true){
+                      recognition.start();
+                  }
+                });
+                </script>";
+        }
 
-    echo '<div class="row">';
-    print '<br>';
-    print '<input type="submit" value="Next">';
-    print '</div>';
+        echo '<div class="row">';
+        print '<br>';
+        print '<input type="submit" value="Next">';
+        print '</div>';
     print '</form>';
-
     print("<script>
     fetch('shortcuts.json')
         .then(response => response.json())

@@ -354,32 +354,27 @@ button[type=submit]:hover {
     nextButton.textContent = 'Next';
     nextButton.style.float = 'right'; // Align to the right side
     nextButton.style.marginBottom = '20px';
+    nextButton.style.marginLeft = '10px';
+    nextButton.style.backgroundColor = 'rgb(118, 145, 225)'; 
+    nextButton.style.color = 'white';
+    nextButton.style.padding = '8px 8px'; // Set padding
+    nextButton.style.border = 'none'; // Remove border
+    nextButton.style.borderRadius = '4px'; // Set border radius
+    nextButton.style.cursor = 'pointer'; // Set cursor to pointer
+    nextButton.style.transition = 'box-shadow 0.3s ease'; 
     nextButton.addEventListener('click', function(event) {
-        // Handle next button click event
-        // This function will be called when the "Next" button is clicked
-        // You can add logic to handle the navigation to the next section here
+      event.preventDefault();
+      window.location.href = "gross_summary_of_section.php?fk_gross_id=<?php echo $fk_gross_id; ?>";
     });
 
-    const prevButton = document.createElement('button');
-    prevButton.textContent = 'Previous';
-    prevButton.style.float = 'right'; // Align to the right side
-    prevButton.style.marginBottom = '20px';
-    prevButton.addEventListener('click', function(event) {
-        // Handle previous button click event
-        // This function will be called when the "Previous" button is clicked
-        // You can add logic to handle the navigation to the previous section here
-    });
-
-    
-    
     const form = document.getElementById('specimen_section_edit_from');
     // Append buttons to the form
-    form.prepend(prevButton);
     form.prepend(nextButton);
 
     // Create a card group
     const cardGroup = document.createElement('div');
     cardGroup.classList.add('card-group')
+    cardGroup.style.marginTop = '40px';
     
     // Append the card group to the form
     form.appendChild(cardGroup);
@@ -404,7 +399,15 @@ button[type=submit]:hover {
         fkGrossIdInput.type = "hidden";
         fkGrossIdInput.name = "fk_gross_id[]"; // Set the name attribute to identify the input
         fkGrossIdInput.value = section['fk_gross_id'];
-        fieldSet.appendChild(fkGrossIdInput);
+        cardBody.appendChild(fkGrossIdInput);
+      }
+
+      if (section.hasOwnProperty('gross_specimen_section_id')) {
+        const fkSpecimenSectionIdInput = document.createElement("input");
+        fkSpecimenSectionIdInput.type = "hidden";
+        fkSpecimenSectionIdInput.name = "gross_specimen_section_Id[]"; // Set the name attribute to identify the input
+        fkSpecimenSectionIdInput.value = section['gross_specimen_section_id'];
+        cardBody.appendChild(fkSpecimenSectionIdInput);
       }
 
       // Create card title
@@ -415,6 +418,7 @@ button[type=submit]:hover {
 
         const sectionCodeInput = document.createElement('input');
         sectionCodeInput.type = 'text';
+        sectionCodeInput.name = 'sectionCode[]';
         sectionCodeInput.value = section['section_code'];
         sectionCodeInput.readOnly = true;
         cardBody.appendChild(sectionCodeInput);
@@ -426,28 +430,28 @@ button[type=submit]:hover {
       if (section.hasOwnProperty('cassettes_numbers')) {
         const cassettesNumbersLabel = document.createElement('label');
         cassettesNumbersLabel.textContent = 'Cassettes Numbers: ';
-        fieldSet.appendChild(cassettesNumbersLabel);
+        cardBody.appendChild(cassettesNumbersLabel);
 
         const cassettesNumbersInput = document.createElement('input');
         cassettesNumbersInput.type = 'text';
         cassettesNumbersInput.name = 'cassetteNumber[]';
         cassettesNumbersInput.value = section['cassettes_numbers'];
         cassettesNumbersInput.readOnly = true;
-        fieldSet.appendChild(cassettesNumbersInput);
-        fieldSet.appendChild(document.createElement('br')); 
+        cardBody.appendChild(cassettesNumbersInput);
+        cardBody.appendChild(document.createElement('br')); 
       }
       
       if (section.hasOwnProperty('specimen_section_description')) {
         const descriptionLabel = document.createElement('label');
         descriptionLabel.textContent = 'Description: ';
-        fieldSet.appendChild(descriptionLabel);
+        cardBody.appendChild(descriptionLabel);
 
         const descriptionInput = document.createElement('input');
         descriptionInput.type = 'text';
         descriptionInput.name = 'specimen_section_description[]';
         descriptionInput.value = section['specimen_section_description'];
-        fieldSet.appendChild(descriptionInput);
-        fieldSet.appendChild(document.createElement('br')); 
+        cardBody.appendChild(descriptionInput);
+        cardBody.appendChild(document.createElement('br')); 
 
         descriptionInput.addEventListener('keypress', function(event) {
           if (event.key === 'Enter') {
@@ -467,5 +471,7 @@ button[type=submit]:hover {
       cardGroup.appendChild(card);
       
     });
+
+    
   }
 </script>
