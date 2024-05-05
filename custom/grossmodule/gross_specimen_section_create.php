@@ -25,13 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $section_codes = $_POST['sectionCode'];
     $specimen_section_descriptions = $_POST['specimen_section_description'];
     $cassette_numbers = $_POST['cassetteNumber'];
-    $tissue = $_POST['tissue'];
+    $tissues = $_POST['tissue'];
 
     // Insert each specimen section data
     foreach ($section_codes as $key => $section_code) {
         $specimen_section_description = $specimen_section_descriptions[$key];
         $cassette_number = $cassette_numbers[$key];
-        $tissue = $tissue[$key];
+        $tissue = $tissues[$key];
 
         $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, $specimen_section_description, $cassette_number, $tissue]);
 

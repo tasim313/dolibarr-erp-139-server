@@ -265,8 +265,8 @@ button[type=submit]:hover {
         const tissueLabel = document.createElement("label");
         tissueLabel.textContent = "Tissue:" 
         const tissueInput = document.createElement("input");
-        tissueInput.type = "text"; // Use "text" for Cassette Number input
-        tissueInput.name = "tissue[]"; // Assign unique name based on count
+        tissueInput.type = "text"; 
+        tissueInput.name = "tissue[]"; 
         tissueInput.value = '';
         fieldSet.appendChild(tissueLabel);
         fieldSet.appendChild(tissueInput);
