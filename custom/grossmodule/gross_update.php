@@ -500,6 +500,15 @@ fetch('shortcuts.json')
         fieldSet.appendChild(cassetteNumberLabel);
         fieldSet.appendChild(cassetteNumberInput);
 
+        const tissueLabel = document.createElement("label");
+        tissueLabel.textContent = "Tissue:" 
+        const tissueInput = document.createElement("input");
+        tissueInput.type = "text"; // Use "text" for Cassette Number input
+        tissueInput.name = "tissue[]"; // Assign unique name based on count
+        tissueInput.value = '';
+        fieldSet.appendChild(tissueLabel);
+        fieldSet.appendChild(tissueInput);
+
         // Create the label and input for Description
         const descriptionLabel = document.createElement("label");
         descriptionLabel.textContent = "Description:";

@@ -95,6 +95,21 @@ print("<style>
 .btn:hover {
   background-color: #007bff;
 }
+#histoGrossTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  #histoGrossTable th, #histoGrossTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  #histoGrossTable th {
+    background-color: #046aaa;
+    color: white;
+  }
 </style>");
 
 print('<div class="container">
@@ -103,42 +118,15 @@ print('<div class="container">
 <button id="submitBtn" class="btn">Submit</button>
 </div>');
 
-function filter_histo_gross_list($list, $fromDate, $toDate) {
-    $filteredList = [];
-    foreach ($list as $item) {
-        // Extract date part from Gross Create Date and compare it with selected date range
-        $grossCreateDate = date('Y-m-d', strtotime($item['Gross Create Date']));
-        if ($grossCreateDate >= $fromDate && $grossCreateDate <= $toDate) {
-            $filteredList[] = $item;
-        }
-    }
-    return $filteredList;
-}
 
 $histo_gross_list = get_histo_gross_specimen_list();
 
-print("<table>");
-print("<tr><th>Lab Number</th><th>Gross Create Date</th><th>Section Code</th><th>Cassettes Numbers</th><th>Tissue</th></tr>");
+print("<table id='histoGrossTable'>");
+print("<tr></tr>");
 
-// Filter the $histo_gross_list based on the selected date range
-if (isset($_GET['fromDate']) && isset($_GET['toDate'])) {
-    $fromDate = $_GET['fromDate'];
-    $toDate = $_GET['toDate'];
-	echo "From: $fromDate<br>";
-    echo "To: $toDate<br>";
-    $histo_gross_list = filter_histo_gross_list($histo_gross_list, $fromDate, $toDate);
-}
 
-foreach ($histo_gross_list as $list) {
-	print('
-	<tr><td>' . $list['Lab Number'] . 
-	'</td><td>' . $list['Gross Create Date'] . 
-	'</td><td>' . $list['section_code'] . 
-	'</td><td>' . $list['cassettes_numbers'] . '</td>
-	 <td>' . $list['tissue'] . '</td>
-	</tr>
-	');
-}
+print("<tbody id='histoGrossTableBody'>");
+print("</tbody>");
 print("</table>");
 
 
@@ -149,47 +137,62 @@ const histo_gross_list = ' . json_encode($histo_gross_list) . ';
 function submitDateTime() {
     var fromDate = new Date(document.getElementById("fromDateTime").value);
     var toDate = new Date(document.getElementById("toDateTime").value);
-    console.log("histo list", histo_gross_list);
-    var dateValues = histo_gross_list.map(function(item) {
-        return {
-            "Lab Number": item["Lab Number"],
-            "section_code": item["section_code"],
-            "tissue": item["tissue"],
-            "cassettes_numbers": item["cassettes_numbers"]
-        };
+    var tableRows = "";
+    
+    // Filter items by date range
+    var filteredItems = histo_gross_list.filter(function(item) {
+        var itemDate = new Date(item["Gross Create Date"]);
+        return itemDate >= fromDate && itemDate <= toDate;
     });
 
-    var filteredItems = [];
-
-    // Iterate over each item
-    dateValues.forEach(function(item) {
-        // Extract the date value
-        var dateValue = item["Gross Create Date"];
-        
-        // Check if dateValue is a valid string
-        if (typeof dateValue === "string") {
-            // Extract the date part only (ignoring the time)
-            var dateParts = dateValue.split(" ")[0];
-            var currentDate = new Date(dateParts);
-
-            // Compare the date with the "From" and "To" dates
-            if (currentDate >= fromDate && currentDate <= toDate) {
-                // Add the item to the filtered array
-                filteredItems.push(item);
-            } else {
-                // Display "Sorry, date not match" if date not in range
-                console.log("Sorry, date not match");
-            }
+    // Group items by Lab Number
+    var groupedItems = {};
+    filteredItems.forEach(function(item) {
+        if (!groupedItems[item["Lab Number"]]) {
+            groupedItems[item["Lab Number"]] = [];
         }
+        groupedItems[item["Lab Number"]].push(item);
     });
 
-    // Output the filtered items
-    console.log(filteredItems);
+    // Extract unique section codes and sort them alphabetically
+    var sectionSequence = [];
+    for (var labNumber in groupedItems) {
+        groupedItems[labNumber].forEach(function(item) {
+            if (!sectionSequence.includes(item["section_code"])) {
+                sectionSequence.push(item["section_code"]);
+            }
+        });
+    }
+    sectionSequence.sort();
+
+    // Generate HTML markup for the table rows
+    for (var labNumber in groupedItems) {
+        if (groupedItems.hasOwnProperty(labNumber)) {
+            // Add Lab Number row
+            tableRows += "<tr><td colspan=\'4\'><strong>Lab Number: " + labNumber + "</strong></td></tr>";
+            // Add section code, tissue, and cassette numbers rows for each Lab Number
+            sectionSequence.forEach(function(code) {
+                groupedItems[labNumber].forEach(function(item) {
+                    if (item["section_code"] === code) {
+                        tableRows += "<tr>";
+                        tableRows += "<td>Section Code : " + item["section_code"] + "</td>";
+                        tableRows += "<td>Tissue : " + item["tissue"] + "</td>";
+                        tableRows += "<td>Cassettes Numbers : " + item["cassettes_numbers"] + "</td>";
+                        tableRows += "</tr>";
+                    }
+                });
+            });
+        }
+    }
+
+    // Set the HTML content of the table body
+    document.getElementById("histoGrossTableBody").innerHTML = tableRows;
 }
 
 // Add event listener to the button
 document.getElementById("submitBtn").addEventListener("click", submitDateTime);
 </script>');
+
 
 
 print '</div><div class="fichetwothirdright">';
