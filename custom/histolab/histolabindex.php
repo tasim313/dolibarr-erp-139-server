@@ -121,14 +121,45 @@ print('<div class="container">
 
 $histo_gross_list = get_histo_gross_specimen_list();
 
-print("<table id='histoGrossTable'>");
-print("<tr></tr>");
+print('
+<style>
+.histo-card {
+  display: inline-block; /* Arrange cards horizontally */
+  margin: 10px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 80%; /* Adjust width as needed for 4 columns per row */
+  text-align: center; /* Center content within card */
+}
 
+.histo-table {
+  width: 100%; /* Ensure table fills card width */
+  border-collapse: collapse; /* Remove borders between cells */
+}
 
-print("<tbody id='histoGrossTableBody'>");
-print("</tbody>");
-print("</table>");
+.histo-table th,
+.histo-table td {
+  padding: 5px;
+  border-bottom: 1px solid #ddd; /* Add bottom border for rows */
+  max-width: 100px; /* Limit the width of table cells */
+  overflow: hidden; /* Hide overflowing content */
+  text-overflow: ellipsis; /* Show ellipsis for overflowed content */
+  white-space: nowrap; /* Prevent wrapping */
+}
 
+.histo-table th:first-child,
+.histo-table td:first-child { /* Style first column (name) */
+  font-weight: bold;
+  text-align: left; /* Align name to the left */
+}
+</style>
+');
+
+print('
+<br><br>
+<div id="cardGroup"></div>
+');
 
 print('<script>
 const histo_gross_list = ' . json_encode($histo_gross_list) . ';
@@ -137,13 +168,20 @@ const histo_gross_list = ' . json_encode($histo_gross_list) . ';
 function submitDateTime() {
     var fromDate = new Date(document.getElementById("fromDateTime").value);
     var toDate = new Date(document.getElementById("toDateTime").value);
-    var tableRows = "";
+    var cardGroup = document.getElementById("cardGroup");
     
-    // Filter items by date range
-    var filteredItems = histo_gross_list.filter(function(item) {
-        var itemDate = new Date(item["Gross Create Date"]);
-        return itemDate >= fromDate && itemDate <= toDate;
-    });
+    // Clear existing card elements
+    cardGroup.innerHTML = "";
+  
+	var filteredItems = histo_gross_list.filter(function(item) {
+		var itemDate = new Date(item["Gross Create Date"]);
+		// Set the time of fromDate to the start of the day (midnight)
+		var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+		// Set the time of toDate to the end of the day (just before midnight of the next day)
+		var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+		// Check if the items date falls within the range (inclusive)
+		return itemDate >= fromDateStart && itemDate <= toDateEnd;
+	});
 
     // Group items by Lab Number
     var groupedItems = {};
@@ -154,46 +192,89 @@ function submitDateTime() {
         groupedItems[item["Lab Number"]].push(item);
     });
 
-    // Extract unique section codes and sort them alphabetically
+    // Extract unique section codes
     var sectionSequence = [];
-    for (var labNumber in groupedItems) {
-        groupedItems[labNumber].forEach(function(item) {
-            if (!sectionSequence.includes(item["section_code"])) {
-                sectionSequence.push(item["section_code"]);
-            }
-        });
-    }
+    filteredItems.forEach(function(item) {
+        if (!sectionSequence.includes(item["section_code"])) {
+            sectionSequence.push(item["section_code"]);
+        }
+    });
     sectionSequence.sort();
 
-    // Generate HTML markup for the table rows
-    for (var labNumber in groupedItems) {
-        if (groupedItems.hasOwnProperty(labNumber)) {
-            // Add Lab Number row
-            tableRows += "<tr><td colspan=\'4\'><strong>Lab Number: " + labNumber + "</strong></td></tr>";
-            // Add section code, tissue, and cassette numbers rows for each Lab Number
-            sectionSequence.forEach(function(code) {
-                groupedItems[labNumber].forEach(function(item) {
-                    if (item["section_code"] === code) {
-                        tableRows += "<tr>";
-                        tableRows += "<td>Section Code : " + item["section_code"] + "</td>";
-                        tableRows += "<td>Tissue : " + item["tissue"] + "</td>";
-                        tableRows += "<td>Cassettes Numbers : " + item["cassettes_numbers"] + "</td>";
-                        tableRows += "</tr>";
-                    }
-                });
-            });
-        }
-    }
+    // Extract and sort Lab numbers
+    var labNumbers = Object.keys(groupedItems);
+    labNumbers.sort();
 
-    // Set the HTML content of the table body
-    document.getElementById("histoGrossTableBody").innerHTML = tableRows;
+    // Generate HTML markup for the table rows
+    // labNumbers.forEach(function(labNumber) {
+    //     if (groupedItems.hasOwnProperty(labNumber)) {
+    //         let card = document.createElement("div");
+    //         card.className = "histo-card"
+    //         let cardContent = "<h3>Lab Number: " + labNumber + "</h3>";
+    //         sectionSequence.forEach(function(code) {
+    //             groupedItems[labNumber].forEach(function(item) {
+    //                 if (item["section_code"] === code) {
+    //                   cardContent += "<table>";
+    //                   cardContent += "<thead><tr><th>" + item["section_code"] + "</th></tr></thead>";
+    //                   cardContent += "<tbody>";
+    //                   cardContent += "<tr>";
+    //                   cardContent += "<td>" + item["tissue"] + "</td>";
+    //                   cardContent += "</tr>";
+    //                   cardContent += "</tbody>";
+    //                   cardContent += "</table>";
+                      
+    //                 }
+    //             });
+    //         });
+    //         card.innerHTML = cardContent;
+    //         cardGroup.appendChild(card);
+    //     }
+    // });
+
+    labNumbers.forEach(function(labNumber) {
+      if (groupedItems.hasOwnProperty(labNumber)) {
+          let card = document.createElement("div");
+          card.className = "histo-card";
+          let cardContent = "Lab Number: " + labNumber + "";
+  
+          // Construct the table with horizontal header
+          cardContent += "<table>";
+          cardContent += "<thead><tr>";
+          sectionSequence.forEach(function(code) {
+              cardContent += "<th>" + code + "</th>";
+          });
+          cardContent += "</tr></thead>";
+          cardContent += "<tbody><tr>";
+  
+          // Populate the table data
+          sectionSequence.forEach(function(code) {
+              groupedItems[labNumber].forEach(function(item) {
+                  if (item["section_code"] === code) {
+                      cardContent += "<td>" + item["tissue"] + "</td>";
+                  }
+              });
+          });
+  
+          cardContent += "</tr></tbody>";
+          cardContent += "</table>";
+          card.innerHTML = cardContent;
+          // Set the HTML content of the table body
+          document.getElementById("cardGroup").appendChild(card);
+      }
+  });
+  printData();
 }
 
 // Add event listener to the button
 document.getElementById("submitBtn").addEventListener("click", submitDateTime);
+function printData() {
+  var divToPrint=document.getElementById("cardGroup");
+  newWin= window.open("");
+  newWin.document.write(divToPrint.outerHTML);
+  newWin.print();
+  newWin.close();
+}
 </script>');
-
-
 
 print '</div><div class="fichetwothirdright">';
 
@@ -205,3 +286,4 @@ print '</div></div>';
 // End of page
 llxFooter();
 $db->close();
+?>
