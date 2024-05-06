@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 textarea.addEventListener('keydown', function(event) {
-                    if (event.key === 'Enter' && !event.shiftKey) {
+                    if (event.key === 'Insert' && !event.inserttKey) {
                         event.preventDefault(); // Prevent default behavior of Enter key
                         this.closest('form').submit(); // Submit the form containing the textarea
                     }
