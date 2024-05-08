@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     
     echo '<script>';
-    echo 'window.location.href = "gross_specimen_section.php?fk_gross_id=' . $fk_gross_id[0] . '";'; 
+    echo 'window.location.href = "gross_summary_of_section.php?fk_gross_id=' . $fk_gross_id[0] . '";'; 
     echo '</script>';
     pg_close($pg_con); 
 

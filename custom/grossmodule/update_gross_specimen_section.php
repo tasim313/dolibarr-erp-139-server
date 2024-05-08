@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log($error_message);
             echo "<script>alert('$error_message');</script>";
         } else {
-            echo '<script>alert("Data for section  updated successfully!");</script>';
+            echo '';
         }
 
     // Redirect to the summary page after updating all data

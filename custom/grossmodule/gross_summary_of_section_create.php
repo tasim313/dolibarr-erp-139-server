@@ -23,8 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result) {
         echo '<script>';
-        echo 'alert("Data inserted successfully");';
-        echo 'window.location.href = "grossmoduleindex.php";'; 
+        echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
         echo '</script>';
         exit(); 
     } else {

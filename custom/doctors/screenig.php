@@ -302,7 +302,20 @@ if ($hasConsultants) {
     print('
         <tr>
             <td>Gross History</td>
-            <td><a href="../grossmodule/gross_history.php?lab_number=' . $LabNumber. '" target="_blank"><button class="btn btn-primary">Preview</button></td>
+            <td>
+            <a href="../grossmodule/gross_history.php?lab_number=' . $LabNumber. '" target="_blank">
+            <button class="btn btn-primary">Preview</button>
+            
+            <a href="../transcription/gross_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary" style="margin-right: 10px;">Edit</button>
+            </td>
+        </tr>
+        <tr>
+            <td>Micro Description</td>
+            <td><a href="../transcription/micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
+        </tr>
+        <tr>
+            <td>Diagnosis Description</td>
+            <td><a href="../transcription/diagnosis_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
         </tr>
         <tr>
             <td>Report</td>

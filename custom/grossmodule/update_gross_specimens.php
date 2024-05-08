@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         echo '<script>';
-        echo 'alert("Data updated successfully");';
         echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
         echo '</script>';
     } else {

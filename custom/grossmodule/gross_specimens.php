@@ -150,35 +150,18 @@ button{
     $lab_number = get_gross_specimens_list($LabNumber);
     $number_of_specimens = $lab_number[0]['number_of_specimens'];
     $alphabet_string = numberToAlphabet($number_of_specimens);
-    print('<div class="row">');
-    print('<div class="col-25">');
-    print('<label for="Specimen">Specimen</label>');
-    print('</div>');
-    print('<div class="col-75">');
-    print("<p>  " . $alphabet_string . "</p>");
-    print('</div>');
-    print('</div>');
     print('<form method="post" action="gross_specimens_create.php">');
           foreach ($lab_number as $key => $specimen) {
 
             $button_id = 'click_to_convert' . $key;
             $text_area_id = 'gross_description' . $key;
 
-
-            echo '<div class="row">';
-            echo '<div class="col-25">';
-            echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
-            echo '</div>';
-            echo '<div class="col-75">';
-            echo '<textarea id="' . $text_area_id . '" name="gross_description[]" cols="60" rows="10" required>';
+            echo '<textarea  id="' . $text_area_id . '" name="gross_description[]" cols="60" rows="10" style="display: none;">';
             print('</textarea>');
-            print('<button id="' . $button_id . '">Voice </button>');
             echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
             $gross_instances = get_gross_instance($LabNumber);
             $current_gross_instance = array_shift($gross_instances);
             echo '<input type="hidden" name="fk_gross_id[]" value="' . $current_gross_instance['gross_id'] . '">';
-            echo '</div>';
-            echo '</div>';
             echo "<script>
                 document.getElementById('$button_id').addEventListener('click', function(event) {
                   event.preventDefault();
@@ -198,11 +181,7 @@ button{
                 });
                 </script>";
         }
-
-        echo '<div class="row">';
-        print '<br>';
         print '<input type="submit" value="Next">';
-        print '</div>';
     print '</form>';
     print("<script>
     fetch('shortcuts.json')
@@ -275,13 +254,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 textarea.addEventListener('keydown', function(event) {
-                    if (event.key === 'Insert' && !event.inserttKey) {
-                        event.preventDefault(); // Prevent default behavior of Enter key
-                        this.closest('form').submit(); // Submit the form containing the textarea
+                    // Check if Enter key is pressed
+                    if (event.key === 'Enter') {
+                        // Prevent default behavior of Enter key (new line)
+                        event.preventDefault();
+                        // Submit the form containing the textarea
+                        this.closest('form').submit();
                     }
                 });
             });
+
+            // Automatically click the "Next" button when the page loads
+            document.querySelector('input[type="submit"]').click();
         })
         .catch(error => console.error('Error loading shortcuts:', error));
 });
 </script>
+
