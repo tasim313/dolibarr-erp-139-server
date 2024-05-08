@@ -150,7 +150,7 @@ foreach ($specimens as $specimen) {
     echo '</div>';
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-echo '<input type="submit" value="Update">';
+echo '<input type="submit" value="save">';
 echo '</form>';
 
 $sections = get_gross_specimen_section($fk_gross_id);
@@ -210,7 +210,7 @@ foreach ($sections as $section) {
     echo '</div>';
 }
 echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
-echo '<input type="submit" value="Update">';
+echo '<input type="submit" value="save">';
 echo '</form>';
 print("</div>");
 
@@ -236,7 +236,7 @@ foreach ($summaries as $summary) {
     echo '<input type="hidden" name="gross_summary_id" value="' . htmlspecialchars($summary['gross_summary_id']) . '">';
     echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-echo '<input type="submit" value="Update">';
+echo '<input type="submit" value="save">';
 echo '</form>';
 
 
@@ -413,29 +413,46 @@ fetch('shortcuts.json')
 
     let sections = <?php echo json_encode($sections); ?>;
     let lastSectionCodes = {};
+    let lastCassetteNumbers = {};
+    let lastTissues = {};
 
-    // Iterate over each section to find the last section code for each specimen
+    // Iterate over each section to find the last section code, cassette number, and tissue for each specimen
     sections.forEach(function(section) {
         let specimenLetter = section.section_code.charAt(0); // Extract the specimen letter
         let sectionCode = section.section_code;
-        
-        // If the last section code for this specimen is not already set or the current section code is greater
-        if (!lastSectionCodes[specimenLetter] || sectionCode > lastSectionCodes[specimenLetter]) {
-            lastSectionCodes[specimenLetter] = sectionCode; // Update the last section code for this specimen
+        let cassetteNumber = section.cassettes_numbers;
+        let tissue = section.tissue;
+
+        // Update the last section code for this specimen
+        lastSectionCodes[specimenLetter] = sectionCode;
+
+        // Update the last cassette number for this specimen
+        if (!lastCassetteNumbers[specimenLetter] || cassetteNumber > lastCassetteNumbers[specimenLetter]) {
+            lastCassetteNumbers[specimenLetter] = cassetteNumber;
+        }
+
+        // Update the last tissue for this specimen
+        if (!lastTissues[specimenLetter] || tissue > lastTissues[specimenLetter]) {
+            lastTissues[specimenLetter] = tissue;
         }
     });
+
+
 
     function generateNextSectionCode(specimenLetter) {
         // Generate the next section code
         let sectionCode = '';
-        if (lastSectionCodes[specimenLetter] === '') {
-            // If it's the first section, generate it based on the specimen letter and button click count
+
+        if (!lastSectionCodes[specimenLetter] || lastSectionCodes[specimenLetter] === '') {
+            // If the last section code is empty or not set, generate it based on the specimen letter and button click count
             sectionCode = specimenLetter + '1';
         } else {
             // Otherwise, generate it sequentially based on the last section code
-            const lastSectionNumber = parseInt(lastSectionCodes[specimenLetter].replace(specimenLetter, ''), 10);
+            const lastSectionNumber = parseInt(lastSectionCodes[specimenLetter].slice(1), 10);
             if (!isNaN(lastSectionNumber)) {
-                sectionCode = specimenLetter + (lastSectionNumber + 1);
+                // Increment the last section number and generate the new section code
+                const nextSectionNumber = lastSectionNumber + 1;
+                sectionCode = specimenLetter + nextSectionNumber;
             } else {
                 // Handle the case where lastSectionNumber is NaN (e.g., if lastSectionCode doesn't follow the expected format)
                 console.error("Invalid last section code format:", lastSectionCodes[specimenLetter]);
@@ -445,6 +462,7 @@ fetch('shortcuts.json')
         }
         return sectionCode;
     }
+
     
     function handleButtonClick(button) {
         const buttonId = button.id;
@@ -465,8 +483,7 @@ fetch('shortcuts.json')
         
         // Update the last generated section code
         lastSectionCodes[specimenLetter] = sectionCode;
-      
-
+        
         // Create a new field set for each entry
         const fieldSet = document.createElement("fieldset");
         fieldSet.classList.add("field-group"); // Add a class for styling (optional)

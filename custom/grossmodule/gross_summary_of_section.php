@@ -44,21 +44,18 @@ $help_url = '';
 llxHeader('', $title, $help_url);
 
 
-print('<br><br>');
-
-print("<div class='container'>");
 print '<form method="post" action="gross_summary_of_section_create.php">';
 $GrossId = $_GET['fk_gross_id'];
 print '<input type="hidden" name="fk_gross_id" value="' . $GrossId . '">';
-print('<label for="summary">Gross Summary Of Sections</label>');
-print('<textarea name="summary" id="summary" required>'.'</textarea>');
-print('<label for="ink_code">Ink Code</label>');
-print('<textarea name="ink_code" id="ink_code" >'.'</textarea>');
-print("<br><br><br>");
+// print('<label for="summary">Gross Summary Of Sections</label>');
+print('<textarea name="summary" id="summary" style="display: none;">'.'</textarea>');
+// print('<label for="ink_code">Ink Code</label>');
+print('<textarea name="ink_code" id="ink_code" style="display: none;">'.'</textarea>');
+
 print '<input type="submit" value="Save">';
 print '</form>';
-print("<br><br><br>");
-print("</div>");
+
+
 
 print("<script>
 fetch('shortcuts.json')
@@ -147,6 +144,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 ");
+
+print('<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Simulate click on the "Save" button
+    document.querySelector(\'input[type="submit"]\').click();
+});
+</script>');
 
 ?>
 

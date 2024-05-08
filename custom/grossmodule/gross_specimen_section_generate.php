@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     echo '<script>';
-    echo 'window.location.href = "gross_specimen_section.php?fk_gross_id=' . $fk_gross_id . '";'; 
+    echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
     echo '</script>';
 
     pg_close($pg_con);
