@@ -386,7 +386,7 @@ function getExistingDiagnosisDescriptions($labNumber) {
 
     $existingDiagnosisDescriptions = array();
 
-    $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen FROM llx_diagnosis WHERE lab_number = '$labNumber'";
+    $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen, title, comment FROM llx_diagnosis WHERE lab_number = '$labNumber'";
     $result = pg_query($pg_con, $sql);
 
     if ($result) {
@@ -396,6 +396,8 @@ function getExistingDiagnosisDescriptions($labNumber) {
                 'lab_number' => $row['lab_number'],
                 'fk_gross_id' => $row['fk_gross_id'],
                 'description' => $row['description'],
+                'title' => $row['title'],
+                'comment' => $row['comment'],
                 'created_user' => $row['created_user'],
                 'status' => $row['status'],
                 'specimen' => $row['specimen']
