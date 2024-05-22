@@ -1,7 +1,7 @@
 <?php 
 include('connection.php');
 include('gross_common_function.php');
-
+include('../transcription/common_function.php');
 $res = 0;
 
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
@@ -48,11 +48,13 @@ $loggedInUsername = $user->login;
 $fk_gross_id = $_GET['fk_gross_id'];
 
 $lab_number = get_lab_number($fk_gross_id);
+$LabNumber = $lab_number;
 if ($lab_number !== null) {
     $last_value = substr($lab_number, 8);
 } else {
     echo 'Error: Lab number not found';
 }
+
 
 
 print('<style>
@@ -114,6 +116,32 @@ display: table;
 clear: both;
 }
 
+#pendingTable {
+    font-family: Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  #pendingTable td, #pendingTable th {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  #pendingTable tr:nth-child(even){
+    background-color: #f2f2f2;
+  }
+  
+  #pendingTable tr:hover {
+    background-color: #ddd;
+  }
+  
+  #pendingTable th {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #046aaa;
+    color: white;
+}
 
 @media screen and (max-width: 600px) {
 .col-25, .col-75, input[type=submit] {
@@ -123,10 +151,45 @@ margin-top: 0;
 }
 </style>');
 
+$LabNumberWithoutPrefix = substr($LabNumber, 3);
+$patient_information = get_patient_details_information($LabNumberWithoutPrefix);
 
+print('<h1>Patient Information</h1>');
+print('<table class="customers">'); 
+foreach ($patient_information as $list) {
+    $gender = '';
+    if ($list['Gender'] == '1') {
+        $gender = 'Male';
+    } elseif ($list['Gender'] == '2') {
+        $gender = 'Female';
+    } else {
+        $gender = 'Other';
+    }
+    print('
+    <tr>
+        <td >Name</td> 
+        <td><input type="text" name="name[]" value="' . $list['name'] . '" readonly></td> 
+        <td>Patient Code</td>
+        <td><input type="text" name="patient_code[]" value="' . $list['patient_code'] . '" readonly></td> 
+        <td>Date of Birth</td>
+        <td><input type="text" name="date_of_birth[]" value="' . $list['date_of_birth'] . '" readonly></td>
+        <td>Age</td>
+        <td><input type="text" name="age[]" value="' . $list['Age'] . '" readonly></td> 
+    </tr>
+    <tr>
+        <td>Gender:</td>
+        <td><input type="text" name="gender[]" value="' . $gender . '" readonly></td> 
+        <td>Lab Number: </td>
+        <td><input type="text" name="gender[]" value="' . $LabNumber . '" readonly></td> 
+        <td><button type="button" 
+        class="btn btn-primary" style="background-color: rgb(118, 145, 225); color: white; height: 45px; width: 100px;" 
+        onclick="redirectToReport()">Preview</button></td> 
+    </tr>'
+    );
+}
+print('</table>');
 
 $specimens = get_gross_specimen_description($fk_gross_id);
-
 print('<form method="post" action="update_gross_specimens.php">');
 foreach ($specimens as $specimen) {
     echo '<div class="row">';
@@ -185,11 +248,11 @@ foreach ($sections as $section) {
     echo '</div>';
     echo '</div>';
     echo '<div class="row">';
-    echo '<div class="col-25">';
-    echo '<label for="cassette_number">Cassette Number</label>';
-    echo '</div>';
+    // echo '<div class="col-25">';
+    // echo '<label for="cassette_number">Cassette Number</label>';
+    // echo '</div>';
     echo '<div class="col-75">';
-    echo '<input type="text" name="cassetteNumber[]" value="' . htmlspecialchars($section['cassettes_numbers']) . '" readonly>';
+    echo '<input type="hidden" name="cassetteNumber[]" value="' . htmlspecialchars($section['cassettes_numbers']) . '" readonly>';
     echo '</div>';
     echo '</div>';
     echo '<div class="row">';
@@ -238,8 +301,6 @@ foreach ($summaries as $summary) {
 }
 echo '<input type="submit" value="save">';
 echo '</form>';
-
-
 ?>
 
 <script>
@@ -504,6 +565,7 @@ fetch('shortcuts.json')
         inputSectionCode.type = "text"; // Use "text" for Section Code input
         inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
         inputSectionCode.value = sectionCode;
+        inputSectionCode.readOnly = true;
         fieldSet.appendChild(sectionCodeLabel);
         fieldSet.appendChild(inputSectionCode);
 
@@ -511,10 +573,10 @@ fetch('shortcuts.json')
         const cassetteNumberLabel = document.createElement("label");
         cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
         const cassetteNumberInput = document.createElement("input");
-        cassetteNumberInput.type = "text"; // Use "text" for Cassette Number input
+        cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
         cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
         cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
-        fieldSet.appendChild(cassetteNumberLabel);
+        // fieldSet.appendChild(cassetteNumberLabel);
         fieldSet.appendChild(cassetteNumberInput);
 
         const tissueLabel = document.createElement("label");
@@ -642,3 +704,11 @@ button[type=submit]:hover {
   }
 }
 </style>
+
+<script type="text/javascript">
+        function redirectToReport() {
+            var labNumber = "<?php echo $lab_number; ?>";
+            // window.location.href = "hpl_report.php?lab_number=" + labNumber;
+            window.open("hpl_report.php?lab_number=" + labNumber, "_blank");
+        }
+</script>
