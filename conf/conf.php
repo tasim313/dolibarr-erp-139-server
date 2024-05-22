@@ -23,7 +23,7 @@ $dolibarr_main_db_collation='en_US.utf8';
 // Authentication settings
 //$dolibarr_main_authentication='dolibarr';
 $dolibarr_main_authentication='ldap,dolibarr';   // To be able to login with both the LDAP or the Dolibarr password (if there is problem with the LDAP server, keep a non LDAP password for one admin user !)
-$dolibarr_main_auth_ldap_host='ldap://192.168.1.234'; // Plusieurs serveurs peuvent être ajouter en séparant par une virgule.
+$dolibarr_main_auth_ldap_host='ldap://192.168.1.167'; // Plusieurs serveurs peuvent être ajouter en séparant par une virgule.
 $dolibarr_main_auth_ldap_port='389';    // Port
 $dolibarr_main_auth_ldap_version='3';
 $dolibarr_main_auth_ldap_servertype='openldap';  // openldap, activedirectory or egroupware
