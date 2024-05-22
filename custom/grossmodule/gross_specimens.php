@@ -51,6 +51,9 @@ $fk_gross_id = get_gross_instance($LabNumber);
 
 
 <style>
+  .hidden {
+    display: none;
+}
     * {
   box-sizing: border-box;
 }
@@ -95,6 +98,7 @@ input[type=submit]:hover {
   border-radius: 5px;
   background-color: #f2f2f2;
   padding: 20px;
+  display: none;
 }
 
 .col-25 {
@@ -134,7 +138,6 @@ button{
   clear: both;
 }
 
-
 @media screen and (max-width: 600px) {
   .col-25, .col-75, input[type=submit] {
     width: 100%;
@@ -143,7 +146,7 @@ button{
 }
 </style>
 
-<div class="container">
+<div>
     <?php 
     $specimens = get_gross_specimen_description($fk_gross_id);
     
@@ -181,7 +184,7 @@ button{
                 });
                 </script>";
         }
-        print '<input type="submit" value="Next">';
+        print '<input type="submit" style="visibility: hidden;" value="Next">';
     print '</form>';
     print("<script>
     fetch('shortcuts.json')
@@ -236,6 +239,9 @@ document.getElementById('click_to_convert').addEventListener(
 );
 </script> -->
 
+
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     fetch('shortcuts.json')
@@ -263,6 +269,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
             });
+
+           
 
             // Automatically click the "Next" button when the page loads
             document.querySelector('input[type="submit"]').click();
