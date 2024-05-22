@@ -310,8 +310,8 @@ if ($hasConsultants) {
             </td>
         </tr>
         <tr>
-            <td>Micro Description</td>
-            <td><a href="../transcription/micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
+            <td>Microscopic Description</td>
+            <td><a href="micro_info.php?lab_number=' . $LabNumber. '"><button class="btn btn-primary">Edit</button></td>
         </tr>
         <tr>
             <td>Diagnosis Description</td>
