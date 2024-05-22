@@ -72,11 +72,9 @@ class MYPDF extends TCPDF {
     
         // Get the current date/time
         $currentDateTime = date('Y-m-d H:i:s');
-
-        $loggedInUser = isset($_SESSION['dol_login']) ? $_SESSION['dol_login'] : 'Unknown';
-       
+    
         // Construct the footer content string for left side
-        $leftFooterContent = $loggedInUser . ' | '. $currentDateTime;
+        $leftFooterContent = '' . $currentDateTime;
     
         // Get the page number information
         $pageNumberContent = 'Page ' . $this->getAliasNumPage() . ' Of ' . $this->getAliasNbPages();
@@ -193,16 +191,19 @@ if ($patient_information_result) {
 }
 
 $date_information = "SELECT 
-c.date_commande AS date, 
-c.date_livraison AS delivery_date, 
-e.referred_from AS refd_hospital, 
-e.referredby_dr AS refd_doctor 
-FROM 
-llx_commande AS c
-JOIN 
-llx_commande_extrafields AS e ON e.fk_object = c.rowid
-WHERE 
-ref = '$LabNumberWithoutPrefix';";
+    c.date_commande AS date, 
+    c.date_livraison AS delivery_date, 
+    e.referredfrom AS refd_hospital, 
+    CASE 
+        WHEN COALESCE(e.referred_by_dr_text, '') = '' THEN CONCAT(e.referredby_dr, ' ', e.referred_by_dr_text) 
+        ELSE e.referred_by_dr_text 
+    END AS refd_doctor 
+    FROM 
+    llx_commande AS c
+    JOIN 
+    llx_commande_extrafields AS e ON e.fk_object = c.rowid
+    WHERE 
+    ref = '$LabNumberWithoutPrefix';";
 
 $date_information_result = pg_query($pg_con, $date_information);
 // Check if the query was successful
@@ -241,6 +242,31 @@ if ($sex == 1) {
     $gender = 'Other';
 }
 
+
+$referred_from_information = "SELECT lastname
+FROM llx_socpeople
+WHERE rowid IN (
+    SELECT fk_socpeople
+    FROM llx_categorie_contact
+    WHERE fk_categorie = 4
+)
+AND rowid = '$refd_hospital';";
+
+$referred_from_information_result = pg_query($pg_con, $referred_from_information);
+// Check if the query was successful
+if ($referred_from_information_result) {
+    // Fetch the results (if any)
+    while ($row = pg_fetch_assoc($referred_from_information_result)) {
+        $lastname = $row['lastname'];
+        // Store the patient information in a session variable for later use
+        $_SESSION['lastname'] = $lastname;
+    }
+} else {
+    // Handle query error
+    die("Query failed for Date Information: " . pg_last_error());
+}
+// End of Sql opertaion
+
 // Define the content of the PDF document
 
 $htmlContent = '
@@ -269,7 +295,7 @@ $htmlContent = '
         </tr>
         <tr>
             <td><strong>Refd. by: </strong><span>'.$refd_doctor.'</span></td>
-            <td><strong>Refd. From: </strong><span>'.$refd_hospital.'</span></td>
+            <td><strong>Refd. From: </strong><span>'.$lastname.'</span></td>
         </tr>
         <tr>
             <td><strong>Received on: </strong><span>'.$date.'</span></td>
@@ -389,9 +415,9 @@ if ($clinical_details_result) {
 }
 
 // end of sql operations
-
-// Write HTML content to PDF
+// // Write HTML content to PDF
 $pdf->writeHTML($htmlContent, true, false, true, false, '');
+
 $tbl_spceimen = <<<EOD
 <table border="0" cellpadding="2" cellspacing="2" nobr="true">
  
@@ -438,8 +464,9 @@ if ($gross_description_result) {
     // Fetch the results (if any)
     while ($row = pg_fetch_assoc($gross_description_result)) {
         // Process each row as needed
+        $specimen_name = $row['specimen'];
         $gross_description = $row['gross_description'];
-        $gross_description_list .= $gross_description . "<br>";
+        $gross_description_list .= $specimen_name . ': ' . $gross_description . "<br>";
         
         // Store the gross information in a session variable for later use
         $_SESSION['gross_description_list'] = $gross_description_list;
@@ -476,90 +503,314 @@ if ($sections_info_result) {
     die("Query failed for sections_info: " . pg_last_error());
 }
 
+// Initialize an array to hold sections grouped by specimen letters
+$grouped_sections = array();
+
+// Group sections by specimen letters
+foreach ($section_pairs as $section_code => $specimen_section_description) {
+    $specimen_letter = substr($section_code, 0, 1);
+    $grouped_sections[$specimen_letter][$section_code] = $specimen_section_description;
+}
+
+// Sort sections within each group based on section numbers
+foreach ($grouped_sections as $group) {
+    uksort($group, function($a, $b) {
+        // Extract section numbers
+        $num_a = intval(substr($a, 1));
+        $num_b = intval(substr($b, 1));
+        // Compare section numbers
+        return $num_a - $num_b;
+    });
+}
+
 // Construct the section code and description list
 $section_code_list = '';
-foreach ($section_pairs as $section_code => $specimen_section_description) {
-    $section_code_list .= "<li>$section_code: $specimen_section_description</li>";
+
+// Iterate over grouped sections to generate the list
+foreach ($grouped_sections as $specimen_letter => $sections) {
+    $section_code_list .= "";
+    foreach ($sections as $section_code => $specimen_section_description) {
+        $section_code_list .= "<li>$section_code: $specimen_section_description</li>";
+    }
+    $section_code_list .= "";
 }
 
 // Remove the trailing comma and space
 $section_code_list = rtrim($section_code_list, ', ');
 
-// Construct the table HTML with the fetched section information
-$tbl = <<<EOD
-<table border="0" cellpadding="1" cellspacing="1" nobr="true">
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
-  <td style="text-align: left; width: 70%;">$gross_description_list<span style="text-align: left; font-weight: bold;">Section Code:</span> 
-  $section_code_list
-  </td>
- </tr>
-</table>
-EOD;
+// Test code
+// Calculate the estimated content size based on the length of text
+$contentSize = strlen($gross_description_list); // This is just a placeholder, adjust it based on your actual content
+
+// Set the maximum allowed size for the content on the first page
+$maxPageSize = 5000; // Adjust this value based on your page size and layout
+
+// Check if the content exceeds the maximum size for the first page
+if ($contentSize > $maxPageSize) {
+    // Calculate the portion of content that can fit on the first page
+    $contentToPrint = substr($gross_description_list, 0, $maxPageSize);
 
 
+        // Construct the table HTML with the fetched section information
+        $tbl = <<<EOD
+        <table border="0" cellpadding="1" cellspacing="1" nobr="true">
+        <tr>
+        <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
+        <td style="text-align: left; width: 70%; @media print {
+            .page-break {
+                page-break-inside: avoid;
+            }
+        }">$contentToPrintt<span style="text-align: left; font-weight: bold;">Section Code:</span> 
+        $section_code_list
+        </td>
+        </tr>
+        </table>
+        EOD;
+
+    // Calculate the remaining content to be printed on subsequent pages
+    $remainingContent = substr($gross_description_list, $maxPageSize);
+
+    // Loop through the remaining content and print it on subsequent pages
+    while (strlen($remainingContent) > 0) {
+        // Print the remaining content on subsequent pages
+        echo "<div class='page'>" . substr($remainingContent, 0, $maxPageSize) . "</div>";
+
+        // Update the remaining content
+        $remainingContent = substr($remainingContent, $maxPageSize);
+    }
+} else {
+    // Content fits on the first page without adjustment
+    $tbl = <<<EOD
+            <table border="0" cellpadding="1" cellspacing="1" nobr="true">
+            <tr>
+            <td style="text-align: left; font-weight: bold; width: 25%;">Gross Description:</td>
+            <td style="text-align: left; width: 70%; @media print {
+                .page-break {
+                    page-break-inside: avoid;
+                }
+            }">$gross_description_list<span style="text-align: left; font-weight: bold;">Section Code:</span> 
+            $section_code_list
+            </td>
+            </tr>
+            </table>
+            EOD;
+}
+
+// Test code
 $pdf->writeHTML($tbl, true, false, false, false, '');
 
 
 // sql opertaion for dynamic data 
 
-$micro_details_info  = "SELECT  description FROM llx_micro WHERE lab_number = '$LabNumber'";
 
+$micro_details_info = "SELECT description, specimen FROM llx_micro WHERE lab_number = '$LabNumber'";
 $micro_details_result = pg_query($pg_con, $micro_details_info);
+
+// Initialize the HTML table string
+$description_table = '<html><body>';
+$description_table .= '<table border="0" cellpadding="2" cellspacing="2" nobr="true">';
+$description_table .= '<tr>';
+$description_table .= '<td style="text-align: left; font-weight: bold; width: 25%;">Microscopic Description:</td>';
+$description_table .= '<td style="text-align: left; width: 70%;">';
+
+$description_list = ''; // Initialize a variable to store all descriptions
+
 // Check if the query was successful
 if ($micro_details_result) {
     // Fetch the results (if any)
     while ($row = pg_fetch_assoc($micro_details_result)) {
         // Process each row as needed
         $description = $row['description'];
-        $description_list .= $description . "<br>";
-        // Store the patient information in a session variable for later use
-        $_SESSION['description_list'] = $description_list;
+        // Append each description to the list
+        $description_list .= $specimen . ': ' . $description . "<br>";
     }
 } else {
     // Handle query error
     die("Query failed for micro_details: " . pg_last_error());
 }
 
-$diagnosis_details_info  = "SELECT  description FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
+// Calculate the estimated content size based on the length of text
+$contentSize = strlen($description_list); // This is just a placeholder, adjust it based on your actual content
 
+// Set the maximum allowed size for the content on the first page
+$maxPageSize = 5000; // Adjust this value based on your page size and layout
+
+// Check if the content exceeds the maximum size for the first page
+if ($contentSize > $maxPageSize) {
+    // Calculate the portion of content that can fit on the first page
+    $contentToPrint = substr($description_list, 0, $maxPageSize);
+
+    // Print the content for the first page
+    $description_table .= "<div class='page'>$contentToPrint</div>";
+
+    // Calculate the remaining content to be printed on subsequent pages
+    $remainingContent = substr($description_list, $maxPageSize);
+
+    // Loop through the remaining content and print it on subsequent pages
+    while (strlen($remainingContent) > 0) {
+        // Print the remaining content on subsequent pages
+        $description_table .= "<div class='page'>" . substr($remainingContent, 0, $maxPageSize) . "</div>";
+
+        // Update the remaining content
+        $remainingContent = substr($remainingContent, $maxPageSize);
+    }
+} else {
+    // Content fits on the first page without adjustment
+    $description_table .= "<div class='page'>$description_list</div>";
+}
+
+// Close the HTML table
+$description_table .= '</td>';
+$description_table .= '</tr>';
+$description_table .= '</table>';
+
+// Close body and html tags
+$description_table .= '</body></html>';
+
+// Now you can output the table inside the loop or wherever you want
+$pdf->writeHTML($description_table, true, false, false, false, '');
+
+
+// // try diagnosis
+// $diagnosis_details_info  = "SELECT  description, title, comment,specimen FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
+// $diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
+
+// // Initialize the HTML table string
+// $diagnosis_description_table = '<html><body>';
+// $diagnosis_description_table .= '<table border="0" cellpadding="2" cellspacing="2" nobr="true">';
+// $diagnosis_description_table .= '<tr>';
+// $diagnosis_description_table .= '<td style="text-align: left; font-weight: bold; width: 25%;">Diagnosis Description:</td>';
+// $diagnosis_description_table .= '<td style="text-align: left; width: 70%;">';
+
+// $diagnosis_description_list = ''; // Initialize a variable to store all descriptions
+
+// // Check if the query was successful
+// if ($diagnosis_details_result) {
+//     // Fetch the results (if any)
+//     while ($row = pg_fetch_assoc($diagnosis_details_result)) {
+//         // Process each row as needed
+//         $specimen = $row['specimen'];
+//         $description = $row['description'];
+//         $title = $row['title'];
+//         $comment = $row['comment'];
+//         // Append each description to the list
+//         $diagnosis_description_list .= $specimen . ',' . ' ' . $title . "<br>" .$description ."<br>".$comment."<br>";
+//     }
+// } else {
+//     // Handle query error
+//     die("Query failed for diagnosis_details: " . pg_last_error());
+// }
+
+// // Append the list of descriptions to the table
+// $diagnosis_description_table .= $diagnosis_description_list;
+
+// // Close the HTML table
+// $diagnosis_description_table .= '</td>';
+// $diagnosis_description_table .= '</tr>';
+// $diagnosis_description_table .= '</table>';
+
+// // Close body and html tags
+// $diagnosis_description_table .= '</body></html>';
+
+// // // Now you can output the table inside the loop or wherever you want
+// $pdf->writeHTML($diagnosis_description_table, true, false, false, false, '');
+
+// diagonosic new code
+// try diagnosis
+$diagnosis_details_info  = "SELECT description, title, comment, specimen FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
 $diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
+
+// Initialize the HTML table string
+$diagnosis_description_table = '<html><body>';
+$diagnosis_description_table .= '<table border="0" cellpadding="2" cellspacing="2" nobr="true">';
+$diagnosis_description_table .= '<tr>';
+$diagnosis_description_table .= '<td style="text-align: left; font-weight: bold; width: 25%;">Diagnosis Description:</td>';
+$diagnosis_description_table .= '<td style="text-align: left; width: 70%;">';
+
+// Initialize a variable to store all descriptions
+$diagnosis_description_list = '';
+// Variable to store the content for the last page
+$last_page_content = '';
+
 // Check if the query was successful
 if ($diagnosis_details_result) {
+    // Define page size
+    $page_size = 5000; // Adjust as needed
+
+    // Initialize variables for pagination
+    $current_page = 1;
+    $content_count = 0;
+
     // Fetch the results (if any)
     while ($row = pg_fetch_assoc($diagnosis_details_result)) {
         // Process each row as needed
+        $specimen = $row['specimen'];
         $description = $row['description'];
-        $diagnosis_description_list .= $description . "<br>";
-        // Store the patient information in a session variable for later use
-        $_SESSION['diagnosis_description_list'] = $diagnosis_description_list;
+        $title = $row['title'];
+        $comment = $row['comment'];
+        
+        // Calculate content size for this row
+        $content_size = strlen($specimen) + strlen($title) + strlen($description) + strlen($comment);
+
+        // Check if adding this row exceeds page size
+        if ($content_count + $content_size > $page_size) {
+            // Store content for the last page
+            $last_page_content .= $specimen . ', ' . $title . "<br>" . $description . "<br>" . $comment . "<br>";
+        } else {
+            // Append each description to the list
+            $diagnosis_description_list .= $specimen . ', ' . $title . "<br>" . $description . "<br>" . $comment . "<br>";
+
+            // Update content count
+            $content_count += $content_size;
+        }
     }
 } else {
     // Handle query error
     die("Query failed for diagnosis_details: " . pg_last_error());
 }
 
-// end of sql operations
+// Close the HTML table
+$diagnosis_description_table .= $diagnosis_description_list;
+$diagnosis_description_table .= '</td>';
+$diagnosis_description_table .= '</tr>';
+$diagnosis_description_table .= '</table>';
 
+// If there is content for the last page, add it now
+// if (!empty($last_page_content)) {
+//     $pdf->AddPage(); // Add new page
+//     $pdf->writeHTML($last_page_content, true, false, false, false, '');
+// }
 
-$tbl = <<<EOD
-<table border="0" cellpadding="2" cellspacing="2" nobr="true">
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Microscopic Description:</td>
-  <td style="text-align: left; width: 70%;">$description_list  
-  </td>
- </tr>
- <tr>
-  <td style="text-align: left; font-weight: bold; width: 25%;">Diagnosis:</td>
-  <td style="text-align: left; width: 70%;">$diagnosis_description_list
-  </td>
- </tr>
-</table>
-EOD;
+// Close body and html tags
+$diagnosis_description_table .= '</body></html>';
 
-$pdf->writeHTML($tbl, true, false, false, false, '');
+$desciptionspaceNeeded = $pdf->getStringHeight($diagnosis_description_table, '', $pdf->getPageWidth());
+$desciption_spaceAvailable = $pdf->getPageHeight() - $pdf->GetY();
+$desciptionbottomMargin = 110;
 
+// Check if there's enough space on the current page
+if ($desciptionspaceNeeded > $desciption_spaceAvailable - $desciptionbottomMargin) {
+    // Not enough space, add a new page
+    $pdf->AddPage();
+}
+
+// Output the table into PDF
+$pdf->writeHTML($diagnosis_description_table, true, false, false, false, '');
+// end code
+
+// Get the page width
+$pageWidth = $pdf->getPageWidth();
+// Print the page width
+print ('Page Width: ' . $pageWidth);
+
+$pageHeight = $pdf->getPageHeight();
+print('<br>Height: ' .$pageHeight);
 // sql opertaion for dynamic data 
+
+$y_value = $pdf->GetY();
+print('<br> y value : ' .$y_value);
+$x_value = $pdf->GetX();
+print('<br> x value : ' .$x_value);
 
 $assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
 dd.designation as designation
@@ -611,52 +862,87 @@ if ($finalized_by_info_result) {
     die("Query failed for finalized_by: " . pg_last_error());
 }
 
+
+$finalized_by_doctor_name = trim($finalized_by_doctor_name);
+$signaturesTableHTML = '';
+
+switch ($finalized_by_doctor_name) {
+    case 'Dr. Md. Shafikul Alam Tanim':
+        $signaturesTableHTML = '<style>
+            .custom-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .custom-table th, .custom-table td {
+                padding: 8px;
+                text-align: left;
+            }
+            .custom-table th {
+                font-weight: bold;
+            }
+            </style>
+
+            <table class="custom-table">
+                <tr>
+                    <th colspan="2">'.$assisted_doctor_name.'</th>
+                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_doctor_name.'</th>
+                </tr>
+                <tr>
+                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
+                    <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
+                </tr>
+                <tr>
+                    <th colspan="2">&nbsp;'.$assisted_designation.'</th>
+                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
+                </tr>
+            </table>';
+        break;
+
+    case 'Prof. Dr. Md. Aminul Islam Khan':
+        $signaturesTableHTML = '<style>
+            .custom-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .custom-table th, .custom-table td {
+                padding: 8px;
+                text-align: left;
+            }
+            .custom-table th {
+                font-weight: bold;
+            }
+            </style>
+
+            <table class="custom-table">
+                <tr>
+                    <th colspan="2">'.$assisted_doctor_name.'</th>
+                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_doctor_name.'</th>
+                </tr>
+                <tr>
+                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
+                    <th colspan="2" style="text-align:right-center">'.$finalized_by_education.'</th>
+                </tr>
+                <tr>
+                    <th colspan="2">&nbsp;'.$assisted_designation.'</th>
+                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
+                </tr>
+            </table>';
+        break;
+
+    default:
+        // Handle default case if needed
+        break;
+}
+
+
 // end of sql operations
-
-$signaturesTableHTML = '<style>
-.custom-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.custom-table th, .custom-table td {
-  padding: 8px;
-  text-align: left;
-}
-
-.custom-table th {
-  font-weight: bold;
-}
-
-
-</style>
-
-<table class="custom-table">
-<tr>
-  <th colspan="2">'.$assisted_doctor_name.'</th>
-  
-  <th colspan="2" style="text-align:center">'.$finalized_by_doctor_name.'</th>
-</tr>
-<tr>
-<th colspan="2">'.$assisted_education.'</th>
-
-<th colspan="2" style="text-align:right-center">'.$finalized_by_education.'</th>
-</tr>
-<tr>
-  <th colspan="2">'.$assisted_designation.'</th>
-  
-  <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
- 
-</tr>
-</table>';
-
 
 
  
 // Check if there's enough space for the signatures table
 $spaceNeeded = $pdf->getStringHeight($signaturesTableHTML, '', $pdf->getPageWidth());
 $spaceAvailable = $pdf->getPageHeight() - $pdf->GetY();
-$bottomMargin = 80; // Adjust this value as needed
+$bottomMargin = 48; // Adjust this value as needed
 
 // Check if there's enough space on the current page
 if ($spaceNeeded > $spaceAvailable - $bottomMargin) {
@@ -678,12 +964,12 @@ $style = array(
 );
 
 // Calculate bottom margin and center position
-$bottomMargin = 40;
+$bottomMargin = 30;
 $bottomY = $pdf->getPageHeight() - $bottomMargin;
 
 // New height and width for the QR code
-$newWidth = $style['width'] * 1.5; // Increase width by 50%
-$newHeight = $style['height'] * 1.5; // Increase height by 50%
+$newWidth = $style['width'] * 0.8; // Increase width by 50%
+$newHeight = $style['height'] * 0.8; // Increase height by 50%
 
 $centerX = ($pdf->getPageWidth() - $newWidth) / 2; // Adjust center based on new width
 

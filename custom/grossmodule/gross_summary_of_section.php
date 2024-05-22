@@ -44,7 +44,7 @@ $help_url = '';
 llxHeader('', $title, $help_url);
 
 
-print '<form method="post" action="gross_summary_of_section_create.php">';
+print '<form method="post" style="visibility: hidden;" action="gross_summary_of_section_create.php">';
 $GrossId = $_GET['fk_gross_id'];
 print '<input type="hidden" name="fk_gross_id" value="' . $GrossId . '">';
 // print('<label for="summary">Gross Summary Of Sections</label>');
@@ -52,7 +52,7 @@ print('<textarea name="summary" id="summary" style="display: none;">'.'</textare
 // print('<label for="ink_code">Ink Code</label>');
 print('<textarea name="ink_code" id="ink_code" style="display: none;">'.'</textarea>');
 
-print '<input type="submit" value="Save">';
+print '<input type="submit" style="visibility: hidden;" value="Save">';
 print '</form>';
 
 
