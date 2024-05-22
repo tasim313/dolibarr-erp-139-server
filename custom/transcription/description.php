@@ -159,7 +159,7 @@ margin-top: 0;
     print('<label for="Specimen">Specimen</label>');
     print('</div>');
     print('<div class="col-75">');
-    print("<p>  " . $alphabet_string . "</p>");
+    print("<p>".$alphabet_string."</p>");
     print('</div>');
     print('</div>');
     print('<form id="microDescriptionForm" method="post" action="micro_description_create.php">');
@@ -170,18 +170,44 @@ margin-top: 0;
 
 
       echo '<div class="row">';
-      echo '<div class="col-25">';
-      echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
-      echo '</div>';
-      echo '<div class="col-75">';
-      echo '<textarea id="' . $text_area_id . '" name="description[]" cols="60" rows="10" required></textarea>';
+     
+      echo '<label for="specimen">'.$specimen['specimen'].'</label>';
+      echo '<textarea id="' . $text_area_id . '" name="description[]" cols="60" rows="10" placeholder="Microscopic description" required></textarea>';
+      echo '<label for="histologic_type">Histologic Type</label>';
+      echo '<textarea name="histologic_type[]" cols="6" rows="1" placeholder="Histologic Type"></textarea>';
+      echo '<label for="hitologic_grade">Histologic Grade</label>';
+      echo '<textarea name="hitologic_grade[]" cols="6" rows="1" placeholder="Histologic Grade"></textarea>';
+      echo '<label for="resection_margin">Resection Margin</label>';
+      echo '<textarea name="resection_margin[]" cols="6" rows="1" placeholder="Resection Margin"></textarea>';
+      echo '<label for="pattern_of_growth">Pattern Of Growth</label>';
+      echo '<textarea name="pattern_of_growth[]" cols="6" rows="1" placeholder="Pattern Of Growth"></textarea>';
+      echo '<label for="stromal_reaction">Stromal Reaction</label>';
+      echo '<textarea name="stromal_reaction[]" cols="6" rows="1" placeholder="Stromal Reaction"></textarea>';
+      echo '<label for="Lymphovascular_invasion">Lymphovascular Invasion</label>';
+      echo '<textarea name="Lymphovascular_invasion[]" cols="6" rows="1" placeholder="Lymphovascular Invasion"></textarea>';
+      echo '<label for="depth_of_invasion">Depth Of Invasion</label>';
+      echo '<textarea name="depth_of_invasion[]" cols="6" rows="1" placeholder="Depth Of Invasion"></textarea>';
+      echo '<label for="perineural_invasion">Perineural Invasion</label>';
+      echo '<textarea name="perineural_invasion[]" cols="6" rows="1" placeholder="Perineural Invasion"></textarea>';
+      echo '<label for="bone">Bone</label>';
+      echo '<textarea name="bone[]" cols="6" rows="1" placeholder="Bone"></textarea>';
+      echo '<label for="lim_node">Lim Node</label>';
+      echo '<textarea name="lim_node[]" cols="6" rows="1" placeholder="Lim Node"></textarea>';
+      echo '<label for="ptnm_title">Ptnm Title</label>';
+      echo '<textarea name="ptnm_title[]" cols="6" rows="1" placeholder="Ptnm Title"></textarea>';
+      echo '<label for="pt2">PT2</label>';
+      echo '<textarea name="pt2[]" cols="6" rows="1" placeholder="PT2"></textarea>';
+      echo '<label for="pnx">PNx</label>';
+      echo '<textarea name="pnx[]" cols="6" rows="1" placeholder="pnx"></textarea>';
+      echo '<label for="pmx">PMX</label>';
+      echo '<textarea name="pmx[]" cols="6" rows="1" placeholder="pmx"></textarea>';
       echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
       echo '<input type="hidden" name="fk_gross_id[]" value="' . $fk_gross_id . '">';
       echo '<input type="hidden" name="created_user[]" value="' . $created_user . '">';
       echo '<input type="hidden" name="status[]" value="' . $status . '">';
       echo '<input type="hidden" name="lab_number[]" value="' . $lab_number . '">';
       echo '</div>';
-      echo '</div>';
+      
      
   }
 
