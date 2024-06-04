@@ -25,7 +25,7 @@ if (!$insert_result) {
 }
 
 echo "Doctor signature inserted successfully.";
-header("Location: doctor_signature.php?lab_number=$lab_number");
+header("Location: transcription.php?lab_number=$lab_number");
 
 // Close the database connection
 pg_close($pg_con);

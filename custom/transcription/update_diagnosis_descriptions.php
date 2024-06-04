@@ -7,12 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lab_numbers = isset($_POST['lab_number']) ? $_POST['lab_number'] : [];
     $fk_gross_ids = isset($_POST['fk_gross_id']) ? $_POST['fk_gross_id'] : [];
     $descriptions = isset($_POST['description']) ? $_POST['description'] : [];
+    $titles = isset($_POST['title']) ? $_POST['title'] : []; // Added titles array
+    $comments = isset($_POST['comment']) ? $_POST['comment'] : []; // Added comments array
     $created_users = isset($_POST['created_user']) ? $_POST['created_user'] : [];
     $statuses = isset($_POST['status']) ? $_POST['status'] : [];
     $row_ids = isset($_POST['row_id']) ? $_POST['row_id'] : [];
 
     // Prepare update statement (excluding lab_number update)
-    $stmt = pg_prepare($pg_con, "update_statement", "UPDATE llx_diagnosis SET fk_gross_id = $1, specimen = $2, description = $3, created_user = $4, status = $5 WHERE row_id = $6");
+    $stmt = pg_prepare($pg_con, "update_statement", "UPDATE llx_diagnosis SET fk_gross_id = $1, specimen = $2, description = $3, title = $4, comment = $5, created_user = $6, status = $7 WHERE row_id = $8");
 
     if (!$stmt) {
         echo "Error preparing statement: " . pg_last_error($pg_con);
@@ -27,6 +29,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fk_gross_ids[$i],
             pg_escape_string($specimens[$i]),
             pg_escape_string($descriptions[$i]),
+            pg_escape_string($titles[$i]), // Added title
+            pg_escape_string($comments[$i]), // Added comment
             pg_escape_string($created_users[$i]),
             pg_escape_string($statuses[$i]),
             $row_ids[$i]

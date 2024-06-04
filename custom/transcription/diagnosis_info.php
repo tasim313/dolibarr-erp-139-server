@@ -311,6 +311,7 @@ button {
     }
     print('<form id="diagnosisDescriptionForm">');
     // Loop through specimens list to generate form fields
+    // Loop through specimens list to generate form fields
     foreach ($specimens_list as $key => $specimen) {
         $text_area_id = 'description' . $key;
         
@@ -323,13 +324,17 @@ button {
                 echo '<label for="specimen">' . $specimen['specimen'] . '</label>';
                 echo '</div>';
                 echo '<div class="col-75">';
-                echo '<textarea id="' . $text_area_id . '" name="description[]" data-index="' . $key . '" cols="60" rows="10" required>' . htmlspecialchars($existingDescription['description']) . '</textarea>';
-                echo '<input type="hidden" name="specimen[]" value="' . $specimen['specimen'] . '">';
-                echo '<input type="hidden" name="fk_gross_id[]" value="' . $existingDescription['fk_gross_id'] . '">';
-                echo '<input type="hidden" name="created_user[]" value="' . $existingDescription['created_user'] . '">';
-                echo '<input type="hidden" name="status[]" value="' . $existingDescription['status'] . '">';
-                echo '<input type="hidden" name="lab_number[]" value="' . $existingDescription['lab_number'] . '">';
-                echo '<input type="hidden" name="row_id[]" value="' . $existingDescription['row_id'] . '">';
+                echo '<textarea id="' . $text_area_id . '" name="description[' . $key . ']" data-index="' . $key . '" cols="60" rows="10" required>' . htmlspecialchars($existingDescription['description']) . '</textarea>';
+                echo '<input type="hidden" name="specimen[' . $key . ']" value="' . $specimen['specimen'] . '">';
+                echo '<input type="hidden" name="fk_gross_id[' . $key . ']" value="' . $existingDescription['fk_gross_id'] . '">';
+                echo '<input type="hidden" name="created_user[' . $key . ']" value="' . $existingDescription['created_user'] . '">';
+                echo '<input type="hidden" name="status[' . $key . ']" value="' . $existingDescription['status'] . '">';
+                echo '<input type="hidden" name="lab_number[' . $key . ']" value="' . $existingDescription['lab_number'] . '">';
+                echo '<input type="hidden" name="row_id[' . $key . ']" value="' . $existingDescription['row_id'] . '">';
+                echo '<label for="title">Title</label>';
+                echo '<textarea name="title[' . $key . ']">' . $existingDescription['title'] .'</textarea>';
+                echo '<label for="comment">Comment</label>';
+                echo '<textarea name="comment[' . $key . ']">' . $existingDescription['comment'] .'</textarea>';
                 echo '</div>';
                 echo '</div>';
                 
@@ -338,6 +343,7 @@ button {
             }
         }
     }
+
     
 ?>
     <div class="row">

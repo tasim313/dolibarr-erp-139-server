@@ -200,7 +200,7 @@ function get_micro_description($fk_gross_id, $lab_number) {
     global $pg_con;
 
     $sql = "select row_id, lab_number, fk_gross_id, description, status, specimen from llx_micro where fk_gross_id='$fk_gross_id' 
-    AND lab_number = '$lab_number'";
+    AND lab_number = '$lab_number' ORDER BY row_id ASC";
 
     $result = pg_query($pg_con, $sql);
 
@@ -358,7 +358,21 @@ function getExistingMicroDescriptions($labNumber) {
 
     $existingMicroDescriptions = array();
 
-    $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen FROM llx_micro WHERE lab_number = '$labNumber'";
+    $sql = "SELECT row_id,
+    lab_number,
+    fk_gross_id,
+    description,
+    created_user,
+    status,
+    specimen,
+    histologic_type,
+    hitologic_grade,
+    pattern_of_growth, 
+    stromal_reaction, 
+    depth_of_invasion, 
+    lymphovascular_invasion, 
+    perineural_invasion,
+    bone, lim_node, ptnm_title, pt2, pnx, pmx, resection_margin FROM llx_micro WHERE lab_number = '$labNumber' ORDER BY row_id ASC";
     $result = pg_query($pg_con, $sql);
 
     if ($result) {
@@ -370,7 +384,21 @@ function getExistingMicroDescriptions($labNumber) {
                 'description' => $row['description'],
                 'created_user' => $row['created_user'],
                 'status' => $row['status'],
-                'specimen' => $row['specimen']
+                'specimen' => $row['specimen'],
+                'histologic_type' => $row['histologic_type'],
+                'hitologic_grade' => $row['hitologic_grade'],
+                'pattern_of_growth' => $row['pattern_of_growth'],
+                'stromal_reaction' => $row['stromal_reaction'],
+                'depth_of_invasion' => $row['depth_of_invasion'],
+                'lymphovascular_invasion' => $row['lymphovascular_invasion'],
+                'perineural_invasion' => $row['perineural_invasion'],
+                'bone' => $row['bone'],
+                'lim_node' => $row['lim_node'],
+                'ptnm_title' => $row['ptnm_title'],
+                'pt2' => $row['pt2'],
+                'pnx' => $row['pnx'],
+                'pmx' => $row['pmx'],
+                'resection_margin' => $row['resection_margin']
             );
         }
         pg_free_result($result);

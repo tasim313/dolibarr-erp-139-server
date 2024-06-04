@@ -333,7 +333,7 @@ if ($hasTranscriptionist) {
 		'</td><td>' . $list['gross_doctor_name'] .
 		'</td>' .
 		
-        '<td><a href="description.php?fk_gross_id=' . $list['gross_id']. '"><button>Add</button></a></td></tr>
+        '<td><a href="micro_description_create.php?fk_gross_id=' . $list['gross_id']. ' & user='.$loggedInUsername.'"><button>Add</button></a></td></tr>
         ');
     }
     print('</table>');
