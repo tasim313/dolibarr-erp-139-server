@@ -37,7 +37,7 @@ function get_patient_information($lab_number) {
 function get_gross_specimens_list($lab_number) {
     global $pg_con;
 
-    $sql = "SELECT de.fk_commande, de.fk_product, de.description as specimen,  c.ref, e.num_containers,
+    $sql = "SELECT de.fk_commande, de.fk_product, de.description as specimen,  c.ref, e.num_containers, de.rowid as specimen_id,
     (
         SELECT COUNT(*) 
         FROM llx_commandedet AS inner_de 
@@ -50,7 +50,7 @@ JOIN
 JOIN 
     llx_commande_extrafields AS e ON e.fk_object = c.rowid
 WHERE 
-    c.ref = '$lab_number'";
+    c.ref = '$lab_number' ORDER BY de.rowid ASC";
 
     $result = pg_query($pg_con, $sql);
 
@@ -63,7 +63,8 @@ WHERE
                 'num_containers' => $row['num_containers'], 
                 'fk_product' => $row['fk_product'], 
                 'number_of_specimens' => $row['number_of_specimens'],
-                'specimen' => $row['specimen']];
+                'specimen' => $row['specimen'],
+                'specimen_rowid' => $row['specimen_id']];
         }
 
         pg_free_result($result);

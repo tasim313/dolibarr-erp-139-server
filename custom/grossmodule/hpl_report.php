@@ -603,7 +603,22 @@ $pdf->writeHTML($tbl, true, false, false, false, '');
 // sql opertaion for dynamic data 
 
 
-$micro_details_info = "SELECT description, specimen FROM llx_micro WHERE lab_number = '$LabNumber'";
+$micro_details_info = "SELECT 
+description,
+specimen, 
+histologic_type,
+hitologic_grade,
+pattern_of_growth, 
+stromal_reaction, 
+depth_of_invasion, 
+lymphovascular_invasion, 
+perineural_invasion,
+bone, 
+lim_node, 
+ptnm_title, 
+pt2, 
+pnx, 
+pmx, resection_margin FROM llx_micro WHERE lab_number = '$LabNumber' ORDER BY row_id ASC";
 $micro_details_result = pg_query($pg_con, $micro_details_info);
 
 // Initialize the HTML table string
@@ -621,8 +636,26 @@ if ($micro_details_result) {
     while ($row = pg_fetch_assoc($micro_details_result)) {
         // Process each row as needed
         $description = $row['description'];
+        $histologic_type = $row['histologic_type'];
+        $hitologic_grade = $row['hitologic_grade'];
+        $pattern_of_growth = $row['pattern_of_growth'];
+        $stromal_reaction = $row['stromal_reaction'];
+        $depth_of_invasion = $row['depth_of_invasion'];
+        $lymphovascular_invasion = $row['lymphovascular_invasion'];
+        $perineural_invasion = $row['perineural_invasion'];
+        $bone = $row['bone'];
+        $lim_node = $row['lim_node'];
+        $ptnm_title = $row['ptnm_title'];
+        $pt2 = $row['pt2'];
+        $pnx = $row['pnx'];
+        $pmx = $row['pmx'];
+        $resection_margin = $row['resection_margin'];
         // Append each description to the list
-        $description_list .= $specimen . ': ' . $description . "<br>";
+        $description_list .= $specimen . ': ' 
+        . $description . "<br>" .$histologic_type . "<br>" .$hitologic_grade. 
+        "<br>". $pattern_of_growth."<br>".$stromal_reaction."<br>".$depth_of_invasion."<br>".$resection_margin.
+        "<br>".$lymphovascular_invasion."<br>".$perineural_invasion.
+        "<br>".$bone."<br>".$lim_node."<br>".$ptnm_title."<br>".$pt2."<br>".$pnx."<br>".$pmx."<br>";
     }
 } else {
     // Handle query error
@@ -717,7 +750,7 @@ $pdf->writeHTML($description_table, true, false, false, false, '');
 
 // diagonosic new code
 // try diagnosis
-$diagnosis_details_info  = "SELECT description, title, comment, specimen FROM llx_diagnosis WHERE lab_number = '$LabNumber'";
+$diagnosis_details_info  = "SELECT description, title, comment, specimen FROM llx_diagnosis WHERE lab_number = '$LabNumber' ORDER BY row_id ASC";
 $diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
 
 // Initialize the HTML table string

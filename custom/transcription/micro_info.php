@@ -380,7 +380,7 @@ document.getElementById("microDescriptionForm").addEventListener("submit", funct
     .then(response => response.text())
     .then(data => {
         console.log(data); 
-        window.location.href = "list.php"
+        window.location.href = "hpl_transcription_list.php?lab_number='<?php $LabNumber ?>'"
     })
     .catch(error => {
         console.error("Error:", error);

@@ -38,10 +38,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        echo "Clinical details updated successfully.";
         $update_lab_number = trim($lab_number, '.');
         echo '<script>';
-        echo 'window.location.href = "hpl_transcription_list.php?lab_number=' . $update_lab_number . '"';
+        echo 'window.location.href = "transcription.php?lab_number=' . $update_lab_number . '"';
         echo '</script>';
     } else {
         // If clinical details do not exist, insert them
@@ -63,10 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        echo "Clinical details inserted successfully.";
         $update_lab_number = trim($lab_number, '.');
         echo '<script>';
-        echo 'window.location.href = "hpl_transcription_list.php?lab_number=' . $update_lab_number . '"';
+        echo 'window.location.href = "transcription.php?lab_number=' . $update_lab_number . '"';
         echo '</script>';
         
     }
