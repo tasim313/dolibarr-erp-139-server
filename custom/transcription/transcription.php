@@ -223,13 +223,13 @@ print('<div class="sticky">');
 print('<form id="patientForm" method="post" action="patient_info_update.php">'); 
 print('<div class="flex-table-container">
     <h1>Patient Information</h1>
-   
     <button class="button-class">
             <a href="../grossmodule/hpl_report.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Preview</a>
     </button>
-    
+    <button class="button-class">
+            <a href="odt.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Generate Odt</a>
+    </button>
 </div>');
-
 foreach ($patient_information as $list) {
 	$genderOptions = [
 		'1' => 'Male',
