@@ -497,12 +497,12 @@ name="submit" value="att_relation" class="btn btn-primary">Save</button>
 </div>');
 echo '</form>';
 
-$existingMicroDescriptions = getExistingMicroDescriptions($LabNumber);
-$specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
+// $existingMicroDescriptions = getExistingMicroDescriptions($LabNumber);
+// $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 // Ensure $existingMicroDescriptions is an array
-if (!is_array($existingMicroDescriptions)) {
-    $existingMicroDescriptions = array();
-}
+// if (!is_array($existingMicroDescriptions)) {
+//     $existingMicroDescriptions = array();
+// }
 // echo('<form action="" id="microDescriptionForm">
 //     <div class="form-group">
 //     <h2 class="heading">Microscopic</h2>');
@@ -604,65 +604,121 @@ if (!is_array($existingMicroDescriptions)) {
 //  ');
 // echo '</form>';
 
-foreach ($existingMicroDescriptions as $existingDescription) {
-print('
-<form action="" id="microDescriptionForm">
-    <div class="form-group">
-        <h2 class="heading">Microscopic</h2>
+// foreach ($existingMicroDescriptions as $key => $existingDescription) {
+//     $formId = 'microDescriptionForm' . $key;
+//     $fieldsId = 'fields' . $key;
+//     $dynamicFieldsId = 'dynamicFields' . $key;
 
-        <div class="controls">
-            <label for="fields">Select Fields:</label>
-            <select id="fields" multiple>
-                <option value="histologic_type">Histologic Type</option>
-                <option value="hitologic_grade">Histologic Grade</option>
-                <option value="pattern_of_growth">Pattern of Growth</option>
-                <option value="stromal_reaction">Stromal Reaction</option>
-                <option value="depth_of_invasion">Depth Of Invasion</option>
-                <option value="resection_margin">Resection Margin</option>
-                <option value="lymphovascular_invasion">Lymphovascular Invasion</option>
-                <option value="perineural_invasion">Perineural Invasion</option>
-                <option value="bone">Bone</option>
-                <option value="lim_node">Lymph Node</option>
-                <option value="ptnm_title">Ptnm Title</option>
-                <option value="pt2">Pt2</option>
-                <option value="pnx">Pnx</option>
-                <option value="pmx">Pmx</option>
-            </select>
-        </div>
+//     // print('
+//     // <form action="" id="' . $formId . '">
+//     //     <div class="form-group">
+//     //         <h2 class="heading">Microscopic</h2>
+//     //         <div class="controls">
+//     //             <fieldset>
+//     //                 <label>Pick One or Many Field</label>
+//     //                 <details>
+//     //                     <summary>Choose Microscopic Field</summary>
+//     //                     <ul id="' . $fieldsId . '">
+//     //                         <label><input type="checkbox" name="fc" value="histologic_type" />Histologic Type</label>
+//     //                         <label><input type="checkbox" name="fc" value="hitologic_grade" />Histologic Grade</label>
+//     //                         <label><input type="checkbox" name="fc" value="pattern_of_growth" />Pattern of Growth</label>
+//     //                         <label><input type="checkbox" name="fc" value="stromal_reaction" />Stromal Reaction</label>
+//     //                         <label><input type="checkbox" name="fc" value="depth_of_invasion" />Depth Of Invasion</label>
+//     //                         <label><input type="checkbox" name="fc" value="resection_margin" />Resection Margin</label>
+//     //                         <label><input type="checkbox" name="fc" value="lymphovascular_invasion" />Lymphovascular Invasion</label>
+//     //                         <label><input type="checkbox" name="fc" value="perineural_invasion" />Perineural Invasion</label>
+//     //                         <label><input type="checkbox" name="fc" value="bone" />Bone</label>
+//     //                         <label><input type="checkbox" name="fc" value="lim_node" />Lymph Node</label>
+//     //                         <label><input type="checkbox" name="fc" value="ptnm_title" />Ptnm Title</label>
+//     //                         <label><input type="checkbox" name="fc" value="pt2" />Pt2</label>
+//     //                         <label><input type="checkbox" name="fc" value="pnx" />Pnx</label>
+//     //                         <label><input type="checkbox" name="fc" value="pmx" />Pmx</label>
+//     //                     </ul>
+//     //                 </details>
+//     //             </fieldset>
+//     //         </div>
+//     //         <div class="controls" data-field="specimen">
+//     //             <label for="specimen" class="bold-label">Specimen</label>
+//     //             <textarea style="margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
+//     //         </div>
+//     //         <div class="controls" data-field="microscopic_description">
+//     //             <label for="microscopic_description" class="bold-label">Microscopic Description</label>
+//     //             <textarea style="margin-top: 8px; margin-bottom: 8px;" id="description' . $key . '" name="description[]" data-index=' . $key . ' cols="60" rows="4" >' . htmlspecialchars($existingDescription['description']) . '</textarea>
+//     //             <input type="hidden" name="fk_gross_id[]" value=' . $existingDescription['fk_gross_id'] . '>
+//     //             <input type="hidden" name="created_user[]" value=' . $existingDescription['created_user'] . '>
+//     //             <input type="hidden" name="status[]" value=' . $existingDescription['status'] . '>
+//     //             <input type="hidden" name="lab_number[]" value=' . $existingDescription['lab_number'] . '>
+//     //             <input type="hidden" name="row_id[]" value=' . $existingDescription['row_id'] . '>
+//     //         </div>
+//     //         <div id="' . $dynamicFieldsId . '"></div>
+//     //     </div>
+//     // ');
 
-        <div class="controls" data-field="specimen">
-            <label for="specimen" class="bold-label">Specimen</label>
-            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
-        </div>
+// }
+// print('
+//     <div class="grid">
+//         <button style="background-color: rgb(118, 145, 225); color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; float: right; transition: box-shadow 0.3s ease;" 
+//         id="micro-button" type="submit" name="submit" value="att_relation" class="btn btn-primary">Save</button>
+//     </div>
+    
+//     </form>');
 
-        <div class="controls" data-field="microscopic_description">
-            <label for="microscopic_description" class="bold-label">Microscopic Description</label>
-            <textarea style=" margin-top: 8px; margin-bottom: 8px;" id="description" name="description[]" data-index=' . $key . ' cols="60" rows="4" >' . htmlspecialchars($existingDescription['description']) . '</textarea>
-            <input type="hidden" name="fk_gross_id[]" value=' . $existingDescription['fk_gross_id'] . '>
-            <input type="hidden" name="created_user[]" value=' . $existingDescription['created_user'] . '>
-            <input type="hidden" name="status[]" value=' . $existingDescription['status'] . '>
-            <input type="hidden" name="lab_number[]" value=' . $existingDescription['lab_number'] . '>
-            <input type="hidden" name="row_id[]" value=' . $existingDescription['row_id'] . '>
-        </div>
+$existingMicroDescriptions = getExistingMicroDescriptions($LabNumber);
+$specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 
-        <div id="dynamicFields"></div>');
+// Ensure $existingMicroDescriptions is an array
+if (!is_array($existingMicroDescriptions)) {
+    $existingMicroDescriptions = array();
 }
 
-print(' <div class="grid">
-<button style="background-color: rgb(118, 145, 225);
-color: white;
-padding: 12px 20px;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-float: right;
-transition: box-shadow 0.3s ease;" 
-id="micro-button" type="submit" 
-name="submit" value="att_relation" class="btn btn-primary">Save</button>
+foreach ($existingMicroDescriptions as $key => $existingDescription) {
+    $formId = 'microDescriptionForm' . $key;
+    $fieldsId = 'fields' . $key;
+    $dynamicFieldsId = 'dynamicFields' . $key;
+    ?>
+    <form action="" id="<?php echo $formId; ?>">
+        <div class="form-group">
+            <h2 class="heading">Microscopic</h2>
+            <div class="controls">
+                <fieldset>
+                    <label>Pick One or Many Field</label>
+                    <details>
+                        <summary>Choose Microscopic Field</summary>
+                        <ul id="<?php echo $fieldsId; ?>">
+                            <?php
+                            $fields = ['histologic_type' => 'Histologic Type', 'hitologic_grade' => 'Histologic Grade', 'pattern_of_growth' => 'Pattern of Growth', 'stromal_reaction' => 'Stromal Reaction', 'depth_of_invasion' => 'Depth Of Invasion', 'resection_margin' => 'Resection Margin', 'lymphovascular_invasion' => 'Lymphovascular Invasion', 'perineural_invasion' => 'Perineural Invasion', 'bone' => 'Bone', 'lim_node' => 'Lymph Node', 'ptnm_title' => 'Ptnm Title', 'pt2' => 'Pt2', 'pnx' => 'Pnx', 'pmx' => 'Pmx'];
+                            foreach ($fields as $value => $label) {
+                                echo '<label><input type="checkbox" name="fc" value="' . $value . '" />' . $label . '</label>';
+                            }
+                            ?>
+                        </ul>
+                    </details>
+                </fieldset>
+            </div>
+            <div class="controls" data-field="specimen">
+                <label for="specimen" class="bold-label">Specimen</label>
+                <textarea style="margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2"><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
+            </div>
+            <div class="controls" data-field="microscopic_description">
+                <label for="microscopic_description" class="bold-label">Microscopic Description</label>
+                <textarea style="margin-top: 8px; margin-bottom: 8px;" id="description<?php echo $key; ?>" name="description[]" data-index="<?php echo $key; ?>" cols="60" rows="4"><?php echo htmlspecialchars($existingDescription['description']); ?></textarea>
+                <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($existingDescription['fk_gross_id']); ?>">
+                <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($existingDescription['created_user']); ?>">
+                <input type="hidden" name="status[]" value="<?php echo htmlspecialchars($existingDescription['status']); ?>">
+                <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
+                <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
+            </div>
+            <div id="<?php echo $dynamicFieldsId; ?>"></div>
+        </div>
+    </form>
+    <?php
+}
+?>
+<div class="grid">
+    <button style="background-color: rgb(118, 145, 225); color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; float: right; transition: box-shadow 0.3s ease;" 
+    id="micro-button" type="submit" name="submit" value="att_relation" class="btn btn-primary">Save</button>
 </div>
-</div>
-</form>');
-
+<?php
 $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
 $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 // Ensure $existingDiagnosisDescriptions is an array
@@ -1413,141 +1469,146 @@ document.getElementById("diagnosisDescriptionForm").addEventListener("submit", f
 });
 </script>
 
+
 <script>
-document.getElementById('fields').addEventListener('change', function() {
-    const selectedOptions = Array.from(this.selectedOptions).map(option => option.value);
-    const dynamicFields = document.getElementById('dynamicFields');
-
-    // Track which fields are already added
-    const existingFields = Array.from(dynamicFields.children).map(child => child.dataset.field);
-
-    // Remove fields that are no longer selected
-    Array.from(dynamicFields.children).forEach(child => {
-        if (!selectedOptions.includes(child.dataset.field)) {
-            child.remove();
-        }
-    });
-
-    // Add new fields that are not already present
-    selectedOptions.forEach(option => {
-        if (!existingFields.includes(option)) {
-            let fieldHtml = '';
-            switch(option) {
-                case 'histologic_type':
-                    fieldHtml = `
-                        <div class="controls" data-field="histologic_type">
-                            <label for="histologic_type" class="bold-label">Histologic Type</label> <button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="histologic_type[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'hitologic_grade':
-                    fieldHtml = `
-                        <div class="controls" data-field="hitologic_grade">
-                            <label for="hitologic_grade" class="bold-label">Histologic Grade</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="hitologic_grade[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'pattern_of_growth':
-                    fieldHtml = `
-                        <div class="controls" data-field="pattern_of_growth">
-                            <label for="pattern_of_growth" class="bold-label">Pattern of Growth</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pattern_of_growth[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'stromal_reaction':
-                    fieldHtml = `
-                        <div class="controls" data-field="stromal_reaction">
-                            <label for="stromal_reaction" class="bold-label">Stromal Reaction</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="stromal_reaction[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'depth_of_invasion':
-                    fieldHtml = `
-                        <div class="controls" data-field="depth_of_invasion">
-                            <label for="depth_of_invasion" class="bold-label">Depth Of Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="depth_of_invasion[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'resection_margin':
-                    fieldHtml = `
-                        <div class="controls" data-field="resection_margin">
-                            <label for="resection_margin" class="bold-label">Resection Margin</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="resection_margin[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'lymphovascular_invasion':
-                    fieldHtml = `
-                        <div class="controls" data-field="lymphovascular_invasion">
-                            <label for="lymphovascular_invasion" class="bold-label">Lymphovascular Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lymphovascular_invasion[]" cols="10" rows="2"></textarea> 
-                        </div>
-                    `;
-                    break;
-                case 'perineural_invasion':
-                    fieldHtml = `
-                        <div class="controls" data-field="perineural_invasion">
-                            <label for="perineural_invasion" class="bold-label">Perineural Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="perineural_invasion[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'bone':
-                    fieldHtml = `
-                        <div class="controls" data-field="bone">
-                            <label for="bone" class="bold-label">Bone</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="bone[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'lim_node':
-                    fieldHtml = `
-                        <div class="controls" data-field="lim_node">
-                            <label for="lim_node" class="bold-label">Lymph Node</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lim_node[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'ptnm_title':
-                    fieldHtml = `
-                        <div class="controls" data-field="ptnm_title">
-                            <label for="ptnm_title" class="bold-label">Ptnm Title</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="ptnm_title[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'pt2':
-                    fieldHtml = `
-                        <div class="controls" data-field="pt2">
-                            <label for="pt2" class="bold-label">Pt2</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pt2[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'pnx':
-                    fieldHtml = `
-                        <div class="controls" data-field="pnx">
-                            <label for="pnx" class="bold-label">Pnx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pnx[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
-                case 'pmx':
-                    fieldHtml = `
-                        <div class="controls" data-field="pmx">
-                            <label for="pmx" class="bold-label">Pmx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
-                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pmx[]" cols="10" rows="2"></textarea>
-                        </div>
-                    `;
-                    break;
+document.querySelectorAll('form[id^="microDescriptionForm"]').forEach(form => {
+    const formId = form.id.replace('microDescriptionForm', '');
+    const fields = document.querySelectorAll(`#fields${formId} input[type="checkbox"]`);
+    const dynamicFields = document.getElementById(`dynamicFields${formId}`);
+    
+    fields.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            // Track which fields are already added
+            const existingFields = Array.from(dynamicFields.children).map(child => child.dataset.field);
+            
+            // If checkbox is checked, add the field
+            if (this.checked) {
+                if (!existingFields.includes(this.value)) {
+                    let fieldHtml = '';
+                    switch(this.value) {
+                        case 'histologic_type':
+                            fieldHtml = `
+                                <div class="controls" data-field="histologic_type">
+                                    <label for="histologic_type" class="bold-label">Histologic Type</label> <button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="histologic_type[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'hitologic_grade':
+                            fieldHtml = `
+                                <div class="controls" data-field="hitologic_grade">
+                                    <label for="hitologic_grade" class="bold-label">Histologic Grade</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="hitologic_grade[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'pattern_of_growth':
+                            fieldHtml = `
+                                <div class="controls" data-field="pattern_of_growth">
+                                    <label for="pattern_of_growth" class="bold-label">Pattern of Growth</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pattern_of_growth[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'stromal_reaction':
+                            fieldHtml = `
+                                <div class="controls" data-field="stromal_reaction">
+                                    <label for="stromal_reaction" class="bold-label">Stromal Reaction</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="stromal_reaction[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'depth_of_invasion':
+                            fieldHtml = `
+                                <div class="controls" data-field="depth_of_invasion">
+                                    <label for="depth_of_invasion" class="bold-label">Depth Of Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="depth_of_invasion[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'resection_margin':
+                            fieldHtml = `
+                                <div class="controls" data-field="resection_margin">
+                                    <label for="resection_margin" class="bold-label">Resection Margin</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="resection_margin[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'lymphovascular_invasion':
+                            fieldHtml = `
+                                <div class="controls" data-field="lymphovascular_invasion">
+                                    <label for="lymphovascular_invasion" class="bold-label">Lymphovascular Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lymphovascular_invasion[]" cols="10" rows="2"></textarea> 
+                                </div>
+                            `;
+                            break;
+                        case 'perineural_invasion':
+                            fieldHtml = `
+                                <div class="controls" data-field="perineural_invasion">
+                                    <label for="perineural_invasion" class="bold-label">Perineural Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="perineural_invasion[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'bone':
+                            fieldHtml = `
+                                <div class="controls" data-field="bone">
+                                    <label for="bone" class="bold-label">Bone</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="bone[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'lim_node':
+                            fieldHtml = `
+                                <div class="controls" data-field="lim_node">
+                                    <label for="lim_node" class="bold-label">Lymph Node</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lim_node[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'ptnm_title':
+                            fieldHtml = `
+                                <div class="controls" data-field="ptnm_title">
+                                    <label for="ptnm_title" class="bold-label">Ptnm Title</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="ptnm_title[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'pt2':
+                            fieldHtml = `
+                                <div class="controls" data-field="pt2">
+                                    <label for="pt2" class="bold-label">Pt2</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pt2[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'pnx':
+                            fieldHtml = `
+                                <div class="controls" data-field="pnx">
+                                    <label for="pnx" class="bold-label">Pnx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pnx[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                        case 'pmx':
+                            fieldHtml = `
+                                <div class="controls" data-field="pmx">
+                                    <label for="pmx" class="bold-label">Pmx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                                    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pmx[]" cols="10" rows="2"></textarea>
+                                </div>
+                            `;
+                            break;
+                    }
+                    dynamicFields.insertAdjacentHTML('beforeend', fieldHtml);
+                }
+            } else {
+                // If checkbox is unchecked, remove the field
+                const fieldToRemove = dynamicFields.querySelector(`[data-field="${this.value}"]`);
+                if (fieldToRemove) {
+                    fieldToRemove.remove();
+                }
             }
-            dynamicFields.insertAdjacentHTML('beforeend', fieldHtml);
-        }
+        });
     });
 });
 
