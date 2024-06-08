@@ -89,70 +89,62 @@ main {
     justify-content: space-between; 
     margin: 20px; 
 } 
-  table {
-	border-collapse: collapse;
-	font-family: helvetica;
-  }
-  td,
-  th {
-	border: 0.1px solid white;
-	padding: 4px;
-	min-width: 100px;
-	background: white;
-	box-sizing: border-box;
-	text-align: left;
-  }
-  .table-container {
-	position: relative;
-	max-height: 200px;
-	width: 500px;
+//   table {
+// 	border-collapse: collapse;
+// 	font-family: helvetica;
+//   }
+//   td,
+//   th {
+// 	border: 0.1px solid white;
+// 	padding: 2px;
+// 	min-width: 100px;
+// 	background: white;
+// 	box-sizing: border-box;
+// 	text-align: left;
+//   }
+//   .table-container {
+// 	position: relative;
+// 	max-height: 200px;
+// 	width: 500px;
 	
-  }
+//   }
   
-  thead th {
-	top: 0;
-	z-index: 2;
-	background:rgb(4, 106, 170);
-    color: white;
-  }
+//   thead th {
+// 	top: 0;
+// 	z-index: 2;
+// 	background:rgb(4, 106, 170);
+//     color: white;
+//   }
 
-  thead th:first-child {
-	left: 0;
-	z-index: 3;
-  }
+//   thead th:first-child {
+// 	left: 0;
+// 	z-index: 3;
+//   }
   
-  tfoot {
-	bottom: 0;
-	z-index: 2;
-  }
+//   tfoot {
+// 	bottom: 0;
+// 	z-index: 2;
+//   }
   
-  tfoot td {
-	bottom: 0;
-	z-index: 2;
-	background: rgb(4, 106, 170);
-  }
+//   tfoot td {
+// 	bottom: 0;
+// 	z-index: 2;
+// 	background: rgb(4, 106, 170);
+//   }
   
-  tfoot td:first-child {
-	z-index: 3;
-  }
+//   tfoot td:first-child {
+// 	z-index: 3;
+//   }
   
-  tbody {
+//   tbody {
 	
-	height: 200px;
-  }
-  .fixed-table input[type="text"], .fixed-table input[type="hidden"] {
-    border: none;
-    outline: none;
-}
-  /* MAKE LEFT COLUMN FIXEZ */
-  tr > :first-child {
-	// background: hsl(180, 50%, 70%);
-	left: 0;
-  }
+// 	height: 200px;
+//   }
+//   .fixed-table input[type="text"], .fixed-table input[type="hidden"] {
+//     border: none;
+//     outline: none;
+// }
  
-  tr > :first-child {
-	// box-shadow: inset 0px 1px black;
-  }
 
 .flex-table-container h1 {
     margin: 0;
@@ -223,12 +215,6 @@ print('<div class="sticky">');
 print('<form id="patientForm" method="post" action="patient_info_update.php">'); 
 print('<div class="flex-table-container">
     <h1>Patient Information</h1>
-    <button class="button-class">
-            <a href="../grossmodule/hpl_report.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Preview</a>
-    </button>
-    <button class="button-class">
-            <a href="odt.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Generate Odt</a>
-    </button>
 </div>');
 foreach ($patient_information as $list) {
 	$genderOptions = [
@@ -319,7 +305,12 @@ echo ' </select>
 	</form>';
 }
 print('</div>');
-
+print('<button class="button-class">
+<a href="../grossmodule/hpl_report.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Preview</a>
+</button>');
+print('<button class="button-class">
+<a href="odt.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '" target="_blank" >Generate Odt</a>
+</button>');
 print("
 <form id='clinicalDetailsForm' method='post' action='clinical_details.php'>
     <div class='form-group'>
@@ -380,11 +371,11 @@ foreach ($specimens as $specimen) {
     echo('  <div class="controls">
                 <label for="specimen" class="bold-label">Specimen</label>
                 <input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>
-			    <textarea name="specimen[]" cols="30" rows="1">' . htmlspecialchars($specimen['specimen']) . '</textarea>
+			    <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="30" rows="1">' . htmlspecialchars($specimen['specimen']) . '</textarea>
             </div>
             <div class="controls">
                 <label for="ink_code" class="bold-label">Gross Description</label>
-                <textarea name="gross_description[]" cols="60" rows="3">' . htmlspecialchars($specimen['gross_description']) . '</textarea>
+                <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="gross_description[]" cols="60" rows="3">' . htmlspecialchars($specimen['gross_description']) . '</textarea>
 			    <input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) .'">
             </div>       
                 
@@ -427,9 +418,10 @@ print('<form id="specimen_section_form" method="post" action="gross_specimen_sec
 </form>');
 print("</div>");
 
+print('<br>');print('<br>');
 // here is Section code and Description values are displayed and update
 print('<form id="section-code-form" method="post" action="update_gross_specimen_section.php">');
-echo "<table class='fixed-table'>
+echo "<table >
     <thead>
         <tr>
             <th>Section Code</th> 
@@ -511,106 +503,165 @@ $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 if (!is_array($existingMicroDescriptions)) {
     $existingMicroDescriptions = array();
 }
-echo('<form action="" id="microDescriptionForm">
-    <div class="form-group">
-    <h2 class="heading">Microscopic</h2>');
+// echo('<form action="" id="microDescriptionForm">
+//     <div class="form-group">
+//     <h2 class="heading">Microscopic</h2>');
 
- // Loop through specimens list to generate form fields
+//  // Loop through specimens list to generate form fields
 
-foreach ($existingMicroDescriptions as $existingDescription) { 
-            echo('  <div class="controls">
-                        <label for="specimen" class="bold-label">Specimen</label>
-                        <input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>
-                        <textarea name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="microscopic_description" class="bold-label">Microscopic Description</label>
-                        <textarea id="description" name="description[]" data-index=' . $key . ' cols="60" rows="4" >' . htmlspecialchars($existingDescription['description']) . '</textarea>
-                        <input type="hidden" name="fk_gross_id[]" value=' . $existingDescription['fk_gross_id'] . '>
-                        <input type="hidden" name="created_user[]" value=' . $existingDescription['created_user'] . '>
-                        <input type="hidden" name="status[]" value=' . $existingDescription['status'] . '>
-                        <input type="hidden" name="lab_number[]" value=' . $existingDescription['lab_number'] . '>
-                        <input type="hidden" name="row_id[]" value=' . $existingDescription['row_id'] . '>
-                    </div>       
-                    <div class="controls">
-                        <label for="histologic_type" class="bold-label">Histologic Type</label>
-                        <textarea name="histologic_type[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['histologic_type']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="hitologic_grade" class="bold-label">Histologic Grade</label>
-                        <textarea name="hitologic_grade[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['hitologic_grade']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="pattern_of_growth" class="bold-label">Pattern of growth</label>
-                        <textarea name="pattern_of_growth[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pattern_of_growth']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="stromal_reaction" class="bold-label">Stromal Reaction</label>
-                        <textarea name="stromal_reaction[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['stromal_reaction']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                            <label for="depth_of_invasion" class="bold-label">Depth Of Invasion</label>
-                            <textarea name="depth_of_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['depth_of_invasion']) . '</textarea>
-                    </div>
+// foreach ($existingMicroDescriptions as $existingDescription) { 
+//             echo('  <div class="controls">
+//                         <label for="specimen" class="bold-label">Specimen</label>
+//                         <input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="microscopic_description" class="bold-label">Microscopic Description</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" id="description" name="description[]" data-index=' . $key . ' cols="60" rows="4" >' . htmlspecialchars($existingDescription['description']) . '</textarea>
+//                         <input type="hidden" name="fk_gross_id[]" value=' . $existingDescription['fk_gross_id'] . '>
+//                         <input type="hidden" name="created_user[]" value=' . $existingDescription['created_user'] . '>
+//                         <input type="hidden" name="status[]" value=' . $existingDescription['status'] . '>
+//                         <input type="hidden" name="lab_number[]" value=' . $existingDescription['lab_number'] . '>
+//                         <input type="hidden" name="row_id[]" value=' . $existingDescription['row_id'] . '>
+//                     </div>       
+//                     <div class="controls">
+//                         <label for="histologic_type" class="bold-label">Histologic Type</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="histologic_type[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['histologic_type']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="hitologic_grade" class="bold-label">Histologic Grade</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="hitologic_grade[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['hitologic_grade']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="pattern_of_growth" class="bold-label">Pattern of growth</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pattern_of_growth[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pattern_of_growth']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="stromal_reaction" class="bold-label">Stromal Reaction</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="stromal_reaction[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['stromal_reaction']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                             <label for="depth_of_invasion" class="bold-label">Depth Of Invasion</label>
+//                             <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="depth_of_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['depth_of_invasion']) . '</textarea>
+//                     </div>
 
-                    <div class="controls">
-                        <label for="resection_margin" class="bold-label">Resection Margin</label>
-                        <textarea name="resection_margin[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['resection_margin']) . '</textarea>
-                    </div>
+//                     <div class="controls">
+//                         <label for="resection_margin" class="bold-label">Resection Margin</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="resection_margin[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['resection_margin']) . '</textarea>
+//                     </div>
 
-                    <div class="controls">
-                        <label for="lymphovascular_invasion" class="bold-label">Lymphovascular Invasion</label>
-                        <textarea name="lymphovascular_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['lymphovascular_invasion']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="perineural_invasion" class="bold-label">Perineural Invasion</label>
-                        <textarea name="perineural_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['perineural_invasion']) . '</textarea>
-                    </div>
+//                     <div class="controls">
+//                         <label for="lymphovascular_invasion" class="bold-label">Lymphovascular Invasion</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lymphovascular_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['lymphovascular_invasion']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="perineural_invasion" class="bold-label">Perineural Invasion</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="perineural_invasion[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['perineural_invasion']) . '</textarea>
+//                     </div>
         
-                    <div class="controls">
-                        <label for="bone" class="bold-label">Bone</label>
-                        <textarea name="bone[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['bone']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="lim_node" class="bold-label">Lymph Node</label>
-                        <textarea name="lim_node[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['lim_node']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="ptnm_title" class="bold-label">Ptnm Title</label>
-                        <textarea name="ptnm_title[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['ptnm_title']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="pt2" class="bold-label">Pt2</label>
-                        <textarea name="pt2[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pt2']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="pnx" class="bold-label">Pnx</label>
-                        <textarea name="pnx[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pnx']) . '</textarea>
-                    </div>
-                    <div class="controls">
-                        <label for="pmx" class="bold-label">Pmx</label>
-                        <textarea name="pmx[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pmx']) . '</textarea>
-                    </div>
-                    ');
-        }
+//                     <div class="controls">
+//                         <label for="bone" class="bold-label">Bone</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="bone[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['bone']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="lim_node" class="bold-label">Lymph Node</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lim_node[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['lim_node']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="ptnm_title" class="bold-label">Ptnm Title</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="ptnm_title[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['ptnm_title']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="pt2" class="bold-label">Pt2</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pt2[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pt2']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="pnx" class="bold-label">Pnx</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pnx[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pnx']) . '</textarea>
+//                     </div>
+//                     <div class="controls">
+//                         <label for="pmx" class="bold-label">Pmx</label>
+//                         <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pmx[]" cols="10" rows="2" >' . htmlspecialchars($existingDescription['pmx']) . '</textarea>
+//                     </div>
+//                     ');
+//         }
 
 
-echo('
-        <div class="grid">
-            <button style="background-color: rgb(118, 145, 225);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            float: right;
-            transition: box-shadow 0.3s ease;" 
-            id="micro-button" type="submit" 
-            name="submit" value="att_relation" class="btn btn-primary">Save</button>
+// echo('
+//         <div class="grid">
+//             <button style="background-color: rgb(118, 145, 225);
+//             color: white;
+//             padding: 12px 20px;
+//             border: none;
+//             border-radius: 4px;
+//             cursor: pointer;
+//             float: right;
+//             transition: box-shadow 0.3s ease;" 
+//             id="micro-button" type="submit" 
+//             name="submit" value="att_relation" class="btn btn-primary">Save</button>
+//         </div>
+//     </div>
+//  ');
+// echo '</form>';
+
+foreach ($existingMicroDescriptions as $existingDescription) {
+print('
+<form action="" id="microDescriptionForm">
+    <div class="form-group">
+        <h2 class="heading">Microscopic</h2>
+
+        <div class="controls">
+            <label for="fields">Select Fields:</label>
+            <select id="fields" multiple>
+                <option value="histologic_type">Histologic Type</option>
+                <option value="hitologic_grade">Histologic Grade</option>
+                <option value="pattern_of_growth">Pattern of Growth</option>
+                <option value="stromal_reaction">Stromal Reaction</option>
+                <option value="depth_of_invasion">Depth Of Invasion</option>
+                <option value="resection_margin">Resection Margin</option>
+                <option value="lymphovascular_invasion">Lymphovascular Invasion</option>
+                <option value="perineural_invasion">Perineural Invasion</option>
+                <option value="bone">Bone</option>
+                <option value="lim_node">Lymph Node</option>
+                <option value="ptnm_title">Ptnm Title</option>
+                <option value="pt2">Pt2</option>
+                <option value="pnx">Pnx</option>
+                <option value="pmx">Pmx</option>
+            </select>
         </div>
-    </div>
- ');
-echo '</form>';
+
+        <div class="controls" data-field="specimen">
+            <label for="specimen" class="bold-label">Specimen</label>
+            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
+        </div>
+
+        <div class="controls" data-field="microscopic_description">
+            <label for="microscopic_description" class="bold-label">Microscopic Description</label>
+            <textarea style=" margin-top: 8px; margin-bottom: 8px;" id="description" name="description[]" data-index=' . $key . ' cols="60" rows="4" >' . htmlspecialchars($existingDescription['description']) . '</textarea>
+            <input type="hidden" name="fk_gross_id[]" value=' . $existingDescription['fk_gross_id'] . '>
+            <input type="hidden" name="created_user[]" value=' . $existingDescription['created_user'] . '>
+            <input type="hidden" name="status[]" value=' . $existingDescription['status'] . '>
+            <input type="hidden" name="lab_number[]" value=' . $existingDescription['lab_number'] . '>
+            <input type="hidden" name="row_id[]" value=' . $existingDescription['row_id'] . '>
+        </div>
+
+        <div id="dynamicFields"></div>');
+}
+
+print(' <div class="grid">
+<button style="background-color: rgb(118, 145, 225);
+color: white;
+padding: 12px 20px;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+float: right;
+transition: box-shadow 0.3s ease;" 
+id="micro-button" type="submit" 
+name="submit" value="att_relation" class="btn btn-primary">Save</button>
+</div>
+</div>
+</form>');
 
 $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
 $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
@@ -627,15 +678,15 @@ foreach ($existingDiagnosisDescriptions as $existingDescription) {
             <div class="controls">
                 <label for="specimen" class="bold-label">Specimen</label>
                 <input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>
-                <textarea name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
+                <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="specimen[]" cols="20" rows="2">' . $existingDescription['specimen'] . '</textarea>
             </div>
             <div class="controls">
                 <label for="title" class="bold-label">Title</label>
-                <textarea name="title[' . $key . ']">' . $existingDescription['title'] .'</textarea>
+                <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="title[' . $key . ']">' . $existingDescription['title'] .'</textarea>
             </div>
             <div class="controls">
                 <label for="description" class="bold-label">Diagnosis Description</label>
-                <textarea id="' . $text_area_id . '" name="description[' . $key . ']" data-index="' . $key . '" cols="60" rows="2">' . htmlspecialchars($existingDescription['description']) . '</textarea>
+                <textarea style=" margin-top: 8px; margin-bottom: 8px;" id="' . $text_area_id . '" name="description[' . $key . ']" data-index="' . $key . '" cols="60" rows="2">' . htmlspecialchars($existingDescription['description']) . '</textarea>
                 <input type="hidden" name="specimen[' . $key . ']" value="' . $specimen['specimen'] . '">
                 <input type="hidden" name="fk_gross_id[' . $key . ']" value="' . $existingDescription['fk_gross_id'] . '">
                 <input type="hidden" name="created_user[' . $key . ']" value="' . $existingDescription['created_user'] . '">
@@ -646,7 +697,7 @@ foreach ($existingDiagnosisDescriptions as $existingDescription) {
             
             <div class="controls">
                 <label for="comment" class="bold-label">Comment</label>
-                <textarea name="comment[' . $key . ']">' . $existingDescription['comment'] .'</textarea>
+                <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="comment[' . $key . ']">' . $existingDescription['comment'] .'</textarea>
             </div>
            ';       
         }
@@ -1360,4 +1411,147 @@ document.getElementById("diagnosisDescriptionForm").addEventListener("submit", f
         console.error("Error:", error);
     });
 });
+</script>
+
+<script>
+document.getElementById('fields').addEventListener('change', function() {
+    const selectedOptions = Array.from(this.selectedOptions).map(option => option.value);
+    const dynamicFields = document.getElementById('dynamicFields');
+
+    // Track which fields are already added
+    const existingFields = Array.from(dynamicFields.children).map(child => child.dataset.field);
+
+    // Remove fields that are no longer selected
+    Array.from(dynamicFields.children).forEach(child => {
+        if (!selectedOptions.includes(child.dataset.field)) {
+            child.remove();
+        }
+    });
+
+    // Add new fields that are not already present
+    selectedOptions.forEach(option => {
+        if (!existingFields.includes(option)) {
+            let fieldHtml = '';
+            switch(option) {
+                case 'histologic_type':
+                    fieldHtml = `
+                        <div class="controls" data-field="histologic_type">
+                            <label for="histologic_type" class="bold-label">Histologic Type</label> <button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="histologic_type[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'hitologic_grade':
+                    fieldHtml = `
+                        <div class="controls" data-field="hitologic_grade">
+                            <label for="hitologic_grade" class="bold-label">Histologic Grade</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="hitologic_grade[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'pattern_of_growth':
+                    fieldHtml = `
+                        <div class="controls" data-field="pattern_of_growth">
+                            <label for="pattern_of_growth" class="bold-label">Pattern of Growth</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pattern_of_growth[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'stromal_reaction':
+                    fieldHtml = `
+                        <div class="controls" data-field="stromal_reaction">
+                            <label for="stromal_reaction" class="bold-label">Stromal Reaction</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="stromal_reaction[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'depth_of_invasion':
+                    fieldHtml = `
+                        <div class="controls" data-field="depth_of_invasion">
+                            <label for="depth_of_invasion" class="bold-label">Depth Of Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="depth_of_invasion[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'resection_margin':
+                    fieldHtml = `
+                        <div class="controls" data-field="resection_margin">
+                            <label for="resection_margin" class="bold-label">Resection Margin</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="resection_margin[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'lymphovascular_invasion':
+                    fieldHtml = `
+                        <div class="controls" data-field="lymphovascular_invasion">
+                            <label for="lymphovascular_invasion" class="bold-label">Lymphovascular Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lymphovascular_invasion[]" cols="10" rows="2"></textarea> 
+                        </div>
+                    `;
+                    break;
+                case 'perineural_invasion':
+                    fieldHtml = `
+                        <div class="controls" data-field="perineural_invasion">
+                            <label for="perineural_invasion" class="bold-label">Perineural Invasion</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="perineural_invasion[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'bone':
+                    fieldHtml = `
+                        <div class="controls" data-field="bone">
+                            <label for="bone" class="bold-label">Bone</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="bone[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'lim_node':
+                    fieldHtml = `
+                        <div class="controls" data-field="lim_node">
+                            <label for="lim_node" class="bold-label">Lymph Node</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="lim_node[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'ptnm_title':
+                    fieldHtml = `
+                        <div class="controls" data-field="ptnm_title">
+                            <label for="ptnm_title" class="bold-label">Ptnm Title</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="ptnm_title[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'pt2':
+                    fieldHtml = `
+                        <div class="controls" data-field="pt2">
+                            <label for="pt2" class="bold-label">Pt2</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pt2[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'pnx':
+                    fieldHtml = `
+                        <div class="controls" data-field="pnx">
+                            <label for="pnx" class="bold-label">Pnx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pnx[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'pmx':
+                    fieldHtml = `
+                        <div class="controls" data-field="pmx">
+                            <label for="pmx" class="bold-label">Pmx</label><button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style=" margin-top: 8px; margin-bottom: 8px;" name="pmx[]" cols="10" rows="2"></textarea>
+                        </div>
+                    `;
+                    break;
+            }
+            dynamicFields.insertAdjacentHTML('beforeend', fieldHtml);
+        }
+    });
+});
+
+function removeField(button) {
+    button.parentElement.remove();
+}
 </script>
