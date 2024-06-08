@@ -8,13 +8,7 @@
 <body>
   <h1>Generate ODT Document</h1>
   <?php
-  include('connection.php');
-  include('common_function.php');
-  include('../grossmodule/gross_common_function.php');
   $LabNumber = $_GET['lab_number']; 
-  echo "welcome to ". $LabNumber ; 
-  
-  
   ?>
  
   <button id="generateOdtButton">Generate ODT</button>
@@ -24,7 +18,7 @@
       const labNumber = '<?php echo $LabNumber; ?>'; // Access lab number from PHP
       const fileName = `${labNumber}_generated_document.odt`; // Construct dynamic filename
 
-      fetch('generate_odt.php') // Assuming generate_odt.php handles filename
+      fetch(`generate_odt.php?lab_number=${labNumber}`) // Pass lab number as query parameter
         .then(response => response.blob())
         .then(blob => {
           const url = window.URL.createObjectURL(blob);
@@ -38,7 +32,6 @@
           console.error(error);
         });
     });
-  
   </script>
 </body>
 </html>
