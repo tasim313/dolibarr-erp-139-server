@@ -89,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $update_lab_number = trim($lab_numbers[0], '.');
-    print('Update Lab Number'. $update_lab_number);
     if ($success) {
         // Redirect after successful update
         echo '<script>alert("Data updated successfully!");</script>';
