@@ -671,6 +671,23 @@ if (!is_array($existingMicroDescriptions)) {
     $existingMicroDescriptions = array();
 }
 
+$fields = [
+    'histologic_type' => 'Histologic Type',
+    'hitologic_grade' => 'Histologic Grade',
+    'pattern_of_growth' => 'Pattern of Growth',
+    'stromal_reaction' => 'Stromal Reaction',
+    'depth_of_invasion' => 'Depth Of Invasion',
+    'resection_margin' => 'Resection Margin',
+    'lymphovascular_invasion' => 'Lymphovascular Invasion',
+    'perineural_invasion' => 'Perineural Invasion',
+    'bone' => 'Bone',
+    'lim_node' => 'Lymph Node',
+    'ptnm_title' => 'Ptnm Title',
+    'pt2' => 'Pt2',
+    'pnx' => 'Pnx',
+    'pmx' => 'Pmx'
+];
+
 foreach ($existingMicroDescriptions as $key => $existingDescription) {
     $formId = 'microDescriptionForm' . $key;
     $fieldsId = 'fields' . $key;
@@ -686,7 +703,6 @@ foreach ($existingMicroDescriptions as $key => $existingDescription) {
                         <summary>Choose Microscopic Field</summary>
                         <ul id="<?php echo $fieldsId; ?>">
                             <?php
-                            $fields = ['histologic_type' => 'Histologic Type', 'hitologic_grade' => 'Histologic Grade', 'pattern_of_growth' => 'Pattern of Growth', 'stromal_reaction' => 'Stromal Reaction', 'depth_of_invasion' => 'Depth Of Invasion', 'resection_margin' => 'Resection Margin', 'lymphovascular_invasion' => 'Lymphovascular Invasion', 'perineural_invasion' => 'Perineural Invasion', 'bone' => 'Bone', 'lim_node' => 'Lymph Node', 'ptnm_title' => 'Ptnm Title', 'pt2' => 'Pt2', 'pnx' => 'Pnx', 'pmx' => 'Pmx'];
                             foreach ($fields as $value => $label) {
                                 echo '<label><input type="checkbox" name="fc" value="' . $value . '" />' . $label . '</label>';
                             }
@@ -708,16 +724,31 @@ foreach ($existingMicroDescriptions as $key => $existingDescription) {
                 <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
                 <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
             </div>
-            <div id="<?php echo $dynamicFieldsId; ?>"></div>
+            <div id="<?php echo $dynamicFieldsId; ?>">
+            <?php
+                foreach ($fields as $field => $label) {
+                    if (!empty($existingDescription[$field])) {
+                        ?>
+                        <div class="controls" data-field="<?php echo $field; ?>">
+                            <label for="<?php echo $field; ?>" class="bold-label"><?php echo $label; ?></label>
+                            <button type="button" class="remove-btn" onclick="removeField(this)">&#10060;</button>
+                            <textarea style="margin-top: 8px; margin-bottom: 8px;" name="<?php echo $field; ?>[]" cols="10" rows="2"><?php echo htmlspecialchars($existingDescription[$field]); ?></textarea>
+                        </div>
+                        <?php
+                    }
+                }
+                ?>
+            </div>
         </div>
+        <div class="grid">
+        <button style="background-color: rgb(118, 145, 225); color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; float: right; transition: box-shadow 0.3s ease;" 
+        id="micro-button" type="submit" name="submit" value="att_relation" class="btn btn-primary">Save</button>
+    </div>
     </form>
     <?php
 }
 ?>
-<div class="grid">
-    <button style="background-color: rgb(118, 145, 225); color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; float: right; transition: box-shadow 0.3s ease;" 
-    id="micro-button" type="submit" name="submit" value="att_relation" class="btn btn-primary">Save</button>
-</div>
+
 <?php
 $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
 $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
@@ -1383,22 +1414,33 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error loading shortcuts:', error));
 });
 
-document.getElementById("microDescriptionForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-    const formData = new FormData(this);
-    
-    fetch("update_micro_descriptions.php", {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.text())
-    .then(data => {
-        console.log('Micro Description', data);
-        var labNumber = "<?php echo $LabNumber; ?>"; 
-        window.location.href = `transcription.php?lab_number=${labNumber}`;
-    })
-    .catch(error => {
-        console.error("Error:", error);
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Add event listener to all forms
+    document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            
+            // Add dynamic fields manually if necessary
+            document.querySelectorAll(`#${this.id} [data-field] textarea`).forEach(textarea => {
+                formData.append(textarea.name, textarea.value);
+            });
+
+            fetch("update_micro_descriptions.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Micro Description:', data);
+                var labNumber = "<?php echo $LabNumber; ?>"; 
+                window.location.href = `transcription.php?lab_number=${labNumber}`;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
     });
 });
 </script>
