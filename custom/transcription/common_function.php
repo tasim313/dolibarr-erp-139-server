@@ -528,7 +528,18 @@ function get_report_delivery_date_list() {
     global $pg_con;
     $existingdata = array();
 
-    $sql = "select ref, date_commande, date_livraison from llx_commande where date_commande BETWEEN '2024-04-01' AND CURRENT_DATE";
+    $sql = "SELECT 
+    c.rowid,
+    c.ref, 
+    c.date_commande, 
+    c.date_livraison,
+    e.test_type
+FROM 
+    llx_commande c
+JOIN 
+    llx_commande_extrafields e ON CAST(c.rowid AS INTEGER) = e.fk_object
+WHERE 
+    DATE(c.date_livraison) = CURRENT_DATE";
 
     $result = pg_query($pg_con, $sql);
 
@@ -537,7 +548,8 @@ function get_report_delivery_date_list() {
             $existingdata[] = array(
                 'ref' => $row['ref'],
                 'date_commande' => $row['date_commande'],
-                'date_livraison' => $row['date_livraison']
+                'date_livraison' => $row['date_livraison'],
+                'test_type' => $row['test_type'],
             );
         }
         pg_free_result($result);

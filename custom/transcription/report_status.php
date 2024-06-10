@@ -118,47 +118,20 @@ foreach ($report_delivery_date_list as $list) {
         } elseif ($hour >= 22 && $hour < 23) {
             $timeSlot = '10PM - 11PM';
         }
+
         // Add the entry to the corresponding time slot
         if (!empty($timeSlot)) {
-            $categorizedEntries[$timeSlot][] = array(
+            $categorizedEntries[$timeSlot][$list['test_type']][] = array(
                 'Lab Number' => $list['ref'],
                 'Received Date' => $list['date_commande'],
-                'Delivery Time' => $formattedDate
+                'Delivery Time' => $formattedDate,
+                'Test Type' => $list['test_type']
             );
         }
     }
 }
 
 ?>
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categorized Delivery Entries</title>
-</head>
-<body>
-    <h1>Categorized Delivery Entries</h1>
-    <?php foreach ($categorizedEntries as $timeSlot => $entries): ?>
-        <?php if (!empty($entries)): ?>
-            <h2><?php echo $timeSlot; ?></h2>
-            <ul>
-                <?php foreach ($entries as $entry): ?>
-                    <li>
-                        Lab Number: <?php echo $entry['Lab Number']; ?><br>
-                        Received Date: <?php echo $entry['Received Date']; ?><br>
-                        Delivery Time: <?php echo $entry['Delivery Time']; ?>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    <?php endforeach; ?>
-</body>
-</html> -->
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -182,29 +155,84 @@ foreach ($report_delivery_date_list as $list) {
     </style>
 </head>
 <body>
-    <h1>Categorized Delivery Entries</h1>
-    <?php foreach ($categorizedEntries as $timeSlot => $entries): ?>
-        <?php if (!empty($entries)): ?>
+<h1>Categorized Delivery Entries</h1>
+<?php 
+
+    // Separate time slots into AM and PM
+    $amSlots = array();
+    $pmSlots = array();
+
+    foreach ($categorizedEntries as $timeSlot => $testTypes) {
+        if (strpos($timeSlot, 'AM') !== false) {
+            $amSlots[$timeSlot] = $testTypes;
+        } else {
+            $pmSlots[$timeSlot] = $testTypes;
+        }
+    }
+
+    // Sort time slots in ascending order for AM
+    ksort($amSlots);
+
+    // Sort time slots in ascending order for PM
+    ksort($pmSlots);
+
+    // Loop through AM time slots
+    foreach ($amSlots as $timeSlot => $testTypes): ?>
+        <?php if (!empty($testTypes)): ?>
             <h2><?php echo $timeSlot; ?></h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Lab Number</th>
-                        <th>Received Date</th>
-                        <th>Delivery Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($entries as $entry): ?>
+            <?php foreach ($testTypes as $testType => $entries): ?>
+                <h3><?php echo $testType . " (" . count($entries) . " )"; ?></h3>
+                <table>
+                    <thead>
                         <tr>
-                            <td><?php echo $entry['Lab Number']; ?></td>
-                            <td><?php echo $entry['Received Date']; ?></td>
-                            <td><?php echo $entry['Delivery Time']; ?></td>
+                            <th>Lab Number</th>
+                            <th>Received Date</th>
+                            <th>Delivery Time</th>
+                            <th>Test Type</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-            <p>Total Entries: <?php echo count($entries); ?></p>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($entries as $entry): ?>
+                            <tr>
+                                <td><?php echo $entry['Lab Number']; ?></td>
+                                <td><?php echo $entry['Received Date']; ?></td>
+                                <td><?php echo $entry['Delivery Time']; ?></td>
+                                <td><?php echo $entry['Test Type']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    <?php endforeach; ?>
+
+    <!-- Repeat the same for PM time slots -->
+    <?php foreach ($pmSlots as $timeSlot => $testTypes): ?>
+        <?php if (!empty($testTypes)): ?>
+            <h2><?php echo $timeSlot; ?></h2>
+            <?php foreach ($testTypes as $testType => $entries): ?>
+                <h3><?php echo $testType . " (" . count($entries) . " )"; ?></h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lab Number</th>
+                            <th>Received Date</th>
+                            <th>Delivery Time</th>
+                            <th>Test Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($entries as $entry): ?>
+                            <tr>
+                                <td><?php echo $entry['Lab Number']; ?></td>
+                                <td><?php echo $entry['Received Date']; ?></td>
+                                <td><?php echo $entry['Delivery Time']; ?></td>
+                                <td><?php echo $entry['Test Type']; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endforeach; ?>
         <?php endif; ?>
     <?php endforeach; ?>
 </body>
