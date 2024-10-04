@@ -230,13 +230,17 @@ function get_histo_doctor_instruction_on_hold_list() {
 function get_bones_not_ready_list() {
     global $pg_con;
 
-    $sql = "SELECT g.gross_id, g.lab_number, g.gross_create_date, g.gross_status, g.gross_assistant_name, g.gross_doctor_name,
-            s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, s.tissue, s.bone
+    $sql = "SELECT g.gross_id, g.lab_number, g.gross_create_date, g.gross_status, 
+                g.gross_assistant_name, g.gross_doctor_name,
+                s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, 
+                s.tissue, s.bone
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
             WHERE g.gross_status = 'Done'
             AND s.fk_gross_id !~ '[^\d]'
-			AND s.bone = 'yes' order by s.gross_specimen_section_id ASC;
+            AND s.bone = 'yes' 
+            AND (s.boneslide IS NULL OR s.boneslide != 'Bones Slide Ready')
+            ORDER BY s.gross_specimen_section_id ASC;
     ";
 
     $result = pg_query($pg_con, $sql);
@@ -252,7 +256,8 @@ function get_bones_not_ready_list() {
                 'section_code' => $row['section_code'], 
                 'bone' => $row['bone'],
                 'cassettes_numbers' => $row['cassettes_numbers'],
-                'tissue'  => $row['tissue']
+                'tissue'  => $row['tissue'],
+                'id' => $row['gross_specimen_section_id']
             ];
         }
 
@@ -264,4 +269,39 @@ function get_bones_not_ready_list() {
     return $existingdata;
 }
 
+
+function get_bone_status_lab_number($LabNumber) {
+    global $pg_con;
+
+    $sql = "SELECT  s.bone, s.boneslide, g.lab_number, s.section_code
+            FROM llx_gross g
+            INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
+            WHERE g.gross_status = 'Done'
+            AND s.fk_gross_id !~ '[^\d]'
+            AND s.bone = 'yes' 
+            AND g.lab_number = '$LabNumber'
+            ORDER BY s.gross_specimen_section_id ASC;
+    ";
+
+    $result = pg_query($pg_con, $sql);
+
+    $existingdata = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = [
+                'lab_number' => $row['lab_number'],
+                'bones_status' => $row['bone'], 
+                'status_name' => $row['boneslide'], 
+                'block_number' => $row['section_code'], 
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
 ?>
