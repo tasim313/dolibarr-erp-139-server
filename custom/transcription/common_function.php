@@ -414,7 +414,8 @@ function getExistingDiagnosisDescriptions($labNumber) {
 
     $existingDiagnosisDescriptions = array();
 
-    $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen, title, comment FROM llx_diagnosis WHERE lab_number = '$labNumber'";
+    $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen, title, comment 
+    FROM llx_diagnosis WHERE lab_number = '$labNumber' order by row_id ASC";
     $result = pg_query($pg_con, $sql);
 
     if ($result) {
@@ -559,5 +560,127 @@ WHERE
 
     return $existingdata;
 }
+
+
+// Function to get lab number for doctor tracking
+function get_lab_number_status_for_doctor_tracking_by_lab_number($labNumber) {
+    global $pg_con;
+    $existingdata = array();
+    
+    // Escape the lab number to prevent SQL injection
+    $labNumber = pg_escape_string($pg_con, $labNumber);
+    
+    // SQL query
+    $sql = "SELECT *
+            FROM (
+                SELECT 
+                    t.id,
+                    t.create_time AS TrackCreateTime, 
+                    t.labno, 
+                    t.description,
+                    t.lab_room_status,
+                    CONCAT(u1.firstname, ' ', u1.lastname) AS TrackUserName,
+                    ws.name AS WSStatusName, 
+                    ws.section,
+                    e.test_type,
+                    s.nom AS patient_name,
+                    ROW_NUMBER() OVER (PARTITION BY t.id ORDER BY t.id) AS RowNumber
+                FROM 
+                    llx_commande AS c
+                INNER JOIN 
+                    llx_commande_extrafields e 
+                    ON c.rowid = e.fk_object
+                INNER JOIN 
+                    llx_commande_trackws AS t
+                    ON c.ref = t.labno
+                    AND t.lab_room_status <> 'delete'
+                INNER JOIN 
+                    llx_user u1 
+                    ON t.user_id = u1.rowid
+                INNER JOIN 
+                    llx_commande_wsstatus AS ws
+                    ON t.fk_status_id = ws.id
+                INNER JOIN 
+                    llx_facture AS f 
+                    ON c.fk_soc = f.fk_soc
+                LEFT JOIN 
+                    llx_societe s 
+                    ON f.fk_soc = s.rowid
+                WHERE 
+                    c.ref = '$labNumber'
+            ) AS Subquery
+            WHERE 
+                RowNumber = 1";
+    
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'TrackCreateTime' => $row['trackcreatetime'],
+                'labno' => $row['labno'],
+                'TrackUserName' => $row['trackusername'],
+                'WSStatusName' => $row['wsstatusname'],
+                'section' => $row['section'],
+                'test_type' => $row['test_type'],
+                'patient_name' => $row['patient_name'],
+                'description' => $row['description'],
+                'track_id' => $row['id']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+// // Function to get lab number for bone tracking
+// function get_bone_status_lab_number($labNumber) {
+//     global $pg_con;
+//     $existingdata = array();
+
+//     // SQL query with parameterized input to avoid SQL injection
+//     $sql = "SELECT
+//                 b.rowid,
+//                 b.labnumber,
+//                 b.doctor_name,
+//                 b.assistant_name,
+//                 b.station_type,
+//                 b.bones_status,
+//                 b.specimen_name,
+//                 ws.name AS status_name
+//             FROM llx_commande c
+//             LEFT JOIN llx_commande_trackws t ON c.ref = t.labno
+//             LEFT JOIN llx_bone b ON c.ref = b.labnumber OR b.labnumber = 'HPL' || c.ref
+//             LEFT JOIN llx_commande_wsstatus ws ON t.fk_status_id = ws.id
+//             WHERE b.bones_status = 'Yes'
+//             AND c.ref = $1"; // $1 is a placeholder for parameter
+
+//     // Execute the query with the provided lab number
+//     $result = pg_query_params($pg_con, $sql, array($labNumber));
+
+//     if ($result) {
+//         while ($row = pg_fetch_assoc($result)) {
+//             $existingdata[] = array(
+//                 'rowid' => $row['rowid'],
+//                 'labnumber' => $row['labnumber'],
+//                 'doctor_name' => $row['doctor_name'],
+//                 'assistant_name' => $row['assistant_name'],
+//                 'station_type' => $row['station_type'],
+//                 'bones_status' => $row['bones_status'],
+//                 'specimen_name' => $row['specimen_name'],
+//                 'status_name' => $row['status_name']
+//             );
+//         }
+//         pg_free_result($result);
+//     } else {
+//         echo 'Error: ' . pg_last_error($pg_con);
+//     }
+
+//     return $existingdata;
+// }
 
 ?>

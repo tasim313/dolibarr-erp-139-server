@@ -219,9 +219,9 @@ switch (true) {
     <h1>Gross</h1>
     <div>
       <form id="grossForm"  method="post" action="gross_create_function.php">
-      
-      <?php if (!$isGrossAssistant) { ?>
-        <label for="gross_doctor_name">Doctor</label>
+
+
+      <label for="gross_doctor_name">Doctor</label>
             <select id="gross_doctor_name" name="gross_doctor_name">
                 <option value=""></option>
                 <?php
@@ -237,9 +237,8 @@ switch (true) {
                 }
                 ?>
             </select>
-        <?php } ?>
-
-
+      
+    
         <label for="gross_assistant_name">Gross Assistant</label>
             <select name="gross_assistant_name" id="gross_assistant_name">
                 <option value=""></option>
@@ -334,5 +333,33 @@ switch (true) {
     }
 });
 </script>
+
+
+<?php 
+
+// if (!$isGrossAssistant) { 
+
+?>
+        <!-- <label for="gross_doctor_name">Doctor</label>
+            <select id="gross_doctor_name" name="gross_doctor_name">
+                <option value=""></option> -->
+                <?php
+                // $doctors = get_doctor_list();
+                // $loggedInUsername = $user->login; 
+
+                // foreach ($doctors as $doctor) {
+                //     $selected = '';
+                //     if ($doctor['doctor_username'] == $loggedInUsername) {
+                //         $selected = 'selected';
+                //     }
+                //     echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
+                // }
+                ?>
+            <!-- </select> -->
+
+<?php 
+        // } 
+
+?>
 
 

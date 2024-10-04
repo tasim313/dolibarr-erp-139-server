@@ -1,7 +1,6 @@
 <?php
 
 include("connection.php");
-include('../grossmodule/gross_common_function.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
    
@@ -14,13 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($fk_gross_id)) {
         for ($i = 0; $i < count($specimen_ids); $i++) {
-            $specimen_id = pg_escape_string($pg_con, $specimen_ids[$i]);
-            $specimen = pg_escape_string($pg_con, $specimens[$i]);
-            $gross_description = pg_escape_string($pg_con, $gross_descriptions[$i]);
-
             $sql = "UPDATE llx_gross_specimen 
-                    SET gross_description = '$gross_description', specimen = '$specimen'
-                    WHERE specimen_id = '$specimen_id'";
+                    SET gross_description = '{$gross_descriptions[$i]}'
+                    WHERE specimen_id = '{$specimen_ids[$i]}'";
 
             $result = pg_query($pg_con, $sql);
 
@@ -29,17 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             }
         }
-        $LabNumber = get_lab_number($fk_gross_id);
-        echo '<script>';
-        echo 'window.location.href = "transcription.php?lab_number='.$LabNumber.'"'; 
-        echo '</script>';
+
+        // Redirect to the summary page after updating all data
+        header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
     } else {
         echo "fk_gross_id is empty!";
     }
 
     pg_close($pg_con); 
 } else {
-    header("Location: gross_specimens.php");
+    // Redirect to the summary page after updating all data
+    header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
     exit();
 }
 ?>
