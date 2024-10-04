@@ -966,6 +966,7 @@ echo '<div class="tab-container">
                         echo '<td>' . htmlspecialchars($bone['section_code']) . '</td>';
                         echo '<td>' . htmlspecialchars($bone['cassettes_numbers']) . '</td>';
                         echo '<td>' . htmlspecialchars($bone['tissue']) . '</td>';
+                        echo '<input type="hidden" name="id[]" value="' . htmlspecialchars($bone['id']) . '">';
                        
                         // Create a choice field for Status
                         echo '<td>';
@@ -1233,12 +1234,12 @@ $db->close();
 </script> -->
 
 
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const userId = '<?php echo $loggedInUserId; ?>';
-
         const form = document.getElementById('updateStatusForm');
-        
+
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -1254,12 +1255,14 @@ $db->close();
                 
                 const statusSelect = row.querySelector('select[name="status[]"]');
                 const statusName = statusSelect.value;
+                const id = row.querySelector('input[name="id[]"]').value; // Get the hidden id field value
                 
-                if (labnumber && statusName) {
+                if (labnumber && statusName && id) {
                     boneStatusData.push({
                         labnumber: labnumber,
                         status: statusName,
-                        user_id: userId
+                        user_id: userId,
+                        id: id // Add id to the payload
                     });
                 }
             });
@@ -1277,8 +1280,8 @@ $db->close();
                     console.log('Response from server:', data);
 
                     if (data.status === 'success') {
-                        // alert('Statuses updated successfully!');
-                        // location.reload(); // Optionally reload the page to reflect changes
+                        alert('Statuses updated successfully!');
+                        location.reload(); // Optionally reload the page to reflect changes
                     } else {
                         alert('Failed to update statuses: ' + data.message);
                     }
