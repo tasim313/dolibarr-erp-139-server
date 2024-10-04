@@ -4,6 +4,7 @@
 include('connection.php');
 include('../transcription/common_function.php');
 include('../grossmodule/gross_common_function.php');
+include('../histolab/histo_common_function.php');
 include('list_of_function.php');
 
 // Load Dolibarr environment
@@ -81,7 +82,7 @@ $LabNumber = $_GET['labno'];
 $lab_status = get_lab_number_status_for_doctor_tracking_by_lab_number($LabNumber);
 $labStatus = json_encode($lab_status);
 
-$bone_status = get_bone_status_lab_number($LabNumber);
+$bone_status = get_bone_status_lab_number("HPL" . $LabNumber);
 $boneStatus = json_encode($bone_status);
 
 $loggedInUserId = $user->id;
@@ -94,15 +95,13 @@ $hasConsultants = false;
 
 // Check if "Bones" status exists in the $bone_status array
 $showBoneSlideReady = false;
-$showWaitingForBones = false;
+
 
 foreach ($bone_status as $status) {
-    if ($status['bones_status'] === 'Yes') {
+    if ($status['bones_status'] === 'yes') {
         $showBoneSlideReady = true;
     }
-    if ($status['bones_status'] === 'Yes') {
-        $showWaitingForBones = true;
-    }
+    
 }
 
 // Flag to check if "Bones Slide Ready" is found
@@ -511,22 +510,8 @@ switch (true) {
                         <button  onclick="openTab(event, 'Screening-GrossInstructions')">
                         <i class="fas fa-cut"></i>Gross Related Instructions</button>
                 </li>
-                <!-- <li role="presentation" class="">
-                        <button id="screening_bones"  onclick="openTab(event, 'screening-bones')">
-                        <i class="fas fa-bone vertical-icon"></i>Wating For Bones</button>
-                </li>
-                <li>
-                    <button id="screening_bones_ready"  onclick="openTab(event, 'BoneRelatedInstructions')">
-                    <i class="fas fa-bone vertical-icon"></i>Bone Slide Ready</button>
-                </li> -->
-                <!-- Conditionally show the "Waiting For Bones" and "Bone Slide Ready" tabs -->
-                <!-- <?php if ($showWaitingForBones): ?>
-                    <li role="presentation" class="">
-                        <button id="screening_bones" onclick="openTab(event, 'screening-bones')">
-                            <i class="fas fa-bone vertical-icon"></i> Waiting For Bones
-                        </button>
-                    </li>
-                <?php endif; ?> -->
+               
+              
                 <?php if ($showBoneSlideReady): ?>
                     <li>
                         <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
@@ -557,10 +542,14 @@ switch (true) {
             <li role="presentation" class="">
                 <button onclick="openTab(event, 'Final-Screening-GrossInstructions')">
                 <i class="fas fa-cut"></i>Gross Related Instructions</button>
-            </li><li role="presentation" class="">
-                        <button id="final_screening_bones"  onclick="openTab(event, 'final-screening-bones')">
-                        <i class="fas fa-bone"></i>Wating For Bones</button>
-                </li>
+            </li>
+            <?php if ($showBoneSlideReady): ?>
+                    <li>
+                        <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
+                            <i class="fas fa-bone vertical-icon"></i> Bone Slide Status
+                        </button>
+                    </li>
+            <?php endif; ?>
             <li role="presentation" class="">
                 <button id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
                 <i class="fas fa-check"></i>Finalization Done</button>
@@ -951,29 +940,34 @@ switch (true) {
         <p>Wating For Bones</p>
     </div>
     <div id="ScreeningBoneRelatedInstructions" class="tabcontent_1">
-    <?php if ($showTable): ?>
-        <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">
-            <thead>
-                <tr>
-                    <th>Section Code</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($bone_status as $status): ?>
-                    <?php if ($status['status_name'] === 'Bones Slide Ready'): ?>
+            <?php if ($showTable): ?>
+                <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">
+                    <thead>
                         <tr>
-                            <td><?php echo htmlspecialchars($status['block_number']); ?></td>
-                            <td><?php echo htmlspecialchars($status['status_name']); ?></td>
+                            <th>Section Code</th>
+                            <th>Status</th>
                         </tr>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p style="color: red; font-size: 18px; font-family: Arial, sans-serif; font-weight: bold; text-align: left;">Bones are not ready.</p>
-    <?php endif; ?>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($bone_status as $status): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($status['block_number']); ?></td>
+                                <td>
+                                    <?php if ($status['status_name'] === 'Bones Slide Ready'): ?>
+                                        <?php echo htmlspecialchars($status['status_name']); ?>
+                                    <?php else: ?>
+                                        <span style="color: red;">Bones Slide are not Ready</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p style="color: red; font-size: 18px; font-family: Arial, sans-serif; font-weight: bold; text-align: left;">Bones are not ready.</p>
+            <?php endif; ?>
     </div>
+
 
     <div id="Screening-Done" class="tabcontent_1">
         <p>Screening Done</p>
