@@ -180,12 +180,12 @@ function get_pending_gross_list() {
     global $pg_con;
 
     $sql = "SELECT soc.code_client as patient_code, CONCAT(e.test_type, '', c.ref) AS lab_number, c.date_commande as received_date,
-    CONCAT(e.referredby_dr, ' ', e.referred_from, ' ', e.referred_by_dr_text, ' ', e.referred_by_dr_text, ' ', e.referredfrom_text) AS referr
+    CONCAT(e.referredby_dr, ' ', e.referred_from, ' ', e.referred_by_dr_text, '  ', e.referredfrom_text) AS referr
             FROM llx_commande AS c
             JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid 
             LEFT JOIN llx_gross AS g ON g.fk_commande = c.rowid
             JOIN llx_societe AS soc ON c.fk_soc = soc.rowid
-            WHERE fk_statut = 1 AND date_commande BETWEEN '2024-02-5' AND CURRENT_DATE 
+            WHERE fk_statut = 1 AND date_commande BETWEEN '2024-05-3' AND CURRENT_DATE 
             AND e.test_type = 'HPL'
             AND (g.gross_is_completed = false OR g.fk_commande IS NULL)";
 
@@ -232,11 +232,10 @@ function get_reception_assign_doctor_pending_gross_list() {
         llx_categorie_contact AS categorie_contact ON socpeople.rowid = categorie_contact.fk_socpeople
     WHERE 
     c.fk_statut = 1 
-    AND c.date_commande BETWEEN '2024-02-5' AND CURRENT_DATE 
+    AND c.date_commande BETWEEN '2024-05-3' AND CURRENT_DATE 
     AND e.test_type = 'HPL'
     AND (g.gross_is_completed = false OR g.fk_commande IS NULL)
-     AND (categorie_contact.fk_categorie = 5 OR categorie_contact.fk_categorie IS NULL OR categorie_contact.fk_categorie = 0)
-";
+     AND (categorie_contact.fk_categorie = 5 OR categorie_contact.fk_categorie IS NULL OR categorie_contact.fk_categorie = 0)";
 
     $result = pg_query($pg_con, $sql);
 
@@ -290,7 +289,7 @@ function get_pending_gross_value() {
             LEFT JOIN llx_gross AS g ON g.fk_commande = c.rowid
             JOIN llx_societe AS soc ON c.fk_soc = soc.rowid
             WHERE fk_statut = 1 
-            AND date_commande BETWEEN '2024-02-5' AND CURRENT_DATE 
+            AND date_commande BETWEEN '2024-05-3' AND CURRENT_DATE 
             AND e.test_type = 'HPL'
             AND (g.gross_is_completed = false OR g.fk_commande IS NULL)";
     $result = pg_query($pg_con, $sql);
@@ -316,7 +315,7 @@ function get_complete_gross_value() {
             LEFT JOIN llx_gross AS g ON g.fk_commande = c.rowid
             JOIN llx_societe AS soc ON c.fk_soc = soc.rowid
             WHERE fk_statut = 1 
-            AND date_commande BETWEEN '2024-02-5' AND CURRENT_DATE 
+            AND date_commande BETWEEN '2024-05-3' AND CURRENT_DATE 
             AND e.test_type = 'HPL'
             AND (g.gross_is_completed = true OR g.fk_commande IS NOT NULL)";
     $result = pg_query($pg_con, $sql);
@@ -342,7 +341,7 @@ function get_labnumber_list() {
     JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid 
     LEFT JOIN llx_gross AS g ON g.fk_commande = c.rowid
     JOIN llx_societe AS soc ON c.fk_soc = soc.rowid
-    WHERE fk_statut = 1 AND date_commande BETWEEN '2024-02-5' AND CURRENT_DATE 
+    WHERE fk_statut = 1 AND date_commande BETWEEN '2024-05-3' AND CURRENT_DATE 
     AND e.test_type = 'HPL'
     AND (g.gross_is_completed = false OR g.fk_commande IS NULL)";
     $result = pg_query($pg_con, $sql);
@@ -491,14 +490,14 @@ function get_total_gross_values_for_doctor($loggedInUsername) {
     return array($total_gross_current_month_doctor, $total_gross_current_year_doctor);
 }
 
-
-function get_gross_list_by_assistant($loggedInUsername) {
+// $loggedInUsername
+function get_gross_list_by_assistant() {
     global $pg_con;
 
     $sql = "SELECT gross_id, lab_number, patient_code, gross_station_type,
 	gross_assistant_name, gross_doctor_name, gross_create_date
-	FROM llx_gross
-	WHERE gross_assistant_name = '$loggedInUsername'";
+	FROM llx_gross";
+	// WHERE gross_assistant_name = '$loggedInUsername'";
     $result = pg_query($pg_con, $sql);
 
     $assistants = [];
@@ -579,10 +578,10 @@ function get_gross_specimen_section($fk_gross_id) {
     global $pg_con;
     $sql = "select gross_specimen_section_id, 
     fk_gross_id, section_code, 
-    specimen_section_description, cassettes_numbers, tissue from llx_gross_specimen_section WHERE fk_gross_id = $1  ORDER BY 
+    specimen_section_description, cassettes_numbers, tissue, bone from llx_gross_specimen_section WHERE fk_gross_id = $1 ORDER BY 
     LEFT(section_code, 1) ASC, 
     CAST(SUBSTRING(section_code, 2) AS INTEGER) ASC, 
-    gross_specimen_section_id ASC;";
+    gross_specimen_section_id ASC";
     $result = pg_query_params($pg_con, $sql, array($fk_gross_id));
 
     $specimens = array();
@@ -804,7 +803,7 @@ function get_single_doctor_details($username) {
     global $pg_con;
 
     $sql = "select username, doctor_name, education, designation 
-            from llx_doctor_degination
+            from llx_doctor_designation
             WHERE username = '$username'";
     $result = pg_query($pg_con, $sql);
 
@@ -824,5 +823,68 @@ function get_single_doctor_details($username) {
     return $doctors;
 }
 
+
+function get_abbreviations_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "SELECT rowid, abbreviation_key, abbreviation_full_text 
+            FROM llx_abbreviations 
+            -- WHERE fk_user_id = $1 
+            ORDER BY abbreviation_key ASC";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_abbreviations", $sql);
+    // $result = pg_execute($pg_con, "get_abbreviations", array($user_id));
+    $result = pg_execute($pg_con, "get_abbreviations", array());
+
+    $existingdata = [];
+
+    if ($result) {
+        // Use pg_fetch_all to fetch all rows at once if the dataset is not too large
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function isUserAdmin($userId) {
+    global $pg_con;
+
+    // Correct SQL query with a parameter placeholder for the user ID
+    $sql = "
+        SELECT COUNT(*) as admin_count
+        FROM llx_usergroup_user AS ugu
+        JOIN llx_usergroup AS ug ON ugu.fk_usergroup = ug.rowid
+        WHERE ugu.fk_user = $1 AND ug.nom = 'Administrator'
+    ";
+
+    // Prepare the SQL query
+    $result = pg_prepare($pg_con, "check_user_admin", $sql);
+
+    if (!$result) {
+        echo "Error in preparing query: " . pg_last_error($pg_con);
+        return false;
+    }
+
+    // Execute the query with the user ID as a parameter
+    $result = pg_execute($pg_con, "check_user_admin", array($userId));
+
+    if (!$result) {
+        echo "Error in query execution: " . pg_last_error($pg_con);
+        return false;
+    }
+
+    // Fetch the result
+    $row = pg_fetch_assoc($result);
+
+    // Return whether the user is an admin
+    return $row ? $row['admin_count'] > 0 : false;
+}
 
 ?>

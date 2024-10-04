@@ -276,7 +276,7 @@ if ($hasTranscriptionist) {
         <tr><td>' . $list['lab_number'] . 
         '</td><td>' . $list['patient_code'] . 
 		'</td>' .
-        '<td><a href="hpl_transcription_list.php?lab_number=' . $list['lab_number']. '"><button>View</button></a></td></tr>
+        '<td><a href="transcription.php?lab_number=' . $list['lab_number']. '"><button>View</button></a></td></tr>
         ');
     }
     print('</table>');

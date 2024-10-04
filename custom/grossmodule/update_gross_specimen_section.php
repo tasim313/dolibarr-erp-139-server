@@ -2,7 +2,7 @@
 include("connection.php");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $required_fields = ['gross_specimen_section_Id', 'sectionCode', 'specimen_section_description', 'cassetteNumber', 'tissue'];
+    $required_fields = ['gross_specimen_section_Id', 'sectionCode', 'specimen_section_description', 'tissue'];
     $missing_fields = array_diff($required_fields, array_keys($_POST));
 
     if (!empty($missing_fields)) {
@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql = "UPDATE llx_gross_specimen_section
             SET section_code = $2,
                 specimen_section_description = $3,
-                cassettes_numbers = $4,
-                tissue = $5
+                tissue = $4,
+                bone = $5
             WHERE gross_specimen_section_Id = $1";
 
     $stmt = pg_prepare($pg_con, "update_specimen_section", $sql);
@@ -32,13 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $gross_specimen_section_Id = intval($_POST['gross_specimen_section_Id'][$i]); // Ensure integer
         $section_code = $_POST['sectionCode'][$i];
         $specimen_section_description = pg_escape_string($pg_con, $_POST['specimen_section_description'][$i]); // Sanitize user input
-        $cassette_number = $_POST['cassetteNumber'][$i];
         $tissue = $_POST['tissue'][$i];
-
-        
+        $bone = isset($_POST['bone'][$i]) ? $_POST['bone'][$i] : '';
 
         // Execute the prepared statement with the parameters
-        $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, $specimen_section_description, $cassette_number, $tissue]);
+        $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, 
+        $specimen_section_description, $tissue, $bone]);
 
     }
 
@@ -51,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     // Redirect to the summary page after updating all data
-    $fk_gross_id = $_POST['fk_gross_id'][0]; // Assuming fk_gross_id is the same for all sections
-    echo '<script>window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";</script>';
+    header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
+    exit();  // Stops further script execution
 
     pg_close($pg_con);
 } else {

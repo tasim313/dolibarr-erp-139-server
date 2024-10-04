@@ -5,13 +5,14 @@ include("connection.php");
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $required_fields = ['fk_gross_id', 'sectionCode', 'specimen_section_description', 'cassetteNumber', 'tissue'];
     $missing_fields = array_diff_key(array_flip($required_fields), $_POST);
+    
     if (!empty($missing_fields)) {
         echo "Error: Missing required inputs: " . implode(', ', array_keys($missing_fields));
         exit();
     }
 
-    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, tissue)
-             VALUES ($1, $2, $3, $4,$5)";
+    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, tissue, bone)
+             VALUES ($1, $2, $3, $4, $5, $6)";
 
     $stmt = pg_prepare($pg_con, "insert_specimen_section", $sql);
 
@@ -26,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $specimen_section_descriptions = $_POST['specimen_section_description'];
     $cassette_numbers = $_POST['cassetteNumber'];
     $tissues = $_POST['tissue'];
+    $bones = isset($_POST['bone']) ? $_POST['bone'] : [];
 
     // Insert each specimen section data
     foreach ($section_codes as $key => $section_code) {
@@ -33,7 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cassette_number = $cassette_numbers[$key];
         $tissue = $tissues[$key];
 
-        $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, $specimen_section_description, $cassette_number, $tissue]);
+        // Check if bone is set for this particular section
+        $bone = in_array($section_code, $bones) ? "yes" : "no";  // Set to "yes" if checked, otherwise "no"
+
+        // Execute the SQL statement
+        $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, 
+                            $specimen_section_description, $cassette_number, $tissue, $bone]);
 
         if (!$result) {
             error_log("Error inserting data: " . pg_last_error($pg_con));
@@ -42,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // to redirect after successful insertion
     echo '<script>';
     echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
     echo '</script>';

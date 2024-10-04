@@ -70,4 +70,168 @@ function get_done_gross_list_for_doctor() {
 }
 
 
+function get_histo_doctor_today_history_list($user_id) {
+    global $pg_con;
+
+    $sql = "SELECT 
+                ct.id,
+                ct.create_time, 
+                ct.labno, 
+                u.login AS user_name,  
+                ws.name AS status_name, 
+                ws.section, 
+                ct.description,
+                ct.lab_room_status
+            FROM 
+                llx_commande_trackws ct
+            JOIN 
+                llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+            JOIN 
+                llx_user u ON ct.user_id = u.rowid
+            WHERE 
+                ct.create_time >= CURRENT_DATE 
+                AND ct.create_time < CURRENT_DATE + INTERVAL '1 day'
+                AND ct.user_id = '$user_id'
+                AND ws.name NOT IN ('Start Screening', 'Final Screening Start', 'Diagnosis Completed')
+                AND ct.lab_room_status <> 'delete'
+            ORDER BY 
+                ct.id DESC
+            ";
+
+    $result = pg_query($pg_con, $sql);
+
+    $existingdata = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = [
+                'TrackCreateTime' => $row['create_time'], 
+                'Lab Number' => $row['labno'],
+                'User Name' => $row['user_name'], 
+                'Status Name' => $row['status_name'], 
+                'Section' => $row['section'], 
+                'Description' => $row['description'],
+                'track_id' => $row['id'],
+                'LabRoomStatus' => $row['lab_room_status']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+function get_histo_doctor_yesterday_history_list($user_id) {
+    global $pg_con;
+
+    $sql = "SELECT 
+            ct.id,
+            ct.create_time, 
+            ct.labno, 
+            u.login AS user_name,  
+            ws.name AS status_name, 
+            ws.section, 
+            ct.description,
+            ct.lab_room_status
+        FROM 
+            llx_commande_trackws ct
+        JOIN 
+            llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+        JOIN 
+            llx_user u ON ct.user_id = u.rowid
+        WHERE 
+            ct.create_time >= CURRENT_DATE - INTERVAL '1 day'
+            AND ct.create_time < CURRENT_DATE
+            AND ct.user_id = '$user_id'
+            AND ws.name NOT IN ('Start Screening', 'Final Screening Start', 'Diagnosis Completed')
+            AND ct.lab_room_status <> 'delete'
+        ORDER BY 
+            ct.id DESC
+            ";
+
+    $result = pg_query($pg_con, $sql);
+
+    $existingdata = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = [
+                'TrackCreateTime' => $row['create_time'], 
+                'Lab Number' => $row['labno'],
+                'User Name' => $row['user_name'], 
+                'Status Name' => $row['status_name'], 
+                'Section' => $row['section'], 
+                'Description' => $row['description'],
+                'track_id' => $row['id'],
+                'LabRoomStatus' => $row['lab_room_status']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+
+function get_histo_doctor_instruction_history_list($user_id) {
+    global $pg_con;
+
+    $sql = "SELECT 
+            ct.id,
+            ct.create_time, 
+            ct.labno, 
+            u.login AS user_name,  
+            ws.name AS status_name, 
+            ws.section, 
+            ct.description,
+            ct.lab_room_status
+        FROM 
+            llx_commande_trackws ct
+        JOIN 
+            llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+        JOIN 
+            llx_user u ON ct.user_id = u.rowid
+        WHERE 
+             ct.user_id = '$user_id'
+            AND ws.name NOT IN ('Start Screening', 'Final Screening Start',
+								'Diagnosis Completed', 'Finalized', 'Screening Done',
+								'Waiting - Patient History / Investigation', 'Waiting - Study')
+            AND ct.lab_room_status <> 'delete'
+        ORDER BY 
+            ct.id DESC
+            ";
+
+    $result = pg_query($pg_con, $sql);
+
+    $existingdata = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = [
+                'TrackCreateTime' => $row['create_time'], 
+                'Lab Number' => $row['labno'],
+                'User Name' => $row['user_name'], 
+                'Status Name' => $row['status_name'], 
+                'Section' => $row['section'], 
+                'Description' => $row['description'],
+                'track_id' => $row['id'],
+                'LabRoomStatus' => $row['lab_room_status']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>

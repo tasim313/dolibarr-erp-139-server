@@ -2,6 +2,7 @@
 include('connection.php');
 include('gross_common_function.php');
 include('../transcription/common_function.php');
+
 $res = 0;
 
 if (!$res && !empty($_SERVER["CONTEXT_DOCUMENT_ROOT"])) {
@@ -35,8 +36,8 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formcompany.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formprojet.class.php';
-dol_include_once('/grossmodule/class/gross.class.php');
-dol_include_once('/grossmodule/lib/grossmodule_gross.lib.php');
+dol_include_once('/gross/class/gross.class.php');
+dol_include_once('/gross/lib/gross_gross.lib.php');
 
 $title = $langs->trans("Gross");
 $help_url = '';
@@ -55,9 +56,80 @@ if ($lab_number !== null) {
     echo 'Error: Lab number not found';
 }
 
+$abbreviations = get_abbreviations_list();
+
 
 
 print('<style>
+main {
+	display: flex;
+  }
+  main > * {
+	border: 0px solid;
+  }
+  table {
+	font-family: helvetica;
+  }
+  td,
+  th {
+	padding: 4px;
+	min-width: 100px;
+	background: white;
+	box-sizing: border-box;
+	text-align: left;
+  }
+  .table-container {
+	position: relative;
+	max-height: 200px;
+	width: 500px;
+	overflow: scroll;
+  }
+  
+  thead th {
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	
+  }
+  
+  thead th:first-child {
+	left: 0;
+	z-index: 3;
+  }
+  
+  tfoot {
+	position: -webkit-sticky;
+	bottom: 0;
+	z-index: 2;
+  }
+  
+  tfoot td {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	
+  }
+  
+  tfoot td:first-child {
+	z-index: 3;
+  }
+  
+  tbody {
+	overflow: scroll;
+	height: 200px;
+  }
+  
+  /* MAKE LEFT COLUMN FIXEZ */
+  tr > :first-child {
+	position: -webkit-sticky;
+	position: sticky;
+	left: 0;
+  }
+ 
+  tr > :first-child {
+	box-shadow: inset 0px 0px black;
+  }
 * {
 box-sizing: border-box;
 }
@@ -99,13 +171,13 @@ padding: 20px;
 
 .col-25 {
 float: left;
-width: 25%;
+width: 15%;
 margin-top: 6px;
 }
 
 .col-75 {
 float: left;
-width: 75%;
+width: 85%;
 margin-top: 6px;
 }
 
@@ -116,42 +188,48 @@ display: table;
 clear: both;
 }
 
-#pendingTable {
-    font-family: Arial, Helvetica, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  #pendingTable td, #pendingTable th {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  
-  #pendingTable tr:nth-child(even){
-    background-color: #f2f2f2;
-  }
-  
-  #pendingTable tr:hover {
-    background-color: #ddd;
-  }
-  
-  #pendingTable th {
-    padding-top: 12px;
-    padding-bottom: 12px;
-    text-align: left;
-    background-color: #046aaa;
-    color: white;
-}
-
 div.sticky {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
     background-color: white;
     padding: 10px;
-    font-size: 16px;
+    font-size: 14px;
 }
 
+.field-group {
+    margin-bottom: 2px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: row;
+}
+
+.field-group label {
+    margin-right: 10px; /* Space between label and input */
+}
+
+.field-group input[type="text"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Description Input: Make it wider */
+.field-group input[name="specimen_section_description[]"] {
+    flex: 0.5; /* Larger size for description input */
+    min-width: 60px; /* Ensure it is always at least 300px wide */
+    margin-right: 10px;
+}
+
+/* Tissue Input: Make it smaller */
+.field-group input[name="tissue[]"] {
+    flex: 0.2; /* Smaller size for tissue input */
+    min-width: 10px; /* Minimum width for smaller input */
+    margin-right: 10px;
+}
 @media screen and (max-width: 600px) {
 .col-25, .col-75, input[type=submit] {
 width: 100%;
@@ -162,10 +240,8 @@ margin-top: 0;
 
 $LabNumberWithoutPrefix = substr($LabNumber, 3);
 $patient_information = get_patient_details_information($LabNumberWithoutPrefix);
-
 print('<div class="sticky">');
 print('<h1>Patient Information</h1>');
-print('<table border="0" cellpadding="0" cellspacing="0" nobr="true">'); 
 foreach ($patient_information as $list) {
     $gender = '';
     if ($list['Gender'] == '1') {
@@ -176,6 +252,8 @@ foreach ($patient_information as $list) {
         $gender = 'Other';
     }
     print('
+    <table class="fixed-table">
+	<thead>
     <tr>
         <th>Name </th> 
         <th>Patient Code </th>
@@ -183,7 +261,9 @@ foreach ($patient_information as $list) {
         <th>Age </th>
         <th>Gender </th>
         <th>Lab Number </th>
+        <th></th>
     </tr>
+    <thead>
     <tr>
     <td><input type="text" name="name[]" value="' . $list['name'] . '" readonly></td> 
     <td><input type="text" name="patient_code[]" value="' . $list['patient_code'] . '" readonly></td> 
@@ -194,16 +274,16 @@ foreach ($patient_information as $list) {
     <td><button type="button" 
         class="btn btn-primary" style="background-color: rgb(118, 145, 225); color: white; height: 45px; width: 100px;" 
         onclick="redirectToReport()">Preview</button></td> 
-    </tr>'
+    </tr>
+    </table>'
     );
 }
-print('</table>');
 print('</div>');
 print('<br><br>');
-
 $specimens = get_gross_specimen_description($fk_gross_id);
+
 print('<form method="post" action="update_gross_specimens.php">');
-foreach ($specimens as $specimen) {
+foreach ($specimens as $index => $specimen) {
     echo '<div class="row">';
     echo '<div class="col-25">';
     echo '<label for="specimen">Specimen</label>';
@@ -220,14 +300,15 @@ foreach ($specimens as $specimen) {
     echo '<label for="gross_description">Gross Description</label>';
     echo '</div>';
     echo '<div class="col-75">';
-    echo '<textarea name="gross_description[]" cols="60" rows="10">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
+    echo '<div id="editor_' . $index . '" class="editor"></div>';
+    echo '<textarea name="gross_description[]" id="hidden_gross_description_' . $index . '" style="display:none;">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
     echo '</div>';
     echo '</div>';
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
-    echo '<input type="submit" value="save">';
 }
-// echo '<input type="submit" value="save">';
+echo '<input type="submit" value="Save">';
 echo '</form>';
+
 
 $sections = get_gross_specimen_section($fk_gross_id);
 $specimen_count_value = number_of_specimen($fk_gross_id);
@@ -245,53 +326,165 @@ print('<form id="specimen_section_form" method="post" action="gross_specimen_sec
 <div id="fields-container"> 
 </div>
 <br>
-<button id="saveButton" style="display: none;">Save</button>
+<button id="saveButton">Save</button>
 </form>');
 print("</div>");
-print('<div id="form-container">');
+
+// Print the form container
+print('<div style="width: 60%; text-align: left; margin-left: 0;">');
+
+// Add CSS styles for the table and its elements
+print('<style>
+table {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;  /* Ensure fixed table layout for consistent column width */
+}
+
+th, td {
+  text-align: center;
+  padding: 2px;  /* Reduce padding further to bring columns closer */
+}
+
+th {
+  width: 20%;  /* Set a fixed width for the table headers */
+}
+
+td {
+  padding: 2px;  /* Reduce padding for table data cells */
+}
+
+textarea, input[type="text"] {
+  width: 95%;  /* Ensure inputs and textareas fit within their cells */
+  box-sizing: border-box;  /* Prevent overflow by including padding and borders */
+}
+
+tr:nth-child(even) {background-color: #f2f2f2;}
+</style>');
+
+// Begin the form
 print('<form id="section-code-form" method="post" action="update_gross_specimen_section.php">');
+
+// Start the table with headers
+echo '<table>';
+echo '<thead>';
+echo '<tr>';
+echo '<th>Section Code</th>';
+echo '<th>Description</th>';
+echo '<th>Tissue</th>';
+echo '<th>Bone Present</th>';
+echo '</tr>';
+echo '</thead>';
+
+// Table body
+echo '<tbody>';
+$i = 0;  // Initialize a counter for unique radio button names
 foreach ($sections as $section) {
-    // echo '<div class="row">';
-    // echo '<div class="section-row">';
-    echo '<label for="section_code">Section Code ' . htmlspecialchars($section['section_code']) . '</label>';
+    echo '<tr>';
+    
+    // Section Code
+    echo '<td>' . htmlspecialchars($section['section_code']) . '</td>';
+    
+    // Description
+    echo '<td>';
+    echo '<textarea name="specimen_section_description[]" style="width:120%;">' . htmlspecialchars($section['specimen_section_description']) . '</textarea>';
     echo '<input type="hidden" name="gross_specimen_section_Id[]" value="' . htmlspecialchars($section['gross_specimen_section_id']) . '">';
     echo '<input type="hidden" name="sectionCode[]" value="' . htmlspecialchars($section['section_code']) . '" readonly>';
-    echo '<textarea name="specimen_section_description[]">' . htmlspecialchars($section['specimen_section_description']) . '</textarea>';
-   
-    // echo '</div>';
-    // echo '</div>';
-    echo '<div class="row">';
-    // echo '<div class="col-25">';
-    // echo '<label for="cassette_number">Cassette Number</label>';
-    // echo '</div>';
-    echo '<div class="col-75">';
-    echo '<input type="hidden" name="cassetteNumber[]" value="' . htmlspecialchars($section['cassettes_numbers']) . '" readonly>';
-    echo '</div>';
-    echo '</div>';
-    echo '<div class="row">';
-    echo '<div class="col-25">';
-    echo '<label for="tissue">Tissue Pieces In ' . htmlspecialchars($section['section_code']) . '</label>';
-    echo '</div>';
-    echo '<div class="col-75">';
-    echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" ';
-    echo '</div>';
-    echo '</div>';
-   
+    echo '</td>';
+    
+    // Tissue
+    echo '<td>';
+    echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" style="width:30%;">';
+    echo '</td>';
+    
+    // Bone Present (Radio buttons)
+    echo '<td>';
+    $boneValue = htmlspecialchars($section['bone']);
+    $checkedYes = ($boneValue === 'yes') ? 'checked' : '';
+    $checkedNo = ($boneValue === 'no') ? 'checked' : '';
+
+    // Use the same name for the group, with [] for each entry
+    echo '<input type="radio" name="bone[' . $i . ']" value="yes" ' . $checkedYes . '> Yes ';
+    echo '<input type="radio" name="bone[' . $i . ']" value="no" ' . $checkedNo . '> No ';
+    echo '</td>';
+    
+    echo '</tr>';
+    $i++;  // Increment the counter for the next row
 }
-echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
-echo '<input type="submit" value="save">';
+echo '</tbody>';
+echo '</table>';
+
+// Hidden field for fk_gross_id and submit button
+echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
+echo '<input type="submit" value="Save" style="margin-top: 15px;">';
+
+// End the form and container
 echo '</form>';
 print("</div>");
+print("<br>");
+print("<br>");
+echo '<div><br></div>';
+echo '<div><br></div>';
+
+
+// summary of section
+// Initialize counters and summary text
+$total_sections = count($sections); // Number of section codes
+$total_tissues = 0;
+$tissue_description = '';
+
+// Loop through the sections to count tissues and form the description
+foreach ($sections as $section) {
+    // Check if the tissue value contains the string "multiple"
+    if (strpos($section['tissue'], 'multiple') !== false) {
+        $tissue_description = 'multiple pieces';  // Set description as "multiple pieces"
+        break;  // Exit the loop, as we found a string indicating "multiple"
+    } elseif (is_numeric($section['tissue']) && $section['tissue'] > 1) {
+        $total_tissues += $section['tissue'];  // Sum the tissue pieces if numeric
+    } else {
+        $total_tissues += 1;  // Default to 1 tissue piece if not "multiple"
+    }
+}
+
+// Formulate the generated summary text based on the findings
+if (!empty($tissue_description)) {
+    // If tissue description is "multiple pieces"
+    $generated_summary = ucfirst($tissue_description) . " embedded in " . numberToWords($total_sections) . " block" . ($total_sections > 1 ? 's' : '') . ".";
+} else {
+    // Otherwise, use the total tissue count
+    $generated_summary = ucfirst(numberToWords($total_tissues)) . " pieces embedded in " . numberToWords($total_sections) . " block" . ($total_sections > 1 ? 's' : '') . ".";
+}
+
+// Function to convert numbers to words
+function numberToWords($number)
+{
+    $words = array(
+        0 => 'zero', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four', 5 => 'five', 6 => 'six',
+        7 => 'seven', 8 => 'eight', 9 => 'nine', 10 => 'ten', 11 => 'eleven', 12 => 'twelve', 13 => 'thirteen',
+        14 => 'fourteen', 15 => 'fifteen', 16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen', 19 => 'nineteen',
+        20 => 'twenty', 30 => 'thirty', 40 => 'forty', 50 => 'fifty', 60 => 'sixty', 70 => 'seventy',
+        80 => 'eighty', 90 => 'ninety'
+    );
+
+    if ($number <= 20) {
+        return $words[$number];
+    } else {
+        return $words[10 * floor($number / 10)] . (($number % 10) ? '-' . $words[$number % 10] : '');
+    }
+}
+
+
 
 $summaries = get_gross_summary_of_section($fk_gross_id);
-print('<form method="post" action="update_gross_summary.php">');
+print('<form method="post" action="update_gross_summary.php" id="auto-submit-form">');
 foreach ($summaries as $summary) {
     echo '<div class="row">';
     echo '<div class="col-25">';
     echo '<label for="summary">Summary</label>';
     echo '</div>';
     echo '<div class="col-75">';
-    print('<textarea name="summary" id="summary">'. htmlspecialchars($summary['summary']) .'</textarea>');
+    print('<textarea name="summary" id="summary">'. htmlspecialchars($generated_summary) .'</textarea>');
     echo '</div>';
     echo '</div>';
     echo '<div class="row">';
@@ -305,320 +498,588 @@ foreach ($summaries as $summary) {
     echo '<input type="hidden" name="gross_summary_id" value="' . htmlspecialchars($summary['gross_summary_id']) . '">';
     echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-echo '<input type="submit" value="save">';
+echo '<input type="submit" value="Save">';
 echo '</form>';
+
+
 ?>
 
-<script>
+<!-- Include Quill's CSS and JS -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-// document.addEventListener('DOMContentLoaded', function() {
-//   fetch('shortcuts.json')
-//       .then(response => response.json())
-//       .then(shortcuts => {
-//           document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
-//               textarea.addEventListener('input', function() {
-//                   let cursorPosition = this.selectionStart;
-//                   for (let shortcut in shortcuts) {
-//                       if (this.value.includes(shortcut)) {
-//                           this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-//                           this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-//                           break;
-//                       }
-//                   }
-//               });
+<!-- <script>
+        // Abbreviations dictionary
+        const abbreviations = {
+            "acic": "acute and chronic inflammatory cells",
+            "aic": "acute inflammatory cells",
+            "ant ling rm": "anterior lingual resection margin",
+            "ant brm": "Anterior buccal resection margin",
+            "post ling rm": "Posterior Lingual Resection margin",
+            "apf": "additional pathologic findings",
+            "afb": "Acid fast bacilli",
+            "asi": "Acute suppurative inflammation",
+            "aie": "Acute inflammatory exudate",
+            "a&p": "Antero – posteriorly",
+            "a&m": "available material",
+            "avm": "arteriovenous malformation",
+            "avn": "Avascular necrosis",
+            "b&g": "background",
+            "bxx": "biopsy"
+        };
+        // Initialize Quill editor for each textarea
+        document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.editor').forEach((element, index) => {
+                        const editor = new Quill(element, {
+                            theme: 'snow',
+                            modules: {
+                                toolbar: [
+                                    // [{ 'header': '1' }, { 'header': '2' }],
+                                    // [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    // ['bold', 'italic', 'underline'],
+                                    // ['link', 'image'],
+                                    // [{ 'align': [] }],
+                                    // [{ 'color': [] }, { 'background': [] }]
+                                ]
+                            }
+                        });
 
-//               textarea.addEventListener('keydown', function(event) {
-//                     if (event.key === 'Enter' && !event.shiftKey) {
-//                         event.preventDefault(); // Prevent default behavior of Enter key
-//                         this.closest('form').submit(); // Submit the form containing the textarea
-//                     }
-//               });
-//           });
-//       })
-//       .catch(error => console.error('Error loading shortcuts:', error));
-// });
+                        // Set the content from the hidden textarea
+                        const hiddenTextarea = document.querySelector('#hidden_gross_description_' + index);
+                        editor.root.innerHTML = hiddenTextarea.value;
 
+                        // Update the hidden textarea when content changes
+                        editor.on('text-change', function() {
+                            hiddenTextarea.value = editor.root.innerHTML;
+                        });
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('shortcuts.json')
-        .then(response => response.json())
-        .then(shortcuts => {
-            document.querySelectorAll('textarea[name="gross_description[]"]').forEach(textarea => {
-                textarea.addEventListener('input', function() {
-                    let cursorPosition = this.selectionStart;
+                        // Add functionality to replace abbreviations
+                        document.querySelector(`#editor_${index}`).addEventListener('keydown', function(event) {
+                            if (event.ctrlKey && event.key === 'a') { // Example: Ctrl + A for abbreviation
+                                event.preventDefault();
+                                const selection = window.getSelection().toString().trim().toLowerCase();
+                                if (selection) {
+                                        const abbreviation = abbreviations[selection];
+                                        if (abbreviation) {
+                                            replaceSelectedText(editor, abbreviation);
+                                        } else {
+                                            alert('No abbreviation found for the selected text.');
+                                        }
+                                }
+                            }
+                        });
                 });
-
-                textarea.addEventListener('keydown', function(event) {
-                    if (event.key === 'Insert') { // Insert key
-                        let cursorPosition = this.selectionStart;
-                        let text = this.value;
-                        let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
-                        let wordEnd = cursorPosition;
-
-                        let word = text.substring(wordStart, wordEnd).trim();
-
-                        if (shortcuts[word]) {
-                            this.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                            this.selectionEnd = wordStart + shortcuts[word].length;
-                        }
-                    }
-
-                    if (event.ctrlKey && event.key === 's') {
-                        event.preventDefault(); // Prevent default behavior of Enter key
-                        this.closest('form').submit(); // Submit the form containing the textarea
-                    }
-                });
-            });
-        })
-        .catch(error => console.error('Error loading shortcuts:', error));
-});
-
-
-</script>
-
-
-<script>
-
-// document.addEventListener('DOMContentLoaded', function() {
-//   fetch('shortcuts.json')
-//       .then(response => response.json())
-//       .then(shortcuts => {
-//           document.querySelectorAll('textarea[name="specimen_section_description[]"]').forEach(textarea => {
-//               textarea.addEventListener('input', function() {
-//                   let cursorPosition = this.selectionStart;
-//                   for (let shortcut in shortcuts) {
-//                       if (this.value.includes(shortcut)) {
-//                           this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-//                           this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-//                           break;
-//                       }
-//                   }
-//               });
-//             textarea.addEventListener('keydown', function(event) {
-//                     if (event.key === 'Enter' && !event.shiftKey) {
-//                         event.preventDefault(); // Prevent default behavior of Enter key
-//                         this.closest('form').submit(); // Submit the form containing the textarea
-//                     }
-//             });
-
-//           });
-//       })
-//       .catch(error => console.error('Error loading shortcuts:', error));
-// });
-
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('shortcuts.json')
-        .then(response => response.json())
-        .then(shortcuts => {
-            document.querySelectorAll('textarea[name="specimen_section_description[]"]').forEach(textarea => {
-                textarea.addEventListener('input', function() {
-                    let cursorPosition = this.selectionStart;
-                });
-
-                textarea.addEventListener('keydown', function(event) {
-                    if (event.key === 'Insert') { // Insert key
-                        let cursorPosition = this.selectionStart;
-                        let text = this.value;
-                        let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
-                        let wordEnd = cursorPosition;
-
-                        let word = text.substring(wordStart, wordEnd).trim();
-
-                        if (shortcuts[word]) {
-                            this.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                            this.selectionEnd = wordStart + shortcuts[word].length;
-                        }
-                    }
-
-                    if (event.ctrlKey && event.key === 's') {
-                        event.preventDefault(); // Prevent default behavior of Enter key
-                        this.closest('form').submit(); // Submit the form containing the textarea
-                    }
-                });
-            });
-        })
-        .catch(error => console.error('Error loading shortcuts:', error));
-});
-</script>
-
-
-<script>
-// fetch('shortcuts.json')
-//     .then(response => response.json())
-//     .then(shortcuts => {
-//         function handleShortcutInput(inputElement) {
-//             let inputValue = inputElement.value.toLowerCase();
-//             for (let shortcut in shortcuts) {
-//                 if (inputValue.includes(shortcut)) {
-//                     inputElement.value = inputValue.replace(shortcut, shortcuts[shortcut]);
-//                     break; 
-//                 }
-//             }
-//         }
-
-//         document.getElementById('summary').addEventListener('input', function() {
-//             let textarea = this;
-//             let cursorPosition = textarea.selectionStart;
-//             for (let shortcut in shortcuts) {
-//                 if (textarea.value.includes(shortcut)) {
-//                     textarea.value = textarea.value.replace(shortcut, shortcuts[shortcut]);
-//                     textarea.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-//                     break; 
-//                 }
-//             }
-//         });
-
-//         document.getElementById('shortcutInput').addEventListener('input', function() {
-//             handleShortcutInput(this);
-//         });
-//         // Listen for Enter key press event
-//         document.querySelectorAll('textarea').forEach(textarea => {
-//                 textarea.addEventListener('keydown', function(event) {
-//                     if (event.key === 'Enter' && !event.shiftKey) {
-//                         event.preventDefault(); // Prevent default behavior of Enter key
-//                         this.closest('form').submit(); // Submit the form containing the textarea
-//                     }
-//                 });
-//             });
-//         })
-//     .catch(error => console.error('Error loading shortcuts:', error));
-
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('shortcuts.json')
-        .then(response => response.json())
-        .then(shortcuts => {
-            function handleShortcutInput(inputElement, cursorPosition) {
-                let text = inputElement.value;
-                let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
-                let wordEnd = cursorPosition;
-
-                let word = text.substring(wordStart, wordEnd).trim();
-
-                if (shortcuts[word]) {
-                    inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                    inputElement.selectionEnd = wordStart + shortcuts[word].length;
-                }
+        });
+        // Function to replace selected text in Quill editor
+        function replaceSelectedText(editor, replacementText) {
+            const range = editor.getSelection();
+            if (range) {
+                editor.deleteText(range.index, range.length);
+                editor.insertText(range.index, replacementText);
+                editor.setSelection(range.index + replacementText.length, 0);
             }
+        }
+</script> -->
 
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('keydown', function(event) {
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                document.querySelectorAll('textarea[name="specimen_section_description[]"]').forEach(textarea => {
+                    textarea.addEventListener('input', function() {
+                        let cursorPosition = this.selectionStart;
+                    });
+
+                    textarea.addEventListener('keydown', function(event) {
+                        if (event.key === 'Insert') { // Insert key
+                            let cursorPosition = this.selectionStart;
+                            let text = this.value;
+                            let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
+                            let wordEnd = cursorPosition;
+
+                            let word = text.substring(wordStart, wordEnd).trim();
+
+                            if (shortcuts[word]) {
+                                this.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                                this.selectionEnd = wordStart + shortcuts[word].length;
+                            }
+                        }
+
+                        if (event.ctrlKey && event.key === 's') {
+                            event.preventDefault(); // Prevent default behavior of Enter key
+                            this.closest('form').submit(); // Submit the form containing the textarea
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
+    });
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
+                    let wordEnd = cursorPosition;
+
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function(event) {
+                        if (event.key === 'Insert') { // Insert key
+                            let cursorPosition = this.selectionStart;
+                            handleShortcutInput(this, cursorPosition);
+                        }
+
+                        if (event.ctrlKey && event.key === 's') {
+                            event.preventDefault(); // Prevent default behavior of Enter key
+                            this.closest('form').submit(); // Submit the form containing the textarea
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
+                    let wordEnd = cursorPosition;
+
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        let before = text.substring(0, wordStart);
+                        let after = text.substring(wordEnd);
+                        inputElement.value = before + shortcuts[word] + after;
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.getElementById('ink_code').addEventListener('keydown', function(event) {
                     if (event.key === 'Insert') { // Insert key
                         let cursorPosition = this.selectionStart;
                         handleShortcutInput(this, cursorPosition);
                     }
+                });
 
-                    if (event.ctrlKey && event.key === 's') {
-                        event.preventDefault(); // Prevent default behavior of Enter key
-                        this.closest('form').submit(); // Submit the form containing the textarea
+                document.getElementById('shortcutInput').addEventListener('keydown', function(event) {
+                    if (event.key === 'Insert') { // Insert key
+                        let cursorPosition = this.selectionStart;
+                        handleShortcutInput(this, cursorPosition);
                     }
                 });
-            });
-        })
-        .catch(error => console.error('Error loading shortcuts:', error));
-});
 
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function(event) {
+                        if (event.key === 'Insert') { // Insert key
+                            let cursorPosition = this.selectionStart;
+                            handleShortcutInput(this, cursorPosition);
+                        }
+
+                        if (event.ctrlKey && event.key === 's') {
+                            event.preventDefault(); // Prevent default behavior of Enter key
+                            this.closest('form').submit(); // Submit the form containing the textarea
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
+    });
 </script>
 
+<!-- <script>
 
-<script>
-// fetch('shortcuts.json')
-//     .then(response => response.json())
-//     .then(shortcuts => {
-//         function handleShortcutInput(inputElement) {
-//             let inputValue = inputElement.value.toLowerCase();
-//             for (let shortcut in shortcuts) {
-//                 if (inputValue.includes(shortcut)) {
-//                     inputElement.value = inputValue.replace(shortcut, shortcuts[shortcut]);
-//                     break; 
-//                 }
-//             }
-//         }
+    const buttonClickCounts = {};
+    
+    document.getElementById("saveButton").addEventListener("click", function(event) {
+        // Prevent the default form submission behavior
+        event.preventDefault();
 
-//         document.getElementById('ink_code').addEventListener('input', function() {
-//             let textarea = this;
-//             let cursorPosition = textarea.selectionStart;
-//             for (let shortcut in shortcuts) {
-//                 if (textarea.value.includes(shortcut)) {
-//                     textarea.value = textarea.value.replace(shortcut, shortcuts[shortcut]);
-//                     textarea.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-//                     break; 
-//                 }
-//             }
-//         });
+        // Get the form element
+        const form = document.getElementById("specimen_section_form");
 
-//         document.getElementById('shortcutInput').addEventListener('input', function() {
-//             handleShortcutInput(this);
-//         });
+        // Submit the form
+        form.submit();
+    });
+
+    let sections = <?php echo json_encode($sections); ?>;
+    let lastSectionCodes = {};
+    let lastCassetteNumbers = {};
+    let lastTissues = {};
+
+    // Iterate over each section to find the last section code, cassette number, and tissue for each specimen
+    sections.forEach(function(section) {
+        let specimenLetter = section.section_code.charAt(0); // Extract the specimen letter
+        let sectionCode = section.section_code;
+        let cassetteNumber = section.cassettes_numbers;
+        let tissue = section.tissue;
+
+        // Update the last section code for this specimen
+        lastSectionCodes[specimenLetter] = sectionCode;
+
+        // Update the last cassette number for this specimen
+        if (!lastCassetteNumbers[specimenLetter] || cassetteNumber > lastCassetteNumbers[specimenLetter]) {
+            lastCassetteNumbers[specimenLetter] = cassetteNumber;
+        }
+
+        // Update the last tissue for this specimen
+        if (!lastTissues[specimenLetter] || tissue > lastTissues[specimenLetter]) {
+            lastTissues[specimenLetter] = tissue;
+        }
+    });
+
+
+    function generateNextSectionCode(specimenLetter) {
+        // Generate the next section code
+        let sectionCode = '';
+
+        if (!lastSectionCodes[specimenLetter] || lastSectionCodes[specimenLetter] === '') {
+            // If the last section code is empty or not set, generate it based on the specimen letter and button click count
+            sectionCode = specimenLetter + '1';
+        } else {
+            // Otherwise, generate it sequentially based on the last section code
+            const lastSectionNumber = parseInt(lastSectionCodes[specimenLetter].slice(1), 10);
+            if (!isNaN(lastSectionNumber)) {
+                // Increment the last section number and generate the new section code
+                const nextSectionNumber = lastSectionNumber + 1;
+                sectionCode = specimenLetter + nextSectionNumber;
+            } else {
+                // Handle the case where lastSectionNumber is NaN (e.g., if lastSectionCode doesn't follow the expected format)
+                console.error("Invalid last section code format:", lastSectionCodes[specimenLetter]);
+                // You can provide a default behavior here, such as setting sectionCode to a predefined value
+                // sectionCode = specimenLetter + "1";
+            }
+        }
+        return sectionCode;
+    }
+    
+    function handleButtonClick(button) {
+        const buttonId = button.id;
+        const specimenIndex = button.id.split("-")[1]; 
+        const specimenLetter = button.getAttribute('data-specimen-letter');
+        buttonClickCounts[buttonId] = (buttonClickCounts[buttonId] || 0) + 1;
+        const section_text = 'Section from the ';
+        const specimen_count_value = <?php echo $specimen_count_value; ?>;
+        const last_value = "<?php echo $last_value; ?>";
+        const fk_gross_id = "<?php echo $fk_gross_id;?>";
+        const fieldsContainer = document.getElementById("fields-container");
+        const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
+        const currentYear = new Date().getFullYear();
+        const lastTwoDigits = currentYear.toString().slice(-2);
+
+        // Generate the next section code
+        let sectionCode = generateNextSectionCode(specimenLetter);
         
-//         document.querySelectorAll('textarea').forEach(textarea => {
-//                 textarea.addEventListener('keydown', function(event) {
-//                     if (event.key === 'Enter' && !event.shiftKey) {
-//                         event.preventDefault(); // Prevent default behavior of Enter key
-//                         this.closest('form').submit(); // Submit the form containing the textarea
-//                     }
-//                 });
-//             });
-//         })
-//     .catch(error => console.error('Error loading shortcuts:', error));
+        // Update the last generated section code
+        lastSectionCodes[specimenLetter] = sectionCode;
+      
 
+        // Create a new field set for each entry
+        const fieldSet = document.createElement("fieldset");
+        fieldSet.classList.add("field-group"); // Add a class for styling (optional)
+        let sectionCodes = [];
+        let cassetteNumbers = [];
+        let descriptions = [];
+        const br = document.createElement("br");
 
-document.addEventListener('DOMContentLoaded', function() {
-    fetch('shortcuts.json')
-        .then(response => response.json())
-        .then(shortcuts => {
-            function handleShortcutInput(inputElement, cursorPosition) {
-                let text = inputElement.value;
-                let wordStart = text.lastIndexOf(' ', cursorPosition - 2) + 1;
-                let wordEnd = cursorPosition;
+        const fkGrossIdInput = document.createElement("input");
+        fkGrossIdInput.type = "hidden";
+        fkGrossIdInput.name = "fk_gross_id"; // Set the name attribute to identify the input
+        fkGrossIdInput.value = "<?php echo $fk_gross_id;?>";
+        fieldSet.appendChild(fkGrossIdInput);
 
-                let word = text.substring(wordStart, wordEnd).trim();
-
-                if (shortcuts[word]) {
-                    let before = text.substring(0, wordStart);
-                    let after = text.substring(wordEnd);
-                    inputElement.value = before + shortcuts[word] + after;
-                    inputElement.selectionEnd = wordStart + shortcuts[word].length;
-                }
-            }
-
-            document.getElementById('ink_code').addEventListener('keydown', function(event) {
-                if (event.key === 'Insert') { // Insert key
+        // Create the label and input for Section Code
+        const sectionCodeLabel = document.createElement("label");
+        sectionCodeLabel.textContent = 'Section Code: ' + sectionCode;
+        const inputSectionCode = document.createElement("input");
+        inputSectionCode.type = "hidden"; // Use "text" for Section Code input
+        inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
+        inputSectionCode.value = sectionCode;
+        inputSectionCode.type = "hidden";
+        const descriptionInput = document.createElement("input");
+        descriptionInput.type = "text"; // Use "text" for Description input
+        descriptionInput.name = "specimen_section_description[]"; // Assign unique name based on count
+        descriptionInput.value = section_text;
+        descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json'); // Specify the shortcut JSON file
+        descriptionInput.addEventListener('input', function() {
+            const shortcutsFile = this.getAttribute('data-shortcut-file');
+            fetch(shortcutsFile)
+                .then(response => response.json())
+                .then(shortcuts => {
                     let cursorPosition = this.selectionStart;
-                    handleShortcutInput(this, cursorPosition);
-                }
-            });
-
-            document.getElementById('shortcutInput').addEventListener('keydown', function(event) {
-                if (event.key === 'Insert') { // Insert key
-                    let cursorPosition = this.selectionStart;
-                    handleShortcutInput(this, cursorPosition);
-                }
-            });
-
-            document.querySelectorAll('textarea').forEach(textarea => {
-                textarea.addEventListener('keydown', function(event) {
-                    if (event.key === 'Insert') { // Insert key
-                        let cursorPosition = this.selectionStart;
-                        handleShortcutInput(this, cursorPosition);
+                    for (let shortcut in shortcuts) {
+                        if (this.value.includes(shortcut)) {
+                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
+                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
+                            break;
+                        }
                     }
+                })
+                .catch(error => console.error('Error loading shortcuts:', error));
+        });
 
-                    if (event.ctrlKey && event.key === 's') {
-                        event.preventDefault(); // Prevent default behavior of Enter key
-                        this.closest('form').submit(); // Submit the form containing the textarea
+        fieldSet.appendChild(sectionCodeLabel);
+        fieldSet.appendChild(inputSectionCode);
+        fieldSet.appendChild(descriptionInput);
+        fieldSet.appendChild(br);
+
+        // Create the label and input for cassetteNumbers
+        const cassetteNumberLabel = document.createElement("label");
+        cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
+        const cassetteNumberInput = document.createElement("input");
+        cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
+        cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
+        cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
+        // fieldSet.appendChild(cassetteNumberLabel);
+        fieldSet.appendChild(cassetteNumberInput);
+     
+        const tissueLabel = document.createElement("label");
+        tissueLabel.textContent = "Tissue Pieces In  " + sectionCode 
+        const tissueInput = document.createElement("input");
+        tissueInput.type = "text"; // Use "text" for Cassette Number input
+        tissueInput.name = "tissue[]"; // Assign unique name based on count
+        tissueInput.value = '';
+        fieldSet.appendChild(tissueLabel);
+        fieldSet.appendChild(tissueInput);
+
+        // Create the label and input for Description
+        // const descriptionLabel = document.createElement("label");
+        // descriptionLabel.textContent = "Description:";
+        
+        const saveButton = document.getElementById("saveButton");
+        saveButton.style.display = "block";
+        
+        // fieldSet.appendChild(descriptionLabel);
+        fieldsContainer.appendChild(fieldSet);
+    }
+</script> -->
+
+<style>
+        * {
+    box-sizing: border-box;
+    }
+
+    input[type=text], select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: vertical;
+    }
+
+    label {
+    padding: 12px 12px 12px 0;
+    display: inline-block;
+    }
+
+    input[type=submit] {
+        background-color: rgb(118, 145, 225);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+        transition: box-shadow 0.3s ease;
+    }
+
+    input[type=submit]:hover {
+    background-color: rgb(118, 145, 225);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    }
+    button[type=submit] {
+            background-color: rgb(118, 145, 225);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: center;
+            transition: box-shadow 0.3s ease;
+        }
+    button[type=submit]:hover {
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
+    }
+
+    .container {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+    }
+
+    .col-25 {
+    float: left;
+    width: 25%;
+    margin-top: 6px;
+    }
+
+    .col-75 {
+    float: left;
+    width: 75%;
+    margin-top: 6px;
+    }
+
+
+    .row::after {
+    content: "";
+    display: table;
+    clear: both;
+    }
+
+
+    @media screen and (max-width: 600px) {
+    .col-25, .col-75, input[type=submit] {
+        width: 100%;
+        margin-top: 0;
+    }
+    }
+</style>
+
+<script type="text/javascript">
+        function redirectToReport() {
+            var labNumber = "<?php echo $lab_number; ?>";
+            // window.location.href = "hpl_report.php?lab_number=" + labNumber;
+            window.open("hpl_report.php?lab_number=" + labNumber, "_blank");
+        }
+</script>
+
+<!-- Gross Description Abbreviations -->
+<script>
+        const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
+        const abbreviations = {};
+
+        // Loop through abbreviations_value and map it to the abbreviations object
+        abbreviations_value.forEach(item => {
+            // Remove HTML tags using replace with a regex
+            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
+            abbreviations[item.abbreviation_key] = plainText;
+        });
+
+        
+        // Initialize Quill editor for each textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.editor').forEach((element, index) => {
+                const editor = new Quill(element, {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: []
+                    }
+                });
+
+                // Set the content from the hidden textarea
+                const hiddenTextarea = document.querySelector('#hidden_gross_description_' + index);
+                editor.root.innerHTML = hiddenTextarea.value;
+
+                // Update the hidden textarea when content changes
+                editor.on('text-change', function() {
+                    hiddenTextarea.value = editor.root.innerHTML;
+                });
+
+                // Add functionality to replace abbreviations
+                editor.root.addEventListener('keydown', function(event) {
+                    if (event.key === ' ') { // Check if the space bar is pressed
+                        event.preventDefault(); // Prevent default space behavior
+
+                        const text = editor.getText(); // Get the current text in the editor
+                        const selection = editor.getSelection(); // Get the current selection range
+                        const caretPosition = selection.index;
+
+                        // Debug: Log current text and caret position
+                        console.log("Text before caret:", text.substring(0, caretPosition));
+                        console.log("Caret position:", caretPosition);
+
+                        // Find the word before the caret position
+                        const textBeforeCaret = text.substring(0, caretPosition);
+                        const words = textBeforeCaret.trim().split(/\s+/);
+                        const lastWord = words[words.length - 1]; // Get the last word in its original case
+
+                        // Debug: Log the last word
+                        console.log("Last word typed:", lastWord);
+
+                        // Get the character before the word (check for the period rule)
+                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+
+                        // Check if the word is preceded by a period with no space or if it's empty
+                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                            // Just insert the space if the rule applies (no abbreviation generated)
+                            editor.insertText(caretPosition, ' ');
+                            return;
+                        }
+
+                        // Find the abbreviation in a case-sensitive manner
+                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                        
+                        if (abbreviation) {
+                            const fullAbbreviation = abbreviations[abbreviation];
+                            // Debug: Log abbreviation found
+                            console.log("Abbreviation found:", fullAbbreviation);
+
+                            // Replace the last word with the abbreviation only if it's not part of a longer word
+                            replaceLastWordWithAbbreviation(editor, lastWord, fullAbbreviation, caretPosition);
+                        } else {
+                            // If no abbreviation found, just insert a space
+                            editor.insertText(caretPosition, ' ');
+                        }
                     }
                 });
             });
-        })
-        .catch(error => console.error('Error loading shortcuts:', error));
-});
+        });
 
-   
+        // Helper function to replace the last word with the abbreviation
+        function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
+            const text = editor.getText();
+            const textBeforeCaret = text.substring(0, caretPosition);
+            
+            // Find the start of the word that needs to be replaced
+            const startOfWord = textBeforeCaret.lastIndexOf(word);
+
+            // Remove the word first to avoid overlapping or incorrect replacement
+            editor.deleteText(startOfWord, word.length);
+
+            // Insert the abbreviation, making sure to trim any extra spaces
+            editor.insertText(startOfWord, abbreviation.trim(), 'user');  // 'user' to simulate a normal typing action
+            
+            // Set the caret position after the inserted abbreviation
+            editor.setSelection(startOfWord + abbreviation.length, 0);
+
+            // Debug: Log text after replacement
+            console.log("Text after replacement:", editor.getText());
+        }
 </script>
 
+<!--   Display "No" or "Yes" options based on bones_status value -->
+<script>
+    function toggleBlockNumber(rowid) {
+        const bonesStatus = document.getElementById('bones_status_' + rowid).value;
+        const blockNumberContainer = document.getElementById('block_number_container_' + rowid);
 
-
+        if (bonesStatus === 'Yes') {
+            blockNumberContainer.style.display = 'table-cell';
+        } else {
+            blockNumberContainer.style.display = 'none';
+        }
+    }
+</script>
 
 <script>
 
@@ -662,7 +1123,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-
     function generateNextSectionCode(specimenLetter) {
         // Generate the next section code
         let sectionCode = '';
@@ -687,7 +1147,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return sectionCode;
     }
     
-    
     function handleButtonClick(button) {
         const buttonId = button.id;
         const specimenIndex = button.id.split("-")[1]; 
@@ -707,13 +1166,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update the last generated section code
         lastSectionCodes[specimenLetter] = sectionCode;
-        
+      
+
         // Create a new field set for each entry
         const fieldSet = document.createElement("fieldset");
         fieldSet.classList.add("field-group"); // Add a class for styling (optional)
         let sectionCodes = [];
         let cassetteNumbers = [];
         let descriptions = [];
+        const br = document.createElement("br");
 
         const fkGrossIdInput = document.createElement("input");
         fkGrossIdInput.type = "hidden";
@@ -723,43 +1184,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Create the label and input for Section Code
         const sectionCodeLabel = document.createElement("label");
-        sectionCodeLabel.textContent = 'Section Code ' + sectionCode ;
+        sectionCodeLabel.textContent = sectionCode +' :';
         const inputSectionCode = document.createElement("input");
-        inputSectionCode.type = "text"; // Use "text" for Section Code input
+        inputSectionCode.type = "hidden"; // Use "text" for Section Code input
         inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
         inputSectionCode.value = sectionCode;
         inputSectionCode.type = "hidden";
-        inputSectionCode.readOnly = true;
         const descriptionInput = document.createElement("input");
         descriptionInput.type = "text"; // Use "text" for Description input
         descriptionInput.name = "specimen_section_description[]"; // Assign unique name based on count
         descriptionInput.value = section_text;
         descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json'); // Specify the shortcut JSON file
-        descriptionInput.addEventListener('input', function() {
-            const shortcutsFile = this.getAttribute('data-shortcut-file');
-            fetch(shortcutsFile)
-                .then(response => response.json())
-                .then(shortcuts => {
-                    let cursorPosition = this.selectionStart;
-                    for (let shortcut in shortcuts) {
-                        if (this.value.includes(shortcut)) {
-                            this.value = this.value.replace(shortcut, shortcuts[shortcut]);
-                            this.selectionEnd = cursorPosition + (shortcuts[shortcut].length - shortcut.length);
-                            break;
-                        }
-                    }
-                })
-                .catch(error => console.error('Error loading shortcuts:', error));
-        });
-        const formRow = document.createElement("div");
-        formRow.className = "form-row";
-        formRow.appendChild(sectionCodeLabel);
-        formRow.appendChild(inputSectionCode);
-        formRow.appendChild(descriptionInput);
-        fieldSet.appendChild(formRow);
-        // fieldSet.appendChild(sectionCodeLabel);
-        // fieldSet.appendChild(inputSectionCode);
-        // fieldSet.appendChild(descriptionInput);
+        fieldSet.appendChild(sectionCodeLabel);
+        fieldSet.appendChild(inputSectionCode);
+        fieldSet.appendChild(descriptionInput);
+        fieldSet.appendChild(br);
 
         // Create the label and input for cassetteNumbers
         const cassetteNumberLabel = document.createElement("label");
@@ -768,140 +1207,36 @@ document.addEventListener('DOMContentLoaded', function() {
         cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
         cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
         cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
-        // fieldSet.appendChild(cassetteNumberLabel);
         fieldSet.appendChild(cassetteNumberInput);
-
+     
         const tissueLabel = document.createElement("label");
-        tissueLabel.textContent = "Tissue Pieces In" +" "+sectionCode 
+        tissueLabel.textContent = "Tissue Pieces In  " + sectionCode 
         const tissueInput = document.createElement("input");
         tissueInput.type = "text"; // Use "text" for Cassette Number input
         tissueInput.name = "tissue[]"; // Assign unique name based on count
         tissueInput.value = '';
-        // fieldSet.appendChild(tissueLabel);
-        // fieldSet.appendChild(tissueInput);
-        const tissueformRow = document.createElement("div");
-        tissueformRow.className = "form-row";
-        tissueformRow.appendChild(tissueLabel);
-        tissueformRow.appendChild(tissueInput);
-        fieldSet.appendChild(tissueformRow);
-        
-        // Create the label and input for Description
-        // const descriptionLabel = document.createElement("label");
-        // descriptionLabel.textContent = "Description:";
-        
+        tissueInput.placeholder = "Tissue Pieces In  " + sectionCode ;
+        fieldSet.appendChild(tissueInput);
+
+        // Change the Bone selection to a checkbox instead of radio buttons
+        const boneLabel = document.createElement("label");
+        boneLabel.textContent = "Bone?";
+
+        const boneInput = document.createElement("input");
+        boneInput.type = "checkbox"; // Use checkbox for Bone selection
+        boneInput.name = "bone[]"; // Use array notation to handle multiple inputs
+        boneInput.value = sectionCode; // Use the section code or another identifier to keep track
+
+        // Append the bone checkbox to the fieldSet
+        fieldSet.appendChild(boneLabel);
+        fieldSet.appendChild(boneInput);
+
 
         const saveButton = document.getElementById("saveButton");
         saveButton.style.display = "block";
         
         // fieldSet.appendChild(descriptionLabel);
-        
         fieldsContainer.appendChild(fieldSet);
+        console.log("Field Container: ", fieldSet)
     }
-</script>
-
-
-
-<style>
-    * {
-  box-sizing: border-box;
-}
-
-input[type=text], select, textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  resize: vertical;
-}
-
-label {
-  padding: 12px 12px 12px 0;
-  display: inline-block;
-}
-
-input[type=submit] {
-    background-color: rgb(118, 145, 225);
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    float: right;
-    transition: box-shadow 0.3s ease;
-}
-
-input[type=submit]:hover {
-  background-color: rgb(118, 145, 225);
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-}
-button[type=submit] {
-        background-color: rgb(118, 145, 225);
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        float: center;
-        transition: box-shadow 0.3s ease;
-    }
-button[type=submit]:hover {
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
-}
-
-.container {
-  border-radius: 5px;
-  background-color: #f2f2f2;
-  padding: 20px;
-}
-
-.col-25 {
-  float: left;
-  width: 25%;
-  margin-top: 6px;
-}
-
-.col-75 {
-  float: left;
-  width: 75%;
-  margin-top: 6px;
-}
-
-.row::after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-.form-row {
-    display: flex;
-    align-items: left;
-    margin-bottom: 1px;
-}
-
-.section-row {
-    display: flex;
-    align-items: left;
-}
-.section-row label {
-    margin-right: 10px;
-}
-.section-row input[type="text"],
-.section-row textarea {
-        flex: 1;
-}
-
-@media screen and (max-width: 600px) {
-  .col-25, .col-75, input[type=submit] {
-    width: 100%;
-    margin-top: 0;
-  }
-}
-</style>
-
-<script type="text/javascript">
-        function redirectToReport() {
-            var labNumber = "<?php echo $lab_number; ?>";
-            // window.location.href = "hpl_report.php?lab_number=" + labNumber;
-            window.open("hpl_report.php?lab_number=" + labNumber, "_blank");
-        }
 </script>
