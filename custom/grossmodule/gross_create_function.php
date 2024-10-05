@@ -69,6 +69,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result_summary = pg_query($pg_con, $sql_summary);
 
         if ($result_summary) {
+            
+            // Remove 'HPL' prefix if it exists
+            $labnumberProcessed = preg_replace('/^HPL/', '', $lab_number);
+
+            if (!empty($labnumberProcessed) && !empty($gross_created_user)) {
+                // Insert into llx_commande_trackws
+                $sql_commande_trackws = "INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id) 
+                                         VALUES ('$labnumberProcessed', '$gross_created_user', 1)";
+
+                $result_commande_trackws = pg_query($pg_con, $sql_commande_trackws);
+
+                if (!$result_commande_trackws) {
+                    echo "Error inserting into llx_commande_trackws: " . pg_last_error($pg_con);
+                    pg_close($pg_con);
+                    exit();
+                }
+            } else {
+                error_log('Skipping empty lab number or user: ' . $labnumberProcessed);
+            }
+
             echo '<script>';
             echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
             echo '</script>';
