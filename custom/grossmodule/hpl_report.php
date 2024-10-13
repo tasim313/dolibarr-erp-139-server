@@ -577,7 +577,8 @@ foreach ($grouped_sections as $specimen_letter => $sections) {
 $section_code_list = rtrim($section_code_list, ', ');
 
 // Initialize content for the HTML table
-$html = '<table border="0" cellspacing="0" cellpadding="4" style="width:100%; table-layout: fixed;">';
+$html = '
+<table border="0" cellspacing="0" cellpadding="4" style="width:100%; table-layout: fixed;">';
 
 // Add Site Of Specimen
 $html .= '<tr>
@@ -611,6 +612,19 @@ while ($row = pg_fetch_assoc($gross_description_result)) {
     $specimen = $row['specimen'];
     $description = $row['gross_description'];
 
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $description = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $description);
+
+    // Handle <p> tags: replace <p> with <br> only if the content isn't just whitespace
+    $description = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $description);
+
+    // Remove trailing <br> tags if they don't precede text
+    $description = preg_replace('/<br>\s*$/', '', $description);
+
+    // Trim to remove leading and trailing whitespace
+    $description = trim($description);
+
+
     // Allow specific HTML rendering
     $gross_description_rows[] = "<strong>$specimen:</strong> $description"; // This will render <strong> tag correctly
 }
@@ -634,6 +648,17 @@ $micro_description_rows = [];
 while ($row = pg_fetch_assoc($micro_details_result)) {
     $specimen = htmlspecialchars($row['specimen']);
     $description = $row['description'];
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $description = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $description);
+
+    // Handle <p> tags: replace <p> with <br> only if the content isn't just whitespace
+    $description = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $description);
+
+    // Remove trailing <br> tags if they don't precede text
+    $description = preg_replace('/<br>\s*$/', '', $description);
+
+    // Trim to remove leading and trailing whitespace
+    $description = trim($description);
 
     $micro_description_rows[] = "<strong>$specimen:</strong> $description";
 }
@@ -651,14 +676,25 @@ while ($row = pg_fetch_assoc($diagnosis_details_result)) {
     $title = $row['title'];
     $description = $row['description'];
     $comment = $row['comment'];
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $description = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $description);
+
+    // Handle <p> tags: replace <p> with <br> only if the content isn't just whitespace
+    $description = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $description);
+
+    // Remove trailing <br> tags if they don't precede text
+    $description = preg_replace('/<br>\s*$/', '', $description);
+
+    // Trim to remove leading and trailing whitespace
+    $description = trim($description);
 
     // Check if the comment is empty
     if (empty($comment)) {
         // Comment is empty, so don't include it
-        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong>" . $description;
+        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description;
     } else {
         // Comment is not empty, include it with formatting
-        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong>" . $description . "<strong>Comment : </strong>" . $comment;
+        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description . "<strong>Comment : </strong>" . $comment;
     }
 }
 
