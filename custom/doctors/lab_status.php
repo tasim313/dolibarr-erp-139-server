@@ -467,6 +467,17 @@ switch (true) {
               <input type="text" id="labno" name="labno" autofocus>
     </form>
 
+    <a href="../grossmodule/hpl_report.php" target="_blank">
+        <button style="border:none; background-color: white; color: black;">
+            <i class="fas fa-file-alt" aria-hidden="true"></i> Report
+        </button>
+    </a>
+    <a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
+        <button style="border:none; background-color: white; color: black;">
+            <i class="fas fa-edit" aria-hidden="true"></i> Edit
+        </button>
+    </a>
+
 <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
             <div class="tab-buttons button-container">
                 
