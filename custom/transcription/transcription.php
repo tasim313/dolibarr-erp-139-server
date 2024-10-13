@@ -362,6 +362,8 @@ print('<button class="button-class secondary">
 ' . htmlspecialchars($LabNumber) . '
 </button>');
 
+echo '<button class="button-class secondary" onclick="history.back()" class="styled-back-btn">Back</button>';
+
 print("
 <form id='clinicalDetailsForm' method='post' action='clinical_details.php'>
     <div class='form-group'>
