@@ -21,8 +21,8 @@ if (!$pg_con) {
 // Retrieve the LabNumber from the GET request
 $LabNumber = isset($_GET['lab_number']) ? $_GET['lab_number'] : '';
 $LabNumberWithoutPrefix = str_replace(["HPL", "-HPL"], "", $LabNumber);
-// $lab_number = str_replace("-", "", $LabNumberWithoutPrefix);
-$lab_number = $LabNumber;
+$lab_number_table = str_replace("-", "", $LabNumberWithoutPrefix);
+$lab_number = $LabNumberWithoutPrefix;
 // Prepare the SQL query for dynamic data
 $invoice_number = "SELECT f.ref AS invoice  
                    FROM llx_facture AS f  
@@ -43,9 +43,9 @@ if ($invoice_result) {
     while ($row = pg_fetch_assoc($invoice_result)) {
         // Process each row as needed
         $invoice = $row['invoice'];
-        // Extract the invoice number and remove "SI" prefix and "-"
-        // $invoice_value = str_replace(['SI', '-'], '', $invoice);
-        $invoice_value = $invoice ;
+        // Extract the invoice number and remove "SI" prefix 
+        $invoice_value = str_replace(['SI'], '', $invoice);
+        $invoice_value_table = str_replace(['SI', '-'], '', $invoice);
         
         // Store the invoice number in a session variable for later use
         $_SESSION['invoice_value'] = $invoice_value;
@@ -155,7 +155,7 @@ class CustomPDF extends TCPDF {
         
             // Create a DataMatrix barcode for the lab number
             $this->write2DBarcode($labBarcodeData, 'DATAMATRIX', '', '', 5, 5, $barcodeStyle, 'N'); // Adjust the size to 20x20mm
-            $this->Ln(-22); // Adjust line spacing (positive value to move down)
+            $this->Ln(-24); // Adjust line spacing (positive value to move down)
         
             // Adjust Y position for 'HISTOPATHOLOGY REPORT' relative to the barcode size
             $barcodeHeight = 20; // Height of the barcode (same as above)
@@ -164,7 +164,7 @@ class CustomPDF extends TCPDF {
             // Set X position for 'HISTOPATHOLOGY REPORT' and center-align the text
             $this->SetX($this->getPageWidth() - 120); 
             $this->Cell(40, 8, 'HISTOPATHOLOGY REPORT', 0, 1, 'C', false);
-            $this->Ln(-5.5); // Adjust line spacing as needed
+            $this->Ln(-3.5); // Adjust line spacing as needed
         
             // Move the cursor to the right side of the page for the invoice number barcode
             $this->SetX($this->getPageWidth() - 20); // Adjust the value to position the barcode correctly
@@ -406,16 +406,20 @@ $htmlContent = '
             width: 100%;
             border-collapse: collapse;
             border: 1px solid black;
+            border: none;
             padding: 2px;
             text-align: left;
         }
         tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        
     </style>
-    
+    <hr>
     <table>
+        <tr>
+            <td><strong>Lab : </strong><span>11'.$lab_number_table.' </span></td>
+            <td><strong>Invoice: </strong><span>011'.$invoice_value_table.'</span></td>
+        </tr>
         <tr>
             <td><strong>Patient Name: </strong><span>'.$nom.' </span></td>
             <td><strong>Date Of Birth: </strong><span> '.$date_of_birth.'</span></td>
@@ -436,6 +440,7 @@ $htmlContent = '
         
         </tr>
     </table> 
+    <hr>
 ';
 
 // Write HTML content to PDF
@@ -582,8 +587,8 @@ $html = '
 
 // Add Site Of Specimen
 $html .= '<tr>
-            <th style="width: 28%;"><b>Site Of Specimen:</b></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"><b>Site Of Specimen:</b></th>
+            <td style="width: 74%;">';
 $specimen_rows = [];
 while ($row = pg_fetch_assoc($Site_Of_Specimen_result)) {
     $specimen_rows[] = htmlspecialchars($row['specimen']);
@@ -593,8 +598,8 @@ $html .= '</td></tr>';
 
 // Add Clinical Details
 $html .= '<tr>
-            <th style="width: 28%;"><b>Clinical Details:</b></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"><b>Clinical Details:</b></th>
+            <td style="width: 74%;">';
 $clinical_details_rows = [];
 while ($row = pg_fetch_assoc($clinical_details_result)) {
     $clinical_details_rows[] = htmlspecialchars($row['clinical_details']);
@@ -604,8 +609,8 @@ $html .= '</td></tr>';
 
 // Add Gross Description
 $html .= '<tr>
-            <th style="width: 28%;"><b>Gross Description:</b></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"><b>Gross Description:</b></th>
+            <td style="width: 74%;">';
 $gross_description_rows = [];
 while ($row = pg_fetch_assoc($gross_description_result)) {
     // Use the raw content from the database for HTML rendering
@@ -633,16 +638,16 @@ $html .= '</td></tr>';
 
 // Add Section Codes and Descriptions
 $html .= '<tr>
-            <th style="width: 28%;"></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"></th>
+            <td style="width: 74%;">';
 // Here, we add the $section_code_list to the HTML content
 $html .=  '<b>Section Code</b> :'.''.  $section_code_list;
 $html .= '</td></tr>';
 
 // Add Micro Description
 $html .= '<tr>
-            <th style="width: 28%;"><b>Microscopic Description:</b></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"><b>Microscopic Description:</b></th>
+            <td style="width: 74%;">';
 
 $micro_description_rows = [];
 while ($row = pg_fetch_assoc($micro_details_result)) {
@@ -667,8 +672,8 @@ $html .= '</td></tr>';
 
 // Add Diagnosis Description
 $html .= '<tr>
-            <th style="width: 28%;"><b>Diagnosis/Conclusion:</b></th>
-            <td style="width: 72%;">';
+            <th style="width: 26%;"><b>Diagnosis/Conclusion:</b></th>
+            <td style="width: 74%;">';
 
 $diagnosis_description_rows = [];
 while ($row = pg_fetch_assoc($diagnosis_details_result)) {
@@ -748,126 +753,126 @@ if ($remainingPercentage > 50) {
 
 // sql opertaion for dynamic data 
 
-$assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-dd.designation as designation
-FROM llx_doctor_designation AS dd
-INNER JOIN llx_doctor_assisted_by_signature AS ds ON dd.username = ds.doctor_username
-WHERE ds.lab_number  = '$LabNumber'";
+// $assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+// dd.designation as designation
+// FROM llx_doctor_designation AS dd
+// INNER JOIN llx_doctor_assisted_by_signature AS ds ON dd.username = ds.doctor_username
+// WHERE ds.lab_number  = '$LabNumber'";
 
-$assisted_by_result = pg_query($pg_con, $assisted_by);
-// Check if the query was successful
-if ($assisted_by_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($assisted_by_result)) {
-        // Process each row as needed
-        $assisted_doctor_name = $row['doctor_name'];
-        $assisted_education = $row['education'];
-        $assisted_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $assisted_doctor_name;
-        $_SESSION['education'] = $assisted_education;
-        $_SESSION['designation '] = $assisted_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for assisted_by: " . pg_last_error());
-}
+// $assisted_by_result = pg_query($pg_con, $assisted_by);
+// // Check if the query was successful
+// if ($assisted_by_result) {
+//     // Fetch the results (if any)
+//     while ($row = pg_fetch_assoc($assisted_by_result)) {
+//         // Process each row as needed
+//         $assisted_doctor_name = $row['doctor_name'];
+//         $assisted_education = $row['education'];
+//         $assisted_designation = $row['designation'];
+//         // Store the assisted in a session variable for later use
+//         $_SESSION['doctor_name'] = $assisted_doctor_name;
+//         $_SESSION['education'] = $assisted_education;
+//         $_SESSION['designation '] = $assisted_designation;
+//     }
+// } else {
+//     // Handle query error
+//     die("Query failed for assisted_by: " . pg_last_error());
+// }
 
-$finalized_by_info  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-                            dd.designation as designation
-                            FROM llx_doctor_designation AS dd
-                            INNER JOIN llx_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
-                            WHERE ds.lab_number = '$LabNumber'";
+// $finalized_by_info  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+//                             dd.designation as designation
+//                             FROM llx_doctor_designation AS dd
+//                             INNER JOIN llx_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
+//                             WHERE ds.lab_number = '$LabNumber'";
 
-$finalized_by_info_result = pg_query($pg_con, $finalized_by_info);
-// Check if the query was successful
-if ($finalized_by_info_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($finalized_by_info_result)) {
-        // Process each row as needed
-        $finalized_by_doctor_name = $row['doctor_name'];
-        $finalized_by_education = $row['education'];
-        $finalized_by_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $finalized_by_doctor_name;
-        $_SESSION['education'] = $finalized_by_education;
-        $_SESSION['designation '] = $finalized_by_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for finalized_by: " . pg_last_error());
-}
+// $finalized_by_info_result = pg_query($pg_con, $finalized_by_info);
+// // Check if the query was successful
+// if ($finalized_by_info_result) {
+//     // Fetch the results (if any)
+//     while ($row = pg_fetch_assoc($finalized_by_info_result)) {
+//         // Process each row as needed
+//         $finalized_by_doctor_name = $row['doctor_name'];
+//         $finalized_by_education = $row['education'];
+//         $finalized_by_designation = $row['designation'];
+//         // Store the assisted in a session variable for later use
+//         $_SESSION['doctor_name'] = $finalized_by_doctor_name;
+//         $_SESSION['education'] = $finalized_by_education;
+//         $_SESSION['designation '] = $finalized_by_designation;
+//     }
+// } else {
+//     // Handle query error
+//     die("Query failed for finalized_by: " . pg_last_error());
+// }
 
-$finalized_by_doctor_name = trim($finalized_by_doctor_name);
-$signaturesTableHTML = '';
+// $finalized_by_doctor_name = trim($finalized_by_doctor_name);
+// $signaturesTableHTML = '';
 
-switch ($finalized_by_doctor_name) {
-    case 'Dr. Md. Shafikul Alam Tanim':
-        $signaturesTableHTML = '<style>
-            .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px;
-            }
-            .custom-table th, .custom-table td {
-                padding: 8px;
-                text-align: left;
-            }
-            .custom-table th {
-                font-weight: bold;
-            }
-            </style>
-            <table class="custom-table">
-                <tr>
-                    <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                    <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                </tr>
-            </table>';
-        break;
+// switch ($finalized_by_doctor_name) {
+//     case 'Dr. Md. Shafikul Alam Tanim':
+//         $signaturesTableHTML = '<style>
+//             .custom-table {
+//                 width: 100%;
+//                 border-collapse: collapse;
+//                 font-size: 11px;
+//             }
+//             .custom-table th, .custom-table td {
+//                 padding: 8px;
+//                 text-align: left;
+//             }
+//             .custom-table th {
+//                 font-weight: bold;
+//             }
+//             </style>
+//             <table class="custom-table">
+//                 <tr>
+//                     <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
+//                     <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
+//                 </tr>
+//                 <tr>
+//                     <th colspan="2">&nbsp;'.$assisted_education.'</th>
+//                     <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
+//                 </tr>
+//                 <tr>
+//                     <th colspan="2">&nbsp;'.$assisted_designation.'</th>
+//                     <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
+//                 </tr>
+//             </table>';
+//         break;
 
-    case 'Prof. Dr. Md. Aminul Islam Khan':
-        $signaturesTableHTML = '<style>
-            .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px;
-            }
-            .custom-table th, .custom-table td {
-                padding: 8px;
-                text-align: left;
-            }
-            .custom-table th {
-                font-weight: bold;
-            }
-            </style>
-            <table class="custom-table">
-                <tr>
-                    <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                </tr>
-            </table>';
-        break;
+//     case 'Prof. Dr. Md. Aminul Islam Khan':
+//         $signaturesTableHTML = '<style>
+//             .custom-table {
+//                 width: 100%;
+//                 border-collapse: collapse;
+//                 font-size: 11px;
+//             }
+//             .custom-table th, .custom-table td {
+//                 padding: 8px;
+//                 text-align: left;
+//             }
+//             .custom-table th {
+//                 font-weight: bold;
+//             }
+//             </style>
+//             <table class="custom-table">
+//                 <tr>
+//                     <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
+//                     <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
+//                 </tr>
+//                 <tr>
+//                     <th colspan="2">&nbsp;'.$assisted_education.'</th>
+//                     <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
+//                 </tr>
+//                 <tr>
+//                     <th colspan="2">&nbsp;'.$assisted_designation.'</th>
+//                     <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
+//                 </tr>
+//             </table>';
+//         break;
 
-    default:
-        // Handle default case if needed
-        break;
-}
+//     default:
+//         // Handle default case if needed
+//         break;
+// }
 
 // Check if there's enough space for the signatures table
 $spaceNeeded = $pdf->getStringHeight($signaturesTableHTML, '', $pdf->getPageWidth());
@@ -884,7 +889,7 @@ if ($spaceNeeded > $spaceAvailable - $bottomMargin) {
 $pdf->SetY($pdf->getPageHeight() - $bottomMargin);
 
 // Write the signatures table HTML
-$pdf->writeHTML($signaturesTableHTML, true, false, false, false, '');
+// $pdf->writeHTML($signaturesTableHTML, true, false, false, false, '');
 
 // Reset pointer to the last page
 $pdf->lastPage();
