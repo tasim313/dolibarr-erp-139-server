@@ -145,314 +145,363 @@ switch (true) {
     <script src="bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="trackwsfiles/css.css"  />
     <style>
-                body {
-                    font-family: Verdana;
-                }
+        
+        /* Ensure the parent and children elements take full height, if necessary */
+        html, body, .container {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Verdana;
+        }
 
-                .today {
-                    color: red;
-                }
+        /* Container for two-column layout */
+        .container 
+        {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            height: 100vh; /* Take full height of the viewport */
+        }
 
-                .tomorrow {
-                    color: yellow;
-                }
+        .today {
+            color: red;
+        }
 
-                .flex-container {
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: space-between; /* Distribute space between items */
-                }
+        .tomorrow {
+            color: yellow;
+        }
 
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* Distribute space between items */
+        }
+
+        .flex-container > div {
+            margin: 10px;
+            padding: 20px;
+            font-size: 10px;
+            flex: 1; /* Make divs flexible */
+        }
+
+        .tab-content { 
+            display: block; 
+        }
+
+        .tab-content.grayed-out { 
+            opacity: 0.5; 
+            pointer-events: none; 
+        }
+
+        .semi-bold { 
+            font-weight: 300; 
+        }
+
+        .red { 
+            color: red; 
+        }
+
+        .tab-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .tab-buttons button { 
+            margin-right: 10px; 
+        }
+
+        .tab-buttons button.inactive { 
+            opacity: 0.5; 
+        }
+
+        .tab-buttons button.active { 
+            font-weight: bold; 
+        }
+
+        .hidden { 
+            display: none; 
+        }
+
+        .tab {
+            overflow: hidden;
+        }
+
+        /* Style the buttons inside the tab */
+        .tab button {
+            background-color: inherit;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            float: left;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent_1 {
+            display: none;
+            padding: 6px 12px;
+            -webkit-animation: fadeEffect 1s;
+            animation: fadeEffect 1s;
+        }
+
+        /* Button container styles */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .button-container li {
+            margin: 0 -250px;
+        }
+
+        .button-container li:first-child,
+        .button-container li:last-child {
+            flex: 0 0 auto; /* Prevent stretching */
+        }
+
+        .button-container li:nth-child(2) {
+            flex: 10; /* Make the second button flexible */
+        }
+
+        .btn-group button {
+            /* cursor: pointer; */
+            float: left; /* Float the buttons side by side */
+        }
+
+        /* Clear floats (clearfix hack) */
+        .btn-group:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        .btn-group button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
+
+        /* Set font size for h2 tags */
+        .h2 {
+            font-size: 20px;
+        }
+
+        .h3 {
+            font-size: 15px;
+        }
+
+        /* Left side: buttons, form */
+        .left-side {
+            width: 50%; 
+            padding: 20px;
+                
+        }
+
+        .right-side 
+        {
+            width: 50%;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-side, .right-side {
+                width: 100%;
+            }
+        }
+        
+        /* Fade in tabs */
+        @-webkit-keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        /* Styles for making the button smaller */
+        .small-button {
+            font-size: 12px;  /* Makes the text smaller */
+            padding: 5px 10px;  /* Adjust padding to reduce the size */
+            width: auto;  /* Automatically adjust the width to fit content */
+            height: auto;  /* Automatically adjust the height */
+            display: inline-flex;  /* Align icon and text side by side */
+            align-items: center;  /* Align icon and text vertically */
+            border-radius: 5px;  /* Optional: gives rounded corners */
+            background-color: #f0f0f0; /* Optional: background color */
+        }
+
+        .button-text {
+            padding-left: 5px;  /* Adds space between the icon and text */
+            font-size: 12px;
+        }
+
+        /* Responsive Styles */
+
+        /* Extra Large Screens (Large Monitors) */
+        @media only screen and (min-width: 1200px) {
+            .flex-container > div {
+                font-size: 14px;
+            }
+
+            .tab-buttons.button-container {
+                justify-content: space-around;
+            }
+        }
+
+            /* Large Screens (Desktops) */
+            @media only screen and (min-width: 992px) and (max-width: 1199px) {
                 .flex-container > div {
-                    margin: 10px;
-                    padding: 20px;
-                    font-size: 10px;
-                    flex: 1; /* Make divs flexible */
+                    font-size: 12px;
                 }
 
-                .tab-content { 
-                    display: block; 
+                .tab-buttons.button-container {
+                    justify-content: space-around;
                 }
 
-                .tab-content.grayed-out { 
-                    opacity: 0.5; 
-                    pointer-events: none; 
-                }
+                
+            }
 
-                .semi-bold { 
-                    font-weight: 300; 
-                }
+        /* Medium Screens (Tablets in Landscape Mode) */
+        @media only screen and (min-width: 768px) and (max-width: 991px) {
+            .flex-container > div {
+                font-size: 10px;
+            }
 
-                .red { 
-                    color: red; 
-                }
+            .tab-buttons.button-container {
+                justify-content: space-between;
+            }
 
-                .tab-buttons {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    width: 100%;
-                    position: relative;
-                }
+            .tab-buttons.button-container li {
+                flex: 1 1 30%;
+                text-align: center;
+            }
 
-                .tab-buttons button { 
-                    margin-right: 10px; 
-                }
+            .tab-buttons.button-container button {
+                font-size: 18px;
+            }
+        }
 
-                .tab-buttons button.inactive { 
-                    opacity: 0.5; 
-                }
+        @media only screen and (min-width: 824px) and (max-width: 1022px) {
+            .flex-container {
+                flex-direction: row; /* Ensure row layout for the flex container */
+                justify-content: space-around; /* Adjust the space around the items */
+            }
 
-                .tab-buttons button.active { 
-                    font-weight: bold; 
-                }
+            .flex-container > div {
+                font-size: 12px; /* Adjust font size for better readability */
+                padding: 15px; /* Adjust padding */
+            }
 
-                .hidden { 
-                    display: none; 
-                }
+            .button-container {
+                flex-direction: row; /* Ensure row layout for the button container */
+                justify-content: space-between; /* Space between the buttons */
+            }
 
-                .tab {
-                    overflow: hidden;
-                }
+            .button-container li {
+                flex: 1 1 30%; /* Distribute space equally */
+                text-align: center; /* Center-align the text */
+                margin: 10px 0; /* Adjust margin for better spacing */
+            }
 
-                /* Style the buttons inside the tab */
-                .tab button {
-                    background-color: inherit;
-                    font-size: 15px;
-                    border: none;
-                    cursor: pointer;
-                    outline: none;
-                    float: left;
-                }
+            .button-container button {
+                font-size: 18px; /* Adjust button font size */
+                width: auto; /* Let the width be determined by content */
+                text-align: center; /* Center-align text within buttons */
+            }
 
-                /* Create an active/current tablink class */
-                .tab button.active {
-                    background-color: #ccc;
-                }
+            .tab-buttons {
+                flex-direction: row; /* Ensure row layout for the tab buttons */
+                align-items: center; /* Center-align items vertically */
+            }
 
-                /* Style the tab content */
-                .tabcontent_1 {
-                    display: none;
-                    padding: 6px 12px;
-                    -webkit-animation: fadeEffect 1s;
-                    animation: fadeEffect 1s;
-                }
+            .tab-buttons button {
+                width: auto; /* Let the width be determined by content */
+                margin: 5px; /* Margin between buttons */
+            }
+        }
 
-                /* Button container styles */
-                .button-container {
-                    display: flex;
-                    justify-content: space-between;
-                    width: 100%;
-                }
+        /* Small Screens (Tablets in Portrait Mode) */
+        @media only screen and (min-width: 600px) and (max-width: 767px) {
+            .flex-container > div {
+                font-size: 8px;
+                padding: 15px;
+            }
 
-                .button-container li {
-                    margin: 0 -250px;
-                }
+            .button-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-                .button-container li:first-child,
-                .button-container li:last-child {
-                    flex: 0 0 auto; /* Prevent stretching */
-                }
+            .tab-buttons.button-container {
+                flex-direction: column;
+                align-items: center;
+            }
 
-                .button-container li:nth-child(2) {
-                    flex: 10; /* Make the second button flexible */
-                }
+            .tab-buttons.button-container li {
+                width: 100%;
+                margin: 5px 0;
+            }
 
-                .btn-group button {
-                    /* cursor: pointer; */
-                    float: left; /* Float the buttons side by side */
-                }
+            .tab-buttons.button-container button {
+                font-size: 18px;
+                width: 100%;
+                text-align: center;
+            }
+        }
 
-                /* Clear floats (clearfix hack) */
-                .btn-group:after {
-                    content: "";
-                    clear: both;
-                    display: table;
-                }
+        /* Mobile Phones */
+        @media only screen and (max-width: 599px) {
+            .flex-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-                .btn-group button:not(:last-child) {
-                    border-right: none; /* Prevent double borders */
-                }
+            .flex-container > div {
+                font-size: 6px;
+                padding: 10px;
+                width: 100%;
+            }
 
-                /* Set font size for h2 tags */
-                .h2 {
-                    font-size: 20px;
-                }
+            .tab-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-                .h3 {
-                    font-size: 15px;
-                }
+            .tab button {
+                width: 100%;
+                text-align: left;
+            }
+            .tab-buttons.button-container {
+                flex-direction: column;
+                align-items: center;
+            }
 
-                .vertical-icon {
-                    display: inline-block;
-                    transform: rotate(90deg); /* Rotate 90 degrees to make it vertical */
-                    margin: 0; /* Adjust margin if needed */
-                    padding: 0; /* Adjust padding if needed */
-                }
+            .tab-buttons.button-container li {
+                width: 100%;
+                margin: 5px 0;
+            }
 
-                /* Fade in tabs */
-                @-webkit-keyframes fadeEffect {
-                    from {opacity: 0;}
-                    to {opacity: 1;}
-                }
-
-                @keyframes fadeEffect {
-                    from {opacity: 0;}
-                    to {opacity: 1;}
-                }
-
-                /* Responsive Styles */
-
-                /* Extra Large Screens (Large Monitors) */
-                @media only screen and (min-width: 1200px) {
-                    .flex-container > div {
-                        font-size: 14px;
-                    }
-
-                    .tab-buttons.button-container {
-                        justify-content: space-around;
-                    }
-                }
-
-                /* Large Screens (Desktops) */
-                @media only screen and (min-width: 992px) and (max-width: 1199px) {
-                    .flex-container > div {
-                        font-size: 12px;
-                    }
-
-                    .tab-buttons.button-container {
-                        justify-content: space-around;
-                    }
-
-                    
-                }
-
-                /* Medium Screens (Tablets in Landscape Mode) */
-                @media only screen and (min-width: 768px) and (max-width: 991px) {
-                    .flex-container > div {
-                        font-size: 10px;
-                    }
-
-                    .tab-buttons.button-container {
-                        justify-content: space-between;
-                    }
-
-                    .tab-buttons.button-container li {
-                        flex: 1 1 30%;
-                        text-align: center;
-                    }
-
-                    .tab-buttons.button-container button {
-                        font-size: 18px;
-                    }
-                }
-
-                @media only screen and (min-width: 824px) and (max-width: 1022px) {
-                    .flex-container {
-                        flex-direction: row; /* Ensure row layout for the flex container */
-                        justify-content: space-around; /* Adjust the space around the items */
-                    }
-
-                    .flex-container > div {
-                        font-size: 12px; /* Adjust font size for better readability */
-                        padding: 15px; /* Adjust padding */
-                    }
-
-                    .button-container {
-                        flex-direction: row; /* Ensure row layout for the button container */
-                        justify-content: space-between; /* Space between the buttons */
-                    }
-
-                    .button-container li {
-                        flex: 1 1 30%; /* Distribute space equally */
-                        text-align: center; /* Center-align the text */
-                        margin: 10px 0; /* Adjust margin for better spacing */
-                    }
-
-                    .button-container button {
-                        font-size: 18px; /* Adjust button font size */
-                        width: auto; /* Let the width be determined by content */
-                        text-align: center; /* Center-align text within buttons */
-                    }
-
-                    .tab-buttons {
-                        flex-direction: row; /* Ensure row layout for the tab buttons */
-                        align-items: center; /* Center-align items vertically */
-                    }
-
-                    .tab-buttons button {
-                        width: auto; /* Let the width be determined by content */
-                        margin: 5px; /* Margin between buttons */
-                    }
-                }
-
-                /* Small Screens (Tablets in Portrait Mode) */
-                @media only screen and (min-width: 600px) and (max-width: 767px) {
-                    .flex-container > div {
-                        font-size: 8px;
-                        padding: 15px;
-                    }
-
-                    .button-container {
-                        flex-direction: column;
-                        align-items: flex-start;
-                    }
-
-                    .tab-buttons.button-container {
-                        flex-direction: column;
-                        align-items: center;
-                    }
-
-                    .tab-buttons.button-container li {
-                        width: 100%;
-                        margin: 5px 0;
-                    }
-
-                    .tab-buttons.button-container button {
-                        font-size: 18px;
-                        width: 100%;
-                        text-align: center;
-                    }
-                }
-
-                /* Mobile Phones */
-                @media only screen and (max-width: 599px) {
-                    .flex-container {
-                        flex-direction: column;
-                        align-items: flex-start;
-                    }
-
-                    .flex-container > div {
-                        font-size: 6px;
-                        padding: 10px;
-                        width: 100%;
-                    }
-
-                    .tab-buttons {
-                        flex-direction: column;
-                        align-items: flex-start;
-                    }
-
-                    .tab button {
-                        width: 100%;
-                        text-align: left;
-                    }
-                    .tab-buttons.button-container {
-                        flex-direction: column;
-                        align-items: center;
-                    }
-
-                    .tab-buttons.button-container li {
-                        width: 100%;
-                        margin: 5px 0;
-                    }
-
-                    .tab-buttons.button-container button {
-                        font-size: 16px;
-                        width: 100%;
-                        text-align: center;
-                    }
-                }
+            .tab-buttons.button-container button {
+                font-size: 16px;
+                width: 100%;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -460,750 +509,769 @@ switch (true) {
 <a href="doctorsindex.php">
     <button style="border:none; background-color: white; color: black;">
         <i class="fas fa-home" aria-hidden="true"></i> Doctors
-    </button></a>
-    &nbsp; &nbsp; &nbsp; &nbsp; 
-    <form name="readlabno" id="readlabno" action="">
-              <label for="labno">Lab No:</label>
-              <input type="text" id="labno" name="labno" autofocus>
-    </form>
+    </button>
+</a>
+&nbsp; &nbsp; &nbsp; &nbsp; 
+<form name="readlabno" id="readlabno" action="">
+    <label for="labno">Lab No:</label>
+    <input type="text" id="labno" name="labno" autofocus>
+</form>
 
-    <a href="../grossmodule/hpl_report.php" target="_blank">
-        <button style="border:none; background-color: white; color: black;">
-            <i class="fas fa-file-alt" aria-hidden="true"></i> Report
-        </button>
-    </a>
-    <a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
-        <button style="border:none; background-color: white; color: black;">
+<button style="border:none; background-color: white; color: black;" onclick="loadReport()">
+        <i class="fas fa-file-alt" aria-hidden="true"></i> Report
+</button>
+
+<a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
+    <button style="border:none; background-color: white; color: black;">
             <i class="fas fa-edit" aria-hidden="true"></i> Edit
-        </button>
-    </a>
+    </button>
+</a>
 
-<ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
-            <div class="tab-buttons button-container">
-                
-                    <li role="presentation">
-                        <span style="color: red;">
-                            <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
-                                <i class="fas fa-microscope" aria-hidden="true"></i>Screening</button>
-                        </span>
-                    </li>
-                    <li role="presentation">
-                        <span style="color:green">
-                            <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i>Finalization</button>
-                        </span>
-                    </li>
-                    <li role="presentation">
-                        <span style="color:blue">
-                            <button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showTab('status')">
-                            <i class="fa fa-search" aria-hidden="true"></i>Status</button>
-                        </span>
-                    </li> 
-            </div>
-</ul>
+<button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showRightTab('status')">
+<i class="fa fa-search" aria-hidden="true"></i>Status</button>
 
-    <div class="flex-container">
-
-        <div id="screening" class="tab-content tab btn-group grayed-out">
-            <center><h6>Screening</h6></center>
-            <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
-                <!-- <li role="presentation" class=""> 
-                        <button style="display:hidden"  onclick="openTab(event, 'Screening-Start')">
-                        <i class="fas fa-play"></i>Start</button>
-                </li> -->
-                <li role="presentation" class="">
-                        <button  onclick="openTab(event, 'Screening-Study')">
-                        <i class="fas fa-book"></i>Study / History</button>
-                </li><li role="presentation" class="">
-                        <button  onclick="openTab(event, 'Screening-LabInstructions')">
-                        <i class="fas fa-flask"></i> Lab Related Instructions</button>
-                </li><li role="presentation" class="">
-                        <button  onclick="openTab(event, 'Screening-GrossInstructions')">
-                        <i class="fas fa-cut"></i>Gross Related Instructions</button>
-                </li>
-               
-              
-                <?php if ($showBoneSlideReady): ?>
-                    <li>
-                        <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
-                            <i class="fas fa-bone vertical-icon"></i> Bone Slide Status
-                        </button>
-                    </li>
-                <?php endif; ?>
-
-                <li role="presentation" class="">
-                        <button id="screening_done"  onclick="openTab(event, 'Screening-Done')">
-                        <i class="fas fa-check"></i>Screening Done</button>
-                </li>
-            </ul>
-        </div>
-
-        <div id="final-screening" class="tab-content tab btn-group grayed-out">
-            <center><h6>Final Screening</h6></center>
-            <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+<div class="container">
+    <!-- Left Side (Buttons, Form, Tabs) -->
             
-            <li role="presentation" class="">
-                <button onclick="openTab(event, 'Final-Screening-Study')">
-                <i class="fas fa-book"></i>Study / History</button>
-            </li>
-            <li role="presentation" class="">
-                <button onclick="openTab(event, 'Final-Screening-LabInstructions')">
-                <i class="fas fa-flask"></i>Lab Related Instructions</button> 
-            </li>
-            <li role="presentation" class="">
-                <button onclick="openTab(event, 'Final-Screening-GrossInstructions')">
-                <i class="fas fa-cut"></i>Gross Related Instructions</button>
-            </li>
-            <?php if ($showBoneSlideReady): ?>
-                    <li>
-                        <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
-                            <i class="fas fa-bone vertical-icon"></i> Bone Slide Status
-                        </button>
-                    </li>
-            <?php endif; ?>
-            <li role="presentation" class="">
-                <button id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
-                <i class="fas fa-check"></i>Finalization Done</button>
-            </li>
-            </ul>
-        </div>
+    <div class="left-side">
+            
+                <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+                    <div class="tab-buttons button-container">
+                                        
+                        <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
+                            <i class="fas fa-microscope" aria-hidden="true"></i>Screening</button>
+                                        
+                        <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
+                            <i class="fas fa-microscope" aria-hidden="true"></i>Finalization</button>
+                                        
+                                    
+                    </div>
+                </ul>
 
-        <div id="status" class="tab-content grayed-out">
-            <h3 class="semi-bold">
-                <center>Current  Status: <?php echo htmlspecialchars($LabNumber); ?></center>
-            </h3>
-            <table border="0">
-                <thead>
-                    <tr>
-                        <!-- <th>Section</th> -->
-                        <th>Status</th>
-                        <th>Descriptions</th>
-                        <th>Time</th>
-                        <th>User</th>
-                        <th>Delete</th>
-                    </tr>
-                </thead>
-                <tbody id="status-table-body">
-                <?php 
-                    $statusValues = array_column($lab_status, 'WSStatusName');
-                    $sortedRows = [];
+                <div class="flex-container">
 
-                    foreach ($lab_status as $list) {
-                        $statusColor = '';
-                        if (in_array($list['section'], ['Gross', 'Lab', 'Microscopy', 'Screening', 'description'])) {
-
-                            // Check if statusName is 'Diagnosis Completed' and skip this row
-                            if ($list['WSStatusName'] === 'Diagnosis Completed') {
-                                continue;
-                            }
-                            // Check if statusName is 'Start Screening' and skip this row
-                            if ($list['WSStatusName'] === 'Start Screening') {
-                                continue;
-                            }
-
-                            // Check if statusName is 'Final Screening Start' and skip this row
-                            if ($list['WSStatusName'] === 'Final Screening Start') {
-                                continue;
-                            }
+                    <div id="screening" class="tab-content tab btn-group grayed-out">
+                        <center><h6>Screening</h6></center>
+                        <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist" style=" justify-content: space-between">
                             
+                            <button class="small-button"  onclick="openTab(event, 'Screening-Study')">
+                                <i class="fas fa-book" style="font-size: 20px; vertical-align: middle;">
+                                <span class="button-text">Study / History</span></i>
+                            </button>
+                            
+                            <button class="small-button"  onclick="openTab(event, 'Screening-LabInstructions')">
+                                <i class="fas fa-flask" style="font-size: 20px; vertical-align: middle;">
+                                <span class="button-text">Lab Related Instructions</span>
+                                </i> 
+                            </button>
+                            
+                            <button class="small-button" onclick="openTab(event, 'Screening-GrossInstructions')">
+                                <i class="fas fa-cut" style="font-size: 20px; vertical-align: middle;">
+                                <span class="button-text">Gross Related Instructions</span>
+                                </i>
+                            </button>
+                            
+                            <?php if ($showBoneSlideReady): ?>
+                                
+                                    <button class="small-button" id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
+                                        <i class="fas fa-bone vertical-icon" style="font-size: 20px; vertical-align: middle;">
+                                        <span class="button-text">Bone Slide Status</span>
+                                        </i> 
+                                    </button>
+                                
+                            <?php endif; ?>
 
-                            if ($list['WSStatusName'] == 'Special Stain others requested' && !in_array('Special Stain others Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'IHC-Block-Markers-requested' && !in_array('IHC-Block-Markers-completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'R/C requested' && !in_array('R/C Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'M/R/C requested' && !in_array('M/R/C Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Deeper Cut requested' && !in_array('Deeper Cut Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Serial Sections requested' && !in_array('Serial Sections Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Block D/C & R/C requested' && !in_array('Block D/C & R/C Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain AFB requested' && !in_array('Special Stain AFB Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain GMS requested' && !in_array('Special Stain GMS Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain PAS requested' && !in_array('Special Stain PAS Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain PAS with Diastase requested' && !in_array('Special Stain PAS with Diastase Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain Fite Faraco requested' && !in_array('Special Stain Fite Faraco Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain Brown-Brenn requested' && !in_array('Special Stain Brown-Brenn Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain Congo-Red requested' && !in_array('Special Stain Congo-Red Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Special Stain Bone Decalcification requested' && !in_array('Special Stain Bone Decalcification Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif ($list['WSStatusName'] == 'Re-gross Requested' && !in_array('Regross Completed', $statusValues)) {
-                                $statusColor = 'red';
-                            } elseif (in_array($list['WSStatusName'], [
-                                'Special Stain others Completed',
-                                'IHC-Block-Markers-completed',
-                                'R/C Completed',
-                                'M/R/C Completed',
-                                'Deeper Cut Completed',
-                                'Serial Sections Completed',
-                                'Block D/C & R/C Completed',
-                                'Special Stain AFB Completed',
-                                'Special Stain GMS Completed',
-                                'Special Stain PAS Completed',
-                                'Special Stain PAS with Diastase Completed',
-                                'Special Stain Fite Faraco Completed',
-                                'Special Stain Brown-Brenn Completed',
-                                'Special Stain Congo-Red Completed',
-                                'Special Stain Bone Decalcification Completed',
-                                'Regross Completed'
-                            ])) {
-                                $statusColor = 'green';
-                            }
-
-                            $dateTime = DateTime::createFromFormat('Y-m-d H:i:s.uP', $list['TrackCreateTime']);
-                            if ($dateTime === false) {
-                                $trackCreateTimeFormatted = 'Invalid date';
-                            } else {
-                                $trackCreateTimeFormatted = $dateTime->format('F j, Y h:i A');
-                            }
-
-                            $sortedRows[] = [
-                                // 'section' => htmlspecialchars($list['section']),
-                                'statusName' => htmlspecialchars($list['WSStatusName']),
-                                'description' => htmlspecialchars($list['description']),
-                                'color' => $statusColor,
-                                'trackCreateTime' => $trackCreateTimeFormatted,
-                                'user' => htmlspecialchars($list['TrackUserName']),
-                                'track_id' => htmlspecialchars($list['track_id'])
-                            ];
-                        }
-                    }
-
-                    usort($sortedRows, function($a, $b) {
-                        $colorOrder = ['red', 'green', ''];
-                        $aColorIndex = array_search($a['color'], $colorOrder);
-                        $bColorIndex = array_search($b['color'], $colorOrder);
-                        return $aColorIndex - $bColorIndex;
-                    });
-
-                    $isGrayedOut = true; // Set this based on actual tab state
-                    $displayCount = 2;
-
-                    foreach ($sortedRows as $index => $row) {
-                        // $section = htmlspecialchars($row['section']);
-                        $statusName = htmlspecialchars($row['statusName']);
-                        $description = htmlspecialchars($row['description']);
-                        $statusColor = htmlspecialchars($row['color']);
-                        $trackCreateTime = htmlspecialchars($row['trackCreateTime']);
-                        $user = htmlspecialchars($row['user']);
-                        $track_id = htmlspecialchars($row['track_id']);
-
-                        $rowClass = '';
-                        if ($isGrayedOut) {
-                            if ($index < count($sortedRows) - 2) {
-                                $rowClass = 'hidden';
-                            }
-                        }
-
-                        echo "<tr class='status-row {$rowClass}'>";
-                        // echo "<td><p style='font-size: 15px;'>{$section}</p></td>";
-                        echo "<td><p  style='font-size: 15px; color: {$statusColor};'>{$statusName}</p></td>";
-                        echo "<td><p  style='font-size: 15px;'>{$description}</p></td>";
-                        echo "<td><p style='font-size: 15px;'>{$trackCreateTime}</p></td>";
-                        echo "<td><p style='font-size: 15px;'>{$user}</p></td>";
-                        // Add delete icon with confirmation dialog
-                        echo "<td><p style='font-size: 15px;'>
-                                <a href='#' onclick='confirmDelete({$track_id})'>
-                                    <i class='fas fa-trash-alt' style='color: red; cursor: pointer;' title='Delete'></i>
-                                </a>
-                            </p></td>";
-                        echo "</tr>";
-                    }
-                ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div id="error" style="display:none;color:red;">
-            Wrong lab number. Please enter the correct one.
-        </div>
-
-    
-    </div>
-
-    <div id="Screening-Start" class="tabcontent_1">
-        <p>Screening Start</p>
-    </div>
-
-    <div id="Screening-Study" class="tabcontent_1">
-        <div class="modal-content">
-           
-            <div class="design-process-content" id="lookuplabno4">
-                <button id="history-button" type="button" class="btn btn-primary" onclick="logHistoryValue(event)">Save</button>
-                <br><br>
-                <h4>
-                    <div class="form-waiting">
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status5" value="5">
-                        <label class="form-waiting-label" for="status5">
-                            <h2 class="h2">Study</h2>
-                        </label>     
+                            
+                            <button class="small-button" id="screening_done"  onclick="openTab(event, 'Screening-Done')">
+                                <i class="fas fa-check" style="font-size: 20px; vertical-align: middle;">
+                                <span class="button-text">Screening Done</span>
+                                </i>
+                            </button>
+                            
+                        </ul>
                     </div>
-                    <div class="form-waiting">
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4" value="4" onclick="toggleOptions()">
-                        <label class="form-waiting-label" for="status4">
-                            <h2 class="h2">Patient History / Investigations</h2>
+
+                    <div id="final-screening" class="tab-content tab btn-group grayed-out">
+                        <center><h6>Final Screening</h6></center>
+                        <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+                        
+                        
+                            <button class="small-button" onclick="openTab(event, 'Final-Screening-Study')">
+                            <i class="fas fa-book" style="font-size: 20px; vertical-align: middle;">
+                            <span class="button-text">Study / History</span>
+                            </i></button>
+                        
+                            <button class="small-button" onclick="openTab(event, 'Final-Screening-LabInstructions')">
+                            <i class="fas fa-flask">
+                            <span class="button-text">Lab Related Instructions</span>
+                            </i></button> 
+                        
+                            <button onclick="openTab(event, 'Final-Screening-GrossInstructions')">
+                            <i class="fas fa-cut">
+                            <span class="button-text">Gross Related Instructions</span>
+                            </i></button>
+                        
+                        <?php if ($showBoneSlideReady): ?>
+                               
+                                    <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
+                                        <i class="fas fa-bone vertical-icon">
+                                            <span class="button-text">Bone Slide Status</span>
+                                        </i>
+                                    </button>
+                                
+                        <?php endif; ?>
+                       
+                            <button id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
+                            <i class="fas fa-check">
+                            <span class="button-text">Finalization Done</span>
+                            </i></button>
+                       
+                        </ul>
+                    </div>
+
+                    <div id="error" style="display:none;color:red;">
+                        Wrong lab number. Please enter the correct one.
+                    </div>
+
+                
+                </div>
+
+            
+                <div id="Screening-Start" class="tabcontent_1">
+                    <p>Screening Start</p>
+                </div>
+
+                <div id="Screening-Study" class="tabcontent_1">
+                    <div class="modal-content">
+                    
+                        <div class="design-process-content" id="lookuplabno4">
+                            <button id="history-button" type="button" class="btn btn-primary" onclick="logHistoryValue(event)">Save</button>
+                            <br><br>
+                            <h4>
+                                <div class="form-waiting">
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status5" value="5">
+                                    <label class="form-waiting-label" for="status5">
+                                        <h2 class="h2">Study</h2>
+                                    </label>     
+                                </div>
+                                <div class="form-waiting">
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4" value="4" onclick="toggleOptions()">
+                                    <label class="form-waiting-label" for="status4">
+                                        <h2 class="h2">Patient History / Investigations</h2>
+                                    </label>
+                                </div>
+                            </h4>
+                            <ul id="history_collect" style="display: none;">
+                                <h3 class="h2">
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Self" value="Self"> Self &nbsp;&nbsp;
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Transcription" value="Transcription"> Transcription &nbsp;&nbsp;
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-It_Space" value="IT Space"> IT Space &nbsp;&nbsp;
+                                </h3>
+                            </ul>
+                            <ul id="additional-options" style="display: none;">
+                                <h3 class="h3">
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan" value="CT Scan Report"> CT Scan Report<br>
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan_film" value="CT Scan Film"> CT Scan Film<br>
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Report" value="MRI Report"> MRI Report<br>
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Film" value="MRI Film"> MRI Film<br>
+                                    <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-others" value="" onclick="toggleTextarea()"> Others
+                                </h3>
+                            </ul>
+                            <textarea id="others-textarea" style="display: none; margin-top: 10px;" placeholder="Please specify..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div role="tabpanel" class="tabcontent_1" id="Screening-LabInstructions">
+                    <div class="design-process-content" id="lookuplabno1">
+                        <button id="lab-button" type="button" class="btn btn-primary" onclick="logLabInstructionsValue()">Save</button>
+                        <br><br>
+                        <ul id="screeningOptions">
+                            <h3 class="bold h3">Section Instructions</h3>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="option1" onclick="toggleVisibility('input1')" value="16"> R/C
+                                </label></h3>
+                                <div id="input1" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_option_1" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="option2" onclick="toggleVisibility('input2')" value="18"> M/R/C
+                                </label></h3>
+                                <div id="input2" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_option_2" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="option3" onclick="toggleVisibility('input3')" value="20"> Deeper Cut
+                                </label></h3>
+                                <div id="input3" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_option_3" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="option4" onclick="toggleVisibility('input4')" value="24"> Block D/C & R/C
+                                </label></h3>
+                                <div id="input4" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_option_4" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="option5" onclick="toggleVisibility('input5')" value="22"> Serial Sections
+                                </label></h3>
+                                <div id="input5" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_option_5" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                        </ul>
+                        <br>
+                        <ul>
+                            <h3 class="h3"><b>Special&nbsp;&nbsp;Stain&nbsp;&nbsp;Instructions</b></h3>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain1" onclick="toggleVisibility('stainInput1')" value="26">  AFB
+                                </label></h3>
+                                <div id="stainInput1" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_1" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain2" onclick="toggleVisibility('stainInput2')" value="28">  GMS
+                                </label></h3>
+                                <div id="stainInput2" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_2" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain3" onclick="toggleVisibility('stainInput3')" value="30">  PAS
+                                </label></h3>
+                                <div id="stainInput3" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_3" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain4" onclick="toggleVisibility('stainInput4')" value="32">  PAS with Diastase
+                                </label></h3>
+                                <div id="stainInput4" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_4" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain5" onclick="toggleVisibility('stainInput5')" value="34">  Fite Faraco
+                                </label></h3>
+                                <div id="stainInput5" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_5" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain6" onclick="toggleVisibility('stainInput6')" value="36">  Brown-Brenn
+                                </label></h3>
+                                <div id="stainInput6" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_6" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain7" onclick="toggleVisibility('stainInput7')" value="38">  Congo-Red
+                                </label></h3>
+                                <div id="stainInput7" class="hidden">
+                                    <h4 class="h3"><label>Section Code or Block Number</label>
+                                    <input id="lab_stain_7" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                            <li>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="stain8" onclick="toggleVisibility('stainInput8')" value="40">  others
+                                </label></h3>
+                                <div id="stainInput8" class="hidden">
+                                    <h4 class="h3"><label>Special Stain Name </label>
+                                    <input id="stain_name_input" type="text" name="text">
+                                    <label>Block Number</label>
+                                    <input id="lab_stain_8" type="text" name="text"></h4>
+                                </div>
+                            </li>
+                        </ul> 
+                        <br>  
+                        <ul>
+                            <h3 class="h3"><b>Immunohistochemistry(IHC)&nbsp;&nbsp;Instructions</b></h3>
+                            <h3 class="h3"><label>
+                                <input type="checkbox" id="stain14" onclick="toggleVisibility('stainInput14')" value="44"> Block Number
+                            </label>
+                            <div id="stainInput14" class="hidden">
+                                <textarea id="lab_stain_14" type="text" name="text"></textarea>
+                            </div>
+                            <br><label>
+                                <input type="checkbox" id="stain15" onclick="toggleVisibility('stainInput15')" value="44"> Markers
+                            </label>
+                            <div id="stainInput15" class="hidden">
+                                <textarea id="lab_stain_15" type="text" name="text"></textarea>
+                            </div>
+                            </h3>
+                        </ul> 
+                    </div>
+                </div>
+    
+
+                <div role="tabpanel" class="tabcontent_1" id="Screening-GrossInstructions">
+                    <div class="design-process-content">
+                    <button id="gross_related_instructions_screening" type="button" class="btn btn-primary">Save</button>
+                    <br><br>
+                    <h4 class="h3">
+                        <div class="form-addreq">
+                        <label>
+                                <input type="checkbox" id="stain9" onclick="toggleVisibility('stainInput9')" value="6"> Gross Check & Re-gross for/of
                         </label>
+                        <div id="stainInput9" class="hidden">
+                            <textarea id="gross_check_re_gross_screening" type="text" name="text" rows="4" cols="50"></textarea>
+                        </div>
+                        </div>
+                    </h4>
                     </div>
-                </h4>
-                <ul id="history_collect" style="display: none;">
-                    <h3 class="h2">
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Self" value="Self"> Self &nbsp;&nbsp;
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Transcription" value="Transcription"> Transcription &nbsp;&nbsp;
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-It_Space" value="IT Space"> IT Space &nbsp;&nbsp;
-                    </h3>
-                </ul>
-                <ul id="additional-options" style="display: none;">
-                    <h3 class="h3">
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan" value="CT Scan Report"> CT Scan Report<br>
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan_film" value="CT Scan Film"> CT Scan Film<br>
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Report" value="MRI Report"> MRI Report<br>
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Film" value="MRI Film"> MRI Film<br>
-                        <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-others" value="" onclick="toggleTextarea()"> Others
-                    </h3>
-                </ul>
-                <textarea id="others-textarea" style="display: none; margin-top: 10px;" placeholder="Please specify..."></textarea>
-            </div>
-        </div>
-    </div>
-
-
-
-    <div role="tabpanel" class="tabcontent_1" id="Screening-LabInstructions">
-        <div class="design-process-content" id="lookuplabno1">
-            <button id="lab-button" type="button" class="btn btn-primary" onclick="logLabInstructionsValue()">Save</button>
-            <br><br>
-            <ul id="screeningOptions">
-                <h3 class="bold h3">Section Instructions</h3>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="option1" onclick="toggleVisibility('input1')" value="16"> R/C
-                    </label></h3>
-                    <div id="input1" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_option_1" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="option2" onclick="toggleVisibility('input2')" value="18"> M/R/C
-                    </label></h3>
-                    <div id="input2" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_option_2" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="option3" onclick="toggleVisibility('input3')" value="20"> Deeper Cut
-                    </label></h3>
-                    <div id="input3" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_option_3" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="option4" onclick="toggleVisibility('input4')" value="24"> Block D/C & R/C
-                    </label></h3>
-                    <div id="input4" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_option_4" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="option5" onclick="toggleVisibility('input5')" value="22"> Serial Sections
-                    </label></h3>
-                    <div id="input5" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_option_5" type="text" name="text"></h4>
-                    </div>
-                </li>
-            </ul>
-            <br>
-            <ul>
-                <h3 class="h3"><b>Special&nbsp;&nbsp;Stain&nbsp;&nbsp;Instructions</b></h3>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain1" onclick="toggleVisibility('stainInput1')" value="26">  AFB
-                    </label></h3>
-                    <div id="stainInput1" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_1" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain2" onclick="toggleVisibility('stainInput2')" value="28">  GMS
-                    </label></h3>
-                    <div id="stainInput2" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_2" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain3" onclick="toggleVisibility('stainInput3')" value="30">  PAS
-                    </label></h3>
-                    <div id="stainInput3" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_3" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain4" onclick="toggleVisibility('stainInput4')" value="32">  PAS with Diastase
-                    </label></h3>
-                    <div id="stainInput4" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_4" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain5" onclick="toggleVisibility('stainInput5')" value="34">  Fite Faraco
-                    </label></h3>
-                    <div id="stainInput5" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_5" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain6" onclick="toggleVisibility('stainInput6')" value="36">  Brown-Brenn
-                    </label></h3>
-                    <div id="stainInput6" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_6" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain7" onclick="toggleVisibility('stainInput7')" value="38">  Congo-Red
-                    </label></h3>
-                    <div id="stainInput7" class="hidden">
-                        <h4 class="h3"><label>Section Code or Block Number</label>
-                        <input id="lab_stain_7" type="text" name="text"></h4>
-                    </div>
-                </li>
-                <li>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="stain8" onclick="toggleVisibility('stainInput8')" value="40">  others
-                    </label></h3>
-                    <div id="stainInput8" class="hidden">
-                        <h4 class="h3"><label>Special Stain Name </label>
-                        <input id="stain_name_input" type="text" name="text">
-                        <label>Block Number</label>
-                        <input id="lab_stain_8" type="text" name="text"></h4>
-                    </div>
-                </li>
-            </ul> 
-            <br>  
-            <ul>
-                <h3 class="h3"><b>Immunohistochemistry(IHC)&nbsp;&nbsp;Instructions</b></h3>
-                <h3 class="h3"><label>
-                    <input type="checkbox" id="stain14" onclick="toggleVisibility('stainInput14')" value="44"> Block Number
-                </label>
-                <div id="stainInput14" class="hidden">
-                    <textarea id="lab_stain_14" type="text" name="text"></textarea>
                 </div>
-                <br><label>
-                    <input type="checkbox" id="stain15" onclick="toggleVisibility('stainInput15')" value="44"> Markers
-                </label>
-                <div id="stainInput15" class="hidden">
-                    <textarea id="lab_stain_15" type="text" name="text"></textarea>
-                </div>
-                </h3>
-            </ul> 
-        </div>
-    </div>
-    
-
-    <div role="tabpanel" class="tabcontent_1" id="Screening-GrossInstructions">
-        <div class="design-process-content">
-        <button id="gross_related_instructions_screening" type="button" class="btn btn-primary">Save</button>
-          <br><br>
-          <h4 class="h3">
-            <div class="form-addreq">
-               <label>
-                    <input type="checkbox" id="stain9" onclick="toggleVisibility('stainInput9')" value="6"> Gross Check & Re-gross for/of
-              </label>
-              <div id="stainInput9" class="hidden">
-                  <textarea id="gross_check_re_gross_screening" type="text" name="text" rows="4" cols="50"></textarea>
-              </div>
-            </div>
-          </h4>
-        </div>
-      </div>
     
       
-    <div id="screening-bones" class="tabcontent_1">
-        <p>Wating For Bones</p>
-    </div>
-    <div id="ScreeningBoneRelatedInstructions" class="tabcontent_1">
-            <?php if ($showTable): ?>
-                <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th>Section Code</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($bone_status as $status): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($status['block_number']); ?></td>
-                                <td>
-                                    <?php if ($status['status_name'] === 'Bones Slide Ready'): ?>
-                                        <?php echo htmlspecialchars($status['status_name']); ?>
-                                    <?php else: ?>
-                                        <span style="color: red;">Bones Slide are not Ready</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p style="color: red; font-size: 18px; font-family: Arial, sans-serif; font-weight: bold; text-align: left;">Bones are not ready.</p>
-            <?php endif; ?>
-    </div>
+                <div id="screening-bones" class="tabcontent_1">
+                    <p>Wating For Bones</p>
+                </div>
+                <div id="ScreeningBoneRelatedInstructions" class="tabcontent_1">
+                        <?php if ($showTable): ?>
+                            <table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th>Section Code</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($bone_status as $status): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($status['block_number']); ?></td>
+                                            <td>
+                                                <?php if ($status['status_name'] === 'Bones Slide Ready'): ?>
+                                                    <?php echo htmlspecialchars($status['status_name']); ?>
+                                                <?php else: ?>
+                                                    <span style="color: red;">Bones Slide are not Ready</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php else: ?>
+                            <p style="color: red; font-size: 18px; font-family: Arial, sans-serif; font-weight: bold; text-align: left;">Bones are not ready.</p>
+                        <?php endif; ?>
+                </div>
 
 
-    <div id="Screening-Done" class="tabcontent_1">
-        <p>Screening Done</p>
-    </div>  
+                <div id="Screening-Done" class="tabcontent_1">
+                    <p>Screening Done</p>
+                </div>  
 
-    <div id="Final-Screening-Start" class="tabcontent_1">
-        <p>Final Screening Start</p>
-    </div>
+                <div id="Final-Screening-Start" class="tabcontent_1">
+                    <p>Final Screening Start</p>
+                </div>
 
-    <div id="Final-Screening-Study" class="tabcontent_1">
-        <div class="modal-content">
-           <div class="design-process-content" id="lookuplabno4">
-               <button id="final-history-button" type="button" class="btn btn-primary" onclick="logHistoryValueFinalScreening(event)">Save</button>
-               <br><br>
-               <h4>
-                   <div class="form-waiting-final-screening">
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status5" value="5">
-                       <label class="form-waiting-label" for="status5">
-                           <h2 class="h2">Study</h2>
-                       </label>     
-                   </div>
-                   <div class="form-waiting-final-screening">
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4" value="4" onclick="toggleOptionsFinalScreening()">
-                       <label class="form-waiting-label" for="status4">
-                           <h2 class="h2">Patient History / Investigations</h2>
-                       </label>
-                   </div>
-               </h4>
-               <ul id="history_collect-final-screening" style="display: none;">
-                   <h3 class="h2">
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Self" value="Self"> Self &nbsp;&nbsp;
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Transcription" value="Transcription"> Transcription &nbsp;&nbsp;
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-It_Space" value="IT Space"> IT Space &nbsp;&nbsp;
-                   </h3>
-               </ul>
-               <ul id="additional-options-final-screening" style="display: none;">
-                   <h3 class="h3">
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan" value="CT Scan Report"> CT Scan Report<br>
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan_film" value="CT Scan Film"> CT Scan Film<br>
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Report" value="MRI Report"> MRI Report<br>
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Film" value="MRI Film"> MRI Film<br>
-                       <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-others" value="" onclick="toggleTextareaFinalScreening()"> Others
-                   </h3>
-               </ul>
-               <textarea id="others-textarea-final-screening" style="display: none; margin-top: 10px;" placeholder="Please specify..."></textarea>
-           </div>
-       </div>
-       
-    </div>
-
-    <div role="tabpanel" class="tabcontent_1" id="Final-Screening-LabInstructions">
-            <div class="design-process-content" id="finalScreeningLabContent">
-                <button id="final-screening-save-button" type="button" class="btn btn-primary" onclick="logFinalScreeningLabInstructionsValue()">Save</button>
-                <br><br>
-                <ul id="finalScreeningOptions">
-                    <h3 class="bold h3">Section Instructions</h3>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningOption1" onclick="toggleVisibilityFinalScreening('finalScreeningInput1')" value="16"> R/C
-                        </label></h3>
-                        <div id="finalScreeningInput1" class="hidden">
-                            <h4 class="h3"><label class="bold">Section Code or Block Number</label>
-                            <input id="finalScreeningLabOption1" type="text" name="finalScreeningText1"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningOption2" onclick="toggleVisibilityFinalScreening('finalScreeningInput2')" value="18"> M/R/C
-                        </label></h3>
-                        <div id="finalScreeningInput2" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningLabOption2" type="text" name="finalScreeningText2"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningOption3" onclick="toggleVisibilityFinalScreening('finalScreeningInput3')" value="20"> Deeper Cut
-                        </label></h3>
-                        <div id="finalScreeningInput3" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningLabOption3" type="text" name="finalScreeningText3"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningOption4" onclick="toggleVisibilityFinalScreening('finalScreeningInput4')" value="24"> Block D/C & R/C
-                        </label></h3>
-                        <div id="finalScreeningInput4" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningLabOption4" type="text" name="finalScreeningText4"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningOption5" onclick="toggleVisibilityFinalScreening('finalScreeningInput5')" value="22"> Serial Sections
-                        </label></h3>
-                        <div id="finalScreeningInput5" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningLabOption5" type="text" name="finalScreeningText5"></h4>
-                        </div>
-                    </li>
-                </ul>
-                <br>
-                <ul>
-                    <h3 class="h3"><b>Special&nbsp;&nbsp;Stain&nbsp;&nbsp;Instructions</b></h3>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain1" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput1')" value="26"> AFB
-                        </label></h3>
-                        <div id="finalScreeningStainInput1" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption1" type="text" name="finalScreeningStainText1"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain2" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput2')" value="28"> GMS
-                        </label></h3>
-                        <div id="finalScreeningStainInput2" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption2" type="text" name="finalScreeningStainText2"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain3" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput3')" value="30"> PAS
-                        </label></h3>
-                        <div id="finalScreeningStainInput3" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption3" type="text" name="finalScreeningStainText3"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain4" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput4')" value="32"> PAS with Diastase
-                        </label></h3>
-                        <div id="finalScreeningStainInput4" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption4" type="text" name="finalScreeningStainText4"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain5" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput5')" value="34"> Fite Faraco
-                        </label></h3>
-                        <div id="finalScreeningStainInput5" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption5" type="text" name="finalScreeningStainText5"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain6" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput6')" value="36"> Brown-Brenn
-                        </label></h3>
-                        <div id="finalScreeningStainInput6" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption6" type="text" name="finalScreeningStainText6"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain7" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput7')" value="38"> Congo-Red
-                        </label></h3>
-                        <div id="finalScreeningStainInput7" class="hidden">
-                            <h4 class="h3"><label>Section Code or Block Number</label>
-                            <input id="finalScreeningStainOption7" type="text" name="finalScreeningStainText7"></h4>
-                        </div>
-                    </li>
-                    <li>
-                        <h3 class="h3"><label>
-                            <input type="checkbox" id="finalScreeningStain8" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput8')" value="40"> Others
-                        </label></h3>
-                        <div id="finalScreeningStainInput8" class="hidden">
-                            <h4 class="h3"><label>Special Stain Name</label>
-                            <input id="finalScreeningStainNameInput" type="text" name="finalScreeningStainText8">
-                            <label>Block Number</label>
-                            <input id="finalScreeningStainOption8" type="text" name="finalScreeningStainBlockNumber"></h4>
-                        </div>
-                    </li>
-                </ul> 
-                <br>  
-                <ul>
-                    <h3 class="h3"><b>Immunohistochemistry (IHC) Instructions</b></h3>
-                    <h3 class="h3"><label>
-                        <input type="checkbox" id="finalScreeningIHC1" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput1')" value="44"> Block Number
-                    </label>
-                    <div id="finalScreeningIHCInput1" class="hidden">
-                        <textarea id="finalScreeningIHCLabInput" type="text" name="finalScreeningIHCText1"></textarea>
-                    </div>
-                    <br><label>
-                        <input type="checkbox" id="finalScreeningIHC2" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput2')" value="44"> Markers
-                    </label>
-                    <div id="finalScreeningIHCInput2" class="hidden">
-                        <textarea id="finalScreeningIHCLabMarkers" type="text" name="finalScreeningIHCText2"></textarea>
-                    </div>
-                    </h3>
-                </ul> 
-            </div>
-    </div>
-
-
-    <div role="tabpanel" class="tabcontent_1" id="Final-Screening-GrossInstructions">
-        <div class="design-process-content">
-            <button id="final_screening_gross_related_instructions" type="button" class="btn btn-primary">Save</button>
-            <br><br>
-            <h4 class="semi-bold"> 
-                <div class="form-addreq">
-                    <label>
-                        Gross Check & Re-gross for/of
-                    </label>
-                    <div id="stainInput9" class="">
-                        <textarea id="gross_check_re_gross_fianl_screening" name="text" rows="4" cols="50"></textarea>
-                        <input type="hidden" value="6"/>
+                <div id="Final-Screening-Study" class="tabcontent_1">
+                    <div class="modal-content">
+                    <div class="design-process-content" id="lookuplabno4">
+                        <button id="final-history-button" type="button" class="btn btn-primary" onclick="logHistoryValueFinalScreening(event)">Save</button>
+                        <br><br>
+                        <h4>
+                            <div class="form-waiting-final-screening">
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status5" value="5">
+                                <label class="form-waiting-label" for="status5">
+                                    <h2 class="h2">Study</h2>
+                                </label>     
+                            </div>
+                            <div class="form-waiting-final-screening">
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4" value="4" onclick="toggleOptionsFinalScreening()">
+                                <label class="form-waiting-label" for="status4">
+                                    <h2 class="h2">Patient History / Investigations</h2>
+                                </label>
+                            </div>
+                        </h4>
+                        <ul id="history_collect-final-screening" style="display: none;">
+                            <h3 class="h2">
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Self" value="Self"> Self &nbsp;&nbsp;
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Transcription" value="Transcription"> Transcription &nbsp;&nbsp;
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-It_Space" value="IT Space"> IT Space &nbsp;&nbsp;
+                            </h3>
+                        </ul>
+                        <ul id="additional-options-final-screening" style="display: none;">
+                            <h3 class="h3">
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan" value="CT Scan Report"> CT Scan Report<br>
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Ct_Scan_film" value="CT Scan Film"> CT Scan Film<br>
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Report" value="MRI Report"> MRI Report<br>
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-Mri_Film" value="MRI Film"> MRI Film<br>
+                                <input class="form-waiting-input" type="checkbox" name="flexRadioWaiting" id="status4-others" value="" onclick="toggleTextareaFinalScreening()"> Others
+                            </h3>
+                        </ul>
+                        <textarea id="others-textarea-final-screening" style="display: none; margin-top: 10px;" placeholder="Please specify..."></textarea>
                     </div>
                 </div>
-            </h4>
-        </div>
+                
+                </div>
+
+                <div role="tabpanel" class="tabcontent_1" id="Final-Screening-LabInstructions">
+                        <div class="design-process-content" id="finalScreeningLabContent">
+                            <button id="final-screening-save-button" type="button" class="btn btn-primary" onclick="logFinalScreeningLabInstructionsValue()">Save</button>
+                            <br><br>
+                            <ul id="finalScreeningOptions">
+                                <h3 class="bold h3">Section Instructions</h3>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningOption1" onclick="toggleVisibilityFinalScreening('finalScreeningInput1')" value="16"> R/C
+                                    </label></h3>
+                                    <div id="finalScreeningInput1" class="hidden">
+                                        <h4 class="h3"><label class="bold">Section Code or Block Number</label>
+                                        <input id="finalScreeningLabOption1" type="text" name="finalScreeningText1"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningOption2" onclick="toggleVisibilityFinalScreening('finalScreeningInput2')" value="18"> M/R/C
+                                    </label></h3>
+                                    <div id="finalScreeningInput2" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningLabOption2" type="text" name="finalScreeningText2"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningOption3" onclick="toggleVisibilityFinalScreening('finalScreeningInput3')" value="20"> Deeper Cut
+                                    </label></h3>
+                                    <div id="finalScreeningInput3" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningLabOption3" type="text" name="finalScreeningText3"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningOption4" onclick="toggleVisibilityFinalScreening('finalScreeningInput4')" value="24"> Block D/C & R/C
+                                    </label></h3>
+                                    <div id="finalScreeningInput4" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningLabOption4" type="text" name="finalScreeningText4"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningOption5" onclick="toggleVisibilityFinalScreening('finalScreeningInput5')" value="22"> Serial Sections
+                                    </label></h3>
+                                    <div id="finalScreeningInput5" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningLabOption5" type="text" name="finalScreeningText5"></h4>
+                                    </div>
+                                </li>
+                            </ul>
+                            <br>
+                            <ul>
+                                <h3 class="h3"><b>Special&nbsp;&nbsp;Stain&nbsp;&nbsp;Instructions</b></h3>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain1" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput1')" value="26"> AFB
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput1" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption1" type="text" name="finalScreeningStainText1"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain2" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput2')" value="28"> GMS
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput2" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption2" type="text" name="finalScreeningStainText2"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain3" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput3')" value="30"> PAS
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput3" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption3" type="text" name="finalScreeningStainText3"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain4" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput4')" value="32"> PAS with Diastase
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput4" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption4" type="text" name="finalScreeningStainText4"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain5" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput5')" value="34"> Fite Faraco
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput5" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption5" type="text" name="finalScreeningStainText5"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain6" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput6')" value="36"> Brown-Brenn
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput6" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption6" type="text" name="finalScreeningStainText6"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain7" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput7')" value="38"> Congo-Red
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput7" class="hidden">
+                                        <h4 class="h3"><label>Section Code or Block Number</label>
+                                        <input id="finalScreeningStainOption7" type="text" name="finalScreeningStainText7"></h4>
+                                    </div>
+                                </li>
+                                <li>
+                                    <h3 class="h3"><label>
+                                        <input type="checkbox" id="finalScreeningStain8" onclick="toggleVisibilityFinalScreening('finalScreeningStainInput8')" value="40"> Others
+                                    </label></h3>
+                                    <div id="finalScreeningStainInput8" class="hidden">
+                                        <h4 class="h3"><label>Special Stain Name</label>
+                                        <input id="finalScreeningStainNameInput" type="text" name="finalScreeningStainText8">
+                                        <label>Block Number</label>
+                                        <input id="finalScreeningStainOption8" type="text" name="finalScreeningStainBlockNumber"></h4>
+                                    </div>
+                                </li>
+                            </ul> 
+                            <br>  
+                            <ul>
+                                <h3 class="h3"><b>Immunohistochemistry (IHC) Instructions</b></h3>
+                                <h3 class="h3"><label>
+                                    <input type="checkbox" id="finalScreeningIHC1" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput1')" value="44"> Block Number
+                                </label>
+                                <div id="finalScreeningIHCInput1" class="hidden">
+                                    <textarea id="finalScreeningIHCLabInput" type="text" name="finalScreeningIHCText1"></textarea>
+                                </div>
+                                <br><label>
+                                    <input type="checkbox" id="finalScreeningIHC2" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput2')" value="44"> Markers
+                                </label>
+                                <div id="finalScreeningIHCInput2" class="hidden">
+                                    <textarea id="finalScreeningIHCLabMarkers" type="text" name="finalScreeningIHCText2"></textarea>
+                                </div>
+                                </h3>
+                            </ul> 
+                        </div>
+                </div>
+
+
+                <div role="tabpanel" class="tabcontent_1" id="Final-Screening-GrossInstructions">
+                    <div class="design-process-content">
+                        <button id="final_screening_gross_related_instructions" type="button" class="btn btn-primary">Save</button>
+                        <br><br>
+                        <h4 class="semi-bold"> 
+                            <div class="form-addreq">
+                                <label>
+                                    Gross Check & Re-gross for/of
+                                </label>
+                                <div id="stainInput9" class="">
+                                    <textarea id="gross_check_re_gross_fianl_screening" name="text" rows="4" cols="50"></textarea>
+                                    <input type="hidden" value="6"/>
+                                </div>
+                            </div>
+                        </h4>
+                    </div>
+                </div>
+
+                <div id="final-screening-bones" class="tabcontent_1">
+                    <p>Wating For Bones</p>
+                </div>
+    
+                <div id="Final-Screening-Done" class="tabcontent_1">
+                    <p>Final Screening Done</p>
+                </div>
     </div>
 
-    <div id="final-screening-bones" class="tabcontent_1">
-        <p>Wating For Bones</p>
-    </div>
-    
-    <div id="Final-Screening-Done" class="tabcontent_1">
-        <p>Final Screening Done</p>
+    <div class="right-side">
+        <!-- iframe to display the report -->
+        <iframe id="reportFrame" style="width:200%; height:1200px; border:none; display:none;"></iframe>
+        <div id="status" class="tab-content grayed-out">
+                        <h3 class="semi-bold">
+                            <center>Current  Status: <?php echo htmlspecialchars($LabNumber); ?></center>
+                        </h3>
+                        <table border="0">
+                            <thead>
+                                <tr>
+                                    <!-- <th>Section</th> -->
+                                    <th>Status</th>
+                                    <th>Descriptions</th>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="status-table-body">
+                            <?php 
+                                $statusValues = array_column($lab_status, 'WSStatusName');
+                                $sortedRows = [];
+
+                                foreach ($lab_status as $list) {
+                                    $statusColor = '';
+                                    if (in_array($list['section'], ['Gross', 'Lab', 'Microscopy', 'Screening', 'description'])) {
+
+                                        // Check if statusName is 'Diagnosis Completed' and skip this row
+                                        if ($list['WSStatusName'] === 'Diagnosis Completed') {
+                                            continue;
+                                        }
+                                        // Check if statusName is 'Start Screening' and skip this row
+                                        if ($list['WSStatusName'] === 'Start Screening') {
+                                            continue;
+                                        }
+
+                                        // Check if statusName is 'Final Screening Start' and skip this row
+                                        if ($list['WSStatusName'] === 'Final Screening Start') {
+                                            continue;
+                                        }
+                                        
+
+                                        if ($list['WSStatusName'] == 'Special Stain others requested' && !in_array('Special Stain others Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'IHC-Block-Markers-requested' && !in_array('IHC-Block-Markers-completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'R/C requested' && !in_array('R/C Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'M/R/C requested' && !in_array('M/R/C Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Deeper Cut requested' && !in_array('Deeper Cut Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Serial Sections requested' && !in_array('Serial Sections Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Block D/C & R/C requested' && !in_array('Block D/C & R/C Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain AFB requested' && !in_array('Special Stain AFB Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain GMS requested' && !in_array('Special Stain GMS Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain PAS requested' && !in_array('Special Stain PAS Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain PAS with Diastase requested' && !in_array('Special Stain PAS with Diastase Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain Fite Faraco requested' && !in_array('Special Stain Fite Faraco Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain Brown-Brenn requested' && !in_array('Special Stain Brown-Brenn Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain Congo-Red requested' && !in_array('Special Stain Congo-Red Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Special Stain Bone Decalcification requested' && !in_array('Special Stain Bone Decalcification Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif ($list['WSStatusName'] == 'Re-gross Requested' && !in_array('Regross Completed', $statusValues)) {
+                                            $statusColor = 'red';
+                                        } elseif (in_array($list['WSStatusName'], [
+                                            'Special Stain others Completed',
+                                            'IHC-Block-Markers-completed',
+                                            'R/C Completed',
+                                            'M/R/C Completed',
+                                            'Deeper Cut Completed',
+                                            'Serial Sections Completed',
+                                            'Block D/C & R/C Completed',
+                                            'Special Stain AFB Completed',
+                                            'Special Stain GMS Completed',
+                                            'Special Stain PAS Completed',
+                                            'Special Stain PAS with Diastase Completed',
+                                            'Special Stain Fite Faraco Completed',
+                                            'Special Stain Brown-Brenn Completed',
+                                            'Special Stain Congo-Red Completed',
+                                            'Special Stain Bone Decalcification Completed',
+                                            'Regross Completed'
+                                        ])) {
+                                            $statusColor = 'green';
+                                        }
+
+                                        $dateTime = DateTime::createFromFormat('Y-m-d H:i:s.uP', $list['TrackCreateTime']);
+                                        if ($dateTime === false) {
+                                            $trackCreateTimeFormatted = 'Invalid date';
+                                        } else {
+                                            $trackCreateTimeFormatted = $dateTime->format('F j, Y h:i A');
+                                        }
+
+                                        $sortedRows[] = [
+                                            // 'section' => htmlspecialchars($list['section']),
+                                            'statusName' => htmlspecialchars($list['WSStatusName']),
+                                            'description' => htmlspecialchars($list['description']),
+                                            'color' => $statusColor,
+                                            'trackCreateTime' => $trackCreateTimeFormatted,
+                                            'user' => htmlspecialchars($list['TrackUserName']),
+                                            'track_id' => htmlspecialchars($list['track_id'])
+                                        ];
+                                    }
+                                }
+
+                                usort($sortedRows, function($a, $b) {
+                                    $colorOrder = ['red', 'green', ''];
+                                    $aColorIndex = array_search($a['color'], $colorOrder);
+                                    $bColorIndex = array_search($b['color'], $colorOrder);
+                                    return $aColorIndex - $bColorIndex;
+                                });
+
+                                $isGrayedOut = true; // Set this based on actual tab state
+                                $displayCount = 2;
+
+                                foreach ($sortedRows as $index => $row) {
+                                    // $section = htmlspecialchars($row['section']);
+                                    $statusName = htmlspecialchars($row['statusName']);
+                                    $description = htmlspecialchars($row['description']);
+                                    $statusColor = htmlspecialchars($row['color']);
+                                    $trackCreateTime = htmlspecialchars($row['trackCreateTime']);
+                                    $user = htmlspecialchars($row['user']);
+                                    $track_id = htmlspecialchars($row['track_id']);
+
+                                    $rowClass = '';
+                                    if ($isGrayedOut) {
+                                        if ($index < count($sortedRows) - 2) {
+                                            $rowClass = 'hidden';
+                                        }
+                                    }
+
+                                    echo "<tr class='status-row {$rowClass}'>";
+                                    // echo "<td><p style='font-size: 15px;'>{$section}</p></td>";
+                                    echo "<td><p  style='font-size: 15px; color: {$statusColor};'>{$statusName}</p></td>";
+                                    echo "<td><p  style='font-size: 15px;'>{$description}</p></td>";
+                                    echo "<td><p style='font-size: 15px;'>{$trackCreateTime}</p></td>";
+                                    echo "<td><p style='font-size: 15px;'>{$user}</p></td>";
+                                    // Add delete icon with confirmation dialog
+                                    echo "<td><p style='font-size: 15px;'>
+                                            <a href='#' onclick='confirmDelete({$track_id})'>
+                                                <i class='fas fa-trash-alt' style='color: red; cursor: pointer;' title='Delete'></i>
+                                            </a>
+                                        </p></td>";
+                                    echo "</tr>";
+                                }
+                            ?>
+                            </tbody>
+                        </table>
+                    </div>
+        </div>
     </div>
 
     
@@ -1382,35 +1450,7 @@ switch (true) {
             }
         </script>
 
-        <script>
-           function toggleStatusTab() {
-                var statusTab = document.getElementById('status');
-                var statusButton = document.getElementById('tab-status');
-                
-                if (statusTab.classList.contains('grayed-out')) {
-                    statusTab.classList.remove('grayed-out');
-                    statusButton.classList.remove('inactive');
-                    statusButton.classList.add('active');
-                } else {
-                    statusTab.classList.add('grayed-out');
-                    statusButton.classList.add('inactive');
-                    statusButton.classList.remove('active');
-                }
-                
-                // Show or hide the status tab content based on its state
-                var isGrayedOut = statusTab.classList.contains('grayed-out');
-                var rows = document.querySelectorAll('#status-table-body .status-row');
-                
-                rows.forEach(function(row, index) {
-                    if (isGrayedOut && index < rows.length - 2) {
-                        row.classList.add('hidden');
-                    } else {
-                        row.classList.remove('hidden');
-                    }
-                });
-                
-            }
-        </script>
+        
 
         <script>
             let selectedValues = [];
@@ -2512,7 +2552,61 @@ switch (true) {
             }
         </script>
 
-        
+        <script>
+            // Function to show only the report iframe and hide the status
+            function loadReport() {
+                var labNumber = "<?php echo htmlspecialchars('HPL' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
+                var iframe = document.getElementById('reportFrame');
+                
+                // Set the report URL with the lab number and make the iframe visible
+                iframe.src = "../grossmodule/hpl_report.php?lab_number=" + labNumber;
+                iframe.style.display = "block";  // Show the report iframe
+
+                // Hide the status section when the report is shown
+                document.getElementById('status').style.display = 'none';
+            }
+
+            // Function to show only the status table and hide the report
+            function showRightTab(tabId) {
+                if (tabId === 'status') {
+                    // Hide the report iframe
+                    document.getElementById('reportFrame').style.display = 'none';
+
+                    // Show the status section
+                    var statusSection = document.getElementById('status');
+                    statusSection.style.display = 'block'; // Ensure it's visible
+                }
+            }
+
+            // Function to toggle the status tab (if needed for active/inactive state)
+            function toggleStatusTab() {
+                        var statusTab = document.getElementById('status');
+                        var statusButton = document.getElementById('tab-status');
+                        
+                        if (statusTab.classList.contains('grayed-out')) {
+                            statusTab.classList.remove('grayed-out');
+                            statusButton.classList.remove('inactive');
+                            statusButton.classList.add('active');
+                        } else {
+                            statusTab.classList.add('grayed-out');
+                            statusButton.classList.add('inactive');
+                            statusButton.classList.remove('active');
+                        }
+                        
+                        // Show or hide the status tab content based on its state
+                        var isGrayedOut = statusTab.classList.contains('grayed-out');
+                        var rows = document.querySelectorAll('#status-table-body .status-row');
+                        
+                        rows.forEach(function(row, index) {
+                            if (isGrayedOut && index < rows.length - 2) {
+                                row.classList.add('hidden');
+                            } else {
+                                row.classList.remove('hidden');
+                            }
+                        });
+                        
+            }
+        </script>
 
 </body>
 </html>
