@@ -51,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     // Redirect to the summary page after updating all data
-    $fk_gross_id = $_POST['fk_gross_id'][0]; // Assuming fk_gross_id is the same for all sections
-    echo '<script>window.location.href = "gross_specimen_section.php?fk_gross_id=' . $fk_gross_id . '";</script>';
+    header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
+    exit();  // Stops further script execution
 
     pg_close($pg_con);
 } else {
