@@ -448,8 +448,6 @@ echo '</form>';
 $sections = get_gross_specimen_section($fk_gross_id);
 $specimen_count_value = number_of_specimen($fk_gross_id);
 $alphabet_string = numberToAlphabet($specimen_count_value); 
-
-print('<br>');print('<br>');print('<br>');print('<br>');
 print("<div class='container'>");
 
 for ($i = 1; $i <= $specimen_count_value; $i++) {
@@ -463,53 +461,43 @@ print('<form id="specimen_section_form" method="post" action="gross_specimen_sec
 <div id="fields-container"> 
 </div>
 <br>
-<button id="saveButton" style="display: none;">Save</button>
+<button id="saveButton">Save</button>
 </form>');
 print("</div>");
 
 
-// here is Section code and Description values are displayed and update
 // Print the form container
 print('<div style="width: 60%; text-align: left; margin-left: 0;">');
 
 // Add CSS styles for the table and its elements
-echo '<style>
-        table {
-            margin-top: 20px;
-            border-collapse: collapse;
-            width: 100%;
-            table-layout: fixed;  /* Ensure fixed table layout for consistent column width */
-           
-        }
+print('<style>
+table {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;  /* Ensure fixed table layout for consistent column width */
+}
 
-        th, td {
-            text-align: center;
-            padding: 2px;  /* Reduce padding further to bring columns closer */
-            border: 1px solid #ddd; /* Add a border to table cells */
-        }
+th, td {
+  text-align: center;
+  padding: 2px;  /* Reduce padding further to bring columns closer */
+}
 
-        th {
-            width: 20%;  /* Set a fixed width for the table headers */
-        }
+th {
+  width: 20%;  /* Set a fixed width for the table headers */
+}
 
-        td {
-            padding: 2px;  /* Reduce padding for table data cells */
-        }
+td {
+  padding: 2px;  /* Reduce padding for table data cells */
+}
 
-        textarea, input[type="text"] {
-            width: 95%;  /* Ensure inputs and textareas fit within their cells */
-            box-sizing: border-box;  /* Prevent overflow by including padding and borders */
-        }
+textarea, input[type="text"] {
+  width: 95%;  /* Ensure inputs and textareas fit within their cells */
+  box-sizing: border-box;  /* Prevent overflow by including padding and borders */
+}
 
-        tr:nth-child(even) {
-            background-color: #f9f9f9;  /* Lighter shade for even rows */
-        }
-
-        tr:hover {
-            background-color: #d6e9f9;  /* Row hover effect */
-        }
-</style>';
-
+tr:nth-child(even) {background-color: #f2f2f2;}
+</style>');
 
 // Begin the form
 print('<form id="section-code-form" method="post" action="update_gross_specimen_section.php">');
@@ -1454,19 +1442,6 @@ if (!empty($finialized_by)) {
         }
 </script>
 
-<!--   Display "No" or "Yes" options based on bones_status value -->
-<script>
-    function toggleBlockNumber(rowid) {
-        const bonesStatus = document.getElementById('bones_status_' + rowid).value;
-        const blockNumberContainer = document.getElementById('block_number_container_' + rowid);
-
-        if (bonesStatus === 'Yes') {
-            blockNumberContainer.style.display = 'table-cell';
-        } else {
-            blockNumberContainer.style.display = 'none';
-        }
-    }
-</script>
 
 <script>
 
@@ -1628,6 +1603,19 @@ if (!empty($finialized_by)) {
     }
 </script>
 
+<!--   Display "No" or "Yes" options based on bones_status value -->
+<script>
+    function toggleBlockNumber(rowid) {
+        const bonesStatus = document.getElementById('bones_status_' + rowid).value;
+        const blockNumberContainer = document.getElementById('block_number_container_' + rowid);
+
+        if (bonesStatus === 'Yes') {
+            blockNumberContainer.style.display = 'table-cell';
+        } else {
+            blockNumberContainer.style.display = 'none';
+        }
+    }
+</script>
 
 <!-- Micro Description Abbreviations -->
 <script>
