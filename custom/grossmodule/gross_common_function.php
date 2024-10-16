@@ -37,20 +37,21 @@ function get_patient_information($lab_number) {
 function get_gross_specimens_list($lab_number) {
     global $pg_con;
 
-    $sql = "SELECT de.fk_commande, de.fk_product, de.description as specimen,  c.ref, e.num_containers, de.rowid as specimen_id,
-    (
-        SELECT COUNT(*) 
-        FROM llx_commandedet AS inner_de 
-        WHERE inner_de.fk_commande = c.rowid
-    ) AS number_of_specimens
-FROM 
-    llx_commande AS c 
-JOIN 
-    llx_commandedet AS de ON de.fk_commande = c.rowid
-JOIN 
-    llx_commande_extrafields AS e ON e.fk_object = c.rowid
-WHERE 
-    c.ref = '$lab_number' ORDER BY de.rowid ASC";
+    $sql = "
+        SELECT de.fk_commande, de.fk_product, de.description as specimen,  c.ref, e.num_containers, de.rowid as specimen_id,
+        (
+            SELECT COUNT(*) 
+            FROM llx_commandedet AS inner_de 
+            WHERE inner_de.fk_commande = c.rowid
+        ) AS number_of_specimens
+        FROM 
+            llx_commande AS c 
+        JOIN 
+            llx_commandedet AS de ON de.fk_commande = c.rowid
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid
+        WHERE 
+            c.ref = '$lab_number' ORDER BY de.rowid ASC";
 
     $result = pg_query($pg_con, $sql);
 
@@ -886,5 +887,38 @@ function isUserAdmin($userId) {
     // Return whether the user is an admin
     return $row ? $row['admin_count'] > 0 : false;
 }
+
+
+function get_re_gross_request_list($lab_number) {
+    global $pg_con;
+
+    // Use placeholders for the prepared statement
+    $sql = "SELECT * FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = '6'";
+
+    // Prepare the SQL query
+    $result_prepare = pg_prepare($pg_con, "get_gross_request", $sql);
+    
+    // Execute the prepared query with the parameter (lab_number)
+    if ($result_prepare) {
+        $result = pg_execute($pg_con, "get_gross_request", array($lab_number));
+        
+        $existingdata = [];
+
+        if ($result) {
+            // Fetch all rows if available
+            $existingdata = pg_fetch_all($result) ?: [];
+            pg_free_result($result);  // Free the result after processing
+        } else {
+            // Log or handle the error
+            echo 'Error during execution: ' . pg_last_error($pg_con);
+        }
+
+        return $existingdata;
+    } else {
+        // Handle preparation error
+        echo 'Error during preparation: ' . pg_last_error($pg_con);
+        return [];
+    }
+} 
 
 ?>
