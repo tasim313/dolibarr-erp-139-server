@@ -578,7 +578,7 @@ function get_gross_specimen_section($fk_gross_id) {
     global $pg_con;
     $sql = "select gross_specimen_section_id, 
     fk_gross_id, section_code, 
-    specimen_section_description, cassettes_numbers, tissue, bone from llx_gross_specimen_section WHERE fk_gross_id = $1 ORDER BY 
+    specimen_section_description, cassettes_numbers, tissue, bone from llx_gross_specimen_section WHERE TRIM(fk_gross_id) = $1 ORDER BY 
     LEFT(section_code, 1) ASC, 
     CAST(SUBSTRING(section_code, 2) AS INTEGER) ASC, 
     gross_specimen_section_id ASC";
