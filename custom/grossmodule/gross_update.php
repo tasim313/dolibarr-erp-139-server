@@ -60,6 +60,18 @@ $abbreviations = get_abbreviations_list();
 
 
 
+if (strpos($lab_number, 'HPL') === 0) {
+    $re_gross_lab_number = substr($lab_number, 3);  // Remove the first 3 characters ("HPL")
+} else {
+    $re_gross_lab_number = $lab_number;
+}
+
+$re_gross_request = get_re_gross_request_list($re_gross_lab_number);
+
+// Check if the request list is empty
+$is_empty = empty($re_gross_request);  // True if empty, false otherwise
+
+
 print('<style>
 main {
 	display: flex;
@@ -230,6 +242,21 @@ div.sticky {
     min-width: 10px; /* Minimum width for smaller input */
     margin-right: 10px;
 }
+
+.regross-button {
+    background-color: red; /* Button color */
+    color: white;          /* Text color */
+    border: none;         /* Remove border */
+    padding: 8px 16px;    /* Adjust padding for a better appearance */
+    cursor: pointer;       /* Change cursor to pointer */
+    font-size: 12px;      /* Font size */
+    border-radius: 5px;   /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+    transition: background-color 0.3s, transform 0.2s; /* Transition for hover effect */
+}
+
+
+
 @media screen and (max-width: 600px) {
 .col-25, .col-75, input[type=submit] {
 width: 100%;
@@ -427,6 +454,30 @@ print("<br>");
 echo '<div><br></div>';
 echo '<div><br></div>';
 
+print("<div class='container'>");
+// Generate regross section buttons
+for ($i = 1; $i <= $specimen_count_value; $i++) {
+    $specimenLetter = chr($i + 64); 
+    $regross_button_id = "generate-regross-" . $i;
+    // Button for regross section code generation
+    echo '<button type="button" id="' . $regross_button_id . '" data-specimen-letter="' . $specimenLetter . '"
+    class="regross-button"  style="display: none;" title="Generate regross section Code">
+    ' . $specimenLetter . '&nbsp;&nbsp;GRSC</button>';
+    echo '<br><br>';
+}
+
+// Regross section form container
+print('
+<form id="regross_section_form" method="post" action="gross_regross_section_generate.php">
+    <div id="regross-fields-container"> 
+    </div>
+    <br>
+    <button id="regrossSaveButton" style="display:none;">Save Regross</button>
+</form>');
+print("</div>");   
+
+echo '<div><br></div>';
+echo '<div><br></div>';
 
 // summary of section
 // Initialize counters and summary text
@@ -1240,3 +1291,156 @@ echo '</form>';
         console.log("Field Container: ", fieldSet)
     }
 </script>
+
+
+<!-- <script>
+    var isEmpty = <?php echo json_encode($is_empty); ?>;
+    document.addEventListener("DOMContentLoaded", function() {
+        var button = document.getElementById('generate_regross_section_code');
+        
+        // Check if it's empty and show/hide the button
+        if (!isEmpty) {
+            button.style.display = 'block';  // Show button if the request is not empty
+        } else {
+            button.style.display = 'none';  // Hide button if the request is empty
+        }
+    });
+</script> -->
+
+
+<script>
+    // Send the isEmpty variable from PHP to JavaScript
+    var isEmpty = <?php echo json_encode($is_empty); ?>;
+
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        let regross_sections = <?php echo json_encode($sections); ?>;
+        let lastRegrossSectionCodes = {};
+        let lastRegrossCassetteNumbers = {};
+        let lastRegrossTissues = {};
+
+        console.log('Regross sections from PHP:', regross_sections); // Debug regross sections
+
+        // Iterate over regross sections to find the last section code, cassette number, and tissue for each specimen
+        regross_sections.forEach(function(section) {
+            let specimenLetter = section.section_code.charAt(0);
+            let sectionCode = section.section_code;
+            let cassetteNumber = section.cassettes_numbers;
+            let tissue = section.tissue;
+
+            // Update the last values for each specimen
+            lastRegrossSectionCodes[specimenLetter] = sectionCode;
+            lastRegrossCassetteNumbers[specimenLetter] = cassetteNumber;
+            lastRegrossTissues[specimenLetter] = tissue;
+        });
+
+        // Function to generate the next regross section code
+        function generateNextRegrossSectionCode(specimenLetter) {
+            let sectionCode = '';
+
+            if (!lastRegrossSectionCodes[specimenLetter] || lastRegrossSectionCodes[specimenLetter] === '') {
+                sectionCode = specimenLetter + '1';
+            } else {
+                const lastSectionNumber = parseInt(lastRegrossSectionCodes[specimenLetter].slice(1), 10);
+                const nextSectionNumber = lastSectionNumber + 1;
+                sectionCode = specimenLetter + nextSectionNumber;
+            }
+
+            lastRegrossSectionCodes[specimenLetter] = sectionCode;
+            return sectionCode;
+        }
+
+        // Function to handle button clicks for regross
+        function handleRegrossButtonClick(button) {
+            const specimenLetter = button.getAttribute('data-specimen-letter');
+            let sectionCode = generateNextRegrossSectionCode(specimenLetter);
+
+            const fieldsContainer = document.getElementById("regross-fields-container");
+
+            // Create a new field set for the regross section
+            const fieldSet = document.createElement("fieldset");
+            fieldSet.classList.add("field-group");
+
+            // Hidden input for fk_gross_id
+            const fkGrossIdInput = document.createElement("input");
+            fkGrossIdInput.type = "hidden";
+            fkGrossIdInput.name = "fk_gross_id";
+            fkGrossIdInput.value = "<?php echo $fk_gross_id; ?>";
+            fieldSet.appendChild(fkGrossIdInput);
+
+            // Section Code label and input
+            const sectionCodeLabel = document.createElement("label");
+            sectionCodeLabel.textContent = sectionCode + ' :';
+            const inputSectionCode = document.createElement("input");
+            inputSectionCode.type = "hidden";
+            inputSectionCode.name = "regrossSectionCode[]";
+            inputSectionCode.value = sectionCode;
+            fieldSet.appendChild(sectionCodeLabel);
+            fieldSet.appendChild(inputSectionCode);
+
+            // Description input
+            const descriptionInput = document.createElement("input");
+            descriptionInput.type = "text";
+            descriptionInput.name = "regross_section_description[]";
+            descriptionInput.value = 'Section from the ';
+            fieldSet.appendChild(descriptionInput);
+
+            // Cassette Number input
+            const currentYear = new Date().getFullYear();
+            const lastTwoDigits = currentYear.toString().slice(-2);
+            const cassetteNumberLabel = document.createElement("label");
+            cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + "<?php echo $last_value; ?>" + '/' + lastTwoDigits;
+            const cassetteNumberInput = document.createElement("input");
+            cassetteNumberInput.type = "hidden";
+            cassetteNumberInput.name = "regrossCassetteNumber[]";
+            cassetteNumberInput.value = sectionCode + '-' + "<?php echo $last_value; ?>" + '/' + lastTwoDigits;
+            fieldSet.appendChild(cassetteNumberInput);
+
+            // Tissue input
+            const tissueLabel = document.createElement("label");
+            tissueLabel.textContent = "Tissue Pieces In " + sectionCode;
+            const tissueInput = document.createElement("input");
+            tissueInput.type = "text";
+            tissueInput.name = "regrossTissue[]";
+            tissueInput.placeholder = "Tissue Pieces In " + sectionCode; 
+            fieldSet.appendChild(tissueInput);
+
+            // Bone selection as a checkbox
+            const boneLabel = document.createElement("label");
+            boneLabel.textContent = "Bone?";
+            const boneInput = document.createElement("input");
+            boneInput.type = "checkbox";
+            boneInput.name = "regrossBone[]";
+            boneInput.value = sectionCode;
+            fieldSet.appendChild(boneLabel);
+            fieldSet.appendChild(boneInput);
+
+            // Append the fieldSet to the container
+            fieldsContainer.appendChild(fieldSet);
+
+            // Show the save button
+            document.getElementById("regrossSaveButton").style.display = "block";
+        }
+
+        // Check if isEmpty is false, then show the buttons
+        if (!isEmpty) {
+            console.log('Buttons will be displayed'); // Debugging button display
+            document.querySelectorAll("[id^='generate-regross-']").forEach(function(button) {
+                button.style.display = 'block'; // Display each button
+                button.addEventListener("click", function(event) {
+                    event.preventDefault(); // Prevent form submission
+                    handleRegrossButtonClick(button);
+                });
+            });
+        } else {
+            console.log('isEmpty is true, no buttons will be displayed.');
+        }
+
+        // Add the event listener to the save button
+        document.getElementById("regrossSaveButton").addEventListener("click", function(event) {
+            event.preventDefault();
+            document.getElementById("regross_section_form").submit(); // Submit the form
+        });
+    });
+</script>
+
