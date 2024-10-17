@@ -64,190 +64,195 @@ $loggedInUsername = $user->login;
 $userGroupNames = getUserGroupNames($loggedInUserId);
 $doctor_instruction_list = get_histo_doctor_instruction_list();
 $complete_instruction_list = get_histo_doctor_instruction_complete_list();
+$assistants = get_gross_assistant_list();
+$doctors = get_doctor_list();
+$assistants = get_gross_assistant_list();
 
-print("<style>
-.container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  float: left;
-  background-color: #fff;
-  border-radius: 1px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  width: 600px;
-  margin-left: auto; 
-  margin-right: auto;
-}
-.input-field {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 10px;
-  width: 180px;
-  font-size: 16px;
-  outline: none;
-}
-.input-field:focus {
-  border-color: dodgerblue;
-}
-.btn {
-  background-color: dodgerblue;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 16px;
-  outline: none;
-}
-.btn:hover {
-  background-color: #007bff;
-}
-#histoGrossTable {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  #histoGrossTable th, #histoGrossTable td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  #histoGrossTable th {
-    background-color: #046aaa;
-    color: white;
-  }
+print("
+    <style>
+        .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        float: left;
+        background-color: #fff;
+        border-radius: 1px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 600px;
+        margin-left: auto; 
+        margin-right: auto;
+        }
+        .input-field {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        width: 180px;
+        font-size: 16px;
+        outline: none;
+        }
+        .input-field:focus {
+        border-color: dodgerblue;
+        }
+        .btn {
+        background-color: dodgerblue;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        outline: none;
+        }
+        .btn:hover {
+        background-color: #007bff;
+        }
+        #histoGrossTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        #histoGrossTable th, #histoGrossTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        #histoGrossTable th {
+            background-color: #046aaa;
+            color: white;
+        }
 
-/* Style the tab container */
-.tab-container {
-    width: 100%;
-}
+        /* Style the tab container */
+        .tab-container {
+            width: 100%;
+        }
 
-/* Style the tabs */
-.tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
+        /* Style the tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-/* Style the buttons inside the tab */
-.tabs .tablink {
-    background-color: #f1f1f1;
-    border: 2px solid #ccc;
-    outline: none;
-    cursor: pointer;
-    padding: 10px;
-    margin: 0 5px;
-    width: 100px;
-    height: 100px;
-    border-radius: 100%;
-    text-align: center;
-    font-size: 14px; /* Adjust font size for better fit */
-    transition: background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    white-space: pre-wrap; /* Allow text to wrap within the button */
-    word-wrap: break-word; /* Break long words if necessary */
-}
+        /* Style the buttons inside the tab */
+        .tabs .tablink {
+            background-color: #f1f1f1;
+            border: 2px solid #ccc;
+            outline: none;
+            cursor: pointer;
+            padding: 10px;
+            margin: 0 5px;
+            width: 100px;
+            height: 100px;
+            border-radius: 100%;
+            text-align: center;
+            font-size: 14px; /* Adjust font size for better fit */
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: pre-wrap; /* Allow text to wrap within the button */
+            word-wrap: break-word; /* Break long words if necessary */
+        }
 
-/* Change background color of buttons on hover */
-.tabs .tablink:hover {
-    background-color: #ddd;
-}
+        /* Change background color of buttons on hover */
+        .tabs .tablink:hover {
+            background-color: #ddd;
+        }
 
-/* Create an active/current tablink class */
-.tabs .tablink.active {
-    background-color: #ccc;
-    border-color: #888;
-}
+        /* Create an active/current tablink class */
+        .tabs .tablink.active {
+            background-color: #ccc;
+            border-color: #888;
+        }
 
-/* Style the tab content */
-.tabcontent {
-    display: none;
-}
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+        }
 
-/* Style for the sub-tabs container */
-.sub-tabs {
-    width: 100%;
-    padding: 10px;
-}
+        /* Style for the sub-tabs container */
+        .sub-tabs {
+            width: 100%;
+            padding: 10px;
+        }
 
-/* Style for the sub-tab links */
-.sub-tab-links {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
+        /* Style for the sub-tab links */
+        .sub-tab-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
 
-.sub-tab-links .sub-tablink {
-    background-color: #f1f1f1;
-    border: 2px solid #ccc;
-    outline: none;
-    cursor: pointer;
-    padding: 10px;
-    margin: 0 5px;
-    width: 100px;
-    height: 100px;
-    border-radius: 100%;
-    text-align: center;
-    font-size: 14px; /* Adjust font size for better fit */
-    transition: background-color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    white-space: pre-wrap; /* Allow text to wrap within the button */
-    word-wrap: break-word; /* Break long words if necessary */
-}
+        .sub-tab-links .sub-tablink {
+            background-color: #f1f1f1;
+            border: 2px solid #ccc;
+            outline: none;
+            cursor: pointer;
+            padding: 10px;
+            margin: 0 5px;
+            width: 100px;
+            height: 100px;
+            border-radius: 100%;
+            text-align: center;
+            font-size: 14px; /* Adjust font size for better fit */
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: pre-wrap; /* Allow text to wrap within the button */
+            word-wrap: break-word; /* Break long words if necessary */
+        }
 
-.sub-tab-links .sub-tablink:hover {
-    background-color: #ddd;
-}
+        .sub-tab-links .sub-tablink:hover {
+            background-color: #ddd;
+        }
 
-.sub-tab-links .sub-tablink.active {
-    background-color: #ccc;
-    border-color: #888;
-}
+        .sub-tab-links .sub-tablink.active {
+            background-color: #ccc;
+            border-color: #888;
+        }
 
-/* Style for the sub-tab controls (inputs and button) */
-.sub-tab-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px; /* Space between input fields and button */
-}
+        /* Style for the sub-tab controls (inputs and button) */
+        .sub-tab-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* Space between input fields and button */
+        }
 
-/* Style for sub-tab content */
-.subtabcontent {
-    display: none; /* Hide all sub-tab contents by default */
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+        /* Style for sub-tab content */
+        .subtabcontent {
+            display: none; /* Hide all sub-tab contents by default */
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-/* Style for the active sub-tab */
-.sub-tablink.active {
-    background-color: #ccc;
-    border-color: #888;
-}
+        /* Style for the active sub-tab */
+        .sub-tablink.active {
+            background-color: #ccc;
+            border-color: #888;
+        }
 
-/* Responsive styles */
-@media (max-width: 768px) {
-    .tabs {
-        flex-wrap: wrap;
-    }
-    .tabs .tablink {
-        width: 60px; /* Adjust size for smaller screens */
-        height: 60px;
-        font-size: 12px; /* Adjust font size for smaller screens */
-        line-height: normal;
-    }
-}
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tabs .tablink {
+                width: 60px; /* Adjust size for smaller screens */
+                height: 60px;
+                font-size: 12px; /* Adjust font size for smaller screens */
+                line-height: normal;
+            }
+        }
 
-</style>");
+    </style>
+");
 
 
 echo('
@@ -261,6 +266,12 @@ echo('
     </div>
     
     <div id="ReGrossPendingInstructions" class="tabcontent">
+
+         <!-- Search box for Lab Number -->
+        <div>
+            <input type="text" id="searchLabNumberInput" placeholder="Search by Lab Number" style="margin-bottom: 15px;">
+            <button id="searchLabNumberButton" class="btn">Search</button>
+        </div>
         
             <table id="inprogres_InstructionTable" border="1" style="border: none;">
                 <thead style="border: none;">
@@ -280,15 +291,22 @@ echo('
                             <th>Lab Number</th>
                             <th>Section</th>
                             <th>Instruction</th>
-                            <th>Doctor Name</th>
+                            <th>ReGross Request Doctor Name</th>
+                            <th>Doctor</th>
+                            <th>Gross Assistant</th>
                             <th>Status</th>
                         </tr>
                 </thead>
                 <tbody></tbody>
             </table>
+
+            <!-- Message for search results -->
+            <p id="searchResultMessage" style="display:none; color: red;"></p>
                     <script>
                         const inprogress_instruction_list = ' . json_encode($doctor_instruction_list) . ';
                         const loggedInUserId = ' . json_encode($loggedInUserId) . ';
+                        const doctor_list = '.json_encode($doctors).';
+                        const assistant_list = ' .json_encode($assistants).';
                         
                         let inprogres_statusChanges = {};
 
@@ -303,7 +321,8 @@ echo('
                             "On-Hold", "R/C Completed", "Special Stain others requested","IHC-Block-Markers-requested", "M/R/C requested",
                             "Deeper Cut requested", "Serial Sections requested", "Block D/C & R/C requested", "Special Stain AFB requested", "Special Stain PAS requested",
                             "Special Stain GMS requested", "Special Stain PAS requested", "Special Stain PAS with Diastase requested", "Special Stain Fite Faraco requested",
-                            "Special Stain Brown-Brenn requested", "Special Stain Congo-Red requested", "Special Stain Bone Decalcification requested", "R/C requested"
+                            "Special Stain Brown-Brenn requested", "Special Stain Congo-Red requested", "Special Stain Bone Decalcification requested", "R/C requested",
+                            "SBO Ready"
                         ];
 
                         const statusPairsWithIds = {
@@ -346,6 +365,7 @@ echo('
                         }
 
                         function inprogres_generateTableRows(data) {
+                        
                             return data.map(item => {
                                 const requestedStatus = item["Status Name"];
                                 const labNumber = item["Lab Number"];
@@ -361,7 +381,19 @@ echo('
                                         <option value="Done">Done</option>
                                     `;
                                 }
+                                
+                                let doctorOptions = \'<option value="">Select Doctor</option>\';
+                                doctor_list.forEach(doctor => {
+                                    const selected = (doctor["doctor_username"] === item["doctor_username"]) ? "selected" : "";
+                                    doctorOptions += `<option value="${doctor.doctor_username}" ${selected}>${doctor.doctor_username}</option>`;
+                                });
 
+                                let assistantOptions = \'<option value="">Select Gross Assistant</option>\';
+                                assistant_list.forEach(assistant => {
+                                    const selected = (assistant["username"] === item["username"]) ? "selected" : "";
+                                    assistantOptions += `<option value="${assistant.username}" ${selected}>${assistant.username}</option>`;
+                                });
+                                
                                 return `
                                     <tr>
                                         <td>${formatDateTime(item["TrackCreateTime"])}</td>
@@ -369,6 +401,16 @@ echo('
                                         <td>${item["Description"]}</td>
                                         <td>${item["Status Name"]}</td>
                                         <td>${item["User Name"]}</td>
+                                        <td>
+                                            <select>
+                                                ${doctorOptions}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select>
+                                                ${assistantOptions}
+                                            </select>
+                                        </td>
                                         <td>
                                             <select data-lab-number="${item["Lab Number"]}" data-track-id="${trackId}">
                                                 ${options}
@@ -568,3 +610,23 @@ echo('
 ');
 
 ?>
+
+<script>
+    // Insert table rows
+    document.querySelector("#inprogres_InstructionTable tbody").innerHTML = inprogres_generateTableRows(inprogres_filteredDoctorInstructionList);
+
+    // Search functionality
+    document.getElementById("searchLabNumberButton").addEventListener("click", function () {
+        const searchValue = document.getElementById("searchLabNumberInput").value.trim();
+        const filteredData = inprogres_filteredDoctorInstructionList.filter(item => item["Lab Number"] === searchValue);
+
+        if (filteredData.length > 0) {
+            document.querySelector("#inprogres_InstructionTable tbody").innerHTML = inprogres_generateTableRows(filteredData);
+            document.getElementById("searchResultMessage").style.display = "none";
+        } else {
+            document.getElementById("searchResultMessage").textContent = "Lab Number not found.";
+            document.getElementById("searchResultMessage").style.display = "block";
+            document.querySelector("#inprogres_InstructionTable tbody").innerHTML = "";
+        }
+    });
+</script>

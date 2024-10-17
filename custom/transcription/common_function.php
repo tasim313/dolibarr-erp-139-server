@@ -567,52 +567,48 @@ function get_lab_number_status_for_doctor_tracking_by_lab_number($labNumber) {
     global $pg_con;
     $existingdata = array();
     
-    // Escape the lab number to prevent SQL injection
+    // Escape lab number (if not using prepared statements)
     $labNumber = pg_escape_string($pg_con, $labNumber);
     
-    // SQL query
-    $sql = "SELECT *
-            FROM (
-                SELECT 
-                    t.id,
-                    t.create_time AS TrackCreateTime, 
-                    t.labno, 
-                    t.description,
-                    t.lab_room_status,
-                    CONCAT(u1.firstname, ' ', u1.lastname) AS TrackUserName,
-                    ws.name AS WSStatusName, 
-                    ws.section,
-                    e.test_type,
-                    s.nom AS patient_name,
-                    ROW_NUMBER() OVER (PARTITION BY t.id ORDER BY t.id) AS RowNumber
-                FROM 
-                    llx_commande AS c
-                INNER JOIN 
-                    llx_commande_extrafields e 
-                    ON c.rowid = e.fk_object
-                INNER JOIN 
-                    llx_commande_trackws AS t
-                    ON c.ref = t.labno
-                    AND t.lab_room_status <> 'delete'
-                INNER JOIN 
-                    llx_user u1 
-                    ON t.user_id = u1.rowid
-                INNER JOIN 
-                    llx_commande_wsstatus AS ws
-                    ON t.fk_status_id = ws.id
-                INNER JOIN 
-                    llx_facture AS f 
-                    ON c.fk_soc = f.fk_soc
-                LEFT JOIN 
-                    llx_societe s 
-                    ON f.fk_soc = s.rowid
-                WHERE 
-                    c.ref = '$labNumber'
-            ) AS Subquery
+    // SQL query using a placeholder
+    $sql = "SELECT 
+                t.id,
+                t.create_time AS TrackCreateTime, 
+                t.labno, 
+                t.description,
+                t.lab_room_status,
+                CONCAT(u1.firstname, ' ', u1.lastname) AS TrackUserName,
+                ws.name AS WSStatusName, 
+                ws.section,
+                e.test_type,
+                s.nom AS patient_name,
+                ROW_NUMBER() OVER (PARTITION BY t.id ORDER BY t.id) AS RowNumber
+            FROM 
+                llx_commande AS c
+            INNER JOIN 
+                llx_commande_extrafields e 
+                ON c.rowid = e.fk_object
+            INNER JOIN 
+                llx_commande_trackws AS t
+                ON c.ref = t.labno
+                AND t.lab_room_status <> 'delete'
+            INNER JOIN 
+                llx_user u1 
+                ON t.user_id = u1.rowid
+            INNER JOIN 
+                llx_commande_wsstatus AS ws
+                ON t.fk_status_id = ws.id
+            LEFT JOIN 
+                llx_facture AS f 
+                ON c.fk_soc = f.fk_soc
+            LEFT JOIN 
+                llx_societe s 
+                ON f.fk_soc = s.rowid
             WHERE 
-                RowNumber = 1";
+                c.ref = $1";  // Placeholder for prepared statement
     
-    $result = pg_query($pg_con, $sql);
+    // Execute the query with pg_query_params for safe input handling
+    $result = pg_query_params($pg_con, $sql, array($labNumber));
 
     if ($result) {
         while ($row = pg_fetch_assoc($result)) {
