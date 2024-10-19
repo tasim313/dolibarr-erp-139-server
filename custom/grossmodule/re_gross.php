@@ -68,6 +68,8 @@ $assistants = get_gross_assistant_list();
 $doctors = get_doctor_list();
 $assistants = get_gross_assistant_list();
 
+$fk_gross_id = get_gross_instance($LabNumber);
+
 print("
     <style>
         .container {
@@ -322,7 +324,7 @@ echo('
                             "Deeper Cut requested", "Serial Sections requested", "Block D/C & R/C requested", "Special Stain AFB requested", "Special Stain PAS requested",
                             "Special Stain GMS requested", "Special Stain PAS requested", "Special Stain PAS with Diastase requested", "Special Stain Fite Faraco requested",
                             "Special Stain Brown-Brenn requested", "Special Stain Congo-Red requested", "Special Stain Bone Decalcification requested", "R/C requested",
-                            "SBO Ready"
+                            "SBO Ready", "Bones Slide Ready"
                         ];
 
                         const statusPairsWithIds = {
@@ -464,11 +466,18 @@ echo('
                             })
                             .then(response => response.json())
                             .then(data => {
-                                if (data.success) {
-                                    inprogres_statusChanges = {}; // Clear the changes after successful save
-                                    window.location.reload();
+                                 if (data.success) {
+                                    // Clear changes after successful save
+                                    inprogres_statusChanges = {};
+
+                                    // Redirect to the page with fk_gross_id if available
+                                    if (data.fk_gross_id) {
+                                        window.location.href = `gross_update.php?fk_gross_id=${data.fk_gross_id}`;
+                                    } else {
+                                        window.location.reload(); // Fallback to reload the current page if fk_gross_id is not present
+                                    }
                                 } else {
-                                    alert(data.message || `Failed to save status changes.`);
+                                    alert(data.message || "Failed to save status changes.");
                                 }
                             })
                             .catch(error => {
