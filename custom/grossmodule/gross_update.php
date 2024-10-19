@@ -1373,7 +1373,7 @@ echo '</form>';
             sectionCodeLabel.textContent = sectionCode + ' :';
             const inputSectionCode = document.createElement("input");
             inputSectionCode.type = "hidden";
-            inputSectionCode.name = "regrossSectionCode[]";
+            inputSectionCode.name = "sectionCode[]";
             inputSectionCode.value = sectionCode;
             fieldSet.appendChild(sectionCodeLabel);
             fieldSet.appendChild(inputSectionCode);
@@ -1381,7 +1381,7 @@ echo '</form>';
             // Description input
             const descriptionInput = document.createElement("input");
             descriptionInput.type = "text";
-            descriptionInput.name = "regross_section_description[]";
+            descriptionInput.name = "specimen_section_description[]";
             descriptionInput.value = 'Section from the ';
             fieldSet.appendChild(descriptionInput);
 
@@ -1392,7 +1392,7 @@ echo '</form>';
             cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + "<?php echo $last_value; ?>" + '/' + lastTwoDigits;
             const cassetteNumberInput = document.createElement("input");
             cassetteNumberInput.type = "hidden";
-            cassetteNumberInput.name = "regrossCassetteNumber[]";
+            cassetteNumberInput.name = "cassetteNumber[]";
             cassetteNumberInput.value = sectionCode + '-' + "<?php echo $last_value; ?>" + '/' + lastTwoDigits;
             fieldSet.appendChild(cassetteNumberInput);
 
@@ -1401,7 +1401,7 @@ echo '</form>';
             tissueLabel.textContent = "Tissue Pieces In " + sectionCode;
             const tissueInput = document.createElement("input");
             tissueInput.type = "text";
-            tissueInput.name = "regrossTissue[]";
+            tissueInput.name = "tissue[]";
             tissueInput.placeholder = "Tissue Pieces In " + sectionCode; 
             fieldSet.appendChild(tissueInput);
 
@@ -1410,10 +1410,17 @@ echo '</form>';
             boneLabel.textContent = "Bone?";
             const boneInput = document.createElement("input");
             boneInput.type = "checkbox";
-            boneInput.name = "regrossBone[]";
+            boneInput.name = "bone[]";
             boneInput.value = sectionCode;
             fieldSet.appendChild(boneLabel);
             fieldSet.appendChild(boneInput);
+
+            // Hidden input for re_gross with value 'yes'
+            const reGrossInput = document.createElement("input");
+            reGrossInput.type = "hidden";
+            reGrossInput.name = "re_gross";
+            reGrossInput.value = "yes"; // Set the value to 'yes'
+            fieldSet.appendChild(reGrossInput);
 
             // Append the fieldSet to the container
             fieldsContainer.appendChild(fieldSet);
