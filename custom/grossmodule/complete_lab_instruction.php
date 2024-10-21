@@ -29,13 +29,13 @@ function get_gross_instance($LabNumber) {
     }
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
 
     if (isset($input['loggedInUserId']) && isset($input['statusChanges']) && is_array($input['statusChanges'])) {
         $loggedInUserId = $input['loggedInUserId'];
         $statusChanges = $input['statusChanges'];
-
         $success = true;
         $message = '';
         $fk_gross_id = null; // Placeholder for fk_gross_id
@@ -44,10 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $labNumber = $change['labNumber'];
             $statusId = $change['status'];
             $trackId = $change['trackId'];
-
-            // Log the data to check if trackId is received
-            error_log("Track ID received: " . $trackId);
-
+            
             if ($statusId) {
                 // Update lab_room_status to 'done' based on track_id
                 if ($trackId) {
@@ -78,16 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Fetch the gross_id for the current lab number
                 $fk_gross_id = get_gross_instance($labNumber);
 
-                // Debug the result to see the returned gross_id
-                error_log("Fetched fk_gross_id: " . $fk_gross_id);
-
-
+                
                 if (!$fk_gross_id) {
                     $success = false;
                     $message = "Failed to fetch fk_gross_id for Lab Number: " .$labNumber;
                     break;
                 }
-
             }
         }
 
