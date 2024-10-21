@@ -64,9 +64,6 @@ $loggedInUsername = $user->login;
 $userGroupNames = getUserGroupNames($loggedInUserId);
 $doctor_instruction_list = get_histo_doctor_instruction_list();
 $complete_instruction_list = get_histo_doctor_instruction_complete_list();
-$assistants = get_gross_assistant_list();
-$doctors = get_doctor_list();
-$assistants = get_gross_assistant_list();
 
 $fk_gross_id = get_gross_instance($LabNumber);
 
@@ -240,6 +237,130 @@ print("
             border-color: #888;
         }
 
+        .content {
+            margin-left: 200px;
+            padding: 15px;
+        }
+
+        #lab_number:required {
+            box-shadow: none; 
+            border: 1px solid black;
+        }
+
+        #lab_number {
+            font-size: 15px; 
+            font-weight: bold;
+            color: black;
+        }
+
+        #lab_number option {
+            font-size: 18px; 
+            font-weight: bold; 
+            color: black;
+        }
+
+        #gross_doctor_name:required {
+            box-shadow: none; 
+            border: 1px solid black;
+        }
+
+        #gross_doctor_name {
+            font-size: 15px; 
+            font-weight: bold;
+            color: black;
+        }
+
+        #gross_doctor_name option {
+            font-size: 18px; 
+            font-weight: bold; 
+            color: black;
+        }
+
+        #gross_assistant_name:required {
+            box-shadow: none; 
+            border: 1px solid black;
+        }
+
+        #gross_assistant_name {
+            font-size: 15px; 
+            font-weight: bold;
+            color: black;
+        }
+
+        #gross_assistant_name option {
+            font-size: 18px; 
+            font-weight: bold; 
+            color: black;
+        }
+    
+        #gross_status:required {
+            box-shadow: none; 
+            border: 1px solid black;
+        }
+        #gross_status {
+            font-size: 15px; 
+            font-weight: bold;
+            color: black;
+        }
+
+        #gross_status option {
+            font-size: 18px; 
+            font-weight: bold; 
+            color: black;
+        }
+    
+        #gross_station_type {
+            font-size: 15px; 
+            font-weight: bold;
+            color: black;
+        }
+
+        #gross_station_type option {
+            font-size: 18px; 
+            font-weight: bold; 
+            color: black;
+        }
+
+        #gross_station_type:required {
+            box-shadow: none; 
+            border: 1px solid black;
+        }
+
+        input[type=text], select {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type=submit] {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button[type=submit] {
+            background-color: rgb(118, 145, 225);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            transition: box-shadow 0.3s ease;
+        }
+        button[type=submit]:hover {
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); 
+        }
+
         /* Responsive styles */
         @media (max-width: 768px) {
             .tabs {
@@ -256,18 +377,23 @@ print("
     </style>
 ");
 
+?>
 
-echo('
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
 <div class="tab-container">
-
-    <div class="tabs">
-      <button style="border:none" class="tablink" onclick="openTab(event, \'ReGrossPendingInstructions\')">
-       <i class="fas fa-hourglass-half" style="font-size: 35px;"></i> ReGross Pending List</button>
-      <button style="border:none" class="tablink" onclick="openTab(event, \'Completed\')">
-       <i class="fas fa-check-circle" style="font-size: 35px;"></i>ReGross Complete List</button>
-    </div>
-    
-    <div id="ReGrossPendingInstructions" class="tabcontent">
+        <div class="tabs">
+            <button style="border:none" class="tablink" onclick="openTab(event, 'ReGrossPendingInstructions')">
+                <i class="fas fa-hourglass-half" style="font-size: 35px;"></i> ReGross Pending List</button>
+            <button style="border:none" class="tablink" onclick="openTab(event, 'Completed')">
+                <i class="fas fa-check-circle" style="font-size: 35px;"></i>ReGross Complete List</button>
+        </div>
+        <div id="ReGrossPendingInstructions" class="tabcontent">
 
          <!-- Search box for Lab Number -->
         <div>
@@ -283,6 +409,7 @@ echo('
                             <th style="border: none;"></th>
                             <th style="border: none;"></th>
                             <th style="border: none;"></th>
+                            <th style="border: none;"></th>  
                             <th style="border: none;">
                                 <button id="submitInprogressStatusChanges" class="btn" style="margin-bottom: 10px;">Submit</button>
                             </th>
@@ -294,8 +421,7 @@ echo('
                             <th>Section</th>
                             <th>Instruction</th>
                             <th>ReGross Request Doctor Name</th>
-                            <th>Doctor</th>
-                            <th>Gross Assistant</th>
+                           
                             <th>Status</th>
                         </tr>
                 </thead>
@@ -305,13 +431,12 @@ echo('
             <!-- Message for search results -->
             <p id="searchResultMessage" style="display:none; color: red;"></p>
                     <script>
-                        const inprogress_instruction_list = ' . json_encode($doctor_instruction_list) . ';
-                        const loggedInUserId = ' . json_encode($loggedInUserId) . ';
-                        const doctor_list = '.json_encode($doctors).';
-                        const assistant_list = ' .json_encode($assistants).';
+                        const inprogress_instruction_list = <?php echo json_encode($doctor_instruction_list); ?>;
+                        const loggedInUserId = <?php echo json_encode($loggedInUserId); ?>;
                         
+                        // Track status
                         let inprogres_statusChanges = {};
-
+                        
                         // Define the values to exclude
                         const inprogres_excludedSections = ["Gross", "Transcription", "Frontdesk", "Screening"];
                         const inprogres_excludedStatusNames = ["Diagnosis Completed", "Final Screening Start", "Screening Done",
@@ -373,7 +498,7 @@ echo('
                                 const labNumber = item["Lab Number"];
                                 const trackId = item["track_id"];  // Ensure this is correctly assigned
 
-                                let options = \'<option value="">Select</option>\';
+                                let options = '<option value="">Select</option>';
 
                                 if (statusPairsWithIds[requestedStatus]) {
                                     const statusInfo = statusPairsWithIds[requestedStatus];
@@ -383,19 +508,7 @@ echo('
                                         <option value="Done">Done</option>
                                     `;
                                 }
-                                
-                                let doctorOptions = \'<option value="">Select Doctor</option>\';
-                                doctor_list.forEach(doctor => {
-                                    const selected = (doctor["doctor_username"] === item["doctor_username"]) ? "selected" : "";
-                                    doctorOptions += `<option value="${doctor.doctor_username}" ${selected}>${doctor.doctor_username}</option>`;
-                                });
-
-                                let assistantOptions = \'<option value="">Select Gross Assistant</option>\';
-                                assistant_list.forEach(assistant => {
-                                    const selected = (assistant["username"] === item["username"]) ? "selected" : "";
-                                    assistantOptions += `<option value="${assistant.username}" ${selected}>${assistant.username}</option>`;
-                                });
-                                
+                    
                                 return `
                                     <tr>
                                         <td>${formatDateTime(item["TrackCreateTime"])}</td>
@@ -403,16 +516,6 @@ echo('
                                         <td>${item["Description"]}</td>
                                         <td>${item["Status Name"]}</td>
                                         <td>${item["User Name"]}</td>
-                                        <td>
-                                            <select>
-                                                ${doctorOptions}
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <select>
-                                                ${assistantOptions}
-                                            </select>
-                                        </td>
                                         <td>
                                             <select data-lab-number="${item["Lab Number"]}" data-track-id="${trackId}">
                                                 ${options}
@@ -425,9 +528,12 @@ echo('
 
                         // Track status changes
                         function inprogres_trackStatusChange(labNumber, status, trackId) {
-                            inprogres_statusChanges[labNumber] = { status: status, trackId: trackId };
+                            inprogres_statusChanges[labNumber] = { 
+                                status: status, 
+                                trackId: trackId
+                            };
                         }
-
+                        
                         // Add event listeners to all select elements
                         document.addEventListener("DOMContentLoaded", () => {
                             document.querySelectorAll("select").forEach(selectElement => {
@@ -452,8 +558,11 @@ echo('
                                 trackId: inprogres_statusChanges[labNumber].trackId // Ensure this is included
                             }));
 
-                            console.log("Status Data to Send:", statusData); // Log to verify data
+                           
 
+                            console.log("Status Data to Send:", statusData); // Log to verify data
+                          
+                            
                             fetch("complete_lab_instruction.php", {
                                 method: "POST",
                                 headers: {
@@ -461,7 +570,8 @@ echo('
                                 },
                                 body: JSON.stringify({
                                     loggedInUserId: loggedInUserId,
-                                    statusChanges: statusData
+                                    statusChanges: statusData,
+                                    
                                 })
                             })
                             .then(response => response.json())
@@ -469,7 +579,6 @@ echo('
                                  if (data.success) {
                                     // Clear changes after successful save
                                     inprogres_statusChanges = {};
-
                                     // Redirect to the page with fk_gross_id if available
                                     if (data.fk_gross_id) {
                                         window.location.href = `gross_update.php?fk_gross_id=${data.fk_gross_id}`;
@@ -490,7 +599,6 @@ echo('
                     </script>
                
     </div>
-
     <div id="Completed" class="tabcontent">
         <table id="CompletedInstructionTable" border="1" style="border: none;">
             <thead>
@@ -508,7 +616,7 @@ echo('
         <div id="paginationControls"></div>
 
         <script>
-            const completed_instruction_list = ' . json_encode($complete_instruction_list) . ';
+            const completed_instruction_list = <?php echo json_encode($complete_instruction_list); ?>;
             let completed_statusChanges = {};
 
             // Pagination variables
@@ -595,8 +703,16 @@ echo('
             renderPaginationControls();
         </script>
     </div>
+    
+    
 
 </div>
+</body>
+</html>
+
+
+
+
 
 
 <script>
@@ -616,9 +732,6 @@ echo('
 
 </script>
 
-');
-
-?>
 
 <script>
     // Insert table rows

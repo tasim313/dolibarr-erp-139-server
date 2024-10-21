@@ -70,7 +70,8 @@ $re_gross_request = get_re_gross_request_list($re_gross_lab_number);
 
 // Check if the request list is empty
 $is_empty = empty($re_gross_request);  // True if empty, false otherwise
-
+$doctors = get_doctor_list();
+$assistants = get_gross_assistant_list();
 
 print('<style>
 main {
@@ -239,6 +240,12 @@ div.sticky {
 /* Tissue Input: Make it smaller */
 .field-group input[name="tissue[]"] {
     flex: 0.2; /* Smaller size for tissue input */
+    min-width: 10px; /* Minimum width for smaller input */
+    margin-right: 10px;
+}
+
+.field-group input[name="requires_slide_for_block[]"] {
+    flex: 0.2; /* Smaller size for requires_slide_for_block input */
     min-width: 10px; /* Minimum width for smaller input */
     margin-right: 10px;
 }
@@ -455,6 +462,55 @@ echo '<div><br></div>';
 echo '<div><br></div>';
 
 print("<div class='container'>");
+print('<button type="button" id="re-gross-info" class="regross-button"  style="display: none;" title="Re-Gross Information">Re-Gross</button>');
+echo '<div><br></div>';
+echo('<!-- Re-Gross Form -->
+<form id="regross-form" action="re_gross/regross_info.php" method="post" style="display: none;">
+
+    <!-- Hidden field for lab number -->
+    <input type="hidden" id="lab_number" name="lab_number" value="' . htmlspecialchars($LabNumber) . '">
+
+    <!-- Select field for Doctor Name -->
+    <label for="doctor_name">Doctor:</label>
+    <select id="doctor_name" name="doctor_name" required>
+        <option value="">Select Doctor</option>
+    ');
+
+foreach ($doctors as $doctor) {
+    $selected = ($doctor["doctor_username"] == $loggedInUsername) ? "selected" : "";
+    // Concatenate properly with escaped quotes
+    echo "<option value=\"" . htmlspecialchars($doctor["doctor_username"]) . "\" $selected>" . htmlspecialchars($doctor["doctor_username"]) . "</option>";
+}
+
+echo('</select>'); // Close the Doctor select
+
+echo("<label for='gross_station_type'>Gross Station</label>
+    <select name='gross_station_type' id='gross_station_type' required>
+        <option value=''></option>
+        <option value='One' " . (isset($_SESSION['gross_station_type']) && $_SESSION['gross_station_type'] === 'One' ? 'selected' : '') . ">One</option>
+        <option value='Two' " . (isset($_SESSION['gross_station_type']) && $_SESSION['gross_station_type'] === 'Two' ? 'selected' : '') . ">Two</option>
+    </select>");
+
+echo('
+    <label for="gross_assistant_name">Gross Assistant Name:</label>
+    <select id="gross_assistant_name" name="gross_assistant_name" required>
+        <option value="">Select Assistant</option>
+    ');
+
+foreach ($assistants as $assistant) {
+    $selected = ($assistant["username"] == $loggedInUsername) ? "selected" : "";
+    // Concatenate properly with escaped quotes
+    echo "<option value=\"" . htmlspecialchars($assistant["username"]) . "\" $selected>" . htmlspecialchars($assistant["username"]) . "</option>";
+}
+
+echo('
+    </select>
+    <!-- Submit button -->
+    <button type="submit">Save Re-Gross</button>
+    <br>
+</form>');
+
+echo '<div><br></div>';
 // Generate regross section buttons
 for ($i = 1; $i <= $specimen_count_value; $i++) {
     $specimenLetter = chr($i + 64); 
@@ -465,7 +521,6 @@ for ($i = 1; $i <= $specimen_count_value; $i++) {
     ' . $specimenLetter . '&nbsp;&nbsp;GRSC</button>';
     echo '<br><br>';
 }
-
 // Regross section form container
 print('
 <form id="regross_section_form" method="post" action="gross_regross_section_generate.php">
@@ -1277,10 +1332,16 @@ echo '</form>';
         boneInput.type = "checkbox"; // Use checkbox for Bone selection
         boneInput.name = "bone[]"; // Use array notation to handle multiple inputs
         boneInput.value = sectionCode; // Use the section code or another identifier to keep track
-
         // Append the bone checkbox to the fieldSet
         fieldSet.appendChild(boneLabel);
         fieldSet.appendChild(boneInput);
+
+        // Create the  input for Requires Slide for Block (New Field)
+        const slideForBlockInput = document.createElement("input");
+        slideForBlockInput.type = "text"; // Use "text" for Requires Slide for Block input
+        slideForBlockInput.name = "requires_slide_for_block[]"; // Ensure it's an array to capture multiple values
+        slideForBlockInput.placeholder = "Enter how many slides need"; // Optional placeholder text
+        fieldSet.appendChild(slideForBlockInput);
 
 
         const saveButton = document.getElementById("saveButton");
@@ -1415,6 +1476,16 @@ echo '</form>';
             fieldSet.appendChild(boneLabel);
             fieldSet.appendChild(boneInput);
 
+            // Create the label and input for Requires Slide for Block (New Field)
+            const slideForBlockLabel = document.createElement("label");
+            slideForBlockLabel.textContent = "Requires Slide for Block:";
+            const slideForBlockInput = document.createElement("input");
+            slideForBlockInput.type = "text"; // Use "text" for Requires Slide for Block input
+            slideForBlockInput.name = "requires_slide_for_block[]"; // Assign unique name based on count
+            slideForBlockInput.placeholder = "Enter how many slide need"; // Optional placeholder text
+            fieldSet.appendChild(slideForBlockInput);
+
+
             // Hidden input for re_gross with value 'yes'
             const reGrossInput = document.createElement("input");
             reGrossInput.type = "hidden";
@@ -1451,3 +1522,27 @@ echo '</form>';
     });
 </script>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var button = document.getElementById('re-gross-info');
+        var form = document.getElementById('regross-form');
+        
+        // Assuming you have a function or variable `isEmpty` which indicates if the request is empty
+        var isEmpty = false; // This should be dynamically set based on your logic
+
+        // Check if it's empty and show/hide the button
+        if (!isEmpty) {
+            button.style.display = 'block';  // Show button if the request is not empty
+            // Set the lab number (assuming you have this value from your backend or script)
+            var labNumber =  <?php echo json_encode($LabNumber); ?>; // Replace with dynamic lab number
+            document.getElementById('lab_number').value = labNumber;
+        } else {
+            button.style.display = 'none';   // Hide button if the request is empty
+        }
+
+        // Show the form when the button is clicked
+        button.addEventListener('click', function() {
+            form.style.display = 'block'; // Show the form
+        });
+    });
+</script>
