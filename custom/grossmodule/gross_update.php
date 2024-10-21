@@ -1526,18 +1526,19 @@ echo '</form>';
     document.addEventListener("DOMContentLoaded", function() {
         var button = document.getElementById('re-gross-info');
         var form = document.getElementById('regross-form');
+        var re_gross_button = document.getElementById('re-gross-info');
         
-        // Assuming you have a function or variable `isEmpty` which indicates if the request is empty
-        var isEmpty = false; // This should be dynamically set based on your logic
-
         // Check if it's empty and show/hide the button
         if (!isEmpty) {
             button.style.display = 'block';  // Show button if the request is not empty
+            re_gross_button.style.display = 'block';
+            
             // Set the lab number (assuming you have this value from your backend or script)
             var labNumber =  <?php echo json_encode($LabNumber); ?>; // Replace with dynamic lab number
             document.getElementById('lab_number').value = labNumber;
         } else {
             button.style.display = 'none';   // Hide button if the request is empty
+            re_gross_button.style.display = 'none';
         }
 
         // Show the form when the button is clicked
