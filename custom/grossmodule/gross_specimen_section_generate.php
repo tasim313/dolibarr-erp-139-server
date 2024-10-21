@@ -11,8 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, tissue, bone)
-             VALUES ($1, $2, $3, $4, $5, $6)";
+    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, tissue, bone, requires_slide_for_block)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)";
 
     $stmt = pg_prepare($pg_con, "insert_specimen_section", $sql);
 
@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cassette_numbers = $_POST['cassetteNumber'];
     $tissues = $_POST['tissue'];
     $bones = isset($_POST['bone']) ? $_POST['bone'] : [];
+    $requires_slide_for_block = isset($_POST['requires_slide_for_block']) ? $_POST['requires_slide_for_block'] : [];
 
     // Insert each specimen section data
     foreach ($section_codes as $key => $section_code) {
@@ -38,9 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Check if bone is set for this particular section
         $bone = in_array($section_code, $bones) ? "yes" : "no";  // Set to "yes" if checked, otherwise "no"
 
+        // Get the requires_slide_for_block value for the current index
+        $requiresSlideForBlock = $requires_slide_for_block[$key]; // Capture the input for each section
+
         // Execute the SQL statement
         $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, 
-                            $specimen_section_description, $cassette_number, $tissue, $bone]);
+                            $specimen_section_description, $cassette_number, $tissue, $bone, $requiresSlideForBlock]);
 
         if (!$result) {
             error_log("Error inserting data: " . pg_last_error($pg_con));
