@@ -236,7 +236,7 @@ function get_bones_not_ready_list() {
     $sql = "SELECT g.gross_id, g.lab_number, g.gross_create_date, g.gross_status, 
                 g.gross_assistant_name, g.gross_doctor_name,
                 s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, 
-                s.tissue, s.bone
+                s.tissue, s.bone, s.requires_slide_for_block
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
             WHERE g.gross_status = 'Done'
@@ -260,7 +260,9 @@ function get_bones_not_ready_list() {
                 'bone' => $row['bone'],
                 'cassettes_numbers' => $row['cassettes_numbers'],
                 'tissue'  => $row['tissue'],
-                'id' => $row['gross_specimen_section_id']
+                'id' => $row['gross_specimen_section_id'],
+                'requires_slide_for_block' => $row['requires_slide_for_block'],
+                'gross_create_date' => $row['gross_create_date']
             ];
         }
 
