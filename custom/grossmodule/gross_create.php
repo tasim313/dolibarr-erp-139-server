@@ -220,29 +220,37 @@ switch (true) {
     <div>
       <form id="grossForm"  method="post" action="gross_create_function.php">
 
+            <?php 
 
-      <label for="gross_doctor_name">Doctor</label>
-            <select id="gross_doctor_name" name="gross_doctor_name">
-                <option value=""></option>
-                <?php
-                $doctors = get_doctor_list();
-                $loggedInUsername = $user->login; 
+            if (!$isGrossAssistant) { 
 
-                foreach ($doctors as $doctor) {
-                    $selected = '';
-                    if ($doctor['doctor_username'] == $loggedInUsername) {
-                        $selected = 'selected';
-                    }
-                    echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                }
-                ?>
-            </select>
-      
-    
-        <label for="gross_assistant_name">Gross Assistant</label>
+            ?>
+                <label for="gross_doctor_name">Doctor</label>
+                    <select id="gross_doctor_name" name="gross_doctor_name">
+                        <option value=""></option> 
+                            <?php
+                            $doctors = get_doctor_list();
+                            $loggedInUsername = $user->login; 
+
+                            foreach ($doctors as $doctor) {
+                                $selected = '';
+                                if ($doctor['doctor_username'] == $loggedInUsername) {
+                                    $selected = 'selected';
+                                }
+                                echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
+                            }
+                            ?>
+                    </select>
+
+            <?php 
+                    } 
+
+            ?>
+
+            <label for="gross_assistant_name">Gross Assistant</label>
             <select name="gross_assistant_name" id="gross_assistant_name">
                 <option value=""></option>
-                    <?php
+                <?php
                         $assistants = get_gross_assistant_list();
                         $loggedInUsername = $user->login; // Assuming $user is the object representing the logged-in user
 
@@ -256,6 +264,7 @@ switch (true) {
                         }
                     ?>
             </select>
+        
 
 
         <label for="gross_station_type">Gross Station</label>
@@ -335,14 +344,9 @@ switch (true) {
 </script>
 
 
-<?php 
-
-// if (!$isGrossAssistant) { 
-
-?>
-        <!-- <label for="gross_doctor_name">Doctor</label>
+<!-- <label for="gross_doctor_name">Doctor</label>
             <select id="gross_doctor_name" name="gross_doctor_name">
-                <option value=""></option> -->
+                <option value=""></option>
                 <?php
                 // $doctors = get_doctor_list();
                 // $loggedInUsername = $user->login; 
@@ -355,11 +359,4 @@ switch (true) {
                 //     echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
                 // }
                 ?>
-            <!-- </select> -->
-
-<?php 
-        // } 
-
-?>
-
-
+            </select> -->
