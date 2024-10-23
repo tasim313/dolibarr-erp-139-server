@@ -279,7 +279,8 @@ echo '<div class="tab-container">
                     <div class="container">
                         <input type="date" id="fromDateTime" class="input-field" placeholder="From">
                         <input type="date" id="toDateTime" class="input-field" placeholder="To">
-                        <button id="submitBtn" class="btn">Submit</button>
+                        <button id="submitBtn" class="btn">Submit</button>&nbsp;&nbsp;
+                        <button id="generatePdfBtn" class="btn">Generate PDF</button>
                     </div>
                     <!-- Table content goes here -->
                     <table id="histoGrossTable">
@@ -287,82 +288,225 @@ echo '<div class="tab-container">
                         <tbody id="histoGrossTableBody">
                     </tbody>
                     </table>
+                     
+                    <!-- Hidden input for username -->
+                    <input type="hidden" id="loggedInUsername" value="' . htmlspecialchars($loggedInUsername) . '">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
                     <script>
-                            const histo_gross_list = ' . json_encode($histo_gross_list) . ';
+                        const histo_gross_list = ' . json_encode($histo_gross_list) . ';
 
-                            // Define the submitDateTime function
-                            function submitDateTime() {
-                                var fromDate = new Date(document.getElementById("fromDateTime").value);
-                                var toDate = new Date(document.getElementById("toDateTime").value);
-                                var tableRows = "";
-                                
-                                // Filter items by date range
-                                var filteredItems = histo_gross_list.filter(function(item) {
-                                    var itemDate = new Date(item["Gross Create Date"]);
-                                    var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                                    var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
-                                    return itemDate >= fromDateStart && itemDate <= toDateEnd;
-                                });
+                        // Function to generate table rows for submission
+                        function generateTableRowsForSubmit(groupedItems, labNumbers, sectionSequence) {
+                            let tableRows = ""; // Initialize the tableRows variable
+                            labNumbers.forEach(function(labNumber) {
+                                if (groupedItems.hasOwnProperty(labNumber)) {
+                                    // Add Lab Number row with colon separator
+                                    tableRows += "<tr><td colspan=\'6\'><strong>Lab Number: " + labNumber + "</strong></td></tr>";
+
+                                    // Initialize an array to hold all section details for this lab number
+                                    let sectionDetails = [];
+
+                                    // Add section code, tissue, slide, cassettes numbers, doctor, and gross assistant details for each Lab Number
+                                    sectionSequence.forEach(function(code) {
+                                        groupedItems[labNumber].forEach(function(item) {
+                                            if (item["section_code"] === code) {
+                                                // Detailed row for each section
+                                                tableRows += "<tr>";
+                                                tableRows += "<td>" + item["section_code"] + "</td>";
+                                                tableRows += "<td>Tissue: " + item["tissue"] + "</td>";
+                                                tableRows += "<td>Cassettes: " + (item["cassettes_numbers"] || \'N/A\') + "</td>";
+                                                tableRows += "<td>Slide: " + (item["requires_slide_for_block"] || \'N/A\') + "</td>";
+                                                tableRows += "<td>Station : "+ (item["gross_station_type"] || \'N/A\') + "</td>";
+                                                tableRows += "<td> " + (item["doctor"] || \'N/A\') + "</td>";
+                                                tableRows += "<td>" + (item["assistant"] || \'N/A\') + "</td>";
+
+                                                // Format the gross create date
+                                                if (item["Gross Create Date"]) {
+                                                    const date = new Date(item["Gross Create Date"]);
+                                                    tableRows += "<td>Date: " + (isNaN(date.getTime()) ? \'Invalid Date\' : date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })) + "</td>";
+                                                } else {
+                                                    tableRows += "<td>N/A</td>"; // Placeholder for missing date info
+                                                }
+
+                                                tableRows += "</tr>"; // Close the row
+                                            }
+                                        });
+                                    });
+
+                                    // Add a summary row if there are any section details collected
+                                    if (sectionDetails.length > 0) {
+                                        tableRows += "<tr><td colspan=\'6\'>" + sectionDetails.join(", ") + "</td></tr>";
+                                    }
+                                }
+                            });
+
+                            return tableRows; // Return the generated rows
+                        }
+
+                        // Define the function to generate table rows for PDF
+                        function generateTableRowsForPdf() {
+                                let tableRows = ""; // Initialize the tableRows variable
 
                                 // Group items by Lab Number
-                                var groupedItems = {};
-                                filteredItems.forEach(function(item) {
+                                let groupedItems = {};
+                                histo_gross_list.forEach(function(item) {
                                     if (!groupedItems[item["Lab Number"]]) {
                                         groupedItems[item["Lab Number"]] = [];
                                     }
                                     groupedItems[item["Lab Number"]].push(item);
                                 });
 
-                                // Extract unique section codes and sort them according to custom order
-                                var sectionSequence = [];
-                                filteredItems.forEach(function(item) {
+                                // Extract unique section codes
+                                let sectionSequence = [];
+                                histo_gross_list.forEach(function(item) {
                                     if (!sectionSequence.includes(item["section_code"])) {
                                         sectionSequence.push(item["section_code"]);
                                     }
                                 });
 
-                                // Custom sort function for section codes
-                                sectionSequence.sort(function(a, b) {
-                                    var regex = /^([A-Z])(\d*)$/;
-                                    var matchA = a.match(regex);
-                                    var matchB = b.match(regex);
-                                    if (matchA[1] === matchB[1]) {
-                                        return (parseInt(matchA[2] || 0) || 0) - (parseInt(matchB[2] || 0) || 0);
-                                    } else {
-                                        return matchA[1].localeCompare(matchB[1]);
-                                    }
-                                });
-
-                                // Extract and sort Lab numbers
-                                var labNumbers = Object.keys(groupedItems);
-                                labNumbers.sort();
+                                // Sort section codes if needed (based on your specific logic)
+                                sectionSequence.sort(); // Add custom sorting if necessary
 
                                 // Generate HTML markup for the table rows
-                                labNumbers.forEach(function(labNumber) {
+                                Object.keys(groupedItems).forEach(function(labNumber) {
                                     if (groupedItems.hasOwnProperty(labNumber)) {
-                                        // Add Lab Number row
-                                        tableRows += "<tr><td colspan=\'4\'><strong>Lab Number: " + labNumber + "</strong></td></tr>";
-                                        // Add section code, tissue, and cassette numbers rows for each Lab Number
+                                        // Add Lab Number row with colon separator
+                                        tableRows += "<tr><td colspan=\'6\'><strong>" + labNumber + ":</strong></td></tr>";
+                                        // Initialize an array to hold all section details for this lab number
+                                        let sectionDetails = [];
+                                        // Add section code, tissue, slide, cassettes numbers, doctor, and gross assistant details for each Lab Number
                                         sectionSequence.forEach(function(code) {
                                             groupedItems[labNumber].forEach(function(item) {
                                                 if (item["section_code"] === code) {
-                                                    tableRows += "<tr>";
-                                                    tableRows += "<td>Section Code : " + item["section_code"] + "</td>";
-                                                    tableRows += "<td>Tissue : " + item["tissue"] + "</td>";
-                                                    tableRows += "<td>Cassettes Numbers : " + item["cassettes_numbers"] + "</td>";
-                                                    tableRows += "</tr>";
+                                                    let sectionDetail = code + "(" + item["tissue"] + ")"; // Add section code and tissue
+                                                    if (item["requires_slide_for_block"]) sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
+                                                    if (item["cassettes_numbers"]) sectionDetail += "(Cassettes Numbers: " + item["cassettes_numbers"] + ")";
+                                                    if (item["doctor"]) sectionDetail += "(Doctor: " + item["doctor"] + ")";
+                                                    if (item["assistant"]) sectionDetail += "(Gross Assistant: " + item["assistant"] + ")";
+                                                    
+                                                    // Format the gross create date
+                                                    if (item["Gross Create Date"]) {
+                                                        const date = new Date(item["Gross Create Date"]);
+                                                        if (!isNaN(date.getTime())) {
+                                                            sectionDetail += "(Date: " + date.toLocaleDateString("en-US", { 
+                                                                day: "numeric", 
+                                                                month: "long", 
+                                                                year: "numeric" 
+                                                            }) + ")";
+                                                        } else {
+                                                            console.error("Invalid date:", item["Gross Create Date"]);
+                                                        }
+                                                    }
+                                                    // Add the formatted section detail to the array
+                                                    sectionDetails.push(sectionDetail);
                                                 }
                                             });
                                         });
+
+                                        // Combine section details into a single string separated by commas and add it to the row
+                                        if (sectionDetails.length > 0) {
+                                            tableRows += "<tr><td colspan=\'6\'>" + sectionDetails.join(", ") + "</td></tr>";
+                                        }
                                     }
                                 });
 
-                                // Set the HTML content of the table body
-                                document.getElementById("histoGrossTableBody").innerHTML = tableRows;
-                            }
+                                return tableRows; // Return the generated rows
+                        }
 
-                            // Add event listener to the button
-                            document.getElementById("submitBtn").addEventListener("click", submitDateTime);
+                        // Define the submitDateTime function
+                        function submitDateTime() {
+                            var fromDate = new Date(document.getElementById("fromDateTime").value);
+                            var toDate = new Date(document.getElementById("toDateTime").value);
+                            var tableRows = "";
+
+                            // Filter items by date range
+                            var filteredItems = histo_gross_list.filter(function(item) {
+                                var itemDate = new Date(item["Gross Create Date"]);
+                                var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                                var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+                                return itemDate >= fromDateStart && itemDate <= toDateEnd;
+                            });
+
+                            // Group items by Lab Number
+                            var groupedItems = {};
+                            filteredItems.forEach(function(item) {
+                                if (!groupedItems[item["Lab Number"]]) {
+                                    groupedItems[item["Lab Number"]] = [];
+                                }
+                                groupedItems[item["Lab Number"]].push(item);
+                            });
+
+                            // Extract unique section codes and sort them according to custom order
+                            var sectionSequence = [];
+                            filteredItems.forEach(function(item) {
+                                if (!sectionSequence.includes(item["section_code"])) {
+                                    sectionSequence.push(item["section_code"]);
+                                }
+                            });
+
+                            // Custom sort function for section codes
+                            sectionSequence.sort(function(a, b) {
+                                var regex = /^([A-Z])(\d*)$/;
+                                var matchA = a.match(regex);
+                                var matchB = b.match(regex);
+                                if (matchA[1] === matchB[1]) {
+                                    return (parseInt(matchA[2] || 0) || 0) - (parseInt(matchB[2] || 0) || 0);
+                                } else {
+                                    return matchA[1].localeCompare(matchB[1]);
+                                }
+                            });
+
+                            // Extract and sort Lab numbers
+                            var labNumbers = Object.keys(groupedItems);
+                            labNumbers.sort();
+
+                            // Generate table rows for submission
+                            tableRows = generateTableRowsForSubmit(groupedItems, labNumbers, sectionSequence);
+
+                            // Set the HTML content of the table body
+                            document.getElementById("histoGrossTableBody").innerHTML = tableRows;
+                        }
+
+                        // Add event listener to the button
+                        document.getElementById("submitBtn").addEventListener("click", submitDateTime);
+
+                        // Event listener for the Generate PDF button
+                        document.getElementById("generatePdfBtn").addEventListener("click", function() {
+                            var tableData = generateTableRowsForPdf(); // Call the function for PDF generation
+
+                            // Clean tableData to remove specific values
+                            tableData = tableData.replace(/\(Cassettes Numbers:.*?\)/g, ""); // Remove Cassettes Numbers
+                            tableData = tableData.replace(/\(Doctor:.*?\)/g, "");            // Remove Doctor
+                            tableData = tableData.replace(/\(Gross Assistant:.*?\)/g, "");    // Remove Gross Assistant
+                            tableData = tableData.replace(/\(Date:.*?\)/g, "");               // Remove Date
+                            tableData = tableData.replace(/\(Tissue:.*?\)/g, "");             // Remove Tissue
+
+
+                            var today = new Date().toLocaleDateString();
+                            var userName = document.getElementById("loggedInUsername").value;
+
+                            var formData = new FormData();
+                            formData.append("tableData", JSON.stringify(tableData));
+                            formData.append("userName", userName);
+                            formData.append("today", today);
+
+                            var xhr = new XMLHttpRequest();
+                            xhr.open("POST", "generate_pdf.php", true);
+                            xhr.responseType = "blob"; 
+                            xhr.onload = function() {
+                                if (xhr.status === 200) {
+                                    var blob = new Blob([xhr.response], { type: "application/pdf" });
+                                    var url = window.URL.createObjectURL(blob);
+                                    window.open(url); 
+                                } else {
+                                    console.error("Failed to generate PDF:", xhr.statusText);
+                                }
+                            };
+                            xhr.onerror = function() {
+                                console.error("Request failed");
+                            };
+                            xhr.send(formData);
+                        });
                     </script>
             </div>
 
@@ -1296,3 +1440,41 @@ $db->close();
         });
     });
 </script>
+
+
+
+<!-- labNumbers.forEach(function(labNumber) {
+                                    if (groupedItems.hasOwnProperty(labNumber)) {
+                                        // Add Lab Number row
+                                        tableRows += "<tr><td colspan=\'4\'><strong>Lab Number: " + labNumber + "</strong></td></tr>";
+                                        // Add section code, tissue, and cassette numbers rows for each Lab Number
+                                        sectionSequence.forEach(function(code) {
+                                            groupedItems[labNumber].forEach(function(item) {
+                                                if (item["section_code"] === code) {
+                                                    tableRows += "<tr>";
+                                                    tableRows += "<td>" + item["section_code"] + "</td>";
+                                                    tableRows += "<td>Tissue: " + item["tissue"] + "</td>";
+                                                    tableRows += item["cassettes_numbers"] ? "<td>Cassettes Numbers : " + item["cassettes_numbers"] + "</td>" : "";  // Only add if not empty
+                                                    tableRows += item["requires_slide_for_block"] ? "<td>Slide: " + item["requires_slide_for_block"] + "</td>" : "";  // Only add if not empty
+                                                    tableRows += item["doctor"] ? "<td>Doctor: " + item["doctor"] + "</td>" : "";  // Only add if not empty
+                                                    tableRows += item["assistant"] ? "<td>Gross Assistant: " + item["assistant"] + "</td>" : "";  // Only add if not empty
+                                                    // Format the gross create date
+                                                    if (item["Gross Create Date"]) {
+                                                        const date = new Date(item["Gross Create Date"]);
+                                                        if (!isNaN(date.getTime())) { // Check if the date is valid
+                                                            tableRows += "<td>Date: " + date.toLocaleDateString("en-US", { 
+                                                                day: "numeric", 
+                                                                month: "long", 
+                                                                year: "numeric" 
+                                                            }) + "</td>";
+                                                        } else {
+                                                            console.error("Invalid date:", item["Gross Create Date"]); // Log invalid date
+                                                        }
+                                                    }
+
+                                                    tableRows += "</tr>";
+                                                }
+                                            });
+                                        });
+                                    }
+                                }); -->
