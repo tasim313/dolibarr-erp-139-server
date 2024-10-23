@@ -555,27 +555,27 @@ switch (true) {
                         <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist" style=" justify-content: space-between">
                             
                             <button class="small-button"  onclick="openTab(event, 'Screening-Study')">
-                                <i class="fas fa-book" style="font-size: 20px; vertical-align: middle;">
+                                <i class="fas fa-book" style="font-size: 18px; vertical-align: middle;">
                                 <span class="button-text">Study / History</span></i>
                             </button>
                             
                             <button class="small-button"  onclick="openTab(event, 'Screening-LabInstructions')">
-                                <i class="fas fa-flask" style="font-size: 20px; vertical-align: middle;">
-                                <span class="button-text">Lab Related Instructions</span>
+                                <i class="fas fa-flask" style="font-size: 18px; vertical-align: middle;">
+                                <span class="button-text">Lab Instructions</span>
                                 </i> 
                             </button>
                             
                             <button class="small-button" onclick="openTab(event, 'Screening-GrossInstructions')">
-                                <i class="fas fa-cut" style="font-size: 20px; vertical-align: middle;">
-                                <span class="button-text">Gross Related Instructions</span>
+                                <i class="fas fa-cut" style="font-size: 18px; vertical-align: middle;">
+                                <span class="button-text">Gross Instructions</span>
                                 </i>
                             </button>
                             
                             <?php if ($showBoneSlideReady): ?>
                                 
                                     <button class="small-button" id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
-                                        <i class="fas fa-bone vertical-icon" style="font-size: 20px; vertical-align: middle;">
-                                        <span class="button-text">Bone Slide Status</span>
+                                        <i class="fas fa-bone vertical-icon" style="font-size: 18px; vertical-align: middle;">
+                                        <span class="button-text">Bone Status</span>
                                         </i> 
                                     </button>
                                 
@@ -583,7 +583,7 @@ switch (true) {
 
                             
                             <button class="small-button" id="screening_done"  onclick="openTab(event, 'Screening-Done')">
-                                <i class="fas fa-check" style="font-size: 20px; vertical-align: middle;">
+                                <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
                                 <span class="button-text">Screening Done</span>
                                 </i>
                             </button>
@@ -593,36 +593,36 @@ switch (true) {
 
                     <div id="final-screening" class="tab-content tab btn-group grayed-out">
                         <center><h6>Final Screening</h6></center>
-                        <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+                        <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist" style=" justify-content: space-between">
                         
                         
                             <button class="small-button" onclick="openTab(event, 'Final-Screening-Study')">
-                            <i class="fas fa-book" style="font-size: 20px; vertical-align: middle;">
+                            <i class="fas fa-book" style="font-size: 18px; vertical-align: middle;">
                             <span class="button-text">Study / History</span>
                             </i></button>
                         
                             <button class="small-button" onclick="openTab(event, 'Final-Screening-LabInstructions')">
-                            <i class="fas fa-flask">
-                            <span class="button-text">Lab Related Instructions</span>
+                            <i class="fas fa-flask" style="font-size: 18px; vertical-align: middle;">
+                            <span class="button-text">Lab Instructions</span>
                             </i></button> 
                         
-                            <button onclick="openTab(event, 'Final-Screening-GrossInstructions')">
-                            <i class="fas fa-cut">
-                            <span class="button-text">Gross Related Instructions</span>
+                            <button class="small-button" onclick="openTab(event, 'Final-Screening-GrossInstructions')">
+                            <i class="fas fa-cut" style="font-size: 18px; vertical-align: middle;">
+                            <span class="button-text">Gross Instructions</span>
                             </i></button>
                         
                         <?php if ($showBoneSlideReady): ?>
                                
-                                    <button id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
-                                        <i class="fas fa-bone vertical-icon">
-                                            <span class="button-text">Bone Slide Status</span>
+                                    <button class="small-button" id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
+                                        <i class="fas fa-bone vertical-icon" style="font-size: 18px; vertical-align: middle;">
+                                            <span class="button-text">Bone Status</span>
                                         </i>
                                     </button>
                                 
                         <?php endif; ?>
                        
-                            <button id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
-                            <i class="fas fa-check">
+                            <button class="small-button" id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
+                            <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
                             <span class="button-text">Finalization Done</span>
                             </i></button>
                        
