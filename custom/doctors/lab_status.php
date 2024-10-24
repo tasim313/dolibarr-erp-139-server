@@ -1246,6 +1246,11 @@ switch (true) {
                                     $user = htmlspecialchars($row['user']);
                                     $track_id = htmlspecialchars($row['track_id']);
 
+                                    // Format the date in 'Asia/Dhaka' timezone
+                                    $dateTime = new DateTime($trackCreateTime, new DateTimeZone('UTC')); // Assuming the input time is in UTC
+                                    $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                    $formattedTrackCreateTime = $dateTime->format('F j, Y g:i A'); // e.g., February 5, 2024 12:36 PM
+
                                     $rowClass = '';
                                     if ($isGrayedOut) {
                                         if ($index < count($sortedRows) - 2) {
@@ -1257,7 +1262,7 @@ switch (true) {
                                     // echo "<td><p style='font-size: 15px;'>{$section}</p></td>";
                                     echo "<td><p  style='font-size: 15px; color: {$statusColor};'>{$statusName}</p></td>";
                                     echo "<td><p  style='font-size: 15px;'>{$description}</p></td>";
-                                    echo "<td><p style='font-size: 15px;'>{$trackCreateTime}</p></td>";
+                                    echo "<td><p style='font-size: 15px;'>{$formattedTrackCreateTime}</p></td>";
                                     echo "<td><p style='font-size: 15px;'>{$user}</p></td>";
                                     // Add delete icon with confirmation dialog
                                     echo "<td><p style='font-size: 15px;'>
@@ -2038,65 +2043,6 @@ switch (true) {
             });
 
 
-            document.getElementById('screening_bones').addEventListener('click', function() {
-                    const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
-                    const loggedInUserId = '<?php echo $loggedInUserId; ?>';
-                    var labStatus = <?php echo json_encode($lab_status); ?>;
-                    let value = {
-                        'description' : " ",
-                        'fk_status_id' : 50
-                    }
-                    
-
-                    if (labNumber && loggedInUserId) {
-
-                        // Check if any WSStatusName in labStatus array is 'Assisted' 
-                        var validStatusFound = true;
-                        // for (var i = 0; i < labStatus.length; i++) {
-                        //     var currentStatus = labStatus[i]['WSStatusName'];
-                        //     if ((currentStatus && currentStatus.trim() === 'Assisted')) {
-                        //         validStatusFound = true;
-                        //         break;
-                        //     }
-                        // }
-
-                        if (validStatusFound) {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open("POST", "insert/screening_bones.php", true);
-                            xhr.setRequestHeader("Content-Type", "application/json");
-
-                            const data = {
-                                labNumber: labNumber,
-                                loggedInUserId: loggedInUserId,
-                                values: value
-                            };
-
-                            console.log("data : ", data)
-
-                            xhr.send(JSON.stringify(data));
-
-                            xhr.onload = function() {
-                                if (xhr.status === 200) {
-                                    console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
-                                } else {
-                                    console.error("Error saving data:", xhr.statusText);
-                                }
-                            };
-                            
-                        } else {
-                            alert('Please First Start Screening Before Screening Done.');
-                            
-                        }
-
-                        
-                    } else {
-                        console.error("Lab number and User ID are required.");
-                    }
-            });
-
-            
             document.getElementById('final-history-button').addEventListener('click', logHistoryValueFinalScreening);
             document.addEventListener('DOMContentLoaded', function() {
                     var historyButton = document.getElementById('final-history-button');
@@ -2413,66 +2359,6 @@ switch (true) {
                     }
             });
 
-
-            document.getElementById('final_screening_bones').addEventListener('click', function() {
-                    const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
-                    const loggedInUserId = '<?php echo $loggedInUserId; ?>';
-                    var labStatus = <?php echo json_encode($lab_status); ?>;
-                    let value = {
-                        'description' : " ",
-                        'fk_status_id' : 51
-                    }
-                    
-
-                    if (labNumber && loggedInUserId) {
-
-                        // Check if any WSStatusName in labStatus array is 'Assisted' 
-                        var validStatusFound = true;
-                        // for (var i = 0; i < labStatus.length; i++) {
-                        //     var currentStatus = labStatus[i]['WSStatusName'];
-                        //     if ((currentStatus && currentStatus.trim() === 'Assisted')) {
-                        //         validStatusFound = true;
-                        //         break;
-                        //     }
-                        // }
-
-                        if (validStatusFound) {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open("POST", "insert/final-screening-bones.php", true);
-                            xhr.setRequestHeader("Content-Type", "application/json");
-
-                            const data = {
-                                labNumber: labNumber,
-                                loggedInUserId: loggedInUserId,
-                                values: value
-                            };
-
-                            console.log("data : ", data)
-
-                            xhr.send(JSON.stringify(data));
-
-                            xhr.onload = function() {
-                                if (xhr.status === 200) {
-                                    console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
-                                } else {
-                                    console.error("Error saving data:", xhr.statusText);
-                                }
-                            };
-                            
-                        } else {
-                            alert('Please First Start Screening Before Screening Done.');
-                            
-                        }
-
-                        
-                    } else {
-                        console.error("Lab number and User ID are required.");
-                    }
-            });
-
-           
         </script>
 
 
