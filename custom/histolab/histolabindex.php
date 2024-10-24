@@ -63,6 +63,36 @@ $loggedInUsername = $user->login;
 
 $userGroupNames = getUserGroupNames($loggedInUserId);
 
+$gross_created_user = $user->id;
+$loggedInUsername = $user->login;
+
+$isHistoTechs = false;
+
+$histoTechs = get_histo_techs_user_list();
+foreach ($histoTechs as $histoTech) {
+    if ($histoTech['username'] == $loggedInUsername) {
+        $isHistoTech = true;
+        break;
+    }
+}
+
+$isAdmin = isUserAdmin($loggedInUserId);
+
+// Access control using switch statement
+switch (true) {
+    case $isAdmin:
+        // Admin has access, continue with the page content...
+        break;
+
+    case $isHistoTech:
+        // Histo Techs has access, continue with the page content...
+        break;
+    default:
+        echo "<h1>Access Denied</h1>";
+        echo "<p>You are not authorized to view this page.</p>";
+        exit; // Terminate script execution
+}
+
 $histo_gross_list = get_histo_gross_specimen_list();
 $doctor_instruction_list = get_histo_doctor_instruction_list();
 $in_progress_instruction_list = get_histo_doctor_instruction_inprogress_list();
