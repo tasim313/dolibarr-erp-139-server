@@ -11,19 +11,37 @@ class MYPDF extends TCPDF {
         $this->today = $today;
     }
 
-    // Custom header method
+    
     public function Header() {
+        // Set the top margin (adjust the value as needed)
+        $topMargin = 10; // Example: 20mm top margin
+        $this->SetY($topMargin); // Move down to set the top margin
         // Set header content with userName and today's date
         $header = "Gross Ledger&nbsp;Printed by: " . $this->userName . " on " . $this->today;
+    
         // Additional text for Bone D/C and Re-gross information
         $additionalInfo = "There is no information of Bone D/C and Re-gross Section Code here. If you need any information of Bone D/C and Re-gross, then visit the Bone D/C and Re-gross Tab.";
+    
         // Combine the header and additional info
-        $fullHeader = $header . "<br>" . $additionalInfo;
-        // Write the full HTML header content to the PDF
+        $fullHeader = $header;
+    
+        // Write the full HTML header content to the PDF with default font size
         $this->writeHTMLCell(0, 0, '', '', $fullHeader, 0, 1, 0, true, 'C', true);
-        // Add bottom margin by moving down 10mm (or any other value)
-        $this->SetY($this->GetY() + 20); // Adjust 10mm down for bottom margin
+    
+        // Set a smaller font size for the additional info
+        $this->SetFont('helvetica', 'I', 8); // Example: change 'helvetica' to your desired font and size
+    
+        // Write additional information with smaller font size
+        $this->writeHTMLCell(0, 0, '', '', $additionalInfo, 0, 1, 0, true, 'C', true);
+    
+        // Reset the font size back to original for subsequent content
+        $this->SetFont('helvetica', '', 10); // Example: set back to original size
+    
+        // Set bottom margin after header
+        $bottomMargin = 20; // Example: 10mm bottom margin
+        $this->SetY($this->GetY() + $bottomMargin); // Move down to set the bottom margin
     }
+    
 }
 
 if (isset($_POST['tableData']) && isset($_POST['userName']) && isset($_POST['today'])) {
@@ -33,7 +51,6 @@ if (isset($_POST['tableData']) && isset($_POST['userName']) && isset($_POST['tod
 
     // Remove empty or null table rows
     $tableData = preg_replace('/<tr>\s*(<td>\s*<\/td>\s*)+<\/tr>/', '', $tableData);
-    
 
     // Create new PDF document using the custom MYPDF class
     $pdf = new MYPDF();
@@ -46,6 +63,10 @@ if (isset($_POST['tableData']) && isset($_POST['userName']) && isset($_POST['tod
 
     // Set userName and today's date in the custom class to use in the header
     $pdf->setUserNameAndDate($userName, $today);
+
+    // Set margins: left, top, bottom
+    $pdf->SetMargins(20, 30, 15); // 15mm left, 20mm top, 15mm right
+    $pdf->SetAutoPageBreak(TRUE, 15); // Enable automatic page breaks and set the bottom margin to 15mm
 
     // Add a page
     $pdf->AddPage();
