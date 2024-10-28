@@ -408,6 +408,8 @@ echo '<th>Section Code</th>';
 echo '<th>Description</th>';
 echo '<th>Tissue</th>';
 echo '<th>Bone Present</th>';
+echo '<th>Slide</th>';
+echo '<th>Re-Gross</th>';
 echo '</tr>';
 echo '</thead>';
 
@@ -441,6 +443,20 @@ foreach ($sections as $section) {
     // Use the same name for the group, with [] for each entry
     echo '<input type="radio" name="bone[' . $i . ']" value="yes" ' . $checkedYes . '> Yes ';
     echo '<input type="radio" name="bone[' . $i . ']" value="no" ' . $checkedNo . '> No ';
+    echo '</td>';
+
+    // Bone Slide
+    echo '<td>';
+    echo '<input type="text" name="requires_slide_for_block[]" value="' . htmlspecialchars($section['requires_slide_for_block']) . '" style="width:30%;">';
+    echo '</td>';
+
+    // Re-Gross (only show if not empty)
+    echo '<td>';
+        if (!empty($section['re_gross']) && $section['re_gross'] === 'yes') {
+            echo '<input type="text" name="re_gross[]" value="yes" style="width:30%;" readonly>';
+        } else {
+            echo '<input type="hidden" name="re_gross[]" value="">';
+        }
     echo '</td>';
     
     echo '</tr>';
