@@ -11,8 +11,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, tissue, bone, requires_slide_for_block)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)";
+    $sql = "INSERT INTO llx_gross_specimen_section (fk_gross_id, section_code, specimen_section_description, cassettes_numbers, 
+            tissue, bone, requires_slide_for_block, decalcified_bone, update_user)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
 
     $stmt = pg_prepare($pg_con, "insert_specimen_section", $sql);
 
@@ -29,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tissues = $_POST['tissue'];
     $bones = isset($_POST['bone']) ? $_POST['bone'] : [];
     $requires_slide_for_block = isset($_POST['requires_slide_for_block']) ? $_POST['requires_slide_for_block'] : [];
+    $decalcified_bone = isset($_POST['decalcified_bone']) ? $_POST['decalcified_bone'] : [];
+    $update_user = $_POST['update_user'];
 
     // Insert each specimen section data
     foreach ($section_codes as $key => $section_code) {
@@ -41,10 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Get the requires_slide_for_block value for the current index
         $requiresSlideForBlock = $requires_slide_for_block[$key]; // Capture the input for each section
+        $decalcifiedbone = $decalcified_bone[$key];
 
         // Execute the SQL statement
         $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, 
-                            $specimen_section_description, $cassette_number, $tissue, $bone, $requiresSlideForBlock]);
+                            $specimen_section_description, $cassette_number, $tissue, $bone, $requiresSlideForBlock, $decalcifiedbone,
+                            $update_user]);
 
         if (!$result) {
             error_log("Error inserting data: " . pg_last_error($pg_con));

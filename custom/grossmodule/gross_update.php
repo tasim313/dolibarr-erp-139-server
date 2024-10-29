@@ -72,6 +72,8 @@ $re_gross_request = get_re_gross_request_list($re_gross_lab_number);
 $is_empty = empty($re_gross_request);  // True if empty, false otherwise
 $doctors = get_doctor_list();
 $assistants = get_gross_assistant_list();
+$specimen_used_list = gross_specimen_used_list($fk_gross_id);
+
 
 print('<style>
 main {
@@ -250,6 +252,12 @@ div.sticky {
     margin-right: 10px;
 }
 
+.field-group input[name="decalcified_bone[]"] {
+    flex: 0.2; /* Smaller size for decalcified_bone input */
+    min-width: 10px; /* Minimum width for smaller input */
+    margin-right: 10px;
+}
+
 .regross-button {
     background-color: red; /* Button color */
     color: white;          /* Text color */
@@ -317,6 +325,7 @@ print('<br><br>');
 $specimens = get_gross_specimen_description($fk_gross_id);
 
 print('<form method="post" action="update_gross_specimens.php">');
+echo '<input type="hidden" name="update_user" value="' . htmlspecialchars($loggedInUsername) . '">';
 foreach ($specimens as $index => $specimen) {
     echo '<div class="row">';
     echo '<div class="col-25">';
@@ -409,6 +418,7 @@ echo '<th>Description</th>';
 echo '<th>Tissue</th>';
 echo '<th>Bone Present</th>';
 echo '<th>Slide</th>';
+echo '<th>Decalcified</th>';
 echo '<th>Re-Gross</th>';
 echo '</tr>';
 echo '</thead>';
@@ -448,6 +458,11 @@ foreach ($sections as $section) {
     // Bone Slide
     echo '<td>';
     echo '<input type="text" name="requires_slide_for_block[]" value="' . htmlspecialchars($section['requires_slide_for_block']) . '" style="width:30%;">';
+    echo '</td>';
+
+    // decalcified_bone
+    echo '<td>';
+    echo '<input style="width:120%;" type="text" name="decalcified_bone[]" value="' . htmlspecialchars($section['decalcified_bone']) . '" style="width:30%;">';
     echo '</td>';
 
     // Re-Gross (only show if not empty)
@@ -622,6 +637,24 @@ foreach ($summaries as $summary) {
 }
 echo '<input type="submit" value="Save">';
 echo '</form>';
+
+echo '<div><br></div>';
+echo '<div><br></div>';
+echo '<button type="button" id="addSpecimenUsedButton" class="regross-button" title="Add Specimen Used">
+    Add Specimen Used
+</button>';
+
+echo '<br><br>';
+
+// Form to save specimen used entries
+print('
+<form id="specimen_used_form" method="post" action="specimen/gross_specimen_used.php">
+    <input type="hidden" name="fk_gross_id" value="' . $fk_gross_id . '"> <!-- Hidden fk_gross_id field -->
+    <div id="gross-specimen-used-container"> 
+    </div>
+    <br>
+    <button id="specimenUsedSaveButton" style="display:none;">Save</button>
+</form>');
 
 
 ?>
@@ -1282,6 +1315,7 @@ echo '</form>';
         const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
         const currentYear = new Date().getFullYear();
         const lastTwoDigits = currentYear.toString().slice(-2);
+        const loginUser = <?php echo json_encode($loggedInUsername ?? 'Guest'); ?>;
 
         // Generate the next section code
         let sectionCode = generateNextSectionCode(specimenLetter);
@@ -1352,12 +1386,28 @@ echo '</form>';
         fieldSet.appendChild(boneLabel);
         fieldSet.appendChild(boneInput);
 
+        const decalcified_bone_Label = document.createElement("label");
+        decalcified_bone_Label.textContent = "D/C";
+        fieldSet.appendChild(decalcified_bone_Label);
+        const decalcified_bone_input = document.createElement("input");
+        decalcified_bone_input.type = "text"; // Use "text" for Cassette Number input
+        decalcified_bone_input.name = "decalcified_bone[]"; // Assign unique name based on count
+        decalcified_bone_input.value = '';
+        decalcified_bone_input.placeholder = "decalcified bone  " + sectionCode ;
+        fieldSet.appendChild(decalcified_bone_input);
+
         // Create the  input for Requires Slide for Block (New Field)
         const slideForBlockInput = document.createElement("input");
         slideForBlockInput.type = "text"; // Use "text" for Requires Slide for Block input
         slideForBlockInput.name = "requires_slide_for_block[]"; // Ensure it's an array to capture multiple values
         slideForBlockInput.placeholder = "Enter how many slides need"; // Optional placeholder text
         fieldSet.appendChild(slideForBlockInput);
+
+        const updateUserInput = document.createElement("input");
+        updateUserInput.type = "hidden";
+        updateUserInput.name = "update_user";
+        updateUserInput.value = loginUser; // Set to logged-in user
+        fieldSet.appendChild(updateUserInput);
 
 
         const saveButton = document.getElementById("saveButton");
@@ -1562,4 +1612,135 @@ echo '</form>';
             form.style.display = 'block'; // Show the form
         });
     });
+</script>
+
+<style>
+    /* Flexbox styling for horizontal alignment */
+    .specimen-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between elements */
+            margin-bottom: 10px; /* Space below each entry */
+        }
+
+    /* Make select field smaller */
+    .specimen-entry select {
+        width: 80px; /* Smaller width for select field */
+        padding: 5px;
+    }
+
+    /* Make description field larger */
+    .specimen-entry textarea {
+        flex: 2; /* Takes up more space compared to select */
+        padding: 5px;
+        resize: vertical; /* Allows vertical resizing only */
+        height: 35px; /* Default height */
+    }
+</style>
+
+
+<script>
+// JavaScript to add fields dynamically
+    document.getElementById("addSpecimenUsedButton").addEventListener("click", function() {
+        const container = document.getElementById("gross-specimen-used-container");
+
+        // Create a new div for each set of fields
+        const specimenDiv = document.createElement("div");
+        specimenDiv.className = "specimen-entry";
+
+        // Dropdown to select specimen
+        const specimenSelect = document.createElement("select");
+        specimenSelect.name = "specimen_code[]";
+        specimenSelect.required = true;
+
+        // Options for specimen letters A-Z (you can modify or limit as needed)
+        for (let i = 65; i <= 90; i++) {
+            const option = document.createElement("option");
+            option.value = String.fromCharCode(i);
+            option.textContent = String.fromCharCode(i);
+            specimenSelect.appendChild(option);
+        }
+
+        // Description field
+        const descriptionField = document.createElement("textarea");
+        descriptionField.name = "description[]";
+        descriptionField.value = "    % tissue embedded";
+        descriptionField.required = true;
+
+        // Add the elements to the new div
+        specimenDiv.appendChild(specimenSelect);
+        specimenDiv.appendChild(descriptionField);
+        container.appendChild(specimenDiv);
+
+        // Show save button when at least one set of fields is present
+        document.getElementById("specimenUsedSaveButton").style.display = "inline-block";
+    });
+</script>
+
+
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Specimen Code</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($specimen_used_list as $row): ?>
+            <tr data-rowid="<?php echo $row['rowid']; ?>">
+                <td>
+                    <input type="text" value="<?php echo htmlspecialchars($row['section_code']); ?>" 
+                           class="editable-field" data-field="section_code" disabled />
+                </td>
+                <td>
+                    <textarea class="editable-field" data-field="description" disabled><?php echo htmlspecialchars($row['description']); ?></textarea>
+                </td>
+                <td>
+                    <button class="edit-button" onclick="enableEditing(this)">Edit</button>
+                    <button class="save-button" onclick="saveChanges(this)" style="display:none;">Save</button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<script>
+// Enable editing for a specific row
+function enableEditing(button) {
+    const row = button.closest('tr');
+    const inputs = row.querySelectorAll('.editable-field');
+
+    inputs.forEach(input => input.disabled = false); // Enable all fields for editing
+    button.style.display = 'none'; // Hide Edit button
+    row.querySelector('.save-button').style.display = 'inline-block'; // Show Save button
+}
+
+// Save changes made to a row
+function saveChanges(button) {
+    const row = button.closest('tr');
+    const rowid = row.getAttribute('data-rowid');
+    const sectionCode = row.querySelector('[data-field="section_code"]').value;
+    const description = row.querySelector('[data-field="description"]').value;
+
+    // Send updated data to PHP for saving
+    fetch('specimen/update_specimen_used.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rowid, section_code: sectionCode, description })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Data updated successfully.");
+            row.querySelectorAll('.editable-field').forEach(input => input.disabled = true); // Disable fields after saving
+            button.style.display = 'none'; // Hide Save button
+            row.querySelector('.edit-button').style.display = 'inline-block'; // Show Edit button
+        } else {
+            alert("Failed to update data.");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 </script>
