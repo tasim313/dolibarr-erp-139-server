@@ -10,11 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     
     $fk_gross_id = isset($_POST['fk_gross_id'][0]) ? pg_escape_string($_POST['fk_gross_id'][0]) : '';
+    $update_user = isset($_POST['update_user']) ? pg_escape_string($_POST['update_user']) : '';
 
     if (!empty($fk_gross_id)) {
         for ($i = 0; $i < count($specimen_ids); $i++) {
             $sql = "UPDATE llx_gross_specimen 
-                    SET gross_description = '{$gross_descriptions[$i]}'
+                    SET gross_description = '{$gross_descriptions[$i]}',
+                    update_user = '$update_user'
                     WHERE specimen_id = '{$specimen_ids[$i]}'";
 
             $result = pg_query($pg_con, $sql);

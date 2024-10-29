@@ -16,7 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 specimen_section_description = $3,
                 tissue = $4,
                 bone = $5,
-                requires_slide_for_block = $6
+                requires_slide_for_block = $6,
+                decalcified_bone = $7
             WHERE gross_specimen_section_Id = $1";
 
     $stmt = pg_prepare($pg_con, "update_specimen_section", $sql);
@@ -36,10 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tissue = $_POST['tissue'][$i];
         $bone = isset($_POST['bone'][$i]) ? $_POST['bone'][$i] : '';
         $requires_slide_for_block = $_POST['requires_slide_for_block'][$i]; 
+        $decalcified_bone = $_POST['decalcified_bone'][$i];
 
         // Execute the prepared statement with the parameters
         $result = pg_execute($pg_con, "update_specimen_section", [$gross_specimen_section_Id, $section_code, 
-        $specimen_section_description, $tissue, $bone, $requires_slide_for_block]);
+        $specimen_section_description, $tissue, $bone, $requires_slide_for_block, $decalcified_bone]);
 
     }
 

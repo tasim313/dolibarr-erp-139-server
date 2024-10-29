@@ -579,7 +579,8 @@ function get_gross_specimen_section($fk_gross_id) {
     global $pg_con;
     $sql = "select gross_specimen_section_id, 
     fk_gross_id, section_code, 
-    specimen_section_description, cassettes_numbers, tissue, bone, re_gross, requires_slide_for_block from llx_gross_specimen_section WHERE TRIM(fk_gross_id) = $1 ORDER BY 
+    specimen_section_description, cassettes_numbers, tissue, bone, re_gross, requires_slide_for_block, decalcified_bone
+    from llx_gross_specimen_section WHERE TRIM(fk_gross_id) = $1 ORDER BY 
     LEFT(section_code, 1) ASC, 
     CAST(SUBSTRING(section_code, 2) AS INTEGER) ASC, 
     gross_specimen_section_id ASC";
@@ -920,5 +921,38 @@ function get_re_gross_request_list($lab_number) {
         return [];
     }
 } 
+
+
+function gross_specimen_used_list($fk_gross_id) {
+    global $pg_con;
+
+    // Modified SQL to filter by fk_gross_id
+    $sql = "SELECT 
+                rowid,
+                fk_gross_id,
+                section_code,
+                description
+            FROM llx_gross_specimen_used
+            WHERE fk_gross_id = $1
+            ORDER BY rowid ASC";
+
+    // Prepare and execute the SQL query with fk_gross_id as a parameter
+    $result = pg_prepare($pg_con, "get_specimen_used", $sql);
+    $result = pg_execute($pg_con, "get_specimen_used", array($fk_gross_id));
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
 
 ?>
