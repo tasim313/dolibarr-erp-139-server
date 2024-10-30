@@ -1316,6 +1316,7 @@ print('
         const currentYear = new Date().getFullYear();
         const lastTwoDigits = currentYear.toString().slice(-2);
         const loginUser = <?php echo json_encode($loggedInUsername ?? 'Guest'); ?>;
+        const lab_number = <?php echo json_encode($lab_number ?? 'Guest'); ?>;
 
         // Generate the next section code
         let sectionCode = generateNextSectionCode(specimenLetter);
@@ -1408,6 +1409,12 @@ print('
         updateUserInput.name = "update_user";
         updateUserInput.value = loginUser; // Set to logged-in user
         fieldSet.appendChild(updateUserInput);
+
+        const labNumberInput = document.createElement("input");
+        labNumberInput.type = "hidden";
+        labNumberInput.name = "lab_number";
+        labNumberInput.value = lab_number; // Set to logged-in user
+        fieldSet.appendChild(labNumberInput);
 
 
         const saveButton = document.getElementById("saveButton");

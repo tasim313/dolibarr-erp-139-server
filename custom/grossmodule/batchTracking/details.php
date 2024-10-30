@@ -2,6 +2,7 @@
 
 include("../connection.php");
 include("../gross_common_function.php");
+include("./batch_common_function.php");
 
 $res = 0;
 
@@ -88,12 +89,14 @@ switch (true) {
         exit; // Terminate script execution
 }
 
+$batch_details = batch_details_list();
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title>Search Functionality</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
@@ -106,16 +109,72 @@ switch (true) {
   <h3>Tabs</h3>
   <ul class="nav nav-tabs">
     <li class="active"><a href="./index.php">Home</a></li>
-    <li><a href="./page1.php" class="tab">Tab 1</a></li>
-    <li><a href="./page2.php" class="tab">Tab 2</a></li>
-    <li><a href="./page3.php" class="tab">Tab 3</a></li>
+    <li><a href="./details.php" class="tab">Details</a></li>
+    <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
+    <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
   </ul>
   <br>
+
+  <!-- Search Input -->
+  <input type="text" id="searchInput" class="form-control" placeholder="Search by Lab Number">
+  <br>
+
   <div class="content">
-        <h1>Welcome to Page 3</h1>
-        <p>This is the content for Page 3.</p>
-    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Batch</th>
+          <th scope="col">Lab Number</th>
+          <th scope="col">Gross Station</th>
+        </tr>
+      </thead>
+      <tbody id="batchTable">
+        <?php if (!empty($batch_details)) : ?>
+          <?php foreach ($batch_details as $batch): ?>
+            <tr>
+              <td><?php echo htmlspecialchars($batch['batch_name']); ?></td>
+              <td><?php echo htmlspecialchars($batch['lab_number']); ?></td>
+              <td><?php echo htmlspecialchars($batch['gross_station']); ?></td>
+            </tr>
+          <?php endforeach; ?>
+        <?php else : ?>
+          <tr>
+            <td colspan="3">No batch details found.</td>
+          </tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+    <!-- Message to display when no results are found -->
+    <p id="noResultsMessage" style="display:none; color: red; text-align: center;">No results found</p>
+  </div>
 </div>
+
+<script>
+  // JavaScript to filter table rows by Lab Number
+  document.getElementById("searchInput").addEventListener("input", function() {
+    const filter = this.value.toUpperCase();
+    const rows = document.querySelectorAll("#batchTable tr");
+    let matchesFound = false;
+
+    rows.forEach(row => {
+      const labNumberCell = row.cells[1]; // 2nd column is Lab Number
+      if (labNumberCell) {
+        const labNumberText = labNumberCell.textContent || labNumberCell.innerText;
+        const labNumberMatches = labNumberText.toUpperCase().includes(filter) ||
+                                 labNumberText.toUpperCase().includes("HPL" + filter);
+
+        row.style.display = labNumberMatches ? "" : "none";
+
+        if (labNumberMatches) {
+          matchesFound = true;
+        }
+      }
+    });
+
+    // Show or hide the 'No results found' message based on matches
+    document.getElementById("noResultsMessage").style.display = matchesFound ? "none" : "block";
+  });
+</script>
 
 </body>
 </html>

@@ -82,8 +82,6 @@ switch (true) {
         exit; // Terminate script execution
 }
 
-
-
 ?>
 
 <style>
@@ -218,8 +216,44 @@ switch (true) {
 <div class="content">
     <h1>Gross</h1>
     <div>
-      <form id="grossForm"  method="post" action="gross_create_function.php">
+            <strong>Available Batch:</strong>
+            <?php 
+                $batch_count = get_cassettes_count_list();
 
+                // Check if there are any batches
+                if (!empty($batch_count)) {
+                    $output = []; // Initialize an array to hold batch information
+
+                    // Loop through each batch and prepare the output
+                    foreach ($batch_count as $b_count) {
+                        // Append each batch's name and count to the output array
+                        $output[] = htmlspecialchars($b_count['name']) . ': ' . htmlspecialchars($b_count['total_cassettes_count']);
+                    }
+
+                    // Join the output array into a single string separated by commas
+                    echo implode(', ', $output);
+                } else {
+                    echo 'No batches available.'; // Message if no batches are found
+                }
+            ?>
+    </div>
+        <div><br></div>
+    <div>
+      <form id="grossForm"  method="post" action="gross_create_function.php">
+            <label for="SelectBatch">Select Batch</label>
+                <select name="select_batch" id="select_batch" onchange="checkBatchCount()">
+                    <option value=""></option>
+                    <?php
+                        $batch_list = get_batches_with_counts();
+
+                        foreach ($batch_list as $batch) {
+                            // Output each batch as an option
+                            echo "<option value='{$batch['rowid']}' data-count='{$batch['total_cassettes_count']}'>{$batch['name']}</option>";
+                        }
+                    ?>
+                </select>
+                <div id="batchMessage" style="color: red;"></div>
+       
             <?php 
 
             if (!$isGrossAssistant) { 
@@ -316,6 +350,7 @@ switch (true) {
         
         const storedAssistant = sessionStorage.getItem('gross_assistant_name');
         const storedStation = sessionStorage.getItem('gross_station_type');
+        const storedBatch = sessionStorage.getItem('selected_batch');
 
         if (storedAssistant) {
             document.getElementById('gross_assistant_name').value = storedAssistant;
@@ -324,15 +359,21 @@ switch (true) {
         if (storedStation) {
             document.getElementById('gross_station_type').value = storedStation;
         }
+
+        if (storedBatch) {
+            document.getElementById('select_batch').value = storedBatch; // Populate the batch dropdown
+        }
     };
 
     
     document.getElementById('grossForm').addEventListener('submit', function(event) {
         const selectedAssistant = document.getElementById('gross_assistant_name').value;
         const selectedStation = document.getElementById('gross_station_type').value;
+        const selectedBatch = document.getElementById('select_batch').value;
 
         sessionStorage.setItem('gross_assistant_name', selectedAssistant);
         sessionStorage.setItem('gross_station_type', selectedStation);
+        sessionStorage.setItem('selected_batch', selectedBatch);
     });
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -360,3 +401,25 @@ switch (true) {
                 // }
                 ?>
             </select> -->
+
+
+
+ <script>
+    function checkBatchCount() {
+        const selectElement = document.getElementById('select_batch');
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const count = selectedOption.getAttribute('data-count');
+        const messageDiv = document.getElementById('batchMessage');
+
+        if (count) {
+            if (parseInt(count) === 120) {
+                messageDiv.textContent = 'You cannot select this batch because the total cassette count is 120.';
+                selectElement.selectedIndex = 0; // Reset the selection
+            } else {
+                messageDiv.textContent = 'Total Cassette Count: ' + count;
+            }
+        } else {
+            messageDiv.textContent = ''; // Clear message if no batch is selected
+        }
+    }
+</script>

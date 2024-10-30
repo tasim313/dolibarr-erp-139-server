@@ -1,13 +1,13 @@
 <?php 
 
 include("connection.php");
+include('gross_common_function.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $required_fields = ['fk_gross_id', 'sectionCode', 'specimen_section_description', 'cassetteNumber', 'tissue'];
     $missing_fields = array_diff_key(array_flip($required_fields), $_POST);
     
     if (!empty($missing_fields)) {
-        echo "Error: Missing required inputs: " . implode(', ', array_keys($missing_fields));
         exit();
     }
 
@@ -18,8 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = pg_prepare($pg_con, "insert_specimen_section", $sql);
 
     if (!$stmt) {
-        error_log("Error preparing statement: " . pg_last_error($pg_con));
-        echo "Error preparing statement.";
+        exit();
+    }
+
+    // Prepare statement for batch cassettes
+    $sql_batch_cassette = "INSERT INTO llx_batch_details_cassettes (batch_details, cassettes_number, created_user)
+                            VALUES ($1, $2, $3)";
+    $stmt_batch_cassette = pg_prepare($pg_con, "insert_batch_cassette", $sql_batch_cassette);
+    if (!$stmt_batch_cassette) {
         exit();
     }
 
@@ -32,6 +38,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $requires_slide_for_block = isset($_POST['requires_slide_for_block']) ? $_POST['requires_slide_for_block'] : [];
     $decalcified_bone = isset($_POST['decalcified_bone']) ? $_POST['decalcified_bone'] : [];
     $update_user = $_POST['update_user'];
+    $lab_number = $_POST['lab_number'];
+
+    // Call the function to get batch details
+    $batch_details = get_batch_details_list($lab_number);
+    $created_user = $update_user;
+
+    // Check if any batch details are found
+    if (empty($batch_details)) {
+        exit();
+    }
+
+    // Only one batch detail; we'll use the first entry
+    $batch_detail = $batch_details[0];
+    $batch_detail_id = $batch_detail['batch_number']; // Get the rowid from the first entry
 
     // Insert each specimen section data
     foreach ($section_codes as $key => $section_code) {
@@ -46,16 +66,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $requiresSlideForBlock = $requires_slide_for_block[$key]; // Capture the input for each section
         $decalcifiedbone = $decalcified_bone[$key];
 
+
         // Execute the SQL statement
         $result = pg_execute($pg_con, "insert_specimen_section", [$fk_gross_id, $section_code, 
                             $specimen_section_description, $cassette_number, $tissue, $bone, $requiresSlideForBlock, $decalcifiedbone,
                             $update_user]);
 
         if (!$result) {
-            error_log("Error inserting data: " . pg_last_error($pg_con));
-            echo "Error inserting data.";
             exit();
         }
+        
+        // Insert batch details cassettes
+        $batch_result = pg_execute($pg_con, "insert_batch_cassette", [
+            $batch_detail_id, // Use the batch_detail_id correctly
+            $cassette_number, 
+            $created_user
+        ]);
+
+        if (!$batch_result) {
+            exit();
+        }
+        
     }
 
     // to redirect after successful insertion
