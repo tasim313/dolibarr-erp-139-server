@@ -954,5 +954,132 @@ function gross_specimen_used_list($fk_gross_id) {
 }
 
 
+function get_batch_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "select rowid,
+            name,
+            created_date,
+            created_user,
+            updated_user,
+            created_time,
+            updated_time from llx_batch
+            ORDER BY rowid ASC";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_batch", $sql);
+    $result = pg_execute($pg_con, "get_batch", array());
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function get_batch_details_list($lab_number) {
+    global $pg_con;
+
+    // Define the SQL with a parameter placeholder
+    $sql = "SELECT batch_number    
+            FROM llx_batch_details 
+            WHERE lab_number = $1
+            ORDER BY rowid ASC";
+
+    // Prepare the SQL statement
+    $result = pg_prepare($pg_con, "get_batch_details", $sql);
+
+    // Execute the prepared statement with $lab_number as a parameter
+    $result = pg_execute($pg_con, "get_batch_details", array($lab_number));
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function get_cassettes_count_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "SELECT 
+            c.rowid, 
+            b.name, 
+            c.total_cassettes_count, 
+            c.created_date, 
+            c.description 
+        FROM 
+            llx_batch_cassette_counts AS c
+        JOIN 
+            llx_batch AS b ON c.batch_details_cassettes = b.rowid 
+        ORDER BY 
+            c.rowid ASC;";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_batch_count", $sql);
+    $result = pg_execute($pg_con, "get_batch_count", array());
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function get_batches_with_counts() {
+    global $pg_con;
+
+    // SQL query to join batch and cassette count data
+    $sql = "
+        SELECT 
+            b.rowid, 
+            b.name, 
+            c.total_cassettes_count
+        FROM 
+            llx_batch AS b
+        LEFT JOIN 
+            llx_batch_cassette_counts AS c ON b.rowid = c.batch_details_cassettes
+        ORDER BY 
+            b.rowid ASC
+    ";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_batches_with_counts", $sql);
+    $result = pg_execute($pg_con, "get_batches_with_counts", array());
+
+    $batches_with_counts = [];
+
+    if ($result) {
+        $batches_with_counts = pg_fetch_all($result) ?: [];
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $batches_with_counts;
+}
 
 ?>

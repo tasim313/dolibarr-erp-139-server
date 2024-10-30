@@ -110,9 +110,9 @@ $batch_list = batch_list();
     <h3>Batch Information For Tissue Processor</h3>
         <ul class="nav nav-tabs">
             <li class="active"><a href="./index.php">Home</a></li>
-            <li><a href="./page1.php" class="tab">Tab 1</a></li>
-            <li><a href="./page2.php" class="tab">Tab 2</a></li>
-            <li><a href="./page3.php" class="tab">Tab 3</a></li>
+            <li><a href="./details.php" class="tab">Details</a></li>
+            <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
+            <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
         </ul>
     <br>
         <div class="content">

@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gross_status = isset($_POST['gross_status']) ? pg_escape_string($pg_con, $_POST['gross_status']) : '';
     $gross_created_user = isset($_POST['gross_created_user']) ? pg_escape_string($pg_con, $_POST['gross_created_user']) : ''; 
     $gross_create_date = isset($_POST['gross_create_date']) ? pg_escape_string($pg_con, $_POST['gross_create_date']) : '';
+
+    $selected_batch = isset($_POST['select_batch']) ? pg_escape_string($pg_con, $_POST['select_batch']) : '';
     
     // Insert into llx_gross table and return the generated id
     $sql = "INSERT INTO llx_gross
@@ -88,6 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 error_log('Skipping empty lab number or user: ' . $labnumberProcessed);
             }
+            
+
+            // Insert into llx_batch_details if a batch is selected
+            if (!empty($selected_batch)) {
+                $sql_batch_details = "INSERT INTO llx_batch_details (batch_number, lab_number, gross_station) 
+                                      VALUES ('$selected_batch', '$LabNumber', '$gross_station_type')";
+                $result_batch_details = pg_query($pg_con, $sql_batch_details);
+
+                if (!$result_batch_details) {
+                    error_log("Error inserting into llx_batch_details: " . pg_last_error($pg_con));
+                    pg_close($pg_con);
+                    exit();
+                }
+            }
+
 
             echo '<script>';
             echo 'window.location.href = "gross_update.php?fk_gross_id=' . $fk_gross_id . '";'; 
