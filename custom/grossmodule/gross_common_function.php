@@ -1017,23 +1017,115 @@ function get_batch_details_list($lab_number) {
 function get_cassettes_count_list() {
     global $pg_con;
 
-    // Ensure that we are using a prepared statement to prevent SQL injection
+    // Get today's date in 'Y-m-d' format
+    $today = date('Y-m-d');
+
+    // SQL query to get cassette counts for the current day only
     $sql = "SELECT 
-            c.rowid, 
-            b.name, 
-            c.total_cassettes_count, 
-            c.created_date, 
-            c.description 
-        FROM 
-            llx_batch_cassette_counts AS c
-        JOIN 
-            llx_batch AS b ON c.batch_details_cassettes = b.rowid 
-        ORDER BY 
-            c.rowid ASC;";
+                c.rowid, 
+                b.name, 
+                COALESCE(c.total_cassettes_count, 0) AS total_cassettes_count, 
+                c.created_date, 
+                c.description 
+            FROM 
+                llx_batch_cassette_counts AS c
+            JOIN 
+                llx_batch AS b ON c.batch_details_cassettes = b.rowid 
+            WHERE 
+                c.created_date = $1
+            ORDER BY 
+                c.rowid ASC";
 
     // Prepare and execute the SQL query
     $result = pg_prepare($pg_con, "get_batch_count", $sql);
-    $result = pg_execute($pg_con, "get_batch_count", array());
+    $result = pg_execute($pg_con, "get_batch_count", array($today));
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function get_batches_with_counts() {
+    global $pg_con;
+
+    // Get today's date in 'Y-m-d' format
+    $today = date('Y-m-d');
+
+    // SQL query to get batch details and cassette counts for the current day
+    $sql = "
+        SELECT 
+            b.rowid, 
+            b.name, 
+            COALESCE(c.total_cassettes_count, 0) AS total_cassettes_count,
+            (120 - COALESCE(c.total_cassettes_count, 0)) AS remaining_count  -- Calculate remaining count
+        FROM 
+            llx_batch AS b
+        LEFT JOIN 
+            llx_batch_cassette_counts AS c 
+        ON 
+            b.rowid = c.batch_details_cassettes 
+            AND c.created_date = $1  -- Only include today's counts
+        ORDER BY 
+            b.rowid ASC";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_batches_with_counts", $sql);
+    $result = pg_execute($pg_con, "get_batches_with_counts", array($today));
+
+    $batches_with_counts = [];
+
+    if ($result) {
+        $batches_with_counts = pg_fetch_all($result) ?: [];
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $batches_with_counts;
+}
+
+
+function get_labNumber_batch_details_list($lab_number) {
+    global $pg_con;
+
+    // Define the SQL with a parameter placeholder
+    $sql = "SELECT 
+            d.rowid AS detail_rowid, 
+            d.lab_number, 
+            d.batch_number,
+            b.name AS batch_name, 
+            COALESCE(MAX(cc.total_cassettes_count), 0) AS total_cassettes_count  -- Use MAX or SUM to aggregate
+        FROM 
+            llx_batch_details AS d
+        JOIN 
+            llx_batch AS b ON d.batch_number = b.rowid  
+        LEFT JOIN (
+            SELECT 
+                batch_details_cassettes,
+                total_cassettes_count  -- Get the total count
+            FROM 
+                llx_batch_cassette_counts
+        ) AS cc ON cc.batch_details_cassettes = d.batch_number  
+        WHERE 
+            d.lab_number = $1  -- Use parameterized query
+        GROUP BY 
+            d.rowid, d.lab_number, d.batch_number, b.name  -- Group by these columns
+        ORDER BY 
+            d.rowid DESC";
+
+    // Prepare the SQL statement
+    $result = pg_prepare($pg_con, "get_labNumber_batch_details", $sql);
+
+    // Execute the prepared statement with $lab_number as a parameter
+    $result = pg_execute($pg_con, "get_labNumber_batch_details", array($lab_number));
 
     $existingdata = [];
 
@@ -1048,38 +1140,5 @@ function get_cassettes_count_list() {
     return $existingdata;
 }
 
-
-function get_batches_with_counts() {
-    global $pg_con;
-
-    // SQL query to join batch and cassette count data
-    $sql = "
-        SELECT 
-            b.rowid, 
-            b.name, 
-            c.total_cassettes_count
-        FROM 
-            llx_batch AS b
-        LEFT JOIN 
-            llx_batch_cassette_counts AS c ON b.rowid = c.batch_details_cassettes
-        ORDER BY 
-            b.rowid ASC
-    ";
-
-    // Prepare and execute the SQL query
-    $result = pg_prepare($pg_con, "get_batches_with_counts", $sql);
-    $result = pg_execute($pg_con, "get_batches_with_counts", array());
-
-    $batches_with_counts = [];
-
-    if ($result) {
-        $batches_with_counts = pg_fetch_all($result) ?: [];
-        pg_free_result($result);
-    } else {
-        echo 'Error: ' . pg_last_error($pg_con);
-    }
-
-    return $batches_with_counts;
-}
 
 ?>

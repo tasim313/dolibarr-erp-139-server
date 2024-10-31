@@ -121,7 +121,7 @@ $cassettes_count = cassettes_count_list();
           <th scope="col">Batch</th>
           <th scope="col">Total Cassettes</th>
           <th scope="col">Create Date</th>
-          <th scope="col">Sweep</th>
+          <th scope="col">Swap</th>
         </tr>
       </thead>
       <tbody id="batchTable">
@@ -135,6 +135,7 @@ $cassettes_count = cassettes_count_list();
                         if (htmlspecialchars($cassettes['description']) === "Auto-incremented cassette count") {
                                 // Show an empty cell if the condition is met
                                 echo ""; // or you can use `echo '&nbsp;';` for a non-breaking space
+                                echo '<i class="fas fa-exchange-alt swap-icon" title="Swap Icon" data-date="' . date('Y-m-d', strtotime($cassettes['created_date'])) . '" data-batch="' . htmlspecialchars($cassettes['name']) . '"></i>';
                         } else {
                             // Display the description if the condition is not met
                             echo htmlspecialchars($cassettes['description']);
@@ -154,5 +155,83 @@ $cassettes_count = cassettes_count_list();
   </div>
 </div>
 
+
+<div class="modal fade" id="swapModal" tabindex="-1" aria-labelledby="swapModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="swapModalLabel">Swap Batch</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Current Batch to Swap: <span id="batchToSwap"></span></p>
+                <label for="swapWithBatch">Choose a Batch to Swap With:</label>
+                <select id="swapWithBatch" class="form-control">
+                    <option value="Second Batch">Second Batch</option>
+                    <option value="Third Batch">Third Batch</option>
+                    <!-- Add more options as needed -->
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSwap">Confirm Swap</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Handle click on swap icon
+    document.querySelectorAll('.swap-icon').forEach(icon => {
+        icon.addEventListener('click', (event) => {
+            const batchDate = icon.getAttribute('data-date');
+            const batchName = icon.getAttribute('data-batch');
+            const todayDate = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+            if (batchDate !== todayDate) {
+                alert("Cannot swap with a previous date's batch.");
+            } else {
+                // Set batch names in modal
+                document.getElementById('batchToSwap').textContent = batchName;
+
+                // Show the modal using Bootstrap 3
+                $('#swapModal').modal('show');
+            }
+        });
+    });
+
+    // Handle Confirm Swap button click
+    document.getElementById('confirmSwap').addEventListener('click', () => {
+        const selectedBatch = document.getElementById('batchToSwap').textContent;
+        const swapWithBatch = document.getElementById('swapWithBatch').value;
+
+        // AJAX request to save the swap action
+        fetch('save_swap.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ selectedBatch, swapWithBatch })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Batch swap successful.");
+                location.reload(); // Reload the page or update table data as needed
+            } else {
+                alert("Batch swap failed.");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+
+        // Close the modal after confirming swap
+        $('#swapModal').modal('hide');
+    });
+});
+</script>

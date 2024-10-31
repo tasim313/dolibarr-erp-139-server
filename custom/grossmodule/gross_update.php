@@ -73,7 +73,7 @@ $is_empty = empty($re_gross_request);  // True if empty, false otherwise
 $doctors = get_doctor_list();
 $assistants = get_gross_assistant_list();
 $specimen_used_list = gross_specimen_used_list($fk_gross_id);
-
+$batch_information = get_labNumber_batch_details_list($lab_number);
 
 print('<style>
 main {
@@ -132,7 +132,7 @@ main {
   
   tbody {
 	overflow: scroll;
-	height: 200px;
+	height: 20px;
   }
   
   /* MAKE LEFT COLUMN FIXEZ */
@@ -294,7 +294,7 @@ foreach ($patient_information as $list) {
         $gender = 'Other';
     }
     print('
-    <table class="fixed-table">
+    <table class="table">
 	<thead>
     <tr>
         <th>Name </th> 
@@ -352,26 +352,97 @@ foreach ($specimens as $index => $specimen) {
 echo '<input type="submit" value="Save">';
 echo '</form>';
 
+echo ("<style>
+    .table th, .table td {
+        vertical-align: middle; /* Center align vertically */
+        padding: 0; /* Remove padding */
+        margin: 0; /* Remove margin */
+    }
+    .table {
+        table-layout: fixed; /* Ensure the table layout is fixed */
+        width: 100%; /* Full width for the table */
+        margin-bottom: 0; /* Remove bottom margin from the table */
+    }
+    .text-right {
+        text-align: right; /* Align the total cassettes count to the right */
+    }
+</style>");
+
+// Define total capacity for each batch
+$batch_capacities = [
+    "First Batch" => 120,
+    "Second Batch" => 120,
+    "Third Batch" => 72,
+    "Fourth Batch" => 72,
+    "Fifth Batch" => 120,
+    "Sixth Batch" => 120,
+    "Seventh Batch" => 72,
+    "Eighth Batch" => 72
+];
+
+// Check if there is any batch information retrieved
+if (!empty($batch_information)) {
+    echo("<div></div>"); // Empty div, you can remove or adjust as needed
+    echo("<table class='table'>"); // Create a main table with Bootstrap styling
+    echo("<thead>");
+    echo("<tr><th scope='col'>Batch Name</th><th scope='col'>Total Cassettes Count</th></tr>"); 
+    echo("</thead>");
+    
+    foreach ($batch_information as $batch) {
+        $batch_name = $batch['batch_name'];
+        $total_count = $batch['total_cassettes_count'];
+        
+        // Get the maximum count for the current batch from $batch_capacities
+        $max_count = $batch_capacities[$batch_name] ?? 0; // Default to 0 if batch name not found
+        
+        echo("<tr>");
+        echo("<td class='text-left'>" . htmlspecialchars($batch_name) . "</td>");
+        
+        // Check if the batch is full or display remaining capacity
+        if ($total_count >= $max_count) {
+            echo("<td class='text-left'>" . htmlspecialchars($total_count) . "&nbsp;&nbsp;<span style='color: red;'>[This Batch is full]</span></td>");
+        } else {
+            $remaining = $max_count - $total_count;
+            echo("<td class='text-left'>Remaining $remaining</td>");
+        }
+        
+        echo("</tr>");
+    }
+    echo("</table>");
+} else {
+    echo("<div>No batch information found for the specified lab number.</div>");
+}
+
+
+
 
 $sections = get_gross_specimen_section($fk_gross_id);
 $specimen_count_value = number_of_specimen($fk_gross_id);
 $alphabet_string = numberToAlphabet($specimen_count_value); 
-print("<div class='container'>");
+print('<div class="mt-4" style="background-color: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">');
+print('<div class="row justify-content-start">'); // Start a new row for left alignment
 
 for ($i = 1; $i <= $specimen_count_value; $i++) {
     $specimenLetter = chr($i + 64); 
-    $button_id =  "add-more-" . $i ;
-    echo '<label for="specimen' . $i . '">Specimen ' . $specimenLetter . ': </label>';
-    echo '<button type="submit" id="' . $button_id . '" data-specimen-letter="' . $specimenLetter . '" onclick="handleButtonClick(this)">Generate Section Codes</button>';
-    echo '<br><br>';
+    $button_id = "add-more-" . $i;
+    
+    // Bootstrap form group for each specimen
+    echo '<div class="col-md-6 mb-3">'; // Use col-md-6 to control the width
+    echo '<label for="specimen' . $i . '" class="form-label">Specimen ' . $specimenLetter . ': </label>';
+    echo '<button type="button" id="' . $button_id . '" class="btn btn btn-primary" data-specimen-letter="' . $specimenLetter . '" onclick="handleButtonClick(this)">Generate Section Codes</button>';
+    echo '</div>'; // Close the form group
 }
-print('<form id="specimen_section_form" method="post" action="gross_specimen_section_generate.php">
-<div id="fields-container"> 
-</div>
-<br>
-<button id="saveButton">Save</button>
-</form>');
-print("</div>");
+
+print('</div>'); // Close the row
+print('<form id="specimen_section_form" method="post" action="gross_specimen_section_generate.php" class="mt-4">');
+print('<div id="fields-container" class="mb-3">'); 
+// You can dynamically generate fields here or keep this section empty.
+print('</div>');
+
+print('<button id="saveButton" class="btn btn-primary">Save</button>'); // Bootstrap primary button for the save action
+print('</form>');
+print('</div>');
+
 
 // Print the form container
 print('<div style="width: 60%; text-align: left; margin-left: 0;">');
@@ -1109,6 +1180,10 @@ print('
     }
     }
 </style>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
         function redirectToReport() {

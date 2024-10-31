@@ -218,41 +218,60 @@ switch (true) {
     <div>
             <strong>Available Batch:</strong>
             <?php 
+                // Get today's cassette counts
                 $batch_count = get_cassettes_count_list();
 
-                // Check if there are any batches
-                if (!empty($batch_count)) {
-                    $output = []; // Initialize an array to hold batch information
+                // Define total capacity for each batch
+                $batch_capacities = [
+                    "First Batch" => 120,
+                    "Second Batch" => 120,
+                    "Third Batch" => 72,
+                    "Fourth Batch" => 72,
+                    "Fifth Batch" => 120,
+                    "Sixth Batch" => 120,
+                    "Seventh Batch" => 72,
+                    "Eighth Batch" => 72
+                ];
 
-                    // Loop through each batch and prepare the output
-                    foreach ($batch_count as $b_count) {
-                        // Append each batch's name and count to the output array
-                        $output[] = htmlspecialchars($b_count['name']) . ': ' . htmlspecialchars($b_count['total_cassettes_count']);
-                    }
+                // Get the full list of batches with counts
+                $batch_list = get_batches_with_counts();
+                $output = []; // Initialize an array to hold batch information
 
-                    // Join the output array into a single string separated by commas
-                    echo implode(', ', $output);
-                } else {
-                    echo 'No batches available.'; // Message if no batches are found
+                // Create an associative array of batch counts for today
+                $batch_counts_today = [];
+                foreach ($batch_count as $b_count) {
+                    $batch_counts_today[$b_count['name']] = (int)$b_count['total_cassettes_count'];
                 }
+
+                // Loop through each batch to determine today's count or use default
+                foreach ($batch_list as $batch) {
+                    $batch_name = htmlspecialchars($batch['name']);
+                    $total_count_today = $batch_counts_today[$batch_name] ?? 0;
+                    $total_capacity = $batch_capacities[$batch_name] ?? 120; // Use defined capacity or default to 120
+                    $remaining = $total_capacity - $total_count_today;
+                    $output[] = "$batch_name remaining: $remaining, total: $total_capacity";
+                }
+
+                // Display the output
+                echo implode(', ', $output);
             ?>
     </div>
         <div><br></div>
     <div>
       <form id="grossForm"  method="post" action="gross_create_function.php">
-            <label for="SelectBatch">Select Batch</label>
+                <label for="SelectBatch">Select Batch</label>
                 <select name="select_batch" id="select_batch" onchange="checkBatchCount()">
                     <option value=""></option>
                     <?php
-                        $batch_list = get_batches_with_counts();
-
                         foreach ($batch_list as $batch) {
-                            // Output each batch as an option
-                            echo "<option value='{$batch['rowid']}' data-count='{$batch['total_cassettes_count']}'>{$batch['name']}</option>";
+                            $batch_name = htmlspecialchars($batch['name']);
+                            $total_count_today = $batch_counts_today[$batch_name] ?? 0;
+                            $total_capacity = $batch_capacities[$batch_name] ?? 120; // Use defined capacity or default to 120
+                            echo "<option value='{$batch['rowid']}' data-count='{$total_count_today}' data-capacity='{$total_capacity}'>$batch_name</option>";
                         }
                     ?>
                 </select>
-                <div id="batchMessage" style="color: red;"></div>
+                <div id="batchMessage" style="color: red;"></div>  
        
             <?php 
 
@@ -332,7 +351,7 @@ switch (true) {
     </div>
     </div>
 
-    <script>
+<script>
     function selectLabNumber(searchText) {
         var select = document.getElementById('lab_number');
         var options = select.getElementsByTagName('option');
@@ -404,22 +423,26 @@ switch (true) {
 
 
 
- <script>
+<script>
+    
     function checkBatchCount() {
-        const selectElement = document.getElementById('select_batch');
-        const selectedOption = selectElement.options[selectElement.selectedIndex];
-        const count = selectedOption.getAttribute('data-count');
-        const messageDiv = document.getElementById('batchMessage');
+                const selectElement = document.getElementById('select_batch');
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                const count = selectedOption.getAttribute('data-count');
+                const capacity = selectedOption.getAttribute('data-capacity');
+                const messageDiv = document.getElementById('batchMessage');
 
-        if (count) {
-            if (parseInt(count) === 120) {
-                messageDiv.textContent = 'You cannot select this batch because the total cassette count is 120.';
-                selectElement.selectedIndex = 0; // Reset the selection
-            } else {
-                messageDiv.textContent = 'Total Cassette Count: ' + count;
-            }
-        } else {
-            messageDiv.textContent = ''; // Clear message if no batch is selected
-        }
+                if (count && capacity) {
+                    const remaining = capacity - parseInt(count);
+                    if (remaining <= 0) {
+                        messageDiv.textContent = 'You cannot select this batch because it has reached its total capacity for today.';
+                        selectElement.selectedIndex = 0; // Reset the selection
+                    } else {
+                        messageDiv.textContent = `Total Cassette Count: ${count}, Remaining: ${remaining}, Total Capacity: ${capacity}`;
+                    }
+                } else {
+                    messageDiv.textContent = ''; // Clear message if no batch is selected
+                }
     }
+       
 </script>
