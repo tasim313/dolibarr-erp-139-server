@@ -809,7 +809,9 @@ foreach ($existingDiagnosisDescriptions as $index => $specimen) {
     echo '<label for="title" class="bold-label" style="width: 120px;">Title:</label>';
     echo '</div>';
     echo '<div class="col-75">';
-    echo '<input type="text" name="title[]" value="' . htmlspecialchars($specimen['title']) . '">';
+    // Check if the title is available; otherwise, use "biopsy"
+    $titleValue = !empty($specimen['title']) ? htmlspecialchars($specimen['title']) : 'biopsy';
+    echo '<input type="text" name="title[]" value="' . $titleValue . '">';
     echo '</div>';
     echo '</div>';
 
