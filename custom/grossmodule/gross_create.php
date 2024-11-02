@@ -249,7 +249,7 @@ switch (true) {
                     $total_count_today = $batch_counts_today[$batch_name] ?? 0;
                     $total_capacity = $batch_capacities[$batch_name] ?? 120; // Use defined capacity or default to 120
                     $remaining = $total_capacity - $total_count_today;
-                    $output[] = "$batch_name remaining: $remaining, total: $total_capacity";
+                    $output[] = "$batch_name remaining: $remaining of $total_capacity";
                 }
 
                 // Display the output
