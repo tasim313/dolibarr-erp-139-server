@@ -135,7 +135,10 @@ $cassettes_count = cassettes_count_list();
                         if (htmlspecialchars($cassettes['description']) === "Auto-incremented cassette count") {
                                 // Show an empty cell if the condition is met
                                 echo ""; // or you can use `echo '&nbsp;';` for a non-breaking space
-                                echo '<i class="fas fa-exchange-alt swap-icon" title="Swap Icon" data-date="' . date('Y-m-d', strtotime($cassettes['created_date'])) . '" data-batch="' . htmlspecialchars($cassettes['name']) . '"></i>';
+                                echo '<i class="fas fa-exchange-alt swap-icon" title="Swap Icon" 
+                                data-date="' . date('Y-m-d', strtotime($cassettes['created_date'])) . '" 
+                                data-batch="' . htmlspecialchars($cassettes['name']) . '" 
+                                data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '"></i>';
                         } else {
                             // Display the description if the condition is not met
                             echo htmlspecialchars($cassettes['description']);
@@ -164,16 +167,50 @@ $cassettes_count = cassettes_count_list();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Current Batch to Swap: <span id="batchToSwap"></span></p>
+            <p>
+                Current Batch to Swap: 
+                <span id="batchToSwap" data-count=""></span>
+                (<span id="batchTotalCountDisplay">0</span> Cassettes)
+            </p>
                 <label for="swapWithBatch">Choose a Batch to Swap With:</label>
                 <select id="swapWithBatch" class="form-control">
-                    <option value="Second Batch">Second Batch</option>
-                    <option value="Third Batch">Third Batch</option>
-                    <!-- Add more options as needed -->
+                    <option disabled selected>Select a batch</option>
+                    <?php
+                    // Generating options for swapWithBatch based on today’s date
+                    $todayDate = date('Y-m-d');
+                    if (!empty($cassettes_count)) {
+                        $optionsGenerated = false;
+
+                        foreach ($cassettes_count as $cassettes) {
+                            $batchDate = date('Y-m-d', strtotime($cassettes['created_date']));
+                            if ($batchDate === $todayDate) {
+                                echo '<option value="' . htmlspecialchars($cassettes['name']) . '" data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '">' . htmlspecialchars($cassettes['name']) . '</option>';
+                                $optionsGenerated = true;
+                            }
+                        }
+
+                        if (!$optionsGenerated) {
+                            echo '<option disabled>No batches available for today</option>';
+                        }
+                    } else {
+                        echo '<option disabled>No batches available for today</option>';
+                    }
+                    ?>
                 </select>
+
+                <div class="mt-3">
+                    <label for="swapCount">Number of Cassettes to Swap:</label>
+                    <p id="selectedBatchCount" class="text-muted">Total Cassettes in Selected Batch: <span id="batchTotalCount">0</span></p>
+                    <input type="number" id="swapCount" class="form-control" min="1" placeholder="Enter number of cassettes">
+                </div>
+
+                <div class="mt-3">
+                    <p>Total Cassettes after Swap:</p>
+                    <p id="totalAfterSwap">0</p>
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" data-bs-dismiss="modal" onclick="event.preventDefault();">Cancel</button>
                 <button type="button" class="btn btn-primary" id="confirmSwap">Confirm Swap</button>
             </div>
         </div>
@@ -185,53 +222,126 @@ $cassettes_count = cassettes_count_list();
 </html>
 
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Handle click on swap icon
-    document.querySelectorAll('.swap-icon').forEach(icon => {
-        icon.addEventListener('click', (event) => {
-            const batchDate = icon.getAttribute('data-date');
-            const batchName = icon.getAttribute('data-batch');
-            const todayDate = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle click on swap icon
+        document.querySelectorAll('.swap-icon').forEach(icon => {
+            icon.addEventListener('click', (event) => {
+                const batchDate = icon.getAttribute('data-date');
+                const batchName = icon.getAttribute('data-batch');
+                const todayDate = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
 
-            if (batchDate !== todayDate) {
-                alert("Cannot swap with a previous date's batch.");
-            } else {
-                // Set batch names in modal
-                document.getElementById('batchToSwap').textContent = batchName;
+                if (batchDate !== todayDate) {
+                    alert("Cannot swap with a previous date's batch.");
+                } else {
+                    // Set batch names in modal
+                    document.getElementById('batchToSwap').textContent = batchName;
 
-                // Show the modal using Bootstrap 3
-                $('#swapModal').modal('show');
-            }
+                    // Show the modal using Bootstrap 3
+                    $('#swapModal').modal('show');
+                }
+            });
+        });
+
+        // Handle Confirm Swap button click
+        document.getElementById('confirmSwap').addEventListener('click', () => {
+            const selectedBatch = document.getElementById('batchToSwap').textContent;
+            const swapWithBatch = document.getElementById('swapWithBatch').value;
+
+            // AJAX request to save the swap action
+            fetch('save_swap.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedBatch, swapWithBatch })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Batch swap successful.");
+                    location.reload(); // Reload the page or update table data as needed
+                } else {
+                    alert("Batch swap failed.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+
+            // Close the modal after confirming swap
+            $('#swapModal').modal('hide');
         });
     });
+</script> -->
 
-    // Handle Confirm Swap button click
-    document.getElementById('confirmSwap').addEventListener('click', () => {
-        const selectedBatch = document.getElementById('batchToSwap').textContent;
-        const swapWithBatch = document.getElementById('swapWithBatch').value;
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle click on swap icon
+        document.querySelectorAll('.swap-icon').forEach(icon => {
+            icon.addEventListener('click', (event) => {
+                const batchDate = icon.getAttribute('data-date');
+                const batchName = icon.getAttribute('data-batch');
+                const totalCassettes = icon.getAttribute('data-count');
+                const todayDate = new Date().toISOString().split('T')[0];
 
-        // AJAX request to save the swap action
-        fetch('save_swap.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ selectedBatch, swapWithBatch })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Batch swap successful.");
-                location.reload(); // Reload the page or update table data as needed
-            } else {
-                alert("Batch swap failed.");
-            }
-        })
-        .catch(error => console.error("Error:", error));
+                if (batchDate !== todayDate) {
+                    alert("Cannot swap with a previous date's batch.");
+                } else {
+                    document.getElementById('batchToSwap').textContent = batchName;
+                    document.getElementById('batchToSwap').setAttribute('data-count', totalCassettes);
+                    document.getElementById('batchTotalCountDisplay').innerText = totalCassettes; // Update display of total cassettes
+                    $('#swapModal').modal('show');
+                }
+            });
+        });
 
-        // Close the modal after confirming swap
-        $('#swapModal').modal('hide');
+        // Update count based on selected batch
+        document.getElementById('swapWithBatch').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const totalCount = selectedOption.getAttribute('data-count');
+            document.getElementById('batchTotalCount').innerText = totalCount; // Update count based on selected option
+            document.getElementById('swapCount').setAttribute('max', totalCount); // Set max input value
+        });
+
+        // Calculate total cassettes after swap
+        document.getElementById('swapCount').addEventListener('input', function() {
+            const swapCount = parseInt(this.value) || 0;
+            const currentBatchCount = parseInt(document.getElementById('batchToSwap').getAttribute('data-count')) || 0;
+            const selectedOption = document.getElementById('swapWithBatch').selectedOptions[0];
+            const targetBatchCount = parseInt(selectedOption ? selectedOption.getAttribute('data-count') : 0) || 0;
+
+            // Calculate total cassettes after swap
+            const newTotal = (currentBatchCount - swapCount >= 0) ? 
+                (targetBatchCount + swapCount) : targetBatchCount; // Adjusted logic to add swapCount to target
+
+            document.getElementById('totalAfterSwap').innerText = newTotal; // Update total after swap
+        });
+
+        // Confirm swap action
+        document.getElementById('confirmSwap').addEventListener('click', () => {
+            const swapCount = document.getElementById('swapCount').value;
+            const sourceBatch = document.getElementById('batchToSwap').innerText;
+            const targetBatch = document.getElementById('swapWithBatch').value;
+
+            // AJAX request to save the swap action
+            fetch('batch/batch_swap.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ sourceBatch, targetBatch, swapCount })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Batch swap successful.");
+                    location.reload(); // Reload the page or update table data as needed
+                } else {
+                    alert("Batch swap failed.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+
+            $('#swapModal').modal('hide'); // Close modal after confirming swap
+        });
     });
-});
 </script>
