@@ -1098,28 +1098,16 @@ function get_labNumber_batch_details_list($lab_number) {
 
     // Define the SQL with a parameter placeholder
     $sql = "SELECT 
-            d.rowid AS detail_rowid, 
+            d.rowid, 
+            d.batch_number, 
             d.lab_number, 
-            d.batch_number,
-            b.name AS batch_name, 
-            COALESCE(MAX(cc.total_cassettes_count), 0) AS total_cassettes_count  -- Use MAX or SUM to aggregate
-        FROM 
-            llx_batch_details AS d
-        JOIN 
-            llx_batch AS b ON d.batch_number = b.rowid  
-        LEFT JOIN (
-            SELECT 
-                batch_details_cassettes,
-                total_cassettes_count  -- Get the total count
-            FROM 
-                llx_batch_cassette_counts
-        ) AS cc ON cc.batch_details_cassettes = d.batch_number  
-        WHERE 
-            d.lab_number = $1  -- Use parameterized query
-        GROUP BY 
-            d.rowid, d.lab_number, d.batch_number, b.name  -- Group by these columns
-        ORDER BY 
-            d.rowid DESC";
+            d.gross_station, 
+            b.name, 
+            c.total_cassettes_count 
+            FROM llx_batch_details AS d
+            JOIN llx_batch AS b ON d.batch_number = b.rowid
+            JOIN llx_batch_cassette_counts AS c ON d.batch_number = c.batch_details_cassettes
+            WHERE d.lab_number = $1 AND c.created_date=current_date";
 
     // Prepare the SQL statement
     $result = pg_prepare($pg_con, "get_labNumber_batch_details", $sql);
@@ -1130,15 +1118,29 @@ function get_labNumber_batch_details_list($lab_number) {
     $existingdata = [];
 
     if ($result) {
-        $existingdata = pg_fetch_all($result) ?: [];
-        
+        $data = pg_fetch_all($result) ?: [];
         pg_free_result($result);
+
+        // Use associative arrays to filter duplicates based on a combination of fields
+        $uniqueData = [];
+        $seenCombinations = [];
+
+        foreach ($data as $row) {
+            // Create a unique key based on a combination of fields
+            $uniqueKey = $row['rowid'];
+
+            if (!in_array($uniqueKey, $seenCombinations)) {
+                $uniqueData[] = $row;
+                $seenCombinations[] = $uniqueKey;
+            }
+        }
+
+        $existingdata = $uniqueData;
     } else {
         echo 'Error: ' . pg_last_error($pg_con);
     }
 
     return $existingdata;
 }
-
 
 ?>

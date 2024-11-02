@@ -656,7 +656,12 @@ foreach ($existingMicroDescriptions as $key => $existingDescription) {
 
             <!-- Hidden textarea to store Quill content -->
             <textarea style="display:none;" id="hidden_description<?php echo $key; ?>" name="description[]" data-index="<?php echo $key; ?>">
-                <?php echo htmlspecialchars($existingDescription['description']); ?>
+            <?php 
+                // Check if the description is empty and set a default value if it is
+                $micro_pre_define_text = trim("    Sections Show    ");
+                $descriptionValue = !empty($existingDescription['description']) ? htmlspecialchars($existingDescription['description']) : $micro_pre_define_text;
+                echo $descriptionValue; 
+                ?>
             </textarea>
 
             <!-- Hidden input fields -->
@@ -1624,6 +1629,7 @@ if (!empty($finialized_by)) {
    document.addEventListener('DOMContentLoaded', function() {
             // Initialize Quill editor for each dynamic microscopic description
             <?php foreach ($existingMicroDescriptions as $key => $existingDescription): ?>
+                
                 var quillEditor<?php echo $key; ?> = new Quill('#quill-editor-<?php echo $key; ?>', {
                     theme: 'snow',
                     modules: {
@@ -1694,6 +1700,8 @@ if (!empty($finialized_by)) {
     );
 
 </script>
+
+
 
 <!-- Diagnosis Description Abbreviations -->
 <script>

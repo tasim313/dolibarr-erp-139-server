@@ -389,8 +389,8 @@ if (!empty($batch_information)) {
     echo("</thead>");
     
     foreach ($batch_information as $batch) {
-        $batch_name = $batch['batch_name'];
-        $total_count = $batch['total_cassettes_count'];
+        $batch_name = $batch['name'];
+        $total_count = (int)$batch['total_cassettes_count'];
         
         // Get the maximum count for the current batch from $batch_capacities
         $max_count = $batch_capacities[$batch_name] ?? 0; // Default to 0 if batch name not found
@@ -410,7 +410,11 @@ if (!empty($batch_information)) {
     }
     echo("</table>");
 } else {
-    echo("<div>No batch information found for the specified lab number.</div>");
+    echo("<div>
+            <br><br>
+            <div><span style='color: red;'>No batch information found for the specified lab number.</span></div>
+            <br>
+        </div>");
 }
 
 
