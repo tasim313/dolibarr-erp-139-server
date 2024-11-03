@@ -99,9 +99,9 @@ $cassettes_count = cassettes_count_list();
   <title>Bootstrap Example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
+  <script src="../jquery/jquery.min.js"></script>
+  <script src="../bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
 </head>
 <body>
 
@@ -112,8 +112,13 @@ $cassettes_count = cassettes_count_list();
     <li><a href="./details.php" class="tab">Details</a></li>
     <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
     <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
+    <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
+    <li><a href="./manual_processor.php">Manual Processor</a></li>
   </ul>
   <br>
+   <!-- Search Box -->
+   <input type="text" id="searchInput" placeholder="Search..." class="form-control" style="margin-bottom: 10px;">
+
   <div class="content">
     <table class="table">
       <thead>
@@ -408,4 +413,29 @@ $cassettes_count = cassettes_count_list();
                 $('#swapModal').modal('hide');
         });
 
+</script>
+
+<script>
+  // Search Feature
+  document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#batchTable tr');
+    let found = false;
+
+    rows.forEach(row => {
+      const batch = row.cells[0].textContent.toLowerCase();
+      const totalCassettes = row.cells[1].textContent.toLowerCase();
+      const createDate = row.cells[2].textContent.toLowerCase();
+
+      if (batch.includes(filter) || totalCassettes.includes(filter) || createDate.includes(filter)) {
+        row.style.display = '';
+        found = true;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    // Show or hide the "No results found" message
+    document.getElementById('noResultsMessage').style.display = found ? 'none' : 'block';
+  });
 </script>

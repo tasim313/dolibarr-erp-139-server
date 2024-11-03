@@ -1146,8 +1146,11 @@ echo '<div class="tab-container">
                 // Check if the list has any data
                 if (!empty($bones_list)) {
                     // Create a table to display the bones list
+
+                    echo '<input type="text" id="searchInput" placeholder="Search..." class="form-control" style="margin-bottom: 10px;">';
+
                     echo '<form id="updateStatusForm" >';
-                    echo '<table border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">';
+                    echo '<table class="table" border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">';
                     echo '<thead>';
                     echo '<tr>';
                     echo '<th>Lab Number</th>';
@@ -1303,6 +1306,8 @@ llxFooter();
 $db->close();
 
 ?>
+
+<link rel="stylesheet" href="../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css">
 
 <script>
     // Function to open the main tab
@@ -1662,4 +1667,31 @@ $db->close();
             console.warn("Form with ID 'updateStatusForm' not found.");
         }
     });
+</script>
+
+<script>
+  // JavaScript for search functionality
+  document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#BoneRelatedInstructions tbody tr');
+    let found = false;
+
+    rows.forEach(row => {
+      const labNumber = row.cells[0].textContent.toLowerCase();
+      const doctorName = row.cells[1].textContent.toLowerCase();
+      const assistantName = row.cells[2].textContent.toLowerCase();
+      const sectionCode = row.cells[3].textContent.toLowerCase();
+      const cassettesNumbers = row.cells[4].textContent.toLowerCase();
+      const tissue = row.cells[5].textContent.toLowerCase();
+
+      // Check if any cell in the row matches the search filter
+      if (labNumber.includes(filter) || doctorName.includes(filter) || assistantName.includes(filter) ||
+          sectionCode.includes(filter) || cassettesNumbers.includes(filter) || tissue.includes(filter)) {
+        row.style.display = '';
+        found = true;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
 </script>

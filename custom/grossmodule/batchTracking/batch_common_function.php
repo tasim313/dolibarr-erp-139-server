@@ -118,7 +118,7 @@ function cassettes_count_list() {
         JOIN 
             llx_batch AS b ON c.batch_details_cassettes = b.rowid 
         ORDER BY 
-            c.rowid ASC;";
+            c.rowid DESC;";
 
     // Prepare and execute the SQL query
     $result = pg_prepare($pg_con, "get_batch_count", $sql);
