@@ -106,7 +106,7 @@ $batch_details = batch_details_list();
 <body>
 
 <div class="container">
-  <h3>Tabs</h3>
+  <h3>Batch Wise LabNumber Information</h3>
   <ul class="nav nav-tabs">
     <li class="active"><a href="./index.php">Home</a></li>
     <li><a href="./details.php" class="tab">Details</a></li>
