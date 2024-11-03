@@ -106,7 +106,7 @@ $cassettes_count = cassettes_count_list();
 <body>
 
 <div class="container">
-  <h3>Tabs</h3>
+  <h3>Swap Batch</h3>
   <ul class="nav nav-tabs">
     <li class="active"><a href="./index.php">Home</a></li>
     <li><a href="./details.php" class="tab">Details</a></li>
@@ -138,10 +138,19 @@ $cassettes_count = cassettes_count_list();
                                 echo '<i class="fas fa-exchange-alt swap-icon" title="Swap Icon" 
                                 data-date="' . date('Y-m-d', strtotime($cassettes['created_date'])) . '" 
                                 data-batch="' . htmlspecialchars($cassettes['name']) . '" 
-                                data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '"></i>';
+                                data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '"
+                                data-rowid="' . htmlspecialchars($cassettes['rowid']) . '">
+                                </i>';
                         } else {
                             // Display the description if the condition is not met
                             echo htmlspecialchars($cassettes['description']);
+                            echo "&nbsp;&nbsp;&nbsp;"; 
+                            echo '<i class="fas fa-exchange-alt swap-icon" title="Swap Icon" 
+                                data-date="' . date('Y-m-d', strtotime($cassettes['created_date'])) . '" 
+                                data-batch="' . htmlspecialchars($cassettes['name']) . '" 
+                                data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '"
+                                data-rowid="' . htmlspecialchars($cassettes['rowid']) . '">
+                                </i>';
                         } ?>
              </td>
             </tr>
@@ -167,11 +176,11 @@ $cassettes_count = cassettes_count_list();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-            <p>
-                Current Batch to Swap: 
-                <span id="batchToSwap" data-count=""></span>
-                (<span id="batchTotalCountDisplay">0</span> Cassettes)
-            </p>
+                <p>
+                    Current Batch to Swap: 
+                    <span id="batchToSwap" data-count=""></span>
+                    (<span id="batchTotalCountDisplay">0</span> Cassettes)
+                </p>
                 <label for="swapWithBatch">Choose a Batch to Swap With:</label>
                 <select id="swapWithBatch" class="form-control">
                     <option disabled selected>Select a batch</option>
@@ -184,7 +193,7 @@ $cassettes_count = cassettes_count_list();
                         foreach ($cassettes_count as $cassettes) {
                             $batchDate = date('Y-m-d', strtotime($cassettes['created_date']));
                             if ($batchDate === $todayDate) {
-                                echo '<option value="' . htmlspecialchars($cassettes['name']) . '" data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '">' . htmlspecialchars($cassettes['name']) . '</option>';
+                                echo '<option value="' . htmlspecialchars($cassettes['name']) . '" data-count="' . htmlspecialchars($cassettes['total_cassettes_count']) . '" data-rowid="' . htmlspecialchars($cassettes['rowid']) . '">' . htmlspecialchars($cassettes['name']) . '</option>';
                                 $optionsGenerated = true;
                             }
                         }
@@ -208,6 +217,10 @@ $cassettes_count = cassettes_count_list();
                     <p>Total Cassettes after Swap:</p>
                     <p id="totalAfterSwap">0</p>
                 </div>
+
+                <!-- Hidden inputs to store the row IDs -->
+                <input type="hidden" id="sourceBatchRowId" value="">
+                <input type="hidden" id="targetBatchRowId" value="">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning" data-bs-dismiss="modal" onclick="event.preventDefault();">Cancel</button>
@@ -216,6 +229,9 @@ $cassettes_count = cassettes_count_list();
         </div>
     </div>
 </div>
+
+
+
 
 
 </body>
@@ -280,7 +296,30 @@ $cassettes_count = cassettes_count_list();
             icon.addEventListener('click', (event) => {
                 const batchDate = icon.getAttribute('data-date');
                 const batchName = icon.getAttribute('data-batch');
+                const todayDate = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
+
+                if (batchDate !== todayDate) {
+                    alert("Cannot swap with a previous date's batch.");
+                } else {
+                    // Set batch names in modal
+                    document.getElementById('batchToSwap').textContent = batchName;
+
+                    // Show the modal using Bootstrap 3
+                    $('#swapModal').modal('show');
+                }
+            });
+        });
+
+    });
+</script> 
+
+<script>
+        document.querySelectorAll('.swap-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const batchDate = icon.getAttribute('data-date');
+                const batchName = icon.getAttribute('data-batch');
                 const totalCassettes = icon.getAttribute('data-count');
+                const rowid = icon.getAttribute('data-rowid');
                 const todayDate = new Date().toISOString().split('T')[0];
 
                 if (batchDate !== todayDate) {
@@ -288,7 +327,8 @@ $cassettes_count = cassettes_count_list();
                 } else {
                     document.getElementById('batchToSwap').textContent = batchName;
                     document.getElementById('batchToSwap').setAttribute('data-count', totalCassettes);
-                    document.getElementById('batchTotalCountDisplay').innerText = totalCassettes; // Update display of total cassettes
+                    document.getElementById('batchTotalCountDisplay').innerText = totalCassettes; 
+                    document.getElementById('sourceBatchRowId').value = rowid; // Store rowid
                     $('#swapModal').modal('show');
                 }
             });
@@ -316,32 +356,56 @@ $cassettes_count = cassettes_count_list();
             document.getElementById('totalAfterSwap').innerText = newTotal; // Update total after swap
         });
 
-        // Confirm swap action
         document.getElementById('confirmSwap').addEventListener('click', () => {
-            const swapCount = document.getElementById('swapCount').value;
-            const sourceBatch = document.getElementById('batchToSwap').innerText;
-            const targetBatch = document.getElementById('swapWithBatch').value;
+                const swapCount = parseInt(document.getElementById('swapCount').value) || 0; // Ensure swapCount is a number
+                const sourceBatch = document.getElementById('batchToSwap').innerText;
+                const sourceRowId = document.getElementById('sourceBatchRowId').value; // Get source rowid
+                const targetBatch = document.getElementById('swapWithBatch').value;
+                const targetRowId = document.querySelector(`#swapWithBatch option[value="${targetBatch}"]`).getAttribute('data-rowid'); // Get target rowid
 
-            // AJAX request to save the swap action
-            fetch('batch/batch_swap.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ sourceBatch, targetBatch, swapCount })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Batch swap successful.");
-                    location.reload(); // Reload the page or update table data as needed
-                } else {
-                    alert("Batch swap failed.");
-                }
-            })
-            .catch(error => console.error("Error:", error));
+                // Fetch current total counts
+                const currentSourceCount = parseInt(document.getElementById('batchToSwap').getAttribute('data-count')) || 0;
+                const currentTargetCount = parseInt(document.getElementById('batchTotalCount').innerText) || 0;
 
-            $('#swapModal').modal('hide'); // Close modal after confirming swap
+                // Calculate new counts
+                const newSourceCount = currentSourceCount - swapCount;
+                const newTargetCount = currentTargetCount + swapCount;
+
+                // Prepare the data structure for the request
+                const requestData = {
+                    source_batch_name: sourceBatch, // Key updated to match PHP expectations
+                    source_rowid: sourceRowId, // Key updated to match PHP expectations
+                    source_total_count: newSourceCount, // Key updated to match PHP expectations
+                    target_batch_name: targetBatch, // Key updated to match PHP expectations
+                    target_rowid: targetRowId, // Key updated to match PHP expectations
+                    target_total_count: newTargetCount, // Key updated to match PHP expectations
+                    swap_count: swapCount, // Key updated to match PHP expectations
+                    source_description: `Transferred ${swapCount} cassettes to batch '${targetBatch}'`, // Source description
+                    target_description: `Received ${swapCount} cassettes from batch '${sourceBatch}'` // Target description
+                };
+
+                // AJAX request to save the swap action
+                fetch('batch/batch_swap.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.text()) // Get response as text first
+                .then(text => {
+                    console.log('Response Text:', text); // Log the raw response
+                    const data = JSON.parse(text); // Now parse the JSON
+                    if (data.success) {
+                        alert("Batch swap successful.");
+                        location.reload(); // Reload the page or update table data as needed
+                    } else {
+                        alert("Batch swap failed: " + data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+
+                $('#swapModal').modal('hide');
         });
-    });
+
 </script>
