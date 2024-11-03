@@ -89,14 +89,28 @@ switch (true) {
         exit; // Terminate script execution
 }
 
-$batch_details = batch_details_list();
+
+$batch_list = cassettes_count_list();
+
+// Filter the batch list to only include batches created today, yesterday, or the next 5 days
+$filtered_batch_list = array_filter($batch_list, function ($batch) {
+    $created_date = new DateTime($batch['created_date']);
+    $today = new DateTime();
+    $yesterday = (new DateTime())->modify('-1 day');
+    $five_days_later = (new DateTime())->modify('+5 days');
+
+    // Check if the created date is between yesterday and five days in the future
+    return $created_date >= $yesterday && $created_date <= $five_days_later;
+});
 
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Search Functionality</title>
+  <title>Bootstrap Example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
@@ -104,77 +118,42 @@ $batch_details = batch_details_list();
 <body>
 
 <div class="container">
-  <h3>Batch Wise LabNumber Information</h3>
-  <ul class="nav nav-tabs">
-    <li class="active"><a href="./index.php">Home</a></li>
-    <li><a href="./details.php" class="tab">Details</a></li>
-    <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
-    <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
-    <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
-    <li><a href="./manual_processor.php">Manual Processor</a></li>
-  </ul>
-  <br>
-
-  <!-- Search Input -->
-  <input type="text" id="searchInput" class="form-control" placeholder="Search by Lab Number">
-  <br>
-
-  <div class="content">
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Batch</th>
-          <th scope="col">Lab Number</th>
-          <th scope="col">Gross Station</th>
-        </tr>
-      </thead>
-      <tbody id="batchTable">
-        <?php if (!empty($batch_details)) : ?>
-          <?php foreach ($batch_details as $batch): ?>
-            <tr>
-              <td><?php echo htmlspecialchars($batch['batch_name']); ?></td>
-              <td><?php echo htmlspecialchars($batch['lab_number']); ?></td>
-              <td><?php echo htmlspecialchars($batch['gross_station']); ?></td>
-            </tr>
-          <?php endforeach; ?>
-        <?php else : ?>
-          <tr>
-            <td colspan="3">No batch details found.</td>
-          </tr>
-        <?php endif; ?>
-      </tbody>
-    </table>
-    <!-- Message to display when no results are found -->
-    <p id="noResultsMessage" style="display:none; color: red; text-align: center;">No results found</p>
-  </div>
+    <h3>Batch Information For Tissue Processor</h3>
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="./index.php">Home</a></li>
+            <li><a href="./details.php" class="tab">Details</a></li>
+            <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
+            <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
+            <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
+            <li><a href="./manual_processor.php">Manual Processor</a></li>
+        </ul>
+    <br>
+        
 </div>
 
-<script>
-  // JavaScript to filter table rows by Lab Number
-  document.getElementById("searchInput").addEventListener("input", function() {
-    const filter = this.value.toUpperCase();
-    const rows = document.querySelectorAll("#batchTable tr");
-    let matchesFound = false;
-
-    rows.forEach(row => {
-      const labNumberCell = row.cells[1]; // 2nd column is Lab Number
-      if (labNumberCell) {
-        const labNumberText = labNumberCell.textContent || labNumberCell.innerText;
-        const labNumberMatches = labNumberText.toUpperCase().includes(filter) ||
-                                 labNumberText.toUpperCase().includes("HPL" + filter);
-
-        row.style.display = labNumberMatches ? "" : "none";
-
-        if (labNumberMatches) {
-          matchesFound = true;
-        }
-      }
-    });
-
-    // Show or hide the 'No results found' message based on matches
-    document.getElementById("noResultsMessage").style.display = matchesFound ? "none" : "block";
-  });
-</script>
+<div class="container">
+    <form>
+        <div class="form-group">
+            <label for="batchSelect">Select Batch</label>
+            <select class="form-control" id="batchSelect">
+                <?php if (!empty($filtered_batch_list)): ?>
+                    <?php foreach ($filtered_batch_list as $batch): ?>
+                        <option value="<?php echo htmlspecialchars($batch['rowid']); ?>">
+                            <?php echo htmlspecialchars($batch['name']); ?> - 
+                            <?php echo date('d F, Y', strtotime($batch['created_date'])); ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option>No batches available</option>
+                <?php endif; ?>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="additional-information">Additional Information</label>
+            <textarea class="form-control" id="additional-information" rows="3"></textarea>
+        </div>
+    </form>
+</div>
 
 </body>
 </html>

@@ -485,16 +485,16 @@ tr:nth-child(even) {background-color: #f2f2f2;}
 print('<form id="section-code-form" method="post" action="update_gross_specimen_section.php">');
 
 // Start the table with headers
-echo '<table>';
+echo '<table class="table">';
 echo '<thead>';
 echo '<tr>';
-echo '<th>Section Code</th>';
-echo '<th>Description</th>';
-echo '<th>Tissue</th>';
-echo '<th>Bone Present</th>';
-echo '<th>Slide</th>';
-echo '<th>Decalcified</th>';
-echo '<th>Re-Gross</th>';
+echo '<th scope="col">Section Code</th>';
+echo '<th scope="col">Description</th>';
+echo '<th scope="col">Tissue</th>';
+echo '<th scope="col">Bone Present</th>';
+echo '<th scope="col">Slide</th>';
+echo '<th scope="col">Decalcified</th>';
+echo '<th scope="col">Re-Gross</th>';
 echo '</tr>';
 echo '</thead>';
 
@@ -516,7 +516,7 @@ foreach ($sections as $section) {
     
     // Tissue
     echo '<td>';
-    echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" style="width:30%;">';
+    echo '<input style="width:60%;" type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" style="width:30%;">';
     echo '</td>';
     
     // Bone Present (Radio buttons)
@@ -532,7 +532,7 @@ foreach ($sections as $section) {
 
     // Bone Slide
     echo '<td>';
-    echo '<input type="text" name="requires_slide_for_block[]" value="' . htmlspecialchars($section['requires_slide_for_block']) . '" style="width:30%;">';
+    echo '<input style="width:60%;" type="text" name="requires_slide_for_block[]" value="' . htmlspecialchars($section['requires_slide_for_block']) . '" style="width:30%;">';
     echo '</td>';
 
     // decalcified_bone
@@ -543,7 +543,7 @@ foreach ($sections as $section) {
     // Re-Gross (only show if not empty)
     echo '<td>';
         if (!empty($section['re_gross']) && $section['re_gross'] === 'yes') {
-            echo '<input type="text" name="re_gross[]" value="yes" style="width:30%;" readonly>';
+            echo '<input style="width:60%;" type="text" name="re_gross[]" value="yes" style="width:30%;" readonly>';
         } else {
             echo '<input type="hidden" name="re_gross[]" value="">';
         }
@@ -710,7 +710,7 @@ foreach ($summaries as $summary) {
     echo '<input type="hidden" name="gross_summary_id" value="' . htmlspecialchars($summary['gross_summary_id']) . '">';
     echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-echo '<input type="submit" value="Save">';
+echo '<input type="submit" class="btn btn btn-primary" value="Save">';
 echo '</form>';
 
 echo '<div><br></div>';
@@ -728,7 +728,7 @@ print('
     <div id="gross-specimen-used-container"> 
     </div>
     <br>
-    <button id="specimenUsedSaveButton" style="display:none;">Save</button>
+    <button id="specimenUsedSaveButton" class="btn btn btn-primary" style="display:none;">Save</button>
 </form>');
 
 
@@ -1185,9 +1185,10 @@ print('
     }
 </style>
 
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="./bootstrap-3.4.1-dist/css/bootstrap.min.css">
+<script src="./jquery/jquery.min.js"></script>
+<script src="./bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
 
 <script type="text/javascript">
         function redirectToReport() {
@@ -1784,8 +1785,8 @@ print('
                     <textarea class="editable-field" data-field="description" disabled><?php echo htmlspecialchars($row['description']); ?></textarea>
                 </td>
                 <td>
-                    <button class="edit-button" onclick="enableEditing(this)">Edit</button>
-                    <button class="save-button" onclick="saveChanges(this)" style="display:none;">Save</button>
+                    <button class="edit-button btn btn btn-primary" onclick="enableEditing(this)">Edit</button>
+                    <button class="save-button btn btn btn-primary" onclick="saveChanges(this)" style="display:none;">Save</button>
                 </td>
             </tr>
         <?php endforeach; ?>
