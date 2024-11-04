@@ -90,15 +90,29 @@ switch (true) {
 }
 
 
-$batch_list = batch_list();
+$batch_list = cassettes_count_list();
+
+// Filter the batch list to only include batches created today, yesterday, or tomorrow
+$filtered_batch_list = array_filter($batch_list, function ($batch) {
+    $created_date = new DateTime($batch['created_date']);
+    $today = new DateTime();
+    $yesterday = (new DateTime())->modify('-1 day')->setTime(0, 0); // Set to start of day
+    $tomorrow = (new DateTime())->modify('+1 day')->setTime(0, 0); // Set to start of tomorrow
+
+    // Check if the created date is today, yesterday, or tomorrow
+    return ($created_date >= $yesterday && $created_date < $tomorrow) || $created_date->format('Y-m-d') === $today->format('Y-m-d');
+});
+
+$manual_processor_list = manual_processor_list();
 
 ?>
+
 
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title></title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
@@ -106,7 +120,7 @@ $batch_list = batch_list();
 <body>
 
 <div class="container">
-    <h3>Batch Information For Tissue Processor</h3>
+    <h3>Batch Information For Manual Processor</h3>
         <ul class="nav nav-tabs">
             <li class="active"><a href="./index.php">Home</a></li>
             <li><a href="./details.php" class="tab">Details</a></li>
@@ -116,109 +130,96 @@ $batch_list = batch_list();
             <li><a href="./manual_processor.php">Manual Processor</a></li>
         </ul>
     <br>
-        <div class="content">
-            <h1>Create New Batch </h1>
-                <form action="./batch/create_batch.php" method="POST" class="row g-3 needs-validation" novalidate>
-                        <!-- Batch Name -->
-                        <label for="name"  class="form-label">Batch Name:</label>
-                        <input type="text" id="name" name="name" class="form-control" >
-                        <br>
-
-                        <!-- Created User (Hidden) -->
-                        <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
-
-                        <!-- Submit Button -->
-                        <button class="btn btn-primary" type="submit">Save</button>
-                </form>
-        </div>
+        
 </div>
 
 <div class="container">
+    <form action="./batch/add_manual_processor.php" method="POST">
+        <div class="form-group">
+            <label for="batchSelect">Select Batch</label>
+            <select class="form-control" id="batchSelect" name="batch_name">
+                <?php if (!empty($filtered_batch_list)): ?>
+                    <?php foreach ($filtered_batch_list as $batch): ?>
+                        <option value="<?php echo htmlspecialchars($batch['name']) . ' - ' . date('d F, Y', strtotime($batch['created_date'])); ?>">
+                            <?php echo htmlspecialchars($batch['name']); ?> - 
+                            <?php echo date('d F, Y', strtotime($batch['created_date'])); ?>
+                        </option>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <option>No batches available</option>
+                <?php endif; ?>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="additional-information">Additional Information</label>
+            <textarea class="form-control" id="additional-information" name="description" rows="3"></textarea>
+        </div>
+        <input type="hidden" name="user_name" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-play"></i> Start
+        </button>
+    </form>
+</div>
+
+
+<div class="container">
     <br>
-    <table class="table">
+    <input type="text" id="searchInput" placeholder="Search..." class="form-control" onkeyup="searchTable()">
+    <br>
+    <table class="table" id="manualProcessorTable">
             <thead>
                 <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Create User</th>
-                <th scope="col">Create Date</th>
-                <th scope="col">Create Time</th>
-                <th scope="col">Update User</th>
-                <th scope="col">Update Date</th>
-                <th scope="col">Update Time</th>
-                <th scope="col">Edit</th>
+                <th scope="col">Batch Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">User Name</th>
+                <th scope="col">Create Date Time</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($batch_list as $batch): ?>
+                <?php foreach ($manual_processor_list  as $manual_processor): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($batch['name']); ?></td>
-                        <td><?php echo htmlspecialchars($batch['created_user']); ?></td>
-                        <td><?php echo date('d F, Y', strtotime($batch['created_date'])); ?></td>
-                        <td><?php echo date('h:i A', strtotime($batch['created_time'])); ?></td>
-                        <td><?php echo htmlspecialchars($batch['updated_user']); ?></td>
-                        <td><?php echo date('d F, Y', strtotime($batch['updated_time'])); ?></td>
-                        <td><?php echo date('h:i A', strtotime($batch['updated_time'])); ?></td>
-                        <td>
-                             <!-- Edit button with data attributes to pass values -->
-                            <button class="btn btn-success btn-sm rounded-0 edit-btn"
-                                data-rowid="<?php echo $batch['rowid']; ?>"
-                                data-name="<?php echo htmlspecialchars($batch['name']); ?>"
-                                data-toggle="modal" data-target="#editModal">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </td>
+                        <td><?php echo htmlspecialchars($manual_processor['batch_name']); ?></td>
+                        <td><?php echo htmlspecialchars($manual_processor['description']); ?></td>
+                        <td><?php echo htmlspecialchars($manual_processor['user_name']); ?></td>
+                            <?php
+                                // Create DateTime from UTC and set timezone to Asia/Dhaka
+                                $dateTime = new DateTime($manual_processor['created_datetime'], new DateTimeZone('UTC'));
+                                $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                            ?>
+                        <td><?php echo $dateTime->format('d F, Y h:i A'); ?></td>
+                        
                 <?php endforeach; ?>
             </tbody>
     </table>
 </div>
 
 
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editForm" method="post" action="./batch/edit_batch.php">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel">Edit Batch</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <!-- Hidden fields for rowid and updated_user -->
-                    <input type="hidden" id="editRowid" name="rowid">
-                    <input type="hidden" id="editUpdatedUser" name="updated_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
-                    
-                    <div class="form-group">
-                        <label for="editName">Name</label>
-                        <input type="text" class="form-control" id="editName" name="name" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<script>
+    function searchTable() {
+        // Get the search input value
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('manualProcessorTable');
+        const rows = table.getElementsByTagName('tr');
+
+        // Loop through all table rows (except the header)
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            let rowVisible = false;
+
+            // Check each cell in the row for a match
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.toLowerCase().includes(filter)) {
+                    rowVisible = true;
+                    break; // No need to check further cells
+                }
+            }
+
+            // Toggle the visibility of the row based on the search
+            rows[i].style.display = rowVisible ? '' : 'none';
+        }
+    }
+</script>
 
 </body>
 </html>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const editButtons = document.querySelectorAll('.edit-btn');
-
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const rowid = button.getAttribute('data-rowid');
-                const name = button.getAttribute('data-name');
-                
-                document.getElementById('editRowid').value = rowid;
-                document.getElementById('editName').value = name;
-            });
-        });
-    });
-</script>custom/grossmodule/bootstrap-3.4.1-dist/
