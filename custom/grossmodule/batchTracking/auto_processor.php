@@ -92,16 +92,18 @@ switch (true) {
 
 $batch_list = cassettes_count_list();
 
-// Filter the batch list to only include batches created today, yesterday, or the next 5 days
+// Filter the batch list to only include batches created today, yesterday, or tomorrow
 $filtered_batch_list = array_filter($batch_list, function ($batch) {
     $created_date = new DateTime($batch['created_date']);
     $today = new DateTime();
-    $yesterday = (new DateTime())->modify('-1 day');
-    $five_days_later = (new DateTime())->modify('+5 days');
+    $yesterday = (new DateTime())->modify('-1 day')->setTime(0, 0); // Set to start of day
+    $tomorrow = (new DateTime())->modify('+1 day')->setTime(0, 0); // Set to start of tomorrow
 
-    // Check if the created date is between yesterday and five days in the future
-    return $created_date >= $yesterday && $created_date <= $five_days_later;
+    // Check if the created date is today, yesterday, or tomorrow
+    return ($created_date >= $yesterday && $created_date < $tomorrow) || $created_date->format('Y-m-d') === $today->format('Y-m-d');
 });
+
+$auto_processor_list = auto_processor_list();
 
 ?>
 
@@ -110,7 +112,7 @@ $filtered_batch_list = array_filter($batch_list, function ($batch) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
+  <title></title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
@@ -118,7 +120,7 @@ $filtered_batch_list = array_filter($batch_list, function ($batch) {
 <body>
 
 <div class="container">
-    <h3>Batch Information For Tissue Processor</h3>
+    <h3>Batch Information For Auto Processor (MYR)</h3>
         <ul class="nav nav-tabs">
             <li class="active"><a href="./index.php">Home</a></li>
             <li><a href="./details.php" class="tab">Details</a></li>
@@ -132,13 +134,13 @@ $filtered_batch_list = array_filter($batch_list, function ($batch) {
 </div>
 
 <div class="container">
-    <form>
+    <form action="./batch/add_auto_processor.php" method="POST">
         <div class="form-group">
             <label for="batchSelect">Select Batch</label>
-            <select class="form-control" id="batchSelect">
+            <select class="form-control" id="batchSelect" name="batch_name">
                 <?php if (!empty($filtered_batch_list)): ?>
                     <?php foreach ($filtered_batch_list as $batch): ?>
-                        <option value="<?php echo htmlspecialchars($batch['rowid']); ?>">
+                        <option value="<?php echo htmlspecialchars($batch['name']) . ' - ' . date('d F, Y', strtotime($batch['created_date'])); ?>">
                             <?php echo htmlspecialchars($batch['name']); ?> - 
                             <?php echo date('d F, Y', strtotime($batch['created_date'])); ?>
                         </option>
@@ -150,10 +152,74 @@ $filtered_batch_list = array_filter($batch_list, function ($batch) {
         </div>
         <div class="form-group">
             <label for="additional-information">Additional Information</label>
-            <textarea class="form-control" id="additional-information" rows="3"></textarea>
+            <textarea class="form-control" id="additional-information" name="description" rows="3"></textarea>
         </div>
+        <input type="hidden" name="user_name" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-play"></i> Start
+        </button>
     </form>
 </div>
+
+
+<div class="container">
+    <br>
+    <input type="text" id="searchInput" placeholder="Search..." class="form-control" onkeyup="searchTable()">
+    <br>
+    <table class="table" id="autoProcessorTable">
+            <thead>
+                <tr>
+                <th scope="col">Batch Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">User Name</th>
+                <th scope="col">Create Date Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($auto_processor_list as $auto_processor): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($auto_processor['batch_name']); ?></td>
+                        <td><?php echo htmlspecialchars($auto_processor['description']); ?></td>
+                        <td><?php echo htmlspecialchars($auto_processor['user_name']); ?></td>
+                            <?php
+                                // Create DateTime from UTC and set timezone to Asia/Dhaka
+                                $dateTime = new DateTime($auto_processor['created_datetime'], new DateTimeZone('UTC'));
+                                $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                            ?>
+                        <td><?php echo $dateTime->format('d F, Y h:i A'); ?></td>
+                        
+                <?php endforeach; ?>
+            </tbody>
+    </table>
+</div>
+
+
+<script>
+    function searchTable() {
+        // Get the search input value
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toLowerCase();
+        const table = document.getElementById('autoProcessorTable');
+        const rows = table.getElementsByTagName('tr');
+
+        // Loop through all table rows (except the header)
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            let rowVisible = false;
+
+            // Check each cell in the row for a match
+            for (let j = 0; j < cells.length; j++) {
+                if (cells[j].innerText.toLowerCase().includes(filter)) {
+                    rowVisible = true;
+                    break; // No need to check further cells
+                }
+            }
+
+            // Toggle the visibility of the row based on the search
+            rows[i].style.display = rowVisible ? '' : 'none';
+        }
+    }
+</script>
 
 </body>
 </html>

@@ -136,4 +136,53 @@ function cassettes_count_list() {
 
     return $existingdata;
 }
+
+function auto_processor_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "SELECT rowid, user_name, batch_name, description, created_datetime from llx_auto_processor order by rowid DESC";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_auto_processor", $sql);
+    $result = pg_execute($pg_con, "get_auto_processor", array());
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function manual_processor_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "SELECT rowid, user_name, batch_name, description, created_datetime from llx_manual_processor order by rowid DESC";
+
+    // Prepare and execute the SQL query
+    $result = pg_prepare($pg_con, "get_manual_processor", $sql);
+    $result = pg_execute($pg_con, "get_manual_processor", array());
+
+    $existingdata = [];
+
+    if ($result) {
+        $existingdata = pg_fetch_all($result) ?: [];
+        
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
 ?>
