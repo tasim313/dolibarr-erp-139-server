@@ -135,9 +135,10 @@ $auto_processor_list = auto_processor_list();
 
 <div class="container">
     <form action="./batch/add_auto_processor.php" method="POST">
+        
         <div class="form-group">
             <label for="batchSelect">Select Batch</label>
-            <select class="form-control" id="batchSelect" name="batch_name">
+            <select class="form-control" id="batchSelect" name="batch_name[]" multiple> <!-- Use `multiple` attribute -->
                 <?php if (!empty($filtered_batch_list)): ?>
                     <?php foreach ($filtered_batch_list as $batch): ?>
                         <option value="<?php echo htmlspecialchars($batch['name']) . ' - ' . date('d F, Y', strtotime($batch['created_date'])); ?>">
@@ -150,6 +151,7 @@ $auto_processor_list = auto_processor_list();
                 <?php endif; ?>
             </select>
         </div>
+
         <div class="form-group">
             <label for="additional-information">Additional Information</label>
             <textarea class="form-control" id="additional-information" name="description" rows="3"></textarea>

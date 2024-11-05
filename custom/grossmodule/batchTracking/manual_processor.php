@@ -137,7 +137,7 @@ $manual_processor_list = manual_processor_list();
     <form action="./batch/add_manual_processor.php" method="POST">
         <div class="form-group">
             <label for="batchSelect">Select Batch</label>
-            <select class="form-control" id="batchSelect" name="batch_name">
+            <select class="form-control" id="batchSelect" name="batch_name[]" multiple> <!-- Use `multiple` attribute -->
                 <?php if (!empty($filtered_batch_list)): ?>
                     <?php foreach ($filtered_batch_list as $batch): ?>
                         <option value="<?php echo htmlspecialchars($batch['name']) . ' - ' . date('d F, Y', strtotime($batch['created_date'])); ?>">
