@@ -8,6 +8,9 @@ function get_histo_gross_specimen_list() {
             g.gross_station_type, s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, s.tissue, s.requires_slide_for_block
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
+            -- LEFT JOIN llx_batch_details d ON g.lab_number = d.lab_number
+            -- LEFT JOIN llx_batch b ON b.rowid = d.batch_number
+            -- LEFT JOIN llx_batch_cassette_counts bc ON bc.batch_details_cassettes = b.rowid
             WHERE g.gross_status = 'Done'
             AND s.fk_gross_id !~ '[^\d]' AND s.bone = 'no' AND s.re_gross = ''";
     $result = pg_query($pg_con, $sql);
@@ -20,7 +23,7 @@ function get_histo_gross_specimen_list() {
             'Gross Status'=>$row['gross_status'], 'gross_specimen_section_id' => $row['gross_specimen_section_id'], 
             'section_code' => $row['section_code'], 'cassettes_numbers' => $row['cassettes_numbers'], 'tissue' => $row['tissue'],
             'doctor' => $row['doctor'], 'assistant' => $row['assistant'], 'requires_slide_for_block' => $row['requires_slide_for_block'],
-            'gross_station_type' => $row['gross_station_type'],
+            'gross_station_type' => $row['gross_station_type']
         ];
         }
 

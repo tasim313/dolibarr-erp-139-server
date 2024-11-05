@@ -120,14 +120,14 @@ $manual_processor_list = manual_processor_list();
 <body>
 
 <div class="container">
-    <h3>Batch Information For Manual Processor</h3>
+    <h3>Batch Information For Auto Processor (YIDI)</h3>
         <ul class="nav nav-tabs">
             <li class="active"><a href="./index.php">Home</a></li>
             <li><a href="./details.php" class="tab">Details</a></li>
             <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
             <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
             <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
-            <li><a href="./manual_processor.php">Manual Processor</a></li>
+            <li><a href="./manual_processor.php">Auto Processor (YIDI)</a></li>
         </ul>
     <br>
         
@@ -170,16 +170,15 @@ $manual_processor_list = manual_processor_list();
             <thead>
                 <tr>
                 <th scope="col">Batch Name</th>
-                <th scope="col">Description</th>
                 <th scope="col">User Name</th>
                 <th scope="col">Create Date Time</th>
+                <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($manual_processor_list  as $manual_processor): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($manual_processor['batch_name']); ?></td>
-                        <td><?php echo htmlspecialchars($manual_processor['description']); ?></td>
                         <td><?php echo htmlspecialchars($manual_processor['user_name']); ?></td>
                             <?php
                                 // Create DateTime from UTC and set timezone to Asia/Dhaka
@@ -187,6 +186,7 @@ $manual_processor_list = manual_processor_list();
                                 $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
                             ?>
                         <td><?php echo $dateTime->format('d F, Y h:i A'); ?></td>
+                        <td><?php echo htmlspecialchars($manual_processor['description']); ?></td>
                         
                 <?php endforeach; ?>
             </tbody>

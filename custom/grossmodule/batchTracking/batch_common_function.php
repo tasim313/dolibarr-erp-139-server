@@ -68,22 +68,22 @@ function batch_details_cassettes_list() {
 
     // Ensure that we are using a prepared statement to prevent SQL injection
     $sql = "SELECT 
-                c.rowid, 
-                b.name AS batch_name,
-                c.cassettes_number, 
-                c.created_date, 
-                c.created_user, 
-                c.updated_user, 
-                c.created_time, 
-                c.updated_time
-                FROM 
-                    llx_batch_details_cassettes AS c
-                JOIN 
-                    llx_batch_details AS bd ON c.batch_details = bd.rowid -- references the batch
-                JOIN 
-                    llx_batch AS b ON bd.batch_number = b.rowid -- Use 'rowid' from llx_batch
-                ORDER BY 
-                    c.rowid ASC";
+            c.rowid, 
+            b.name AS batch_name,
+            c.cassettes_number, 
+            c.created_date, 
+            c.created_user, 
+            c.updated_user, 
+            c.created_time, 
+            c.updated_time
+        FROM 
+            llx_batch_details_cassettes AS c
+        LEFT JOIN 
+            llx_batch AS b ON c.batch_details = b.rowid
+        WHERE 
+            c.created_date >= CURRENT_DATE - INTERVAL '7 days' -- Filter for the last 7 days
+        ORDER BY 
+            c.rowid ASC";
 
     // Prepare and execute the SQL query
     $result = pg_prepare($pg_con, "get_batch_details", $sql);
