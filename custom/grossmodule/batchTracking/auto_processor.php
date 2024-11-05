@@ -127,7 +127,7 @@ $auto_processor_list = auto_processor_list();
             <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
             <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
             <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
-            <li><a href="./manual_processor.php">Manual Processor</a></li>
+            <li><a href="./manual_processor.php">Auto Processor (YIDI)</a></li>
         </ul>
     <br>
         
@@ -170,16 +170,15 @@ $auto_processor_list = auto_processor_list();
             <thead>
                 <tr>
                 <th scope="col">Batch Name</th>
-                <th scope="col">Description</th>
                 <th scope="col">User Name</th>
                 <th scope="col">Create Date Time</th>
+                <th scope="col">Description</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($auto_processor_list as $auto_processor): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($auto_processor['batch_name']); ?></td>
-                        <td><?php echo htmlspecialchars($auto_processor['description']); ?></td>
                         <td><?php echo htmlspecialchars($auto_processor['user_name']); ?></td>
                             <?php
                                 // Create DateTime from UTC and set timezone to Asia/Dhaka
@@ -187,6 +186,7 @@ $auto_processor_list = auto_processor_list();
                                 $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
                             ?>
                         <td><?php echo $dateTime->format('d F, Y h:i A'); ?></td>
+                        <td><?php echo htmlspecialchars($auto_processor['description']); ?></td>
                         
                 <?php endforeach; ?>
             </tbody>

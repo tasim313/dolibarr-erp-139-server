@@ -111,7 +111,7 @@ $cassettes_details = batch_details_cassettes_list();
     <li><a href="./cassettes_number.php" class="tab">Cassettes Details</a></li>
     <li><a href="./cassettes_count.php" class="tab">Batch Cassettes Count</a></li>
     <li><a href="./auto_processor.php">Auto Processor (MYR)</a></li>
-    <li><a href="./manual_processor.php">Manual Processor</a></li>
+    <li><a href="./manual_processor.php">Auto Processor (YIDI)</a></li>
   </ul>
   <br>
 
