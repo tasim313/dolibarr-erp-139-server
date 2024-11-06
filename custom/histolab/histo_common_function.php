@@ -8,9 +8,6 @@ function get_histo_gross_specimen_list() {
             g.gross_station_type, s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, s.tissue, s.requires_slide_for_block
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
-            -- LEFT JOIN llx_batch_details d ON g.lab_number = d.lab_number
-            -- LEFT JOIN llx_batch b ON b.rowid = d.batch_number
-            -- LEFT JOIN llx_batch_cassette_counts bc ON bc.batch_details_cassettes = b.rowid
             WHERE g.gross_status = 'Done'
             AND s.fk_gross_id !~ '[^\d]' AND s.bone = 'no' AND s.re_gross = ''";
     $result = pg_query($pg_con, $sql);
@@ -353,7 +350,7 @@ function get_bones_not_ready_list() {
     $sql = "SELECT g.gross_id, g.lab_number, g.gross_create_date, g.gross_status, 
                 g.gross_assistant_name, g.gross_doctor_name,
                 s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, 
-                s.tissue, s.bone, s.requires_slide_for_block
+                s.tissue, s.bone, s.decalcified_bone, s.requires_slide_for_block
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
             WHERE g.gross_status = 'Done'
@@ -378,8 +375,8 @@ function get_bones_not_ready_list() {
                 'cassettes_numbers' => $row['cassettes_numbers'],
                 'tissue'  => $row['tissue'],
                 'id' => $row['gross_specimen_section_id'],
-                'requires_slide_for_block' => $row['requires_slide_for_block'],
-                'gross_create_date' => $row['gross_create_date']
+                'decalcified_bone' => $row['decalcified_bone'],
+                'requires_slide_for_block' => $row['requires_slide_for_block']
             ];
         }
 
@@ -453,4 +450,89 @@ function get_histo_techs_user_list() {
 
     return $assistants;
 }
+
+
+function date_wise_batch_name_cassettes_count_list() {
+    global $pg_con;
+
+    // Ensure that we are using a prepared statement to prevent SQL injection
+    $sql = "select b.name, d.lab_number, d.created_date from llx_batch_details AS d
+            LEFT JOIN 
+            llx_batch AS b ON b.rowid = d.batch_number
+            WHERE 
+            d.created_date >= (CURRENT_DATE - INTERVAL '7 days') AND d.created_date < (CURRENT_DATE + INTERVAL '1 day');";
+            
+    // Prepare the SQL query
+    $result = pg_prepare($pg_con, "get_batch_details", $sql);
+
+    if ($result) {
+        // Execute the prepared statement with the provided date range
+        $result = pg_execute($pg_con, "get_batch_details", array());
+
+        $existingdata = [];
+
+        if ($result) {
+            $existingdata = pg_fetch_all($result) ?: [];
+            
+            pg_free_result($result);
+        } else {
+            echo 'Error: ' . pg_last_error($pg_con);
+        }
+
+        return $existingdata;
+    } else {
+        // Handle the case where the prepared statement failed
+        echo 'Error: ' . pg_last_error($pg_con);
+        return [];
+    }
+}
+
+
+function get_bone_slide_ready_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+                ct.create_time, 
+                ct.labno, 
+                u.login AS user_name,  
+                ws.name AS status_name, 
+                ws.section, 
+                ct.description
+            FROM 
+                llx_commande_trackws ct
+            JOIN 
+                llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+            JOIN 
+                llx_user u ON ct.user_id = u.rowid
+            WHERE 
+                ws.id = 52
+                AND ct.create_time BETWEEN '2024-07-27' AND CURRENT_DATE + INTERVAL '1 day' - INTERVAL '1 second'
+            ORDER BY 
+                ct.id DESC;
+            ";
+
+    $result = pg_query($pg_con, $sql);
+
+    $existingdata = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = [
+                'TrackCreateTime' => $row['create_time'], 
+                'Lab Number' => $row['labno'],
+                'User Name' => $row['user_name'], 
+                'Status Name' => $row['status_name'], 
+                'Section' => $row['section'], 
+                'Description' => $row['description']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>
