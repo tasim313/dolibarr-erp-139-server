@@ -24,7 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gross_assistant_name, 
             gross_doctor_name, 
             gross_status, 
-            gross_created_user
+            gross_created_user,
+            batch
         )
         VALUES (
             '$lab_number',
@@ -32,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             '$gross_assistant_name',
             '$gross_doctor_name ', 
             '$gross_status', 
-            '$gross_created_user'
+            '$gross_created_user',
+            '$selected_batch'
         )
         RETURNING gross_id, lab_number";
 

@@ -101,6 +101,8 @@ $on_hold_instruction_list = get_histo_doctor_instruction_on_hold_list();
 $bones_list = get_bones_not_ready_list();
 $sbo_list = get_slide_block_order_list();
 $sbo_complete_list = get_slide_block_order_ready_list();
+$batch_name_cassettes_count = date_wise_batch_name_cassettes_count_list();
+$bone_slide_ready_list = get_bone_slide_ready_list();
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
@@ -473,20 +475,446 @@ echo '<div class="tab-container">
                         //     return tableRows; // Return the generated rows
                         // }
 
+                        // function generateTableRowsForPdf() {
+                        //         let tableRows = ""; // Initialize the tableRows variable
+
+                        //         // Get the date values from the input fields
+                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
+                        //         var toDate = new Date(document.getElementById("toDateTime").value);
+                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+
+                        //         // Group items by batch
+                        //         let groupedItems = {};
+                        //         histo_gross_list.forEach(function(item) {
+                        //             // Filter items based on date range
+                        //             var itemDate = new Date(item["Gross Create Date"]);
+                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
+                        //                 if (!groupedItems[item["Gross Create Date"]]) {
+                        //                     groupedItems[item["Gross Create Date"]] = [];
+                        //                 }
+                        //                 groupedItems[item["Gross Create Date"]].push(item);
+                        //             }
+                        //         });
+
+                        //         // Sort Lab Numbers in ascending order
+                        //         let sortedLabNumbers = Object.keys(groupedItems).sort();
+
+                        //         const batchNames = [
+                        //             "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
+                        //             "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
+                        //             "Ninth Batch", "Tenth Batch"
+                        //         ];
+
+
+                        //         // Generate HTML markup for the table rows
+                        //         sortedLabNumbers.forEach(function(labNumber) {
+                        //             if (groupedItems.hasOwnProperty(labNumber)) {
+                        //                 // Add Batch, Doctor, Assistant, and Gross Create Date as a separate row
+                        //                 let batch = groupedItems[labNumber][0]["batch"];
+                        //                 let doctor = groupedItems[labNumber][0]["doctor"];
+                        //                 let assistant = groupedItems[labNumber][0]["assistant"];
+                        //                 let grossCreateDate = new Date(groupedItems[labNumber][0]["Gross Create Date"]);
+                        //                 let labNumberDisplay = groupedItems[labNumber][0]["Lab Number"]; 
+
+                        //                 // Convert batch number to batch name
+                        //                 let batchName = batchNames[batch - 1] || `Batch ${batch}`; // Handle missing batch names for numbers beyond 10
+
+                                        
+                        //                 tableRows += "<tr><td colspan=\'6\'>" + batchName + 
+                        //                         "  " + doctor + 
+                        //                         "  " + assistant + 
+                        //                         " " + grossCreateDate.toLocaleDateString("en-US", {
+                        //                             day: "numeric", 
+                        //                             month: "long", 
+                        //                             year: "numeric"
+                        //                         }) + "  " + labNumberDisplay + 
+                        //                         "</td></tr>";
+
+                        //                 // Initialize an array to hold all section details for this lab number
+                        //                 let sectionDetails = [];
+
+                        //                 // Extract unique section codes for the current lab number
+                        //                 let sectionSequence = [];
+                        //                 groupedItems[labNumber].forEach(function(item) {
+                        //                     if (!sectionSequence.includes(item["section_code"])) {
+                        //                         sectionSequence.push(item["section_code"]);
+                        //                     }
+                        //             });
+
+                        //             // Custom sort for section codes (alphanumeric sorting)
+                        //             sectionSequence.sort((a, b) => {
+                        //                 const numA = parseInt(a.match(/\d+/)) || 0; // Extract the number part
+                        //                 const numB = parseInt(b.match(/\d+/)) || 0; // Extract the number part
+                        //                 const charA = a.match(/[^\d]+/) || [\'\']; // Extract the character part
+                        //                 const charB = b.match(/[^\d]+/) || [\'\']; // Extract the character part
+
+                        //                 // Compare characters first
+                        //                 if (charA[0] < charB[0]) return -1;
+                        //                 if (charA[0] > charB[0]) return 1;
+                        //                 // If characters are the same, compare numbers
+                        //                 return numA - numB;
+                        //             });
+
+                        //             // Add LabNumber section code, tissue, slide, cassettes numbers, doctor, and gross assistant details for each Lab Number
+                        //             sectionSequence.forEach(function(code) {
+                        //                 groupedItems[labNumber].forEach(function(item) {
+                        //                     if (item["section_code"] === code) {
+                        //                         let sectionDetail = code + "(" + item["tissue"] + ")"; // Add section code and tissue
+                        //                         if (item["requires_slide_for_block"]) sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
+                        //                         sectionDetails.push(sectionDetail);
+                        //                     }
+                        //                 });
+                        //             });
+
+                        //             // Combine section details into a single string separated by commas and add it to the row
+                        //             if (sectionDetails.length > 0) {
+                        //                 tableRows += "<tr><td colspan=\'6\'>" + sectionDetails.join(", ") + "</td></tr>";
+                        //             }
+                        //         }
+                        //     });
+
+                        //     return tableRows; // Return the generated rows
+                        // }
+
+                        // function generateTableRowsForPdf() {
+                        //         let tableRows = ""; // Initialize the tableRows variable
+
+                        //         // Get the date values from the input fields
+                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
+                        //         var toDate = new Date(document.getElementById("toDateTime").value);
+                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+
+                        //         // Group items by batch
+                        //         let groupedItems = {};
+                        //         histo_gross_list.forEach(function(item) {
+                        //             // Filter items based on date range
+                        //             var itemDate = new Date(item["Gross Create Date"]);
+                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
+                        //                 if (!groupedItems[item["Gross Create Date"]]) {
+                        //                     groupedItems[item["Gross Create Date"]] = [];
+                        //                 }
+                        //                 groupedItems[item["Gross Create Date"]].push(item);
+                        //             }
+                        //         });
+
+                        //             // Sort dates in ascending order
+                        //             let sortedDates = Object.keys(groupedItems).sort();
+
+                        //             const batchNames = [
+                        //                 "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
+                        //                 "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
+                        //                 "Ninth Batch", "Tenth Batch"
+                        //             ];
+
+                        //         // Variable to keep track of the last displayed date
+                        //         let lastDisplayedDate = "";
+
+                        //         // Generate HTML markup for the table rows
+                        //         sortedDates.forEach(function(dateKey) {
+                        //             let dateItems = groupedItems[dateKey];
+                                    
+                        //             dateItems.forEach(function(item, index) {
+                        //                 // Retrieve the necessary values
+                        //                 let batch = item["batch"];
+                        //                 let doctor = item["doctor"];
+                        //                 let assistant = item["assistant"];
+                        //                 let grossCreateDate = new Date(item["Gross Create Date"]);
+                        //                 let labNumberDisplay = item["Lab Number"]; 
+
+                        //                 // Convert batch number to batch name
+                        //                 let batchName = batchNames[batch - 1] || `Batch ${batch}`; // Handle missing batch names for numbers beyond 10
+
+                        //                 // Format date for display
+                        //                 let formattedDate = grossCreateDate.toLocaleDateString("en-US", {
+                        //                     day: "numeric", 
+                        //                     month: "long", 
+                        //                     year: "numeric"
+                        //                 });
+
+                        //             // Only display the date if it different from the previous one
+                        //             if (lastDisplayedDate !== formattedDate) {
+                        //                 tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
+                        //                 lastDisplayedDate = formattedDate; // Update the lastDisplayedDate to the current one
+                        //             }
+
+                        //             // Display batch, doctor, assistant, and lab number for each entry
+                        //             tableRows += `<tr><td colspan=\'6\'>${batchName} ${doctor} ${assistant} ${labNumberDisplay}</td></tr>`;
+
+                        //             // Initialize an array to hold all section details for this lab number
+                        //             let sectionDetails = [];
+
+                        //             // Extract unique section codes for the current lab number
+                        //             let sectionSequence = [];
+                        //             dateItems.forEach(function(entry) {
+                        //                 if (entry["Lab Number"] === labNumberDisplay && !sectionSequence.includes(entry["section_code"])) {
+                        //                     sectionSequence.push(entry["section_code"]);
+                        //                 }
+                        //             });
+
+                        //             // Custom sort for section codes (alphanumeric sorting)
+                        //             sectionSequence.sort((a, b) => {
+                        //                 const numA = parseInt(a.match(/\d+/)) || 0; // Extract the number part
+                        //                 const numB = parseInt(b.match(/\d+/)) || 0; // Extract the number part
+                        //                 const charA = a.match(/[^\d]+/) || [\'\']; // Extract the character part
+                        //                 const charB = b.match(/[^\d]+/) || [\'\']; // Extract the character part
+
+                        //                 // Compare characters first
+                        //                 if (charA[0] < charB[0]) return -1;
+                        //                 if (charA[0] > charB[0]) return 1;
+                        //                 // If characters are the same, compare numbers
+                        //                 return numA - numB;
+                        //             });
+
+                        //             // Add LabNumber section code, tissue, slide, and other details for each Lab Number
+                        //             sectionSequence.forEach(function(code) {
+                        //                 dateItems.forEach(function(entry) {
+                        //                     if (entry["Lab Number"] === labNumberDisplay && entry["section_code"] === code) {
+                        //                         let sectionDetail = code + "(" + entry["tissue"] + ")"; // Add section code and tissue
+                        //                         if (entry["requires_slide_for_block"]) sectionDetail += "(Slide: " + entry["requires_slide_for_block"] + ")";
+                        //                         sectionDetails.push(sectionDetail);
+                        //                     }
+                        //                 });
+                        //             });
+
+                        //                 // Combine section details into a single string separated by commas and add it to the row
+                        //                 if (sectionDetails.length > 0) {
+                        //                     tableRows += `<tr><td colspan=\'6\'>${sectionDetails.join(", ")}</td></tr>`;
+                        //                 }
+                        //             });
+                        //         });
+
+                        //         return tableRows; // Return the generated rows
+                        // }
+
+                        // function generateTableRowsForPdf() {
+                        //         let tableRows = ""; // Initialize the tableRows variable
+
+                        //         // Get the date values from the input fields
+                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
+                        //         var toDate = new Date(document.getElementById("toDateTime").value);
+                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+
+                        //         // Group items by date and batch
+                        //         let groupedItems = {};
+                        //         histo_gross_list.forEach(function(item) {
+                        //             var itemDate = new Date(item["Gross Create Date"]);
+                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
+                        //                 let dateKey = item["Gross Create Date"];
+                        //                 let batchKey = item["batch"];
+                        //                 if (!groupedItems[dateKey]) groupedItems[dateKey] = {};
+                        //                 if (!groupedItems[dateKey][batchKey]) groupedItems[dateKey][batchKey] = [];
+                        //                 groupedItems[dateKey][batchKey].push(item);
+                        //             }
+                        //         });
+
+                        //         // Sort dates in ascending order
+                        //         let sortedDates = Object.keys(groupedItems).sort();
+
+                        //         const batchNames = [
+                        //             "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
+                        //             "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
+                        //             "Ninth Batch", "Tenth Batch"
+                        //         ];
+
+                        //         let lastDisplayedDate = ""; // Track the last displayed date
+                        //         let displayedBatches = {}; // Track the displayed batch names for each date
+
+                        //         sortedDates.forEach(function(dateKey) {
+                        //             let batches = groupedItems[dateKey];
+
+                        //             // Format date for display
+                        //             let formattedDate = new Date(dateKey).toLocaleDateString("en-US", {
+                        //                 day: "numeric", 
+                        //                 month: "long", 
+                        //                 year: "numeric"
+                        //             });
+
+                        //             // Display the date only once per date
+                        //             if (lastDisplayedDate !== formattedDate) {
+                        //                 tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
+                        //                 lastDisplayedDate = formattedDate;
+                        //             }
+
+                        //             // For each batch in the current date
+                        //             Object.keys(batches).forEach(function(batchKey) {
+                        //                 let batchItems = batches[batchKey];
+                        //                 let batchName = (batchKey === "null" || batchKey === undefined) ? "Not Selected Batch" : (batchNames[batchKey - 1] || `Batch ${batchKey}`);
+
+                        //                 // If the batch has already been displayed for this date, skip it
+                        //                 if (displayedBatches[formattedDate] && displayedBatches[formattedDate].includes(batchName)) return;
+
+                        //                 // Add batch name to the displayed batches for this date
+                        //                 if (!displayedBatches[formattedDate]) displayedBatches[formattedDate] = [];
+                        //                 displayedBatches[formattedDate].push(batchName);
+
+                        //                 // Display the batch name only once per date
+                        //                 tableRows += `<tr><td colspan=\'6\'>${batchName}</td></tr>`;
+                                        
+                        //                 // Generate lab number details for the batch
+                        //                 let labNumberDetails = {};
+
+                        //                 batchItems.forEach(function(item) {
+                        //                     let labNumber = item["Lab Number"];
+                        //                     let doctor = item["doctor"];
+                        //                     let assistant = item["assistant"];
+
+                        //                     // Add lab number and doctor info
+                        //                     if (!labNumberDetails[labNumber]) {
+                        //                         labNumberDetails[labNumber] = {
+                        //                             info: `${doctor} ${assistant} ${labNumber}`,
+                        //                             sections: []
+                        //                         };
+                        //                     }
+
+                        //                     // Add section details
+                        //                     let sectionDetail = item["section_code"] + "(" + item["tissue"] + ")";
+                        //                     if (item["requires_slide_for_block"]) {
+                        //                         sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
+                        //                     }
+                        //                     if (!labNumberDetails[labNumber].sections.includes(sectionDetail)) {
+                        //                         labNumberDetails[labNumber].sections.push(sectionDetail);
+                        //                     }
+                        //                 });
+
+                        //                 // Add rows for each lab number and its sections
+                        //                 Object.values(labNumberDetails).forEach(detail => {
+                        //                     tableRows += `<tr><td colspan=\'6\'>${detail.info}</td></tr>`;
+                        //                     if (detail.sections.length > 0) {
+                        //                         tableRows += `<tr><td colspan=\'6\'>${detail.sections.join(", ")}</td></tr>`;
+                        //                     }
+                        //                 });
+                        //             });
+                        //         });
+
+                        //         return tableRows; // Return the generated rows
+                        // }
+
                         function generateTableRowsForPdf() {
     let tableRows = ""; // Initialize the tableRows variable
+    let totalLabNumbersFound = 0; // Counter for total lab numbers found
+    let totalLabNumbersDisplayed = 0; // Counter for total lab numbers displayed
 
-    histo_gross_list.forEach(item => {
-        // Start a new row for each item
-        tableRows += "<tr>";
-        
-        tableRows += "<td>" + (item["name"] || "N/A") + "</td>";
-        tableRows += "<td>" + (item["total_cassettes_count"] || "N/A") + "</td>";
-        tableRows += "</tr>"; // Close the row
+    // Get the date values from the input fields
+    var fromDate = new Date(document.getElementById("fromDateTime").value);
+    var toDate = new Date(document.getElementById("toDateTime").value);
+    var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+    var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+
+    // Group items by date and batch
+    let groupedItems = {};
+    histo_gross_list.forEach(function(item) {
+        var itemDate = new Date(item["Gross Create Date"]);
+        if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
+            let dateKey = item["Gross Create Date"];
+            let batchKey = item["batch"];
+            if (!groupedItems[dateKey]) groupedItems[dateKey] = {};
+            if (!groupedItems[dateKey][batchKey]) groupedItems[dateKey][batchKey] = [];
+            groupedItems[dateKey][batchKey].push(item);
+        }
     });
+
+    // Sort dates in ascending order
+    let sortedDates = Object.keys(groupedItems).sort();
+
+    const batchNames = [
+        "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
+        "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
+        "Ninth Batch", "Tenth Batch"
+    ];
+
+    let lastDisplayedDate = ""; // Track the last displayed date
+    let displayedBatches = {}; // Track the displayed batch names for each date
+
+    sortedDates.forEach(function(dateKey) {
+        let batches = groupedItems[dateKey];
+
+        // Format date for display
+        let formattedDate = new Date(dateKey).toLocaleDateString("en-US", {
+            day: "numeric", 
+            month: "long", 
+            year: "numeric"
+        });
+
+        // Display the date only once per date
+        if (lastDisplayedDate !== formattedDate) {
+            tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
+            lastDisplayedDate = formattedDate;
+        }
+
+        // For each batch in the current date
+        Object.keys(batches).forEach(function(batchKey) {
+            let batchItems = batches[batchKey];
+            let batchName = (batchKey === "null" || batchKey === undefined) ? "Not Selected Batch" : (batchNames[batchKey - 1] || `Batch ${batchKey}`);
+
+            // If the batch has already been displayed for this date, skip it
+            if (displayedBatches[formattedDate] && displayedBatches[formattedDate].includes(batchName)) return;
+
+            // Add batch name to the displayed batches for this date
+            if (!displayedBatches[formattedDate]) displayedBatches[formattedDate] = [];
+            displayedBatches[formattedDate].push(batchName);
+
+            // Display the batch name only once per date
+            tableRows += `<tr><td colspan=\'6\'>${batchName}</td></tr>`;
+            
+            // Generate lab number details for the batch
+            let labNumberDetails = {};
+
+            batchItems.forEach(function(item) {
+                let labNumber = item["Lab Number"];
+                let doctor = item["doctor"];
+                let assistant = item["assistant"];
+
+                // Debugging: Log each lab number found
+                console.log("Found Lab Number: ", labNumber);
+
+                // Increment the counter for total lab numbers found
+                totalLabNumbersFound++;
+
+                // Add lab number and doctor info
+                if (!labNumberDetails[labNumber]) {
+                    labNumberDetails[labNumber] = {
+                        info: `${doctor} ${assistant} ${labNumber}`,
+                        sections: []
+                    };
+                }
+
+                // Add section details
+                let sectionDetail = item["section_code"] + "(" + item["tissue"] + ")";
+                if (item["requires_slide_for_block"]) {
+                    sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
+                }
+                if (!labNumberDetails[labNumber].sections.includes(sectionDetail)) {
+                    labNumberDetails[labNumber].sections.push(sectionDetail);
+                }
+            });
+
+            // Add rows for each lab number and its sections
+            Object.values(labNumberDetails).forEach(detail => {
+                tableRows += `<tr><td colspan=\'6\'>${detail.info}</td></tr>`;
+                if (detail.sections.length > 0) {
+                    tableRows += `<tr><td colspan=\'6\'>${detail.sections.join(", ")}</td></tr>`;
+                }
+
+                // Increment the counter for total lab numbers displayed
+                totalLabNumbersDisplayed++;
+            });
+        });
+    });
+
+    // Debugging: Log the final counts of lab numbers found and displayed
+    console.log("Total Lab Numbers Found: ", totalLabNumbersFound);
+    console.log("Total Lab Numbers Displayed: ", totalLabNumbersDisplayed);
 
     return tableRows; // Return the generated rows
 }
+
+
+
+
+
 
                         // Define the submitDateTime function
                         function submitDateTime() {
@@ -548,15 +976,6 @@ echo '<div class="tab-container">
                         // Event listener for the Generate PDF button
                         document.getElementById("generatePdfBtn").addEventListener("click", function() {
                             var tableData = generateTableRowsForPdf(); // Call the function for PDF generation
-
-                            // Clean tableData to remove specific values
-                            tableData = tableData.replace(/\(Cassettes Numbers:.*?\)/g, ""); // Remove Cassettes Numbers
-                            tableData = tableData.replace(/\(Doctor:.*?\)/g, "");            // Remove Doctor
-                            tableData = tableData.replace(/\(Gross Assistant:.*?\)/g, "");    // Remove Gross Assistant
-                            tableData = tableData.replace(/\(Date:.*?\)/g, "");               // Remove Date
-                            tableData = tableData.replace(/\(Tissue:.*?\)/g, "");             // Remove Tissue
-
-
                             var today = new Date().toLocaleDateString();
                             var userName = document.getElementById("loggedInUsername").value;
 
@@ -1158,55 +1577,152 @@ echo '<div class="tab-container">
 
             //  Tab Content for Bones Related Instructions 
             echo '<div id="BoneRelatedInstructions" class="tabcontent">';
-                // Check if the list has any data
-                if (!empty($bones_list)) {
-                    // Create a table to display the bones list
+                echo('<div class="sub-tabs">
+                    <div class="sub-tab-links">
+                    <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'BoneList\')">
+                    <i class="fas fa-list" style="font-size: 25px;"></i><b>&nbspList</b></button>
+                    <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'BoneCompleted\')">
+                    <i class="fas fa-check-circle" style="font-size: 35px;"></i>Done</button>
+                    </div>');
+                        echo('<div id="BoneList" class="subtabcontent">');
+                            // Check if the list has any data
+                            if (!empty($bones_list)) {
+                                // Create a table to display the bones list
 
-                    echo '<input type="text" id="searchInput" placeholder="Search..." class="form-control" style="margin-bottom: 10px;">';
+                                echo '<input type="text" id="searchInput" placeholder="Search..." class="form-control" style="margin-bottom: 10px;">';
 
-                    echo '<form id="updateStatusForm" >';
-                    echo '<table class="table" border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">';
-                    echo '<thead>';
-                    echo '<tr>';
-                    echo '<th>Lab Number</th>';
-                    echo '<th>Doctor Name</th>';
-                    echo '<th>Assistant Name</th>';
-                    echo '<th>Section Code</th>';
-                    echo '<th>Cassettes Numbers</th>';
-                    echo '<th>Tissue</th>';
-                    echo '<th>Status</th>';
-                    echo '</tr>';
-                    echo '</thead>';
-                    echo '<tbody>';
-                
-                    // Loop through the bones list and populate the table
-                    foreach ($bones_list as $bone) {
-                        echo '<tr data-labnumber="' . htmlspecialchars($bone['lab_number']) . '" data-statusname="' . htmlspecialchars($bone['status_name']) . '">';
-                        echo '<td>' . htmlspecialchars($bone['lab_number']) . '</td>';
-                        echo '<td>' . htmlspecialchars($bone['gross_doctor_name']) . '</td>';
-                        echo '<td>' . htmlspecialchars($bone['gross_assistant_name']) . '</td>';
-                        echo '<td>' . htmlspecialchars($bone['section_code']) . '</td>';
-                        echo '<td>' . htmlspecialchars($bone['cassettes_numbers']) . '</td>';
-                        echo '<td>' . htmlspecialchars($bone['tissue']) . '</td>';
-                        echo '<input type="hidden" name="id[]" value="' . htmlspecialchars($bone['id']) . '">';
-                       
-                        // Create a choice field for Status
-                        echo '<td>';
-                        echo '<select name="status[]" >';
-                        echo '<option value=""' . ($bone['status_name'] == '' ? ' selected' : '') . '></option>';
-                        echo '<option value="Bones Ready"' . ($bone['status_name'] == 'Bones Ready' ? ' selected' : '') . '>Bones Slide Ready</option>';
-                        echo '</select>';
-                        echo '</td>';
-                        echo '</tr>';
-                    }
-                
-                    echo '</tbody>';
-                    echo '</table>';
-                    echo '<button type="submit">Submit</button>'; // Submit button for the form
-                    echo '</form>';
-                } else {
-                    echo '<p>No bones are pending or not ready at the moment.</p>';
-                }
+                                echo '<form id="updateStatusForm" >';
+                                echo '<table class="table" border="1" cellpadding="10" cellspacing="0" style="width:100%; border-collapse: collapse;">';
+                                echo '<thead>';
+                                echo '<tr>';
+                                echo '<th>Lab Number</th>';
+                                echo '<th>Doctor Name</th>';
+                                echo '<th>Assistant Name</th>';
+                                echo '<th>Section Code</th>';
+                                echo '<th>Cassettes Numbers</th>';
+                                echo '<th>Tissue</th>';
+                                echo '<th>Decalcified</th>';
+                                echo '<th>Slide Block Need</th>';
+                                echo '<th>Status</th>';
+                                echo '</tr>';
+                                echo '</thead>';
+                                echo '<tbody>';
+                            
+                                // Loop through the bones list and populate the table
+                                foreach ($bones_list as $bone) {
+                                    echo '<tr data-labnumber="' . htmlspecialchars($bone['lab_number']) . '" data-statusname="' . htmlspecialchars($bone['status_name']) . '">';
+                                    echo '<td>' . htmlspecialchars($bone['lab_number']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['gross_doctor_name']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['gross_assistant_name']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['section_code']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['cassettes_numbers']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['tissue']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['decalcified_bone']) . '</td>';
+                                    echo '<td>' . htmlspecialchars($bone['requires_slide_for_block']) . '</td>';
+                                    echo '<input type="hidden" name="id[]" value="' . htmlspecialchars($bone['id']) . '">';
+                                
+                                    // Create a choice field for Status
+                                    echo '<td>';
+                                    echo '<select name="status[]" >';
+                                    echo '<option value=""' . ($bone['status_name'] == '' ? ' selected' : '') . '></option>';
+                                    echo '<option value="Bones Ready"' . ($bone['status_name'] == 'Bones Ready' ? ' selected' : '') . '>Bones Slide Ready</option>';
+                                    echo '</select>';
+                                    echo '</td>';
+                                    echo '</tr>';
+                                }
+                            
+                                echo '</tbody>';
+                                echo '</table>';
+                                echo '<button type="submit">Submit</button>'; // Submit button for the form
+                                echo '</form>';
+                            } else {
+                                echo '<p>No bones are pending or not ready at the moment.</p>';
+                            }
+                        echo '</div>';
+                        // Number of records per page
+                        $recordsPerPage = 40;
+
+                        // Total number of records
+                        $totalRecords = count($bone_slide_ready_list);
+
+                        // Calculate the total number of pages
+                        $totalPages = ceil($totalRecords / $recordsPerPage);
+
+                        // Get the current page number from URL, default to page 1
+                        $currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+                        // Calculate the starting index for the query
+                        $startIndex = ($currentPage - 1) * $recordsPerPage;
+
+                        // Slice the array to get only the records for the current page
+                        $pageRecords = array_slice($bone_slide_ready_list, $startIndex, $recordsPerPage);
+
+                        // HTML for pagination
+                        echo('<div id="BoneCompleted" class="subtabcontent">');
+                                    // Search input field
+                                    echo '<input type="text" id="boneSlideSearchInput" style="margin-bottom: 10px;" class="form-control mb-3" placeholder="Search by Lab Number, User Name, or Date Time...">';
+
+                                        // Check if there is data to display
+                                        if (!empty($pageRecords)) {
+                                            // Start the Bootstrap table
+                                            echo '<table id="boneSlideTable" class="table table-bordered table-striped">';
+                                            echo '<thead>';
+                                            echo '<tr>';
+                                            echo '<th>Lab Number</th>';
+                                            echo '<th>User Name</th>';
+                                            echo '<th>Date Time</th>';
+                                            echo '<th>Status Name</th>';
+                                            echo '<th>Section</th>';
+                                            echo '</tr>';
+                                            echo '</thead>';
+                                            echo '<tbody>';
+
+                                            // Loop through the data and create table rows
+                                            foreach ($pageRecords as $data) {
+                                                $dateTime = new DateTime($data['TrackCreateTime'], new DateTimeZone('UTC')); // Assuming the original time is in UTC
+                                                $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka')); // Convert to Asia/Dhaka timezone
+                                                $formattedDate = $dateTime->format('j F, Y g:i A'); 
+                                                echo '<tr>';
+                                                echo '<td>' . htmlspecialchars($data['Lab Number']) . '</td>';
+                                                echo '<td>' . htmlspecialchars($data['User Name']) . '</td>';
+                                                echo '<td>' . htmlspecialchars($formattedDate) . '</td>';
+                                                echo '<td>' . htmlspecialchars($data['Status Name']) . '</td>';
+                                                echo '<td>' . htmlspecialchars($data['Section']) . '</td>';
+                                                echo '</tr>';
+                                            }
+
+                                            echo '</tbody>';
+                                            echo '</table>';
+                                           
+                                            // Pagination controls
+                                            echo '<div class="pagination">';
+                                            // Previous Button
+                                            if ($currentPage > 1) {
+                                                echo '<a href="?page=' . ($currentPage - 1) . '" class="prev-next">Prev</a>';
+                                            }
+
+                                            // Display page numbers
+                                            for ($page = 1; $page <= $totalPages; $page++) {
+                                                if ($page == $currentPage) {
+                                                    echo '<span class="current-page">' . $page . '</span>';
+                                                } else {
+                                                    echo '<a href="?page=' . $page . '">' . $page . '</a>';
+                                                }
+                                            }
+
+                                            // Next Button
+                                            if ($currentPage < $totalPages) {
+                                                echo '<a href="?page=' . ($currentPage + 1) . '" class="prev-next">Next</a>';
+                                            }
+
+                                            echo '</div>';
+                                        } else {
+                                            // Display a message if no data is available
+                                            echo '<p id="noResultsMessage" style="display: none; color: red;">No data found.</p>';
+                                        }
+
+                        echo '</div>';
+                echo '</div>';
             echo '</div>';
 
             echo '<div id="SBO" class="tabcontent">
@@ -1618,7 +2134,7 @@ $db->close();
 </script> -->
 
 
-<script>
+<!-- <script>
     document.addEventListener('DOMContentLoaded', () => {
     const userId = '<?php echo $loggedInUserId; ?>';
     const form = document.getElementById('updateStatusForm');
@@ -1682,6 +2198,72 @@ $db->close();
             console.warn("Form with ID 'updateStatusForm' not found.");
         }
     });
+</script> -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+            const userId = '<?php echo $loggedInUserId; ?>';
+            const form = document.getElementById('updateStatusForm');
+
+            if (form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    
+                    const boneStatusData = [];
+                    const rows = document.querySelectorAll('#BoneList tbody tr'); // Fixed the table ID
+
+                    rows.forEach(row => {
+                        let labnumber = row.getAttribute('data-labnumber');
+                        
+                        if (labnumber) {
+                            labnumber = labnumber.substring(3); // Removes the first 3 characters
+                        }
+                        
+                        const statusSelect = row.querySelector('select[name="status[]"]');
+                        const statusName = statusSelect.value;
+                        const id = row.querySelector('input[name="id[]"]').value; // Get the hidden id field value
+                        
+                        if (labnumber && statusName && id) {
+                            boneStatusData.push({
+                                labnumber: labnumber,
+                                status: statusName,
+                                user_id: userId,
+                                id: id // Add id to the payload
+                            });
+                        }
+                    });
+
+                    if (boneStatusData.length > 0) {
+                        fetch('bones/update_bone_status.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(boneStatusData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Response from server:', data);
+
+                            if (data.status === 'success') {
+                                alert('Statuses updated successfully!');
+                                location.reload(); // Optionally reload the page to reflect changes
+                            } else {
+                                alert('Failed to update statuses: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred while updating the statuses.');
+                        });
+                    } else {
+                        alert('No lab numbers with statuses selected.');
+                    }
+                });
+            } else {
+                console.warn("Form with ID 'updateStatusForm' not found.");
+            }
+    });
 </script>
 
 <script>
@@ -1709,4 +2291,87 @@ $db->close();
       }
     });
   });
+</script>
+
+
+<style>
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        gap: 5px; /* Space between pagination elements */
+    }
+
+    .pagination a, .pagination span {
+        padding: 5px 10px;
+        text-decoration: none;
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        margin: 0 2px;
+    }
+
+    .pagination a:hover {
+        background-color: #ddd;
+    }
+
+    .pagination .current-page {
+        font-weight: bold;
+        background-color: #007bff;
+        color: white;
+        border: 1px solid #007bff;
+    }
+
+    .pagination .prev-next {
+        font-weight: bold;
+        background-color: #f0f0f0;
+        color: #007bff;
+    }
+
+    .pagination a, .pagination .prev-next {
+        border-radius: 5px;
+    }
+
+    .pagination a:hover, .pagination .prev-next:hover {
+        background-color: #ddd;
+    }
+
+</style>
+
+<!-- JavaScript for Search Functionality -->
+<script>
+    // JavaScript for search functionality
+    document.getElementById('boneSlideSearchInput').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#boneSlideTable tbody tr');
+        let matchFound = false;
+
+        rows.forEach(row => {
+            // Extract text from each cell and convert to lowercase
+            const labNumber = row.cells[0].textContent.toLowerCase();
+            const userName = row.cells[1].textContent.toLowerCase();
+            const dateTime = row.cells[2].textContent.toLowerCase();
+            const statusName = row.cells[3].textContent.toLowerCase();
+            const section = row.cells[4].textContent.toLowerCase();
+
+            // Check if any cell in the row matches the search filter
+            if (
+                labNumber.includes(filter) || 
+                userName.includes(filter) || 
+                dateTime.includes(filter) || 
+                statusName.includes(filter) || 
+                section.includes(filter)
+            ) {
+                row.style.display = ''; // Show the row
+                matchFound = true; // Set matchFound to true
+            } else {
+                row.style.display = 'none'; // Hide the row
+            }
+        });
+    
+        // Show or hide the "no results" message based on whether a match was found
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        if (noResultsMessage) {
+            noResultsMessage.style.display = matchFound ? 'none' : 'block';
+        }
+    });
 </script>
