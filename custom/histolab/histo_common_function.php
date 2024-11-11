@@ -5,11 +5,14 @@ function get_histo_gross_specimen_list() {
     global $pg_con;
 
     $sql = "SELECT g.gross_id, g.lab_number, g.gross_create_date, g.gross_status, g.gross_doctor_name as doctor, g.gross_assistant_name as assistant,
-            g.gross_station_type, g.batch, s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, s.tissue, s.requires_slide_for_block
+            g.gross_station_type, g.batch, s.gross_specimen_section_id, s.section_code, s.cassettes_numbers, s.tissue, s.requires_slide_for_block, s.bone, s.re_gross,
+			c.date_livraison
             FROM llx_gross g
             INNER JOIN llx_gross_specimen_section s ON g.gross_id = CAST(s.fk_gross_id AS INTEGER)
+            LEFT JOIN 
+    		llx_commande c ON c.ref = REPLACE(g.lab_number, 'HPL', '')
             WHERE g.gross_status = 'Done'
-            AND s.fk_gross_id !~ '[^\d]' AND s.bone = 'no' AND s.re_gross = ''";
+            AND s.fk_gross_id !~ '[^\d]'";
     $result = pg_query($pg_con, $sql);
 
     $gross_specimens = [];
@@ -20,7 +23,8 @@ function get_histo_gross_specimen_list() {
             'Gross Status'=>$row['gross_status'], 'gross_specimen_section_id' => $row['gross_specimen_section_id'], 
             'section_code' => $row['section_code'], 'cassettes_numbers' => $row['cassettes_numbers'], 'tissue' => $row['tissue'],
             'doctor' => $row['doctor'], 'assistant' => $row['assistant'], 'requires_slide_for_block' => $row['requires_slide_for_block'],
-            'gross_station_type' => $row['gross_station_type'], 'batch' => $row['batch']
+            'gross_station_type' => $row['gross_station_type'], 'batch' => $row['batch'], 'bone' => $row['bone'], 're_gross' => $row['re_gross'],
+            'date_livraison' => $row['date_livraison']
         ];
         }
 

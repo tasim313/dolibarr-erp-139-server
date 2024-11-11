@@ -319,7 +319,7 @@ echo '<div class="tab-container">
                         <button id="generatePdfBtn" class="btn">Generate PDF</button>
                     </div>
                     <!-- Table content goes here -->
-                    <table id="histoGrossTable">
+                    <table class="table" id="histoGrossTable">
                         <tr></tr>
                         <tbody id="histoGrossTableBody">
                     </tbody>
@@ -350,16 +350,44 @@ echo '<div class="tab-container">
                                                 tableRows += "<tr>";
                                                 tableRows += "<td>" + item["section_code"] + "</td>";
                                                 tableRows += "<td>Tissue: " + item["tissue"] + "</td>";
-                                                tableRows += "<td>Cassettes: " + (item["cassettes_numbers"] || \'N/A\') + "</td>";
+                                                tableRows += "<td>" + (item["cassettes_numbers"] || \'N/A\') + "</td>";
                                                 tableRows += "<td>Slide: " + (item["requires_slide_for_block"] || \'N/A\') + "</td>";
                                                 tableRows += "<td>Station : "+ (item["gross_station_type"] || \'N/A\') + "</td>";
                                                 tableRows += "<td> " + (item["doctor"] || \'N/A\') + "</td>";
                                                 tableRows += "<td>" + (item["assistant"] || \'N/A\') + "</td>";
+                                                
+                                                // Conditional formatting for the "Bone" field
+                                                let boneValue = item["bone"];
+                                                if (!boneValue || boneValue.toLowerCase() === "no" || boneValue.toLowerCase() === "false") {
+                                                    tableRows += "<td style=\'color: red;\'><strong>●</strong></td>";
+                                                } else if (boneValue.toLowerCase() === "yes" || boneValue.toLowerCase() === "true") {
+                                                    tableRows += "<td style=\'color: blue;\'><strong>●</strong></td>";
+                                                } else {
+                                                    tableRows += "<td>Bone: " + (boneValue || \'N/A\') + "</td>";
+                                                }
+                                                
+                                                let reGrossValue = item["re_gross"];
+                                                if (!reGrossValue || reGrossValue.toLowerCase() === "no" || reGrossValue.toLowerCase() === "false") {
+                                                    tableRows += "<td style=\'color: magenta;\'><strong>●</strong></td>";
+                                                } else if (reGrossValue.toLowerCase() === "yes" ||reGrossValue.toLowerCase() === "true") {
+                                                    tableRows += "<td style=\'color: navy blue;\'><strong>●</strong></td>";
+                                                } else {
+                                                    tableRows += "<td>Re Gross: " + (reGrossValue || \'N/A\') + "</td>";
+                                                }
 
+                                                
                                                 // Format the gross create date
                                                 if (item["Gross Create Date"]) {
                                                     const date = new Date(item["Gross Create Date"]);
-                                                    tableRows += "<td>Date: " + (isNaN(date.getTime()) ? \'Invalid Date\' : date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })) + "</td>";
+                                                    tableRows += "<td>Gross Date: " + (isNaN(date.getTime()) ? \'Invalid Date\' : date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })) + "</td>";
+                                                } else {
+                                                    tableRows += "<td>N/A</td>"; // Placeholder for missing date info
+                                                }
+
+                                                // Format the delivery date
+                                                if (item["date_livraison"]) {
+                                                    const delivery_date = new Date(item["date_livraison"]);
+                                                    tableRows += "<td>Delivery Date: " + (isNaN(delivery_date.getTime()) ? \'Invalid Date\' : delivery_date.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })) + "</td>";
                                                 } else {
                                                     tableRows += "<td>N/A</td>"; // Placeholder for missing date info
                                                 }
@@ -380,541 +408,194 @@ echo '<div class="tab-container">
                         }
 
                         // Define the function to generate table rows for PDF
-                        // function generateTableRowsForPdf() {
-                        //     let tableRows = ""; // Initialize the tableRows variable
-
-                        //     // Get the date values from the input fields
-                        //     var fromDate = new Date(document.getElementById("fromDateTime").value);
-                        //     var toDate = new Date(document.getElementById("toDateTime").value);
-                        //     var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                        //     var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
-
-                        //     // Group items by Lab Number
-                        //     let groupedItems = {};
-                        //     histo_gross_list.forEach(function(item) {
-                        //         // Filter items based on date range
-                        //         var itemDate = new Date(item["Gross Create Date"]);
-                        //         if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
-                        //             if (!groupedItems[item["Lab Number"]]) {
-                        //                 groupedItems[item["Lab Number"]] = [];
-                        //             }
-                        //             groupedItems[item["Lab Number"]].push(item);
-                        //         }
-                        //     });
-
-                        //     // Sort Lab Numbers in ascending order
-                        //     let sortedLabNumbers = Object.keys(groupedItems).sort();
-
-                        //     // Generate HTML markup for the table rows
-                        //     sortedLabNumbers.forEach(function(labNumber) {
-                        //         if (groupedItems.hasOwnProperty(labNumber)) {
-                        //             // Add Lab Number row with colon separator
-                        //             tableRows += "<tr><td colspan=\'6\'><strong>" + labNumber + ":</strong></td></tr>";
-
-                        //             // Initialize an array to hold all section details for this lab number
-                        //             let sectionDetails = [];
-
-                        //             // Extract unique section codes for the current lab number
-                        //             let sectionSequence = [];
-                        //             groupedItems[labNumber].forEach(function(item) {
-                        //                 if (!sectionSequence.includes(item["section_code"])) {
-                        //                     sectionSequence.push(item["section_code"]);
-                        //                 }
-                        //             });
-
-                        //             // Custom sort for section codes (alphanumeric sorting)
-                        //             sectionSequence.sort((a, b) => {
-                        //                 const numA = parseInt(a.match(/\d+/)) || 0; // Extract the number part
-                        //                 const numB = parseInt(b.match(/\d+/)) || 0; // Extract the number part
-                        //                 const charA = a.match(/[^\d]+/) || [\'\']; // Extract the character part
-                        //                 const charB = b.match(/[^\d]+/) || [\'\']; // Extract the character part
-
-                        //                 // Compare characters first
-                        //                 if (charA[0] < charB[0]) return -1;
-                        //                 if (charA[0] > charB[0]) return 1;
-                        //                 // If characters are the same, compare numbers
-                        //                 return numA - numB;
-                        //             });
-
-                        //             // Add section code, tissue, slide, cassettes numbers, doctor, and gross assistant details for each Lab Number
-                        //             sectionSequence.forEach(function(code) {
-                        //                 groupedItems[labNumber].forEach(function(item) {
-                        //                     if (item["section_code"] === code) {
-                        //                         let sectionDetail = code + "(" + item["tissue"] + ")"; // Add section code and tissue
-                        //                         if (item["requires_slide_for_block"]) sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
-                        //                         if (item["cassettes_numbers"]) sectionDetail += "(Cassettes Numbers: " + item["cassettes_numbers"] + ")";
-                        //                         if (item["doctor"]) sectionDetail += "(Doctor: " + item["doctor"] + ")";
-                        //                         if (item["assistant"]) sectionDetail += "(Gross Assistant: " + item["assistant"] + ")";
-
-                        //                         // Format the gross create date
-                        //                         if (item["Gross Create Date"]) {
-                        //                             const date = new Date(item["Gross Create Date"]);
-                        //                             if (!isNaN(date.getTime())) {
-                        //                                 sectionDetail += "(Date: " + date.toLocaleDateString("en-US", { 
-                        //                                     day: "numeric", 
-                        //                                     month: "long", 
-                        //                                     year: "numeric" 
-                        //                                 }) + ")";
-                        //                             } else {
-                        //                                 console.error("Invalid date:", item["Gross Create Date"]);
-                        //                             }
-                        //                         }
-                        //                         // Add the formatted section detail to the array
-                        //                         sectionDetails.push(sectionDetail);
-                        //                     }
-                        //                 });
-                        //             });
-
-                        //             // Combine section details into a single string separated by commas and add it to the row
-                        //             if (sectionDetails.length > 0) {
-                        //                 tableRows += "<tr><td colspan=\'6\'>" + sectionDetails.join(", ") + "</td></tr>";
-                        //             }
-                        //         }
-                        //     });
-
-                        //     return tableRows; // Return the generated rows
-                        // }
-
-                        // function generateTableRowsForPdf() {
-                        //         let tableRows = ""; // Initialize the tableRows variable
-
-                        //         // Get the date values from the input fields
-                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
-                        //         var toDate = new Date(document.getElementById("toDateTime").value);
-                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
-
-                        //         // Group items by batch
-                        //         let groupedItems = {};
-                        //         histo_gross_list.forEach(function(item) {
-                        //             // Filter items based on date range
-                        //             var itemDate = new Date(item["Gross Create Date"]);
-                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
-                        //                 if (!groupedItems[item["Gross Create Date"]]) {
-                        //                     groupedItems[item["Gross Create Date"]] = [];
-                        //                 }
-                        //                 groupedItems[item["Gross Create Date"]].push(item);
-                        //             }
-                        //         });
-
-                        //         // Sort Lab Numbers in ascending order
-                        //         let sortedLabNumbers = Object.keys(groupedItems).sort();
-
-                        //         const batchNames = [
-                        //             "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
-                        //             "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
-                        //             "Ninth Batch", "Tenth Batch"
-                        //         ];
-
-
-                        //         // Generate HTML markup for the table rows
-                        //         sortedLabNumbers.forEach(function(labNumber) {
-                        //             if (groupedItems.hasOwnProperty(labNumber)) {
-                        //                 // Add Batch, Doctor, Assistant, and Gross Create Date as a separate row
-                        //                 let batch = groupedItems[labNumber][0]["batch"];
-                        //                 let doctor = groupedItems[labNumber][0]["doctor"];
-                        //                 let assistant = groupedItems[labNumber][0]["assistant"];
-                        //                 let grossCreateDate = new Date(groupedItems[labNumber][0]["Gross Create Date"]);
-                        //                 let labNumberDisplay = groupedItems[labNumber][0]["Lab Number"]; 
-
-                        //                 // Convert batch number to batch name
-                        //                 let batchName = batchNames[batch - 1] || `Batch ${batch}`; // Handle missing batch names for numbers beyond 10
-
-                                        
-                        //                 tableRows += "<tr><td colspan=\'6\'>" + batchName + 
-                        //                         "  " + doctor + 
-                        //                         "  " + assistant + 
-                        //                         " " + grossCreateDate.toLocaleDateString("en-US", {
-                        //                             day: "numeric", 
-                        //                             month: "long", 
-                        //                             year: "numeric"
-                        //                         }) + "  " + labNumberDisplay + 
-                        //                         "</td></tr>";
-
-                        //                 // Initialize an array to hold all section details for this lab number
-                        //                 let sectionDetails = [];
-
-                        //                 // Extract unique section codes for the current lab number
-                        //                 let sectionSequence = [];
-                        //                 groupedItems[labNumber].forEach(function(item) {
-                        //                     if (!sectionSequence.includes(item["section_code"])) {
-                        //                         sectionSequence.push(item["section_code"]);
-                        //                     }
-                        //             });
-
-                        //             // Custom sort for section codes (alphanumeric sorting)
-                        //             sectionSequence.sort((a, b) => {
-                        //                 const numA = parseInt(a.match(/\d+/)) || 0; // Extract the number part
-                        //                 const numB = parseInt(b.match(/\d+/)) || 0; // Extract the number part
-                        //                 const charA = a.match(/[^\d]+/) || [\'\']; // Extract the character part
-                        //                 const charB = b.match(/[^\d]+/) || [\'\']; // Extract the character part
-
-                        //                 // Compare characters first
-                        //                 if (charA[0] < charB[0]) return -1;
-                        //                 if (charA[0] > charB[0]) return 1;
-                        //                 // If characters are the same, compare numbers
-                        //                 return numA - numB;
-                        //             });
-
-                        //             // Add LabNumber section code, tissue, slide, cassettes numbers, doctor, and gross assistant details for each Lab Number
-                        //             sectionSequence.forEach(function(code) {
-                        //                 groupedItems[labNumber].forEach(function(item) {
-                        //                     if (item["section_code"] === code) {
-                        //                         let sectionDetail = code + "(" + item["tissue"] + ")"; // Add section code and tissue
-                        //                         if (item["requires_slide_for_block"]) sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
-                        //                         sectionDetails.push(sectionDetail);
-                        //                     }
-                        //                 });
-                        //             });
-
-                        //             // Combine section details into a single string separated by commas and add it to the row
-                        //             if (sectionDetails.length > 0) {
-                        //                 tableRows += "<tr><td colspan=\'6\'>" + sectionDetails.join(", ") + "</td></tr>";
-                        //             }
-                        //         }
-                        //     });
-
-                        //     return tableRows; // Return the generated rows
-                        // }
-
-                        // function generateTableRowsForPdf() {
-                        //         let tableRows = ""; // Initialize the tableRows variable
-
-                        //         // Get the date values from the input fields
-                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
-                        //         var toDate = new Date(document.getElementById("toDateTime").value);
-                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
-
-                        //         // Group items by batch
-                        //         let groupedItems = {};
-                        //         histo_gross_list.forEach(function(item) {
-                        //             // Filter items based on date range
-                        //             var itemDate = new Date(item["Gross Create Date"]);
-                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
-                        //                 if (!groupedItems[item["Gross Create Date"]]) {
-                        //                     groupedItems[item["Gross Create Date"]] = [];
-                        //                 }
-                        //                 groupedItems[item["Gross Create Date"]].push(item);
-                        //             }
-                        //         });
-
-                        //             // Sort dates in ascending order
-                        //             let sortedDates = Object.keys(groupedItems).sort();
-
-                        //             const batchNames = [
-                        //                 "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
-                        //                 "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
-                        //                 "Ninth Batch", "Tenth Batch"
-                        //             ];
-
-                        //         // Variable to keep track of the last displayed date
-                        //         let lastDisplayedDate = "";
-
-                        //         // Generate HTML markup for the table rows
-                        //         sortedDates.forEach(function(dateKey) {
-                        //             let dateItems = groupedItems[dateKey];
-                                    
-                        //             dateItems.forEach(function(item, index) {
-                        //                 // Retrieve the necessary values
-                        //                 let batch = item["batch"];
-                        //                 let doctor = item["doctor"];
-                        //                 let assistant = item["assistant"];
-                        //                 let grossCreateDate = new Date(item["Gross Create Date"]);
-                        //                 let labNumberDisplay = item["Lab Number"]; 
-
-                        //                 // Convert batch number to batch name
-                        //                 let batchName = batchNames[batch - 1] || `Batch ${batch}`; // Handle missing batch names for numbers beyond 10
-
-                        //                 // Format date for display
-                        //                 let formattedDate = grossCreateDate.toLocaleDateString("en-US", {
-                        //                     day: "numeric", 
-                        //                     month: "long", 
-                        //                     year: "numeric"
-                        //                 });
-
-                        //             // Only display the date if it different from the previous one
-                        //             if (lastDisplayedDate !== formattedDate) {
-                        //                 tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
-                        //                 lastDisplayedDate = formattedDate; // Update the lastDisplayedDate to the current one
-                        //             }
-
-                        //             // Display batch, doctor, assistant, and lab number for each entry
-                        //             tableRows += `<tr><td colspan=\'6\'>${batchName} ${doctor} ${assistant} ${labNumberDisplay}</td></tr>`;
-
-                        //             // Initialize an array to hold all section details for this lab number
-                        //             let sectionDetails = [];
-
-                        //             // Extract unique section codes for the current lab number
-                        //             let sectionSequence = [];
-                        //             dateItems.forEach(function(entry) {
-                        //                 if (entry["Lab Number"] === labNumberDisplay && !sectionSequence.includes(entry["section_code"])) {
-                        //                     sectionSequence.push(entry["section_code"]);
-                        //                 }
-                        //             });
-
-                        //             // Custom sort for section codes (alphanumeric sorting)
-                        //             sectionSequence.sort((a, b) => {
-                        //                 const numA = parseInt(a.match(/\d+/)) || 0; // Extract the number part
-                        //                 const numB = parseInt(b.match(/\d+/)) || 0; // Extract the number part
-                        //                 const charA = a.match(/[^\d]+/) || [\'\']; // Extract the character part
-                        //                 const charB = b.match(/[^\d]+/) || [\'\']; // Extract the character part
-
-                        //                 // Compare characters first
-                        //                 if (charA[0] < charB[0]) return -1;
-                        //                 if (charA[0] > charB[0]) return 1;
-                        //                 // If characters are the same, compare numbers
-                        //                 return numA - numB;
-                        //             });
-
-                        //             // Add LabNumber section code, tissue, slide, and other details for each Lab Number
-                        //             sectionSequence.forEach(function(code) {
-                        //                 dateItems.forEach(function(entry) {
-                        //                     if (entry["Lab Number"] === labNumberDisplay && entry["section_code"] === code) {
-                        //                         let sectionDetail = code + "(" + entry["tissue"] + ")"; // Add section code and tissue
-                        //                         if (entry["requires_slide_for_block"]) sectionDetail += "(Slide: " + entry["requires_slide_for_block"] + ")";
-                        //                         sectionDetails.push(sectionDetail);
-                        //                     }
-                        //                 });
-                        //             });
-
-                        //                 // Combine section details into a single string separated by commas and add it to the row
-                        //                 if (sectionDetails.length > 0) {
-                        //                     tableRows += `<tr><td colspan=\'6\'>${sectionDetails.join(", ")}</td></tr>`;
-                        //                 }
-                        //             });
-                        //         });
-
-                        //         return tableRows; // Return the generated rows
-                        // }
-
-                        // function generateTableRowsForPdf() {
-                        //         let tableRows = ""; // Initialize the tableRows variable
-
-                        //         // Get the date values from the input fields
-                        //         var fromDate = new Date(document.getElementById("fromDateTime").value);
-                        //         var toDate = new Date(document.getElementById("toDateTime").value);
-                        //         var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-                        //         var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
-
-                        //         // Group items by date and batch
-                        //         let groupedItems = {};
-                        //         histo_gross_list.forEach(function(item) {
-                        //             var itemDate = new Date(item["Gross Create Date"]);
-                        //             if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
-                        //                 let dateKey = item["Gross Create Date"];
-                        //                 let batchKey = item["batch"];
-                        //                 if (!groupedItems[dateKey]) groupedItems[dateKey] = {};
-                        //                 if (!groupedItems[dateKey][batchKey]) groupedItems[dateKey][batchKey] = [];
-                        //                 groupedItems[dateKey][batchKey].push(item);
-                        //             }
-                        //         });
-
-                        //         // Sort dates in ascending order
-                        //         let sortedDates = Object.keys(groupedItems).sort();
-
-                        //         const batchNames = [
-                        //             "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
-                        //             "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
-                        //             "Ninth Batch", "Tenth Batch"
-                        //         ];
-
-                        //         let lastDisplayedDate = ""; // Track the last displayed date
-                        //         let displayedBatches = {}; // Track the displayed batch names for each date
-
-                        //         sortedDates.forEach(function(dateKey) {
-                        //             let batches = groupedItems[dateKey];
-
-                        //             // Format date for display
-                        //             let formattedDate = new Date(dateKey).toLocaleDateString("en-US", {
-                        //                 day: "numeric", 
-                        //                 month: "long", 
-                        //                 year: "numeric"
-                        //             });
-
-                        //             // Display the date only once per date
-                        //             if (lastDisplayedDate !== formattedDate) {
-                        //                 tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
-                        //                 lastDisplayedDate = formattedDate;
-                        //             }
-
-                        //             // For each batch in the current date
-                        //             Object.keys(batches).forEach(function(batchKey) {
-                        //                 let batchItems = batches[batchKey];
-                        //                 let batchName = (batchKey === "null" || batchKey === undefined) ? "Not Selected Batch" : (batchNames[batchKey - 1] || `Batch ${batchKey}`);
-
-                        //                 // If the batch has already been displayed for this date, skip it
-                        //                 if (displayedBatches[formattedDate] && displayedBatches[formattedDate].includes(batchName)) return;
-
-                        //                 // Add batch name to the displayed batches for this date
-                        //                 if (!displayedBatches[formattedDate]) displayedBatches[formattedDate] = [];
-                        //                 displayedBatches[formattedDate].push(batchName);
-
-                        //                 // Display the batch name only once per date
-                        //                 tableRows += `<tr><td colspan=\'6\'>${batchName}</td></tr>`;
-                                        
-                        //                 // Generate lab number details for the batch
-                        //                 let labNumberDetails = {};
-
-                        //                 batchItems.forEach(function(item) {
-                        //                     let labNumber = item["Lab Number"];
-                        //                     let doctor = item["doctor"];
-                        //                     let assistant = item["assistant"];
-
-                        //                     // Add lab number and doctor info
-                        //                     if (!labNumberDetails[labNumber]) {
-                        //                         labNumberDetails[labNumber] = {
-                        //                             info: `${doctor} ${assistant} ${labNumber}`,
-                        //                             sections: []
-                        //                         };
-                        //                     }
-
-                        //                     // Add section details
-                        //                     let sectionDetail = item["section_code"] + "(" + item["tissue"] + ")";
-                        //                     if (item["requires_slide_for_block"]) {
-                        //                         sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
-                        //                     }
-                        //                     if (!labNumberDetails[labNumber].sections.includes(sectionDetail)) {
-                        //                         labNumberDetails[labNumber].sections.push(sectionDetail);
-                        //                     }
-                        //                 });
-
-                        //                 // Add rows for each lab number and its sections
-                        //                 Object.values(labNumberDetails).forEach(detail => {
-                        //                     tableRows += `<tr><td colspan=\'6\'>${detail.info}</td></tr>`;
-                        //                     if (detail.sections.length > 0) {
-                        //                         tableRows += `<tr><td colspan=\'6\'>${detail.sections.join(", ")}</td></tr>`;
-                        //                     }
-                        //                 });
-                        //             });
-                        //         });
-
-                        //         return tableRows; // Return the generated rows
-                        // }
-
+                        
+                        function generateUniqueDataStructure(histo_gross_list) {
+                                    const uniqueDataByDate = {}; // Main object to store unique data by date
+
+                                    histo_gross_list.forEach((item) => {
+                                        const dateKey = item["Gross Create Date"].split(\' \')[0]; // Only use the date part (e.g., \'2024-11-09\')
+                                        const batchName = item["batch"];
+                                        const doctorName = item["doctor"];
+                                        const assistantName = item["assistant"];
+                                        const labNumber = item["Lab Number"];
+                                        const sectionCode = item["section_code"];
+                                        const tissue = item["tissue"];
+                                        const slideForBlock = item["requires_slide_for_block"];
+
+                                        // Ensure the date does not exist before adding it
+                                        if (!uniqueDataByDate[dateKey]) {
+                                            uniqueDataByDate[dateKey] = {
+                                                date: dateKey,
+                                                batches: {} // Initialize batches object for each date
+                                            };
+                                        }
+
+                                        // Ensure batch exists as a key within the date
+                                        if (!uniqueDataByDate[dateKey].batches[batchName]) {
+                                            uniqueDataByDate[dateKey].batches[batchName] = {
+                                                batchName,
+                                                doctors: {} // Initialize doctors object within each batch
+                                            };
+                                        }
+
+                                        // Ensure doctor exists as a key within the batch
+                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName]) {
+                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName] = {
+                                                doctorName,
+                                                assistants: {} // Initialize assistants object within each doctor
+                                            };
+                                        }
+
+                                        // Ensure assistant exists as a key within the doctor
+                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName]) {
+                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName] = {
+                                                assistantName,
+                                                labNumbers: {} // Initialize labNumbers object within each assistant
+                                            };
+                                        }
+
+                                        // Ensure lab number exists as a unique entry within the assistant
+                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber]) {
+                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber] = {
+                                                labNumber,
+                                                sections: [] // Initialize sections array within each lab number
+                                            };
+                                        }
+
+                                        // Check if the section information is already added, and add it only if unique
+                                        const sectionDetail = {
+                                            sectionCode,
+                                            tissue,
+                                            requiresSlideForBlock: slideForBlock
+                                        };
+
+                                        const existingSections = uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber].sections;
+                                        const sectionExists = existingSections.some(section => 
+                                            section.sectionCode === sectionCode &&
+                                            section.tissue === tissue &&
+                                            section.requiresSlideForBlock === slideForBlock
+                                        );
+
+                                        // Add section details if not already present
+                                        if (!sectionExists) {
+                                            existingSections.push(sectionDetail);
+                                        }
+                                    });
+
+                                    return uniqueDataByDate;
+                        }
+
+                        
                         function generateTableRowsForPdf() {
-    let tableRows = ""; // Initialize the tableRows variable
-    let totalLabNumbersFound = 0; // Counter for total lab numbers found
-    let totalLabNumbersDisplayed = 0; // Counter for total lab numbers displayed
+                                let tableRows = ""; // Initialize the tableRows variable
 
-    // Get the date values from the input fields
-    var fromDate = new Date(document.getElementById("fromDateTime").value);
-    var toDate = new Date(document.getElementById("toDateTime").value);
-    var fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
-    var toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
+                                // Get the date values from the input fields
+                                const fromDate = new Date(document.getElementById("fromDateTime").value);
+                                const toDate = new Date(document.getElementById("toDateTime").value);
+                                const fromDateStart = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+                                const toDateEnd = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate() + 1) - 1;
 
-    // Group items by date and batch
-    let groupedItems = {};
-    histo_gross_list.forEach(function(item) {
-        var itemDate = new Date(item["Gross Create Date"]);
-        if (itemDate >= fromDateStart && itemDate <= toDateEnd) {
-            let dateKey = item["Gross Create Date"];
-            let batchKey = item["batch"];
-            if (!groupedItems[dateKey]) groupedItems[dateKey] = {};
-            if (!groupedItems[dateKey][batchKey]) groupedItems[dateKey][batchKey] = [];
-            groupedItems[dateKey][batchKey].push(item);
-        }
-    });
+                                // Define batch names for display
+                                const batchNames = [
+                                    "I", "II", "III", "IV", 
+                                    "V", "VI", "VII", "VIII", 
+                                    "IX", "X"
+                                ];
 
-    // Sort dates in ascending order
-    let sortedDates = Object.keys(groupedItems).sort();
+                                // Generate unique data structure
+                                const uniqueDataByDate = generateUniqueDataStructure(histo_gross_list);
 
-    const batchNames = [
-        "First Batch", "Second Batch", "Third Batch", "Fourth Batch", 
-        "Fifth Batch", "Sixth Batch", "Seventh Batch", "Eighth Batch", 
-        "Ninth Batch", "Tenth Batch"
-    ];
+                                // Iterate through each date in the data
+                                Object.keys(uniqueDataByDate).forEach(dateKey => {
+                                    const dateData = uniqueDataByDate[dateKey];
 
-    let lastDisplayedDate = ""; // Track the last displayed date
-    let displayedBatches = {}; // Track the displayed batch names for each date
+                                    // Check if the date is within the selected range
+                                    const dateObj = new Date(dateKey);
+                                    if (dateObj >= fromDateStart && dateObj <= toDateEnd) {
+                                        // Display the date in the table
+                                        const formattedDate = dateObj.toLocaleDateString("en-US", {
+                                            day: "numeric",
+                                            month: "long",
+                                            year: "numeric"
+                                        });
 
-    sortedDates.forEach(function(dateKey) {
-        let batches = groupedItems[dateKey];
+                                tableRows += `<tr><td colspan=\'6\'>${formattedDate}</td></tr>`;
 
-        // Format date for display
-        let formattedDate = new Date(dateKey).toLocaleDateString("en-US", {
-            day: "numeric", 
-            month: "long", 
-            year: "numeric"
-        });
+                                // Iterate through batches for this date
+                                Object.keys(dateData.batches).forEach(batchKey => {
+                                    const batch = dateData.batches[batchKey];
+                                    const batchName = batchNames[batchKey - 1] !== undefined && batchNames[batchKey - 1] !== null && batchNames[batchKey - 1] !== "" 
+                                                    ? batchNames[batchKey - 1] 
+                                                    : `Batch ${batchKey} ${batchNames[batchKey - 1] === undefined ? "(Batch is not Selected)" : ""}`;
 
-        // Display the date only once per date
-        if (lastDisplayedDate !== formattedDate) {
-            tableRows += `<tr><td colspan=\'6\'><strong>${formattedDate}</strong></td></tr>`;
-            lastDisplayedDate = formattedDate;
-        }
+                                    // Initialize section code count for this batch
+                                    let sectionCodeCount = 0;
 
-        // For each batch in the current date
-        Object.keys(batches).forEach(function(batchKey) {
-            let batchItems = batches[batchKey];
-            let batchName = (batchKey === "null" || batchKey === undefined) ? "Not Selected Batch" : (batchNames[batchKey - 1] || `Batch ${batchKey}`);
+                                // Display the batch name in the table
+                                tableRows += `<tr><td colspan=\'6\'>(${batchName})</td></tr>`;
 
-            // If the batch has already been displayed for this date, skip it
-            if (displayedBatches[formattedDate] && displayedBatches[formattedDate].includes(batchName)) return;
+                                // Iterate through doctors and assistants
+                                Object.keys(batch.doctors).forEach(doctorKey => {
+                                    const doctor = batch.doctors[doctorKey];
 
-            // Add batch name to the displayed batches for this date
-            if (!displayedBatches[formattedDate]) displayedBatches[formattedDate] = [];
-            displayedBatches[formattedDate].push(batchName);
+                                    // Display the doctor and their assistants
+                                    tableRows += `<tr><td colspan=\'6\'>${doctorKey}</td></tr>`;
 
-            // Display the batch name only once per date
-            tableRows += `<tr><td colspan=\'6\'>${batchName}</td></tr>`;
-            
-            // Generate lab number details for the batch
-            let labNumberDetails = {};
+                                    Object.keys(doctor.assistants).forEach(assistantKey => {
+                                        const assistant = doctor.assistants[assistantKey];
 
-            batchItems.forEach(function(item) {
-                let labNumber = item["Lab Number"];
-                let doctor = item["doctor"];
-                let assistant = item["assistant"];
+                                        // Display the assistant name
+                                        tableRows += `<tr><td colspan=\'6\'>${assistantKey}</td></tr>`;
 
-                // Debugging: Log each lab number found
-                console.log("Found Lab Number: ", labNumber);
+                                        // Iterate through lab numbers and sections
+                                        Object.keys(assistant.labNumbers).forEach(labNumberKey => {
+                                            const labNumber = assistant.labNumbers[labNumberKey];
 
-                // Increment the counter for total lab numbers found
-                totalLabNumbersFound++;
+                                            // Create a map to group sections by sectionCode
+                                            const sectionGroups = {};
 
-                // Add lab number and doctor info
-                if (!labNumberDetails[labNumber]) {
-                    labNumberDetails[labNumber] = {
-                        info: `${doctor} ${assistant} ${labNumber}`,
-                        sections: []
-                    };
-                }
+                                            // Group sections by sectionCode and tissue
+                                            labNumber.sections.forEach(section => {
+                                                const sectionKey = `${section.sectionCode}(${section.tissue})`;
 
-                // Add section details
-                let sectionDetail = item["section_code"] + "(" + item["tissue"] + ")";
-                if (item["requires_slide_for_block"]) {
-                    sectionDetail += "(Slide: " + item["requires_slide_for_block"] + ")";
-                }
-                if (!labNumberDetails[labNumber].sections.includes(sectionDetail)) {
-                    labNumberDetails[labNumber].sections.push(sectionDetail);
-                }
-            });
+                                                // Track occurrences of each section
+                                                if (!sectionGroups[sectionKey]) {
+                                                    sectionGroups[sectionKey] = { count: 0, requiresSlideForBlock: section.requiresSlideForBlock };
+                                                }
+                                                sectionGroups[sectionKey].count++;
 
-            // Add rows for each lab number and its sections
-            Object.values(labNumberDetails).forEach(detail => {
-                tableRows += `<tr><td colspan=\'6\'>${detail.info}</td></tr>`;
-                if (detail.sections.length > 0) {
-                    tableRows += `<tr><td colspan=\'6\'>${detail.sections.join(", ")}</td></tr>`;
-                }
+                                                // If \'requiresSlideForBlock\' is missing, it should show as empty or a default value
+                                                if (!sectionGroups[sectionKey].requiresSlideForBlock) {
+                                                    sectionGroups[sectionKey].requiresSlideForBlock = "";
+                                                }
+                                            });
 
-                // Increment the counter for total lab numbers displayed
-                totalLabNumbersDisplayed++;
-            });
-        });
-    });
+                                            // Count total section codes for the batch
+                                            sectionCodeCount += Object.keys(sectionGroups).length;
 
-    // Debugging: Log the final counts of lab numbers found and displayed
-    console.log("Total Lab Numbers Found: ", totalLabNumbersFound);
-    console.log("Total Lab Numbers Displayed: ", totalLabNumbersDisplayed);
+                                            // Generate the horizontal display of sections with \'multiple\' for sections that appear more than once
+                                            const sectionDisplay = Object.keys(sectionGroups).map(sectionKey => {
+                                                const count = sectionGroups[sectionKey].count;
+                                                const slideInfo = sectionGroups[sectionKey].requiresSlideForBlock 
+                                                    ? `(Slide: ${sectionGroups[sectionKey].requiresSlideForBlock})`
+                                                    : \'\';
+                                                return `${sectionKey}${slideInfo}${count > 1 ? \' (multiple)\' : `(${count})`}`;
+                                            }).join(", ");
 
-    return tableRows; // Return the generated rows
-}
+                                            // Display lab number and sections in a horizontal format
+                                            tableRows += `<tr><td colspan=\'6\'><strong>${labNumberKey}</strong> - ${sectionDisplay}</td></tr>`;
+                                        });
+                                    });
+                                });
 
+                                // After processing all doctors and assistants, display the total section codes for this batch
+                                tableRows += `<tr><td colspan=\'6\'>Total Blocks in (${batchName}): ${sectionCodeCount}<br></td></tr>`;
+                                 });
+                                }
+                                });
 
-
-
-
+                                return tableRows; // Return the generated rows
+                        }
 
                         // Define the submitDateTime function
                         function submitDateTime() {
