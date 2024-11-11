@@ -20,7 +20,7 @@ class MYPDF extends TCPDF {
         $header = "Gross Ledger&nbsp;Printed by: " . $this->userName . " on " . $this->today;
     
         // Additional text for Bone D/C and Re-gross information
-        $additionalInfo = "There is no information of Bone D/C and Re-gross Section Code here. If you need any information of Bone D/C and Re-gross, then visit the Bone D/C and Re-gross Tab.";
+        $additionalInfo = "If you need any information of Bone D/C and Re-gross, then visit the Bone D/C and Re-gross Tab.";
     
         // Combine the header and additional info
         $fullHeader = $header;
