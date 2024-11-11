@@ -41,6 +41,27 @@ class MYPDF extends TCPDF {
         $bottomMargin = 20; // Example: 10mm bottom margin
         $this->SetY($this->GetY() + $bottomMargin); // Move down to set the bottom margin
     }
+
+    // Custom Footer
+    public function Footer() {
+        // Position at 15mm from the bottom
+        $this->SetY(-15);
+        
+        // Set font for the footer
+        $this->SetFont('helvetica', 'I', 8);
+
+        // Get the current date and time
+        $dateTime = date("l, F j, Y g:i A"); // Example format: Monday, September 1, 2024 4:30 PM
+
+        // Get current page number
+        $pageNumber = $this->getAliasNumPage();
+
+        // Set the footer text: Page number and current date and time
+        $footerText = "Page {$pageNumber} of {$this->getAliasNbPages()} - Printed on {$dateTime}";
+
+        // Print footer text
+        $this->Cell(0, 10, $footerText, 0, 0, 'C');
+    }
     
 }
 
