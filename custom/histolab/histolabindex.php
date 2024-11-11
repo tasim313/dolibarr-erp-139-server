@@ -410,82 +410,119 @@ echo '<div class="tab-container">
                         // Define the function to generate table rows for PDF
                         
                         function generateUniqueDataStructure(histo_gross_list) {
-                                    const uniqueDataByDate = {}; // Main object to store unique data by date
+                                const uniqueDataByDate = {}; // Main object to store unique data by date
 
-                                    histo_gross_list.forEach((item) => {
-                                        const dateKey = item["Gross Create Date"].split(\' \')[0]; // Only use the date part (e.g., \'2024-11-09\')
-                                        const batchName = item["batch"];
-                                        const doctorName = item["doctor"];
-                                        const assistantName = item["assistant"];
-                                        const labNumber = item["Lab Number"];
-                                        const sectionCode = item["section_code"];
-                                        const tissue = item["tissue"];
-                                        const slideForBlock = item["requires_slide_for_block"];
+                                histo_gross_list.forEach((item) => {
+                                    const dateKey = item["Gross Create Date"].split(\' \')[0]; // Only use the date part (e.g., \'2024-11-09\')
+                                    const batchName = item["batch"];
+                                    const doctorName = item["doctor"];
+                                    const assistantName = item["assistant"];
+                                    const labNumber = item["Lab Number"];
+                                    const sectionCode = item["section_code"];
+                                    const tissue = item["tissue"];
+                                    const slideForBlock = item["requires_slide_for_block"];
+                                    const bone = item["bone"]; // Add bone property
+                                    const reGross = item["re_gross"]; // Add re_gross property
 
-                                        // Ensure the date does not exist before adding it
-                                        if (!uniqueDataByDate[dateKey]) {
-                                            uniqueDataByDate[dateKey] = {
-                                                date: dateKey,
-                                                batches: {} // Initialize batches object for each date
-                                            };
-                                        }
-
-                                        // Ensure batch exists as a key within the date
-                                        if (!uniqueDataByDate[dateKey].batches[batchName]) {
-                                            uniqueDataByDate[dateKey].batches[batchName] = {
-                                                batchName,
-                                                doctors: {} // Initialize doctors object within each batch
-                                            };
-                                        }
-
-                                        // Ensure doctor exists as a key within the batch
-                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName]) {
-                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName] = {
-                                                doctorName,
-                                                assistants: {} // Initialize assistants object within each doctor
-                                            };
-                                        }
-
-                                        // Ensure assistant exists as a key within the doctor
-                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName]) {
-                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName] = {
-                                                assistantName,
-                                                labNumbers: {} // Initialize labNumbers object within each assistant
-                                            };
-                                        }
-
-                                        // Ensure lab number exists as a unique entry within the assistant
-                                        if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber]) {
-                                            uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber] = {
-                                                labNumber,
-                                                sections: [] // Initialize sections array within each lab number
-                                            };
-                                        }
-
-                                        // Check if the section information is already added, and add it only if unique
-                                        const sectionDetail = {
-                                            sectionCode,
-                                            tissue,
-                                            requiresSlideForBlock: slideForBlock
+                                    // Ensure the date does not exist before adding it
+                                    if (!uniqueDataByDate[dateKey]) {
+                                        uniqueDataByDate[dateKey] = {
+                                            date: dateKey,
+                                            batches: {} // Initialize batches object for each date
                                         };
+                                    }
 
-                                        const existingSections = uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber].sections;
-                                        const sectionExists = existingSections.some(section => 
-                                            section.sectionCode === sectionCode &&
-                                            section.tissue === tissue &&
-                                            section.requiresSlideForBlock === slideForBlock
-                                        );
+                                    // Ensure batch exists as a key within the date
+                                    if (!uniqueDataByDate[dateKey].batches[batchName]) {
+                                        uniqueDataByDate[dateKey].batches[batchName] = {
+                                            batchName,
+                                            doctors: {} // Initialize doctors object within each batch
+                                        };
+                                    }
 
-                                        // Add section details if not already present
-                                        if (!sectionExists) {
-                                            existingSections.push(sectionDetail);
-                                        }
+                                    // Ensure doctor exists as a key within the batch
+                                    if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName]) {
+                                        uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName] = {
+                                            doctorName,
+                                            assistants: {} // Initialize assistants object within each doctor
+                                        };
+                                    }
+
+                                    // Ensure assistant exists as a key within the doctor
+                                    if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName]) {
+                                        uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName] = {
+                                            assistantName,
+                                            labNumbers: {} // Initialize labNumbers object within each assistant
+                                        };
+                                    }
+
+                                    // Ensure lab number exists as a unique entry within the assistant
+                                    if (!uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber]) {
+                                        uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber] = {
+                                            labNumber,
+                                            sections: [] // Initialize sections array within each lab number
+                                        };
+                                    }
+
+                                    // Check if the section information is already added, and add it only if unique
+                                    const sectionDetail = {
+                                        sectionCode,
+                                        tissue,
+                                        requiresSlideForBlock: slideForBlock,
+                                        bone, // Include bone property
+                                        reGross // Include re_gross property
+                                    };
+
+                                    const existingSections = uniqueDataByDate[dateKey].batches[batchName].doctors[doctorName].assistants[assistantName].labNumbers[labNumber].sections;
+                                    const sectionExists = existingSections.some(section => 
+                                        section.sectionCode === sectionCode &&
+                                        section.tissue === tissue &&
+                                        section.requiresSlideForBlock === slideForBlock &&
+                                        section.bone === bone &&
+                                        section.reGross === reGross
+                                    );
+
+                                    // Add section details if not already present
+                                    if (!sectionExists) {
+                                        existingSections.push(sectionDetail);
+                                    }
+                                });
+
+                                // Sort Lab Numbers and Sections in ascending order
+                                Object.keys(uniqueDataByDate).forEach(dateKey => {
+                                    const dateData = uniqueDataByDate[dateKey];
+
+                                    // Sort batches by batch name (optional, if needed)
+                                    Object.keys(dateData.batches).forEach(batchKey => {
+                                        const batch = dateData.batches[batchKey];
+
+                                        // Sort doctors by doctor name (optional, if needed)
+                                        Object.keys(batch.doctors).forEach(doctorKey => {
+                                            const doctor = batch.doctors[doctorKey];
+
+                                            // Sort assistants by assistant name (optional, if needed)
+                                            Object.keys(doctor.assistants).forEach(assistantKey => {
+                                                const assistant = doctor.assistants[assistantKey];
+
+                                                // Sort lab numbers in ascending order
+                                                const labNumbers = assistant.labNumbers;
+                                                const sortedLabNumbers = Object.keys(labNumbers).sort((a, b) => a - b); // Sort lab numbers numerically
+
+                                                // Sort sections within each lab number in ascending order by section code
+                                                sortedLabNumbers.forEach(labNumberKey => {
+                                                    const labNumber = labNumbers[labNumberKey];
+
+                                                    // Sort sections by section code
+                                                    labNumber.sections.sort((a, b) => a.sectionCode.localeCompare(b.sectionCode));
+                                                });
+                                            });
+                                        });
                                     });
+                                });
 
-                                    return uniqueDataByDate;
+                                return uniqueDataByDate;
                         }
 
-                        
                         function generateTableRowsForPdf() {
                                 let tableRows = ""; // Initialize the tableRows variable
 
@@ -505,6 +542,59 @@ echo '<div class="tab-container">
                                 // Generate unique data structure
                                 const uniqueDataByDate = generateUniqueDataStructure(histo_gross_list);
 
+                                // Function to compare Lab Numbers and sort numerically for numeric and alphanumerically for mixed format
+                                function compareLabNumbers(a, b) {
+                                    // Check if both values are numeric
+                                    const numericA = parseInt(a.replace(/[^0-9]/g, ""), 10); // Extract numbers from lab number
+                                    const numericB = parseInt(b.replace(/[^0-9]/g, ""), 10); // Extract numbers from lab number
+
+                                    // If both are numeric, sort by numeric value
+                                    if (!isNaN(numericA) && !isNaN(numericB)) {
+                                        return numericA - numericB;
+                                    }
+
+                                    // If one of them is a numeric value and the other is alphanumeric, sort numerically first
+                                    if (!isNaN(numericA)) {
+                                        return -1; // numeric values come first
+                                    }
+                                    if (!isNaN(numericB)) {
+                                        return 1; // numeric values come first
+                                    }
+
+                                    // For alphanumeric sorting, compare by string values if needed (optional for your case)
+                                    return a.localeCompare(b);
+                                }
+
+                                // Function to compare Section Codes (e.g., A1, A2, B1)
+                                function compareSectionCodes(a, b) {
+                                        // Ensure both a and b are strings
+                                        const aStr = String(a);
+                                        const bStr = String(b);
+
+                                        const regex = /([A-Za-z]+)(\d+)/; // Regex to split letters and numbers
+                                        const matchA = aStr.match(regex);
+                                        const matchB = bStr.match(regex);
+
+                                        // Check if both match the pattern
+                                        if (matchA && matchB) {
+                                            const letterA = matchA[1];
+                                            const numberA = parseInt(matchA[2], 10);
+                                            const letterB = matchB[1];
+                                            const numberB = parseInt(matchB[2], 10);
+
+                                            // First compare the letter part alphabetically
+                                            if (letterA !== letterB) {
+                                                return letterA.localeCompare(letterB);
+                                            }
+
+                                            // Then compare the number part numerically
+                                            return numberA - numberB;
+                                        }
+
+                                    // If either doesn\'t\ match the expected pattern, return 0 (or handle as needed)
+                                    return 0;
+                                }
+
                                 // Iterate through each date in the data
                                 Object.keys(uniqueDataByDate).forEach(dateKey => {
                                     const dateData = uniqueDataByDate[dateKey];
@@ -519,79 +609,98 @@ echo '<div class="tab-container">
                                             year: "numeric"
                                         });
 
-                                tableRows += `<tr><td colspan=\'6\'>${formattedDate}</td></tr>`;
+                                        tableRows += `<tr><td colspan=\'6\'>${formattedDate}</td></tr>`;
 
-                                // Iterate through batches for this date
-                                Object.keys(dateData.batches).forEach(batchKey => {
-                                    const batch = dateData.batches[batchKey];
-                                    const batchName = batchNames[batchKey - 1] !== undefined && batchNames[batchKey - 1] !== null && batchNames[batchKey - 1] !== "" 
-                                                    ? batchNames[batchKey - 1] 
-                                                    : `Batch ${batchKey} ${batchNames[batchKey - 1] === undefined ? "(Batch is not Selected)" : ""}`;
+                                        // Iterate through batches for this date
+                                        Object.keys(dateData.batches).forEach(batchKey => {
+                                            const batch = dateData.batches[batchKey];
+                                            const batchName = batchNames[batchKey - 1] !== undefined && batchNames[batchKey - 1] !== null && batchNames[batchKey - 1] !== "" 
+                                                            ? batchNames[batchKey - 1] 
+                                                            : `Batch ${batchKey} ${batchNames[batchKey - 1] === undefined ? "(Batch is not Selected)" : ""}`;
 
-                                    // Initialize section code count for this batch
-                                    let sectionCodeCount = 0;
+                                            // Initialize section code count for this batch
+                                            let sectionCodeCount = 0;
 
-                                // Display the batch name in the table
-                                tableRows += `<tr><td colspan=\'6\'>(${batchName})</td></tr>`;
+                                            // Iterate through doctors and assistants
+                                            Object.keys(batch.doctors).forEach(doctorKey => {
+                                                const doctor = batch.doctors[doctorKey];
+                                                Object.keys(doctor.assistants).forEach(assistantKey => {
+                                                    const assistant = doctor.assistants[assistantKey];
 
-                                // Iterate through doctors and assistants
-                                Object.keys(batch.doctors).forEach(doctorKey => {
-                                    const doctor = batch.doctors[doctorKey];
+                                                    // Display the assistant name
+                                                    tableRows += `<tr><td colspan=\'6\'>(${batchName})&nbsp;${doctorKey}&nbsp;${assistantKey}</td></tr>`;
 
-                                    // Display the doctor and their assistants
-                                    tableRows += `<tr><td colspan=\'6\'>${doctorKey}</td></tr>`;
+                                                    // Iterate through lab numbers and sections
+                                                    const labNumbers = assistant.labNumbers;
+                                                    const sortedLabNumbers = Object.keys(labNumbers).sort(compareLabNumbers); // Use custom comparison for lab numbers
 
-                                    Object.keys(doctor.assistants).forEach(assistantKey => {
-                                        const assistant = doctor.assistants[assistantKey];
+                                                    // Iterate through sorted lab numbers
+                                                    sortedLabNumbers.forEach(labNumberKey => {
+                                                        const labNumber = labNumbers[labNumberKey];
 
-                                        // Display the assistant name
-                                        tableRows += `<tr><td colspan=\'6\'>${assistantKey}</td></tr>`;
+                                                        // Create a map to group sections by sectionCode
+                                                        const sectionGroups = {};
 
-                                        // Iterate through lab numbers and sections
-                                        Object.keys(assistant.labNumbers).forEach(labNumberKey => {
-                                            const labNumber = assistant.labNumbers[labNumberKey];
+                                                        // Group sections by sectionCode and tissue
+                                                        labNumber.sections.forEach(section => {
+                                                            // If the section has multiple occurrences, show \'(m)\' instead of \'(multiple)\'
+                                                            const tissueDisplay = section.tissue === "multiple" ? "m" : section.tissue;
+                                                            const sectionKey = `${section.sectionCode}(${tissueDisplay})`;
 
-                                            // Create a map to group sections by sectionCode
-                                            const sectionGroups = {};
+                                                            // Track occurrences of each section
+                                                            if (!sectionGroups[sectionKey]) {
+                                                                sectionGroups[sectionKey] = { 
+                                                                    count: 0,
+                                                                    requiresSlideForBlock: section.requiresSlideForBlock,
+                                                                    bone: section.bone,
+                                                                    reGross: section.reGross
+                                                                };
+                                                            }
+                                                            sectionGroups[sectionKey].count++;
 
-                                            // Group sections by sectionCode and tissue
-                                            labNumber.sections.forEach(section => {
-                                                const sectionKey = `${section.sectionCode}(${section.tissue})`;
+                                                            // If \'requiresSlideForBlock\' is missing, it should show as empty or a default value
+                                                            if (!sectionGroups[sectionKey].requiresSlideForBlock) {
+                                                                sectionGroups[sectionKey].requiresSlideForBlock = "";
+                                                            }
+                                                        });
 
-                                                // Track occurrences of each section
-                                                if (!sectionGroups[sectionKey]) {
-                                                    sectionGroups[sectionKey] = { count: 0, requiresSlideForBlock: section.requiresSlideForBlock };
-                                                }
-                                                sectionGroups[sectionKey].count++;
+                                                        // Count total section codes for the batch
+                                                        sectionCodeCount += Object.keys(sectionGroups).length;
 
-                                                // If \'requiresSlideForBlock\' is missing, it should show as empty or a default value
-                                                if (!sectionGroups[sectionKey].requiresSlideForBlock) {
-                                                    sectionGroups[sectionKey].requiresSlideForBlock = "";
-                                                }
+                                                        // Generate the horizontal display of sections with \'multiple\' for sections that appear more than once
+                                                        const sectionDisplay = Object.keys(sectionGroups).map(sectionKey => {
+                                                            const count = sectionGroups[sectionKey].count;
+                                                            const section = sectionGroups[sectionKey];
+                                                            let additionalInfo = "";
+
+                                                            // Check if \'bone\' is \'yes\' and append \'(b)\'
+                                                            if (section.bone === "yes") {
+                                                                additionalInfo += "(b)";
+                                                            }
+
+                                                            // Check if \'re_gross\' is \'yes\' and append \'(re)\'
+                                                            if (section.reGross === "yes") {
+                                                                additionalInfo += "(re)";
+                                                            }
+                                                            const slideInfo = sectionGroups[sectionKey].requiresSlideForBlock 
+                                                                                ? `(Slide: ${sectionGroups[sectionKey].requiresSlideForBlock})`
+                                                                                : \'\';
+                                                            return `${sectionKey}${slideInfo}${additionalInfo}`;
+                                                        }).join(", ");
+
+                                                        // Sort sections within each lab number by section code
+                                                        labNumber.sections.sort(compareSectionCodes); 
+
+                                                        // Display lab number and sections in a horizontal format
+                                                        tableRows += `<tr><td colspan=\'6\'><strong>${labNumberKey}</strong> - ${sectionDisplay}</td></tr>`;
+                                                    });
+                                                });
                                             });
 
-                                            // Count total section codes for the batch
-                                            sectionCodeCount += Object.keys(sectionGroups).length;
-
-                                            // Generate the horizontal display of sections with \'multiple\' for sections that appear more than once
-                                            const sectionDisplay = Object.keys(sectionGroups).map(sectionKey => {
-                                                const count = sectionGroups[sectionKey].count;
-                                                const slideInfo = sectionGroups[sectionKey].requiresSlideForBlock 
-                                                    ? `(Slide: ${sectionGroups[sectionKey].requiresSlideForBlock})`
-                                                    : \'\';
-                                                return `${sectionKey}${slideInfo}${count > 1 ? \' (multiple)\' : `(${count})`}`;
-                                            }).join(", ");
-
-                                            // Display lab number and sections in a horizontal format
-                                            tableRows += `<tr><td colspan=\'6\'><strong>${labNumberKey}</strong> - ${sectionDisplay}</td></tr>`;
+                                            // After processing all doctors and assistants, display the total section codes for this batch
+                                            tableRows += `<tr><td colspan=\'6\'>Total Blocks in (${batchName}): ${sectionCodeCount}<hr></td></tr>`;
                                         });
-                                    });
-                                });
-
-                                // After processing all doctors and assistants, display the total section codes for this batch
-                                tableRows += `<tr><td colspan=\'6\'>Total Blocks in (${batchName}): ${sectionCodeCount}<br></td></tr>`;
-                                 });
-                                }
+                                    }
                                 });
 
                                 return tableRows; // Return the generated rows
