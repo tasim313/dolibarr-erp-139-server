@@ -307,6 +307,30 @@ if (empty($labNumber_list)) {
                         <option value="">All</option> <!-- Default option -->
                     </select>
                 </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="sectionFilterTypeFilter" class="form-label">Section</label>
+                    <select id="sectionFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="worksheetStatusNameFilterTypeFilter" class="form-label">Worksheet Status Name</label>
+                    <select id="worksheetStatusNameFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="worksheetCreateTimeFilterTypeFilter" class="form-label">Worksheet Create Time</label>
+                    <select id="worksheetCreateTimeFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="worksheetTrackUserNameFilterTypeFilter" class="form-label">Worksheet Track User Name</label>
+                    <select id="worksheetTrackUserNameFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
             </form>
         </div>
     </div>
@@ -327,6 +351,10 @@ if (empty($labNumber_list)) {
                     <th>Create Date Time</th>
                     <th>Delivery Date Time</th>
                     <th>Status</th>
+                    <th>Section</th>
+                    <th>WorkSheet Status Name</th>
+                    <th>Track Date & Time</th>
+                    <th>Track User</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -353,261 +381,188 @@ if (empty($labNumber_list)) {
         document.getElementById("shadowSpinner").style.display = 'none';
     }
 
-    // Function to populate the lab numbers in the dropdown
-    // function populateFilters() {
-    //     const labNumberSelect = document.getElementById('labNumberTypeFilter');
-    //     const patientNameSelect = document.getElementById('patientNameFilterTypeFilter');
-    //     const patientCodeSelect = document.getElementById('patientCodeFilterTypeFilter');
-    //     const phoneSelect = document.getElementById('phoneFilterTypeFilter');
-    //     const addressSelect = document.getElementById('addressFilterTypeFilter');
-    //     const customerSupportSelect = document.getElementById('customersupportFilterTypeFilter');
-    //     const amountSelect = document.getElementById('amountFilterTypeFilter');
-    //     const totalAmountSelect = document.getElementById('totalamountFilterTypeFilter')
-    //     const createDateSelect = document.getElementById('createdateFilterTypeFilter')
-    //     const deliveryDateSelect = document.getElementById('deliverydateTimeFilterTypeFilter')
-    //     const statusSelect = document.getElementById('statusFilterTypeFilter')
-        
-    //     // Create a set of unique values for each filter
-    //     const labNumbers = new Set();
-    //     const patientNames = new Set();
-    //     const patientCodes = new Set();
-    //     const phones = new Set();
-    //     const addresses = new Set();
-    //     const customerSupports = new Set();
-    //     const amounts = new Set();
-    //     const totalAmounts = new Set();
-    //     const createDates  = new Set(); 
-    //     const deliveryDates = new Set();
-    //     const statuses = new Set();
-
-    //     labData.forEach(item => {
-    //         labNumbers.add(item.lab_number);
-    //         patientNames.add(item.name);
-    //         patientCodes.add(item.patient_code);
-    //         phones.add(item.phone);
-    //         addresses.add(item.address);
-    //         if (item.order_status) {
-    //             // Ensure that order_status is an array and has at least one element
-    //             const firstOrder = Array.isArray(item.order_status) ? item.order_status[0] : (item.order_status && Object.values(item.order_status)[0]);
-
-    //             // Check if firstOrder exists before accessing its properties
-    //             if (firstOrder) {
-    //                 customerSupports.add(firstOrder.UserName || "N/A");
-    //                 amounts.add(firstOrder.amount_ht || "N/A");
-    //                 totalAmounts.add(firstOrder.multicurrency_total_ht || "N/A");
-    //                 createDates.add(firstOrder.date_creation || "N/A");
-    //                 deliveryDates.add(firstOrder.date_livraison || "N/A");
-    //                 statuses.add(getStatusLabel(firstOrder.status));
-    //             }
-    //         }
-    //     });
-
-    //     // Populate each select option with unique values
-    //     labNumbers.forEach(number => {
-    //         const option = document.createElement('option');
-    //         option.value = number;
-    //         option.textContent = number;
-    //         labNumberSelect.appendChild(option);
-    //     });
-
-    //     patientNames.forEach(name => {
-    //         const option = document.createElement('option');
-    //         option.value = name;
-    //         option.textContent = name;
-    //         patientNameSelect.appendChild(option);
-    //     });
-
-    //     patientCodes.forEach(code => {
-    //         const option = document.createElement('option');
-    //         option.value = code;
-    //         option.textContent = code;
-    //         patientCodeSelect.appendChild(option);
-    //     });
-
-    //     phones.forEach(phone => {
-    //         const option = document.createElement('option');
-    //         option.value = phone;
-    //         option.textContent = phone;
-    //         phoneSelect.appendChild(option);
-    //     });
-
-    //     addresses.forEach(address => {
-    //         const option = document.createElement('option');
-    //         option.value = address;
-    //         option.textContent = address;
-    //         addressSelect.appendChild(option);
-    //     });
-
-    //     customerSupports.forEach(user => {
-    //         const option = document.createElement('option');
-    //         option.value = user;
-    //         option.textContent = user;
-    //         customerSupportSelect.appendChild(option);
-    //     });
-
-    //     amounts.forEach(amount => {
-    //         const option = document.createElement('option');
-    //         option.value = amount;
-    //         option.textContent = amount;
-    //         amountSelect.appendChild(option);
-    //     });
-
-    //     totalAmounts.forEach(total => {
-    //         const option = document.createElement('option');
-    //         option.value = total;
-    //         option.textContent = total;
-    //         totalAmountSelect.appendChild(option);
-    //     });
-
-    //     createDates.forEach(date => {
-    //         const option = document.createElement('option');
-    //         option.value = date;
-    //         option.textContent = date;
-    //         createDateSelect.appendChild(option);
-    //     });
-
-    //     deliveryDates.forEach(date => {
-    //         const option = document.createElement('option');
-    //         option.value = date;
-    //         option.textContent = date;
-    //         deliveryDateSelect.appendChild(option);
-    //     });
-
-    //     statuses.forEach(status => {
-    //         const option = document.createElement('option');
-    //         option.value = status;
-    //         option.textContent = status;
-    //         statusSelect.appendChild(option);
-    //     });
-    // }
-
+  
     function populateFilters() {
-    const labNumberSelect = document.getElementById('labNumberTypeFilter');
-    const patientNameSelect = document.getElementById('patientNameFilterTypeFilter');
-    const patientCodeSelect = document.getElementById('patientCodeFilterTypeFilter');
-    const phoneSelect = document.getElementById('phoneFilterTypeFilter');
-    const addressSelect = document.getElementById('addressFilterTypeFilter');
-    const customerSupportSelect = document.getElementById('customersupportFilterTypeFilter');
-    const amountSelect = document.getElementById('amountFilterTypeFilter');
-    const totalAmountSelect = document.getElementById('totalamountFilterTypeFilter');
-    const createDateSelect = document.getElementById('createdateFilterTypeFilter');
-    const deliveryDateSelect = document.getElementById('deliverydateTimeFilterTypeFilter');
-    const statusSelect = document.getElementById('statusFilterTypeFilter');
-    
-    // Create a set of unique values for each filter
-    const labNumbers = new Set();
-    const patientNames = new Set();
-    const patientCodes = new Set();
-    const phones = new Set();
-    const addresses = new Set();
-    const customerSupports = new Set();
-    const amounts = new Set();
-    const totalAmounts = new Set();
-    const createDates  = new Set(); 
-    const deliveryDates = new Set();
-    const statuses = new Set();
-
-    labData.forEach(item => {
-        labNumbers.add(item.lab_number);
-        patientNames.add(item.name);
-        patientCodes.add(item.patient_code);
-        phones.add(item.phone);
-        addresses.add(item.address);
+        const labNumberSelect = document.getElementById('labNumberTypeFilter');
+        const patientNameSelect = document.getElementById('patientNameFilterTypeFilter');
+        const patientCodeSelect = document.getElementById('patientCodeFilterTypeFilter');
+        const phoneSelect = document.getElementById('phoneFilterTypeFilter');
+        const addressSelect = document.getElementById('addressFilterTypeFilter');
+        const customerSupportSelect = document.getElementById('customersupportFilterTypeFilter');
+        const amountSelect = document.getElementById('amountFilterTypeFilter');
+        const totalAmountSelect = document.getElementById('totalamountFilterTypeFilter');
+        const createDateSelect = document.getElementById('createdateFilterTypeFilter');
+        const deliveryDateSelect = document.getElementById('deliverydateTimeFilterTypeFilter');
+        const statusSelect = document.getElementById('statusFilterTypeFilter');
+        const sectionSelect = document.getElementById('sectionFilterTypeFilter');
+        const worksheetStatusNameSelect = document.getElementById('worksheetStatusNameFilterTypeFilter');
+        const worksheetCreateTimeSelect = document.getElementById('worksheetCreateTimeFilterTypeFilter');
+        const worksheetTrackUserNameSelect = document.getElementById('worksheetTrackUserNameFilterTypeFilter');
         
-        if (item.order_status) {
-            // Ensure that order_status is an array and has at least one element
-            const firstOrder = Array.isArray(item.order_status) ? item.order_status[0] : (item.order_status && Object.values(item.order_status)[0]);
+        // Create a set of unique values for each filter
+        const labNumbers = new Set();
+        const patientNames = new Set();
+        const patientCodes = new Set();
+        const phones = new Set();
+        const addresses = new Set();
+        const customerSupports = new Set();
+        const amounts = new Set();
+        const totalAmounts = new Set();
+        const createDates  = new Set(); 
+        const deliveryDates = new Set();
+        const statuses = new Set();
+        const sections = new Set();
+        const worksheetStatusName = new Set();
+        const worksheetCreateTime = new Set();
+        const worksheetTrackUserName = new Set();
 
-            // Check if firstOrder exists before accessing its properties
-            if (firstOrder && firstOrder.status) {
-                customerSupports.add(firstOrder.UserName || "N/A");
-                amounts.add(firstOrder.amount_ht || "N/A");
-                totalAmounts.add(firstOrder.multicurrency_total_ht || "N/A");
-                createDates.add(firstOrder.date_creation || "N/A");
-                deliveryDates.add(firstOrder.date_livraison || "N/A");
-                statuses.add(getStatusLabel(firstOrder.status));
+        labData.forEach(item => {
+            labNumbers.add(item.lab_number);
+            patientNames.add(item.name);
+            patientCodes.add(item.patient_code);
+            phones.add(item.phone);
+            addresses.add(item.address);
+            
+            if (item.order_status) {
+                // Ensure that order_status is an array and has at least one element
+                const firstOrder = Array.isArray(item.order_status) ? item.order_status[0] : (item.order_status && Object.values(item.order_status)[0]);
+
+                // Check if firstOrder exists before accessing its properties
+                if (firstOrder && firstOrder.status) {
+                    customerSupports.add(firstOrder.UserName || "N/A");
+                    amounts.add(firstOrder.amount_ht || "N/A");
+                    totalAmounts.add(firstOrder.multicurrency_total_ht || "N/A");
+                    createDates.add(firstOrder.date_creation || "N/A");
+                    deliveryDates.add(firstOrder.date_livraison || "N/A");
+                    statuses.add(getStatusLabel(firstOrder.status));
+                }
             }
-        }
-    });
+            if (item.track_status && typeof item.track_status === 'object') {
+                Object.keys(item.track_status).forEach((key, index) => {
+                    const statusItem = item.track_status[key];
+                    // Add dynamic track_status filter values to sets
+                    sections.add(statusItem.section || "N/A");
+                    worksheetStatusName.add(statusItem.WSStatusName || "N/A");
+                    worksheetCreateTime.add(statusItem.WSStatusCreateTime || "N/A");
+                    worksheetTrackUserName.add(statusItem.TrackUserName || "N/A");
+                });
+            }
+        });
 
-    // Populate each select option with unique values
-    labNumbers.forEach(number => {
-        const option = document.createElement('option');
-        option.value = number;
-        option.textContent = number;
-        labNumberSelect.appendChild(option);
-    });
+        // Populate each select option with unique values
+        labNumbers.forEach(number => {
+            const option = document.createElement('option');
+            option.value = number;
+            option.textContent = number;
+            labNumberSelect.appendChild(option);
+        });
 
-    patientNames.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        patientNameSelect.appendChild(option);
-    });
+        patientNames.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            patientNameSelect.appendChild(option);
+        });
 
-    patientCodes.forEach(code => {
-        const option = document.createElement('option');
-        option.value = code;
-        option.textContent = code;
-        patientCodeSelect.appendChild(option);
-    });
+        patientCodes.forEach(code => {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = code;
+            patientCodeSelect.appendChild(option);
+        });
 
-    phones.forEach(phone => {
-        const option = document.createElement('option');
-        option.value = phone;
-        option.textContent = phone;
-        phoneSelect.appendChild(option);
-    });
+        phones.forEach(phone => {
+            const option = document.createElement('option');
+            option.value = phone;
+            option.textContent = phone;
+            phoneSelect.appendChild(option);
+        });
 
-    addresses.forEach(address => {
-        const option = document.createElement('option');
-        option.value = address;
-        option.textContent = address;
-        addressSelect.appendChild(option);
-    });
+        addresses.forEach(address => {
+            const option = document.createElement('option');
+            option.value = address;
+            option.textContent = address;
+            addressSelect.appendChild(option);
+        });
 
-    customerSupports.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user;
-        option.textContent = user;
-        customerSupportSelect.appendChild(option);
-    });
+        customerSupports.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user;
+            option.textContent = user;
+            customerSupportSelect.appendChild(option);
+        });
 
-    amounts.forEach(amount => {
-        const option = document.createElement('option');
-        option.value = amount;
-        option.textContent = amount;
-        amountSelect.appendChild(option);
-    });
+        amounts.forEach(amount => {
+            const option = document.createElement('option');
+            option.value = amount;
+            option.textContent = amount;
+            amountSelect.appendChild(option);
+        });
 
-    totalAmounts.forEach(total => {
-        const option = document.createElement('option');
-        option.value = total;
-        option.textContent = total;
-        totalAmountSelect.appendChild(option);
-    });
+        totalAmounts.forEach(total => {
+            const option = document.createElement('option');
+            option.value = total;
+            option.textContent = total;
+            totalAmountSelect.appendChild(option);
+        });
 
-    createDates.forEach(date => {
-        const option = document.createElement('option');
-        option.value = date;
-        option.textContent = date;
-        createDateSelect.appendChild(option);
-    });
+        createDates.forEach(date => {
+            const formattedDate = formatTrackCreateTime(date);
+            const option = document.createElement('option');
+            option.value = date;  
+            option.textContent = formattedDate;  // Use the formatted date for display
+            createDateSelect.appendChild(option);
+        });
 
-    deliveryDates.forEach(date => {
-        const option = document.createElement('option');
-        option.value = date;
-        option.textContent = date;
-        deliveryDateSelect.appendChild(option);
-    });
+        deliveryDates.forEach(date => {
+            const formattedDate = formatTrackCreateTime(date);
+            const option = document.createElement('option');
+            option.value = date;
+            option.textContent = formattedDate;  // Use the formatted date for display
+            deliveryDateSelect.appendChild(option);
+        });
 
-    statuses.forEach(status => {
-        const option = document.createElement('option');
-        option.value = status;
-        option.textContent = status;
-        statusSelect.appendChild(option);
-    });
-}
+        statuses.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status;
+            option.textContent = status;
+            statusSelect.appendChild(option);
+        });
+
+        // Populate dynamic track_status filters
+        sections.forEach(section => {
+            const option = document.createElement('option');
+            option.value = section;
+            option.textContent = section;
+            // Assuming you have a section select in your HTML
+            sectionSelect.appendChild(option);
+        });
+
+        worksheetStatusName.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            // Assuming you have a WS Status Name select in your HTML
+            worksheetStatusNameSelect.appendChild(option);
+        });
+
+        worksheetCreateTime.forEach(createTime => {
+            const formattedDate = formatTrackCreateTime(createTime);
+            const option = document.createElement('option');
+            option.value = createTime;
+            option.textContent = formattedDate;
+            // Assuming you have a WS Status Create Time select in your HTML
+            worksheetCreateTimeSelect.appendChild(option);
+        });
+
+        worksheetTrackUserName.forEach(userName => {
+            const option = document.createElement('option');
+            option.value = userName;
+            option.textContent = userName;
+            // Assuming you have a Track User Name select in your HTML
+            worksheetTrackUserNameSelect.appendChild(option);
+        });
+    }
 
 
     function formatTrackCreateTime(trackCreateTime) {
@@ -655,212 +610,334 @@ if (empty($labNumber_list)) {
         }
     }
 
-    // Function to display the lab data in the table
-    function displayLabData(data) {
-            const tableBody = document.getElementById('labDataTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Clear previous data
+    // Display the data after applying the filter
+    // function displayLabData(filteredData) {
+    //         const tbody = document.getElementById('labDataTable').getElementsByTagName('tbody')[0];
+    //         tbody.innerHTML = ''; // Clear existing data
 
-            data.forEach(item => {
-                const row = tableBody.insertRow();
+    //         filteredData.forEach(item => {
+    //             // Safely access properties, checking for null/undefined
+    //             const customerSupport = item.customerSupport || 'N/A';
+    //             const amount = item.amount || 'N/A';
+    //             const totalAmount = item.totalAmount || 'N/A';
+    //             const createDate = item.createDate ? formatTrackCreateTime(item.createDate) : 'Not Provided Date';
+    //             const deliveryDate = item.deliveryDate ? formatTrackCreateTime(item.deliveryDate) : 'Not Provided Date';
+    //             let status = getStatusLabel(item.status) || 'Unknown'; // Changed from const to let
+
+    //             // Handle order_status array
+    //             let userName = 'Not Provided';
+    //             let amountHT = 'Not Provided';
+    //             let dateCreation = 'Not Provided Date';
+    //             let dateLivraison = 'Not Provided Date';
+    //             let multicurrencyTotalHT = 'Not Provided';
+    //             let section = 'Not Provided';
+    //             let WSStatusName = 'Not Provided';
+    //             let TrackUserName = 'Not Provided';
+    //             let WSStatusCreateTime = 'Not Provided';
+
+
+    //             if (item.order_status) {
+    //                 if (Array.isArray(item.order_status)) {
+    //                     // If it's an array, get values from the first element if it exists
+    //                     if (item.order_status.length > 0) {
+    //                         const firstOrder = item.order_status[0];
+    //                         userName = firstOrder.UserName || userName;
+    //                         amountHT = firstOrder.amount_ht || amountHT;
+    //                         dateCreation = firstOrder.date_creation || dateCreation;
+    //                         dateLivraison = firstOrder.date_livraison || dateLivraison;
+    //                         multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+    //                         status = getStatusLabel(firstOrder.status); // Reassignment now valid
+    //                     }
+    //                 } else if (typeof item.order_status === 'object') {
+    //                     // If it's an object, retrieve the first key dynamically
+    //                     const statusKey = Object.keys(item.order_status)[0];
+    //                     if (statusKey) {
+    //                         const firstOrder = item.order_status[statusKey];
+    //                         userName = firstOrder.UserName || userName;
+    //                         amountHT = firstOrder.amount_ht || amountHT;
+    //                         dateCreation = firstOrder.date_creation || dateCreation;
+    //                         dateLivraison = firstOrder.date_livraison || dateLivraison;
+    //                         multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+    //                         status = getStatusLabel(firstOrder.status); // Reassignment now valid
+    //                     }
+    //                 }
+    //             }
+
+    //             // Handle track_status array
+    //             if (item.track_status && Array.isArray(item.track_status)) {
+    //                 item.track_status.forEach(statusItem => {
+    //                     // Update variables with values from track_status array
+    //                     TrackUserName = statusItem.TrackUserName || TrackUserName;
+    //                     section = statusItem.section || section;
+    //                     WSStatusCreateTime = statusItem.WSStatusCreateTime || WSStatusCreateTime;
+    //                     WSStatusName = statusItem.WSStatusName || WSStatusName;
+    //                 });
+    //             }
+
+    //             // Create row and append data
+    //             const row = document.createElement('tr');
+    //             row.innerHTML = `
+    //                 <td>${item.lab_number}</td>
+    //                 <td>${item.name || 'N/A'}</td>
+    //                 <td>${item.patient_code || 'N/A'}</td>
+    //                 <td>${item.phone || 'N/A'}</td>
+    //                 <td>${item.address || 'N/A'}</td>
+    //                 <td>${userName}</td>
+    //                 <td>${amountHT}</td>
+    //                 <td>${multicurrencyTotalHT}</td>
+    //                 <td>${formatTrackCreateTime(dateCreation)}</td>
+    //                 <td>${formatTrackCreateTime(dateLivraison)}</td>
+    //                 <td>${status}</td>
+    //                 <td>${section}</td>
+    //                 <td>${WSStatusName}</td>
+    //                 <td>${formatTrackCreateTime(WSStatusCreateTime)}</td>
+    //                 <td>${TrackUserName}</td>
+    //             `;
+    //             tbody.appendChild(row);
+    //         });
+    // }
+    
+    function displayLabData(filteredData) {
+            const tbody = document.getElementById('labDataTable').getElementsByTagName('tbody')[0];
+            const thead = document.getElementById('labDataTable').getElementsByTagName('thead')[0];
+    
+            tbody.innerHTML = ''; // Clear existing data
+    
+            // First, clear existing headers in the <thead>
+            const headerRow = thead.getElementsByTagName('tr')[0];
+            headerRow.innerHTML = ''; // Clear existing headers
+    
+            // Add the static headers first (you may already have these columns in your table)
+            headerRow.innerHTML = `
+                <th>Lab Number</th>
+                <th>Patient Name</th>
+                <th>Patient Code</th>
+                <th>Patient Phone</th>
+                <th>Patient Address</th>
+                <th>Customer Support</th>
+                <th>Test Price</th>
+                <th>Total Test Price</th>
+                <th>Sample Received Date</th>
+                <th>Report Delivery Date</th>
+                <th>Status</th>
+            `;
+    
+            // Loop through filteredData
+            filteredData.forEach(item => {
+                const row = document.createElement('tr');
                 
-                // Initialize default values for each property
+                // Default values
                 let userName = 'N/A';
                 let amountHT = 'N/A';
-                let dateCreation = 'N/A';
-                let dateLivraison = 'N/A';
+                let dateCreation = 'Not Provided Date';
+                let dateLivraison = 'Not Provided Date';
                 let multicurrencyTotalHT = 'N/A';
-                let status = 'N/A';
-
-                // Check if item.order_status exists and is an object or array
+                let status = 'Unknown';
+                let section = 'Not Provided';
+                let WSStatusName = 'Not Provided';
+                let WSStatusCreateTime = 'Not Provided';
+                let TrackUserName = 'Not Provided';
+                
+                // Check and handle order_status (for order details)
                 if (item.order_status) {
                     if (Array.isArray(item.order_status)) {
-                        // If it's an array, get values from the first element if it exists
+                    // If it's an array, get values from the first element if it exists
                         if (item.order_status.length > 0) {
-                            const firstOrder = item.order_status[0];
-                            userName = firstOrder.UserName || userName;
-                            amountHT = firstOrder.amount_ht || amountHT;
-                            dateCreation = firstOrder.date_creation || dateCreation;
-                            dateLivraison = firstOrder.date_livraison || dateLivraison;
-                            multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-                            status = getStatusLabel(firstOrder.status);
+                                        const firstOrder = item.order_status[0];
+                                        userName = firstOrder.UserName || userName;
+                                        amountHT = firstOrder.amount_ht || amountHT;
+                                        dateCreation = firstOrder.date_creation || dateCreation;
+                                        dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                        multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                        status = getStatusLabel(firstOrder.status); // Reassignment now valid
                         }
-                    } else if (typeof item.order_status === 'object') {
-                        // If it's an object, retrieve the first key dynamically
-                        const statusKey = Object.keys(item.order_status)[0];
-                        if (statusKey) {
-                            const firstOrder = item.order_status[statusKey];
-                            userName = firstOrder.UserName || userName;
-                            amountHT = firstOrder.amount_ht || amountHT;
-                            dateCreation = firstOrder.date_creation || dateCreation;
-                            dateLivraison = firstOrder.date_livraison || dateLivraison;
-                            multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-                            status = getStatusLabel(firstOrder.status);
-                        }
+                        } else if (typeof item.order_status === 'object') {
+                                // If it's an object, retrieve the first key dynamically
+                                const statusKey = Object.keys(item.order_status)[0];
+                                if (statusKey) {
+                                    const firstOrder = item.order_status[statusKey];
+                                    userName = firstOrder.UserName || userName;
+                                    amountHT = firstOrder.amount_ht || amountHT;
+                                    dateCreation = firstOrder.date_creation || dateCreation;
+                                    dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                    multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                    status = getStatusLabel(firstOrder.status); // Reassignment now valid
+                                }
                     }
                 }
-
-                // Insert extracted data into table rows
+                
+                // Create base data cells for the row using order_status values
                 row.innerHTML = `
                     <td>${item.lab_number}</td>
-                    <td>${item.name}</td>
-                    <td>${item.patient_code}</td>
-                    <td>${item.phone}</td>
-                    <td>${item.address}</td>
+                    <td>${item.name || 'N/A'}</td>
+                    <td>${item.patient_code || 'N/A'}</td>
+                    <td>${item.phone || 'N/A'}</td>
+                    <td>${item.address || 'N/A'}</td>
                     <td>${userName}</td>
                     <td>${amountHT}</td>
                     <td>${multicurrencyTotalHT}</td>
                     <td>${formatTrackCreateTime(dateCreation)}</td>
                     <td>${formatTrackCreateTime(dateLivraison)}</td>
                     <td>${status}</td>
+                    
                 `;
+                
+                // Check if track_status exists and loop through its keys
+                if (item.track_status && typeof item.track_status === 'object') {
+                    Object.keys(item.track_status).forEach((key, index) => {
+                        const statusItem = item.track_status[key];
+                        
+                        // Create dynamic headers for each track_status field (Section, WS Status Name, etc.)
+                        const sectionHeader = `<th>Section ${statusItem.section}</th>`;
+                        const wsStatusNameHeader = `<th>${statusItem.section} Status</th>`;
+                        const wsStatusCreateTimeHeader = `<th>${statusItem.section} Create Time</th>`;
+                        const trackUserNameHeader = `<th>${statusItem.section} Create User</th>`;
+                        
+                        // Check if these headers exist, if not, append them
+                        if (!headerRow.innerHTML.includes(sectionHeader)) {
+                            headerRow.innerHTML += sectionHeader;
+                            headerRow.innerHTML += wsStatusNameHeader;
+                            headerRow.innerHTML += wsStatusCreateTimeHeader;
+                            headerRow.innerHTML += trackUserNameHeader;
+                        }
+
+                        // Add data for each statusItem horizontally
+                        row.innerHTML += `
+                            <td>${statusItem.section || 'N/A'}</td>
+                            <td>${statusItem.WSStatusName || 'N/A'}</td>
+                            <td>${formatTrackCreateTime(statusItem.WSStatusCreateTime) || 'N/A'}</td>
+                            <td>${statusItem.TrackUserName || 'N/A'}</td>
+                        `;
+                    });
+                }
+                
+                // Append the row to the tbody
+                tbody.appendChild(row);
             });
     }
 
+    // Apply filters based on the selected filter options
+    function applyFilters() {
+            const filters = {
+                labNumber: document.getElementById('labNumberTypeFilter').value.toLowerCase().trim(),
+                patientName: document.getElementById('patientNameFilterTypeFilter').value.toLowerCase().trim(),
+                patientCode: document.getElementById('patientCodeFilterTypeFilter').value.toLowerCase().trim(),
+                phone: document.getElementById('phoneFilterTypeFilter').value.toLowerCase().trim(),
+                address: document.getElementById('addressFilterTypeFilter').value.toLowerCase().trim(),
+                customerSupport: document.getElementById('customersupportFilterTypeFilter').value.toLowerCase().trim(),
+                amount: document.getElementById('amountFilterTypeFilter').value.toLowerCase().trim(),
+                totalAmount: document.getElementById('totalamountFilterTypeFilter').value.toLowerCase().trim(),
+                createDate: document.getElementById('createdateFilterTypeFilter').value.toLowerCase().trim(),
+                deliveryDate: document.getElementById('deliverydateTimeFilterTypeFilter').value.toLowerCase().trim(),
+                status: document.getElementById('statusFilterTypeFilter').value.toLowerCase().trim(),
+                section: document.getElementById('sectionFilterTypeFilter').value.toLowerCase().trim(),
+                worksheetStatusName: document.getElementById('worksheetStatusNameFilterTypeFilter').value.toLowerCase().trim(),
+                worksheetCreateTime: document.getElementById('worksheetCreateTimeFilterTypeFilter').value.toLowerCase().trim(),
+                worksheetTrackUserName: document.getElementById('worksheetTrackUserNameFilterTypeFilter').value.toLowerCase().trim()
+            };
 
-    // Initial display of all lab data and populate filters
-    displayLabData(labData);
-    populateFilters();
+            const filteredData = labData.filter(item => {
+                const orderStatusArray = Array.isArray(item.order_status) ? item.order_status : [item.order_status];
 
-    // Filtering logic based on search input and selected filter
-    document.getElementById('searchInput').addEventListener('input', function() {
+                return orderStatusArray.some(order => {
+                    // Default values
+                    let userName = 'Not Provided';
+                    let amountHT = 'Not Provided';
+                    let dateCreation = 'Not Provided Date';
+                    let dateLivraison = 'Not Provided Date';
+                    let multicurrencyTotalHT = 'Not Provided';
+                    let status = 'Unknown';
+                    let section = 'Not Provided';
+                    let worksheetStatusName = 'Not Provided';
+                    let worksheetCreateTime = 'Not Provided';
+                    let worksheetTrackUserName = 'Not Provided';
+
+                    // Handle order_status array
+                    if (order) {
+                        if (Array.isArray(order)) {
+                            // If it's an array, get values from the first element if it exists
+                            if (order.length > 0) {
+                                const firstOrder = order[0];
+                                userName = firstOrder.UserName || userName;
+                                amountHT = firstOrder.amount_ht || amountHT;
+                                dateCreation = firstOrder.date_creation || dateCreation;
+                                dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                status = getStatusLabel(firstOrder.status) || status;
+                            }
+                        } else if (typeof order === 'object') {
+                            // If it's an object, retrieve the first key dynamically
+                            const statusKey = Object.keys(order)[0];
+                            if (statusKey) {
+                                const firstOrder = order[statusKey];
+                                userName = firstOrder.UserName || userName;
+                                amountHT = firstOrder.amount_ht || amountHT;
+                                dateCreation = firstOrder.date_creation || dateCreation;
+                                dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                status = getStatusLabel(firstOrder.status) || status;
+                            }
+                        }
+                    }
+
+                    // Handle track_status filtering
+                    if (item.track_status && typeof item.track_status === 'object') {
+                        Object.keys(item.track_status).forEach((key) => {
+                            const statusItem = item.track_status[key];
+                            // Update section, worksheetStatusName, worksheetCreateTime, and worksheetTrackUserName with actual values
+                            section = statusItem.section || section;
+                            worksheetStatusName = statusItem.WSStatusName || worksheetStatusName;
+                            worksheetCreateTime = statusItem.WSStatusCreateTime || worksheetCreateTime;
+                            worksheetTrackUserName = statusItem.TrackUserName || worksheetTrackUserName;
+                        });
+                    }
+
+                    // Apply the filters based on user input
+                    return (
+                        (!filters.labNumber || (item.lab_number || "").toLowerCase().includes(filters.labNumber)) &&
+                        (!filters.patientName || (item.name || "").toLowerCase().includes(filters.patientName)) &&
+                        (!filters.patientCode || (item.patient_code || "").toLowerCase().includes(filters.patientCode)) &&
+                        (!filters.phone || (item.phone || "").toLowerCase().includes(filters.phone)) &&
+                        (!filters.address || (item.address || "").toLowerCase().includes(filters.address)) &&
+                        (!filters.customerSupport || (userName || "N/A").toLowerCase().includes(filters.customerSupport)) &&
+                        (!filters.amount || (amountHT || "N/A").toLowerCase().includes(filters.amount)) &&
+                        (!filters.totalAmount || (multicurrencyTotalHT || "N/A").toLowerCase().includes(filters.totalAmount)) &&
+                        (!filters.createDate || (dateCreation || "N/A").toLowerCase().includes(filters.createDate)) &&
+                        (!filters.deliveryDate || (dateLivraison || "N/A").toLowerCase().includes(filters.deliveryDate)) &&
+                        (!filters.status || status.toLowerCase().includes(filters.status)) &&
+                        (!filters.section || section.toLowerCase().includes(filters.section)) &&
+                        (!filters.worksheetStatusName || worksheetStatusName.toLowerCase().includes(filters.worksheetStatusName)) &&
+                        (!filters.worksheetCreateTime || worksheetCreateTime.toLowerCase().includes(filters.worksheetCreateTime)) &&
+                        (!filters.worksheetTrackUserName || worksheetTrackUserName.toLowerCase().includes(filters.worksheetTrackUserName))
+                    );
+                });
+            });
+
+            displayLabData(filteredData);
+    }
+
+
+    // Event listener to apply filters when a filter changes
+    document.querySelectorAll('.form-select').forEach(selectElement => {
+        selectElement.addEventListener('change', applyFilters);
+    });
+
+    // Event listener for the search input
+    document.getElementById('searchInput').addEventListener('input', function () {
         const searchValue = this.value.toLowerCase();
         const filteredData = labData.filter(item => {
             return item.lab_number.toLowerCase().includes(searchValue) ||
-                   item.name.toLowerCase().includes(searchValue) ||
-                   item.patient_code.toLowerCase().includes(searchValue) ||
-                   item.phone.toLowerCase().includes(searchValue) ||
-                   item.address.toLowerCase().includes(searchValue);
+                item.name.toLowerCase().includes(searchValue) ||
+                item.patient_code.toLowerCase().includes(searchValue) ||
+                item.phone.toLowerCase().includes(searchValue) ||
+                item.address.toLowerCase().includes(searchValue);
         });
-        displayLabData(filteredData); // Update table with filtered data
+        displayLabData(filteredData);
     });
 
-    // Filtering logic for the dropdowns (to be used for each filter change event)
-    const filterElements = [
-        'labNumberTypeFilter', 'patientNameFilterTypeFilter', 'patientCodeFilterTypeFilter', 
-        'phoneFilterTypeFilter', 'addressFilterTypeFilter', 'customersupportFilterTypeFilter', 
-        'amountFilterTypeFilter', 'totalamountFilterTypeFilter', 'createdateFilterTypeFilter', 
-        'deliverydateTimeFilterTypeFilter', 'statusFilterTypeFilter'
-    ];
-
-    // filterElements.forEach(elementId => {
-    //     document.getElementById(elementId).addEventListener('change', function() {
-    //         const selectedLabNumber = document.getElementById('labNumberTypeFilter').value.toLowerCase();
-    //         const selectedPatientName = document.getElementById('patientNameFilterTypeFilter').value.toLowerCase();
-    //         const selectedPatientCode = document.getElementById('patientCodeFilterTypeFilter').value.toLowerCase();
-    //         const selectedPhone = document.getElementById('phoneFilterTypeFilter').value.toLowerCase();
-    //         const selectedAddress = document.getElementById('addressFilterTypeFilter').value.toLowerCase();
-    //         const selectedCustomerSupport = document.getElementById('customersupportFilterTypeFilter').value.toLowerCase();
-    //         const selectedAmount = document.getElementById('amountFilterTypeFilter').value.toLowerCase();
-    //         const selectedTotalAmount = document.getElementById('totalamountFilterTypeFilter').value.toLowerCase();
-    //         const selectedCreateDate = document.getElementById('createdateFilterTypeFilter').value.toLowerCase();
-    //         const selectedDeliveryDate = document.getElementById('deliverydateTimeFilterTypeFilter').value.toLowerCase();
-    //         const selectedStatus = document.getElementById('statusFilterTypeFilter').value.toLowerCase();
-
-    //         const filteredData = labData.filter(item => {
-    //             // Ensure order_status exists before accessing its properties
-    //             const hasOrderStatus = item.order_status && Array.isArray(item.order_status) && item.order_status.length > 0;
-    //             const orderStatus = hasOrderStatus ? item.order_status[0] : {};
-    //             // Filter condition: match dropdown selections
-    //             return (selectedLabNumber === '' || item.lab_number.toLowerCase().includes(selectedLabNumber)) &&
-    //                     (selectedPatientName === '' || item.name.toLowerCase().includes(selectedPatientName)) &&
-    //                     (selectedPatientCode === '' || item.patient_code.toLowerCase().includes(selectedPatientCode)) &&
-    //                     (selectedPhone === '' || item.phone.toLowerCase().includes(selectedPhone)) &&
-    //                     (selectedAddress === '' || item.address.toLowerCase().includes(selectedAddress)) &&
-    //                     (selectedCustomerSupport === '' || (hasOrderStatus && orderStatus.UserName && orderStatus.UserName.toLowerCase().includes(selectedCustomerSupport))) &&
-    //                     (selectedAmount === '' || (hasOrderStatus && orderStatus.amount_ht && orderStatus.amount_ht.toString().toLowerCase().includes(selectedAmount))) &&
-    //                     (selectedTotalAmount === '' || (hasOrderStatus && orderStatus.multicurrency_total_ht && orderStatus.multicurrency_total_ht.toString().toLowerCase().includes(selectedTotalAmount))) &&
-    //                     (selectedCreateDate === '' || (hasOrderStatus && orderStatus.date_creation && orderStatus.date_creation.toLowerCase().includes(selectedCreateDate))) &&
-    //                     (selectedDeliveryDate === '' || (hasOrderStatus && orderStatus.date_livraison && orderStatus.date_livraison.toLowerCase().includes(selectedDeliveryDate))) &&
-    //                     (selectedStatus === '' || (hasOrderStatus && getStatusLabel(orderStatus.status) && getStatusLabel(orderStatus.status).toLowerCase().includes(selectedStatus)));
-    //             });
-
-    //         displayLabData(filteredData); // Update table with filtered data
-    //     });
-    // });
-    filterElements.forEach(elementId => {
-    document.getElementById(elementId).addEventListener('change', function() {
-        // Retrieve filter values
-        const selectedLabNumber = document.getElementById('labNumberTypeFilter').value.toLowerCase().trim();
-        const selectedPatientName = document.getElementById('patientNameFilterTypeFilter').value.toLowerCase().trim();
-        const selectedPatientCode = document.getElementById('patientCodeFilterTypeFilter').value.toLowerCase().trim();
-        const selectedPhone = document.getElementById('phoneFilterTypeFilter').value.toLowerCase().trim();
-        const selectedAddress = document.getElementById('addressFilterTypeFilter').value.toLowerCase().trim();
-        const selectedCustomerSupport = document.getElementById('customersupportFilterTypeFilter').value.toLowerCase().trim();
-        const selectedAmount = document.getElementById('amountFilterTypeFilter').value.toLowerCase().trim();
-        const selectedTotalAmount = document.getElementById('totalamountFilterTypeFilter').value.toLowerCase().trim();
-        const selectedCreateDate = document.getElementById('createdateFilterTypeFilter').value.toLowerCase().trim();
-        const selectedDeliveryDate = document.getElementById('deliverydateTimeFilterTypeFilter').value.toLowerCase().trim();
-        const selectedStatus = document.getElementById('statusFilterTypeFilter').value.toLowerCase().trim();
-
-        // Log the selected filter values for debugging
-        console.log("Selected Filters:");
-        console.log("Lab Number:", selectedLabNumber);
-        console.log("Patient Name:", selectedPatientName);
-        console.log("Patient Code:", selectedPatientCode);
-        console.log("Phone:", selectedPhone);
-        console.log("Address:", selectedAddress);
-        console.log("Customer Support:", selectedCustomerSupport);
-        console.log("Amount:", selectedAmount);
-        console.log("Total Amount:", selectedTotalAmount);
-        console.log("Create Date:", selectedCreateDate);
-        console.log("Delivery Date:", selectedDeliveryDate);
-        console.log("Status:", selectedStatus);
-
-        const filteredData = labData.filter(item => {
-            // Loop through the order_status array (if it exists) to check filter conditions
-            const hasOrderStatus = item.order_status && Array.isArray(item.order_status) && item.order_status.length > 0;
-            let isMatching = false;
-
-            if (hasOrderStatus) {
-                // Iterate over each order status object in the array
-                for (let i = 0; i < item.order_status.length; i++) {
-                    const order = item.order_status[i];
-
-                    // Ensure order has required properties before checking
-                    if (order && order.status) {
-                        const orderCustomerSupport = order.UserName || "N/A";
-                        const orderAmount = order.amount_ht || "N/A";
-                        const orderTotalAmount = order.multicurrency_total_ht || "N/A";
-                        const orderCreateDate = order.date_creation || "N/A";
-                        const orderDeliveryDate = order.date_livraison || "N/A";
-                        const orderStatus = getStatusLabel(order.status) || "N/A";
-
-                        // Check against selected filter values
-                        const isCustomerSupportMatch = selectedCustomerSupport === '' || orderCustomerSupport.toLowerCase().includes(selectedCustomerSupport.toLowerCase());
-                        const isAmountMatch = selectedAmount === '' || orderAmount.toString().toLowerCase().includes(selectedAmount.toLowerCase());
-                        const isTotalAmountMatch = selectedTotalAmount === '' || orderTotalAmount.toString().replace('.', '').toLowerCase().includes(selectedTotalAmount.replace('.', '').toLowerCase());
-                        const isCreateDateMatch = selectedCreateDate === '' || orderCreateDate.toLowerCase().includes(selectedCreateDate.toLowerCase());
-                        const isDeliveryDateMatch = selectedDeliveryDate === '' || orderDeliveryDate.toLowerCase().includes(selectedDeliveryDate.toLowerCase());
-                        const isStatusMatch = selectedStatus === '' || orderStatus.toLowerCase().includes(selectedStatus.toLowerCase());
-
-                        // If all filter conditions are met for this order status, set isMatching to true
-                        if (isCustomerSupportMatch && isAmountMatch && isTotalAmountMatch && isCreateDateMatch && isDeliveryDateMatch && isStatusMatch) {
-                            isMatching = true;  // Item matches at least one valid order status
-                            break; // No need to check further orders, since one match is enough
-                        }
-                    }
-                }
-            }
-
-            // Filter condition for other attributes (lab number, patient name, etc.)
-            const isOtherAttributesMatch =
-                (selectedLabNumber === '' || item.lab_number.toLowerCase().includes(selectedLabNumber)) &&
-                (selectedPatientName === '' || item.name.toLowerCase().includes(selectedPatientName)) &&
-                (selectedPatientCode === '' || item.patient_code.toLowerCase().includes(selectedPatientCode)) &&
-                (selectedPhone === '' || item.phone.toLowerCase().includes(selectedPhone)) &&
-                (selectedAddress === '' || item.address.toLowerCase().includes(selectedAddress));
-
-            // Return the item if both conditions (order_status match and other attributes match) are true
-            return isOtherAttributesMatch && isMatching;
-        });
-
-        console.log("Filtered Data:", filteredData);
-
-        displayLabData(filteredData); // Update table with filtered data
-    });
-});
-
-
+    // Initialize the page
+    populateFilters();
+    displayLabData(labData);
 </script>
 
 
