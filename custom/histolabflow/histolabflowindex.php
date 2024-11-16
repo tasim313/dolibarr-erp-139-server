@@ -788,10 +788,10 @@ if (empty($labNumber_list)) {
                         const statusItem = item.track_status[key];
                         
                         // Create dynamic headers for each track_status field (Section, WS Status Name, etc.)
-                        const sectionHeader = `<th>Section ${statusItem.section}</th>`;
-                        const wsStatusNameHeader = `<th>${statusItem.section} Status</th>`;
-                        const wsStatusCreateTimeHeader = `<th>${statusItem.section} Create Time</th>`;
-                        const trackUserNameHeader = `<th>${statusItem.section} Create User</th>`;
+                        const sectionHeader = `<th>Section ${statusItem.section}${index + 1}</th>`;
+                        const wsStatusNameHeader = `<th>${statusItem.section} Status${index + 1}</th>`;
+                        const wsStatusCreateTimeHeader = `<th>${statusItem.section} Create Time${index + 1}</th>`;
+                        const trackUserNameHeader = `<th>${statusItem.section} Create User${index + 1}</th>`;
                         
                         // Check if these headers exist, if not, append them
                         if (!headerRow.innerHTML.includes(sectionHeader)) {
