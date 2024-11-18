@@ -343,8 +343,8 @@ foreach ($specimens as $index => $specimen) {
     echo '<label for="gross_description">Gross Description</label>';
     echo '</div>';
     echo '<div class="col-75">';
-    echo '<div id="editor_' . $index . '" class="editor"></div>';
-    echo '<textarea name="gross_description[]" id="hidden_gross_description_' . $index . '" style="display:none;">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
+    echo '<div id="editor_' . $index . '" class="editor">. htmlspecialchars($specimen["gross_description"] ?? "Specimen consists of") .</div>';
+    echo '<textarea name="gross_description[]" id="hidden_gross_description_' . $index . '" style="display:none;">'  . htmlspecialchars($specimen['gross_description'] ?? 'Specimen consists of') . '</textarea>';
     echo '</div>';
     echo '</div>';
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
