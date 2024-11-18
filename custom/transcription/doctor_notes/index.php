@@ -156,7 +156,7 @@ function unseen_filter_data($data) {
 // Assuming $case_summary_list is your dataset
 $unseen_filtered_data = unseen_filter_data($case_summary_list);
 
-
+print('<link href="../bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">');
 print("<style>
 .container {
   display: flex;
@@ -182,19 +182,7 @@ print("<style>
 .input-field:focus {
   border-color: dodgerblue;
 }
-.btn {
-  background-color: dodgerblue;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 16px;
-  outline: none;
-}
-.btn:hover {
-  background-color: #007bff;
-}
+
 #histoGrossTable {
     width: 100%;
     border-collapse: collapse;
@@ -225,8 +213,7 @@ print("<style>
 
 /* Style the buttons inside the tab */
 .tabs .tablink {
-    background-color: #f1f1f1;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
     outline: none;
     cursor: pointer;
     padding: 10px;
@@ -252,7 +239,7 @@ print("<style>
 
 /* Create an active/current tablink class */
 .tabs .tablink.active {
-    background-color: #ccc;
+    
     border-color: #888;
 }
 
@@ -275,8 +262,7 @@ print("<style>
 }
 
 .sub-tab-links .sub-tablink {
-    background-color: #f1f1f1;
-    border: 2px solid #ccc;
+    border: 1px solid #ccc;
     outline: none;
     cursor: pointer;
     padding: 10px;
@@ -345,11 +331,11 @@ print("<style>
 echo '<div class="tab-container">
          <!-- Tab Links -->
         <div class="tabs">
-          <button style="border:none" class="tablink" onclick="openTab(event, \'DoctorRelatedInstructions\')">
+          <button style="border:none" class="tablink btn btn-primary btn-lg" onclick="openTab(event, \'DoctorRelatedInstructions\')">
            <i class="fas fa-user-md" style="font-size: 35px;"></i>Doctor Notes</button>
-           <button style="border:none" class="tablink" onclick="openTab(event, \'CaseStatus\')">
+           <button style="border:none" class="tablink btn-success btn-lg" onclick="openTab(event, \'CaseStatus\')">
            <i class="fas fas fa-bell" style="font-size: 35px;"></i>Case Status</button>
-           <button style="border:none" class="tablink" onclick="openTab(event, \'ReportCompleteStatus\')">
+           <button style="border:none" class="tablink btn btn-info btn-lg" onclick="openTab(event, \'ReportCompleteStatus\')">
            <i class="fas fa-check-circle" style="font-size: 35px;"></i>Report Complete Status</button>
         </div>
 
@@ -358,23 +344,23 @@ echo '<div class="tab-container">
               <!-- Sub-tab Links -->
               <div class="sub-tabs">
                 <div class="sub-tab-links">
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'List\')">
+                  <button style="border:none" class="sub-tablink btn-info" onclick="openSubTab(event, \'List\')">
                   <i class="fas fa-list" style="font-size: 25px;"></i><b>&nbspList</b></button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'InProgress\')">
+                  <button style="border:none" class="sub-tablink btn-success" onclick="openSubTab(event, \'InProgress\')">
                   <i class="fas fa-spinner" style="font-size: 35px;"></i>In Progress</button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'Completed\')">
+                  <button style="border:none" class="sub-tablink btn-secondary" onclick="openSubTab(event, \'Completed\')">
                   <i class="fas fa-check-circle" style="font-size: 35px;"></i>Done</button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'OnHold\')">
+                  <button style="border:none" class="sub-tablink btn btn-warning" onclick="openSubTab(event, \'OnHold\')">
                     <i class="fas fa-pause-circle" style="font-size: 35px;"></i>On Hold
                   </button>
                 </div>
                 
                 <!-- Sub-tab contents -->
                 <div id="List" class="subtabcontent">
-                    <table id="doctorInstructionTable" border="1">
+                    <table id="doctorInstructionTable" class="table">
                         <thead>
                             <div style="display: flex; justify-content: flex-end;">
-                                <button id="submitStatusChanges" class="btn" style="margin-bottom: 10px;">Submit</button>  
+                                <button id="submitStatusChanges" class="btn btn-primary" style="margin-bottom: 10px;">Submit</button>  
                             </div>
                             <tr>
                                 <th>Lab Number</th>
@@ -539,10 +525,10 @@ echo '<div class="tab-container">
 
 
                 <div id="InProgress" class="subtabcontent">
-                     <table id="progressInstructionTable" border="1">
+                     <table id="progressInstructionTable" class="table">
                         <thead>
                             <div style="display: flex; justify-content: flex-end;">
-                                <button id="progress_submitStatusChanges" class="btn" style="margin-bottom: 10px;">Submit</button>  
+                                <button id="progress_submitStatusChanges" class="btn btn-primary" style="margin-bottom: 10px;">Submit</button>  
                             </div>
                             <tr>
                                 <th>Lab Number</th>
@@ -701,7 +687,7 @@ echo '<div class="tab-container">
                 </div>
 
                 <div id="Completed" class="subtabcontent">
-                        <table id="CompletedInstructionTable" border="1">
+                        <table id="CompletedInstructionTable" class="table">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -768,7 +754,7 @@ echo '<div class="tab-container">
                                 let controls = "";
 
                                 for (let i = 1; i <= totalPages; i++) {
-                                    controls += `<button class="pagination-btn" data-page="${i}">${i}</button>`;
+                                    controls += `<button class="pagination-btn btn btn-primary" data-page="${i}">${i}</button>`;
                                 }
 
                                 document.getElementById("paginationControls").innerHTML = controls;
@@ -802,10 +788,10 @@ echo '<div class="tab-container">
 
 
                 <div id="OnHold" class="subtabcontent">
-                   <table id="onHoldInstructionTable" border="1">
+                   <table id="onHoldInstructionTable" class="table">
                         <thead>
                             <div style="display: flex; justify-content: flex-end;">
-                                <button id="onHoldsubmitStatusChanges" class="btn" style="margin-bottom: 10px;">Submit</button>  
+                                <button id="onHoldsubmitStatusChanges" class="btn btn-primary" style="margin-bottom: 10px;">Submit</button>  
                             </div>
                             <tr>
                                 <th>Date</th>
@@ -916,96 +902,127 @@ echo '<div class="tab-container">
                     
             <div class="sub-tabs">
                 <div class="sub-tab-links">
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'ScreeningDoneList\')">
+                  <button style="border:none" class="sub-tablink btn-primary" onclick="openSubTab(event, \'ScreeningDoneList\')">
                   <i class="fas fa-microscope" style="font-size: 25px;"></i>&nbsp;&nbsp;Screening Done List</button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'FinalizedList\')">
+                  <button style="border:none" class="sub-tablink btn-success" onclick="openSubTab(event, \'FinalizedList\')">
                   <i class="fa fa-gavel" style="font-size: 35px;"></i>Finalized List</button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'UnSeen\')">
+                  <button style="border:none" class="sub-tablink btn btn-danger" onclick="openSubTab(event, \'UnSeen\')">
                   <i class="fas fa-eye-slash" style="font-size: 35px;"></i>UnSeen</button>
-                  <button style="border:none" class="sub-tablink" onclick="openSubTab(event, \'ReportEnteryCompleted\')">
+                  <button style="border:none" class="sub-tablink btn btn-info" onclick="openSubTab(event, \'ReportEnteryCompleted\')">
                   <i class="fas fa-clipboard-check" style="font-size: 35px;"></i>Report Entery Completed</button>
                 </div>
 
                 <!-- Sub-tab contents -->
-                 <div id="ScreeningDoneList" class="subtabcontent">
-                       <!-- Filter Controls -->
-                        <div>
-                                <label for="status-filter">Status:</label>
-                                <select id="status-filter">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                </select>
-                        
-                                <label for="labroom-filter" style="display: none;">Lab Room Status:</label>
-                                <select id="labroom-filter" style="display: none;">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                </select>
-                        
-                                <label for="date-filter">&nbsp;&nbsp;&nbsp;Date:</label>
-                                <input type="date" id="date-filter">
-                                
-                                <button id="apply-filter">&nbsp;&nbsp;Apply Filter</button>
-                        </div>
+                <div id="ScreeningDoneList" class="subtabcontent">
+                            <!-- Filter Controls -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <div class="form-group">
+                                                <label for="status-filter">Status:</label>
+                                                <select id="status-filter" class="form-control">
+                                                <option value="">All</option>
+                                                <!-- Options will be populated dynamically -->
+                                                </select>
+                                            </div>
 
-                        <!-- Data Table -->
-                        <div id="screening-done-count-display-container"></div>
-                        <div id="list-tab-content-container"></div>     
-                            
-                 </div>                 
+                                            <div class="form-group" style="display: none;">
+                                                <label for="labroom-filter">Lab Room Status:</label>
+                                                <select id="labroom-filter" class="form-control">
+                                                <option value="">All</option>
+                                                <!-- Options will be populated dynamically -->
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="date-filter">Date:</label>
+                                                <input type="date" id="date-filter" class="form-control">
+                                            </div>
+
+                                            <button id="apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
+                                </div>
+                            </div>
+
+                            <!-- Data Table -->
+                            <div id="screening-done-count-display-container" class="mb-4"></div>
+                            <div id="list-tab-content-container"></div>
+                </div>            
                         
                     
-                 <div id="FinalizedList" class="subtabcontent">
-                      <!-- Filter Controls -->
-                        <div>
-                                <label for="status-filter">Status:</label>
-                                <select id="final-status-filter">
+                <div id="FinalizedList" class="subtabcontent">
+                        <!-- Filter Controls -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <!-- Status Filter -->
+                                <div class="form-group">
+                                    <label for="final-status-filter">Status:</label>
+                                    <select id="final-status-filter" class="form-control">
                                     <option value="">All</option>
                                     <!-- Options will be populated dynamically -->
-                                </select>
-                        
-                                <label for="labroom-filter" style="display: none;">Lab Room Status:</label>
-                                <select id="labroom-filter" style="display: none;">
+                                    </select>
+                                </div>
+
+                                <!-- Lab Room Status Filter (Initially hidden) -->
+                                <div class="form-group" style="display: none;">
+                                    <label for="labroom-filter">Lab Room Status:</label>
+                                    <select id="labroom-filter" class="form-control">
                                     <option value="">All</option>
                                     <!-- Options will be populated dynamically -->
+                                    </select>
+                                </div>
+
+                                <!-- Date Filter -->
+                                <div class="form-group">
+                                    <label for="final-date-filter">Date:</label>
+                                    <input type="date" id="final-date-filter" class="form-control">
+                                </div>
+
+                                <!-- Apply Filter Button -->
+                                <button id="final-apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
+                            </div>
+                        </div>
+
+                    <!-- Data Table -->
+                    <div id="final-screening-done-count-display-container" class="mb-4"></div>
+                    <div id="final-list-tab-content-container"></div>
+                </div>
+
+                <div id="UnSeen" class="subtabcontent">
+                        <!-- Filter Controls -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                            <!-- Status Filter -->
+                            <div class="form-group">
+                                <label for="unseen-status-filter">Status:</label>
+                                <select id="unseen-status-filter" class="form-control">
+                                <option value="">All</option>
+                                <!-- Options will be populated dynamically -->
                                 </select>
-                        
-                                <label for="date-filter">&nbsp;&nbsp;&nbsp;Date:</label>
-                                <input type="date" id="final-date-filter">
-                                
-                                <button id="final-apply-filter">&nbsp;&nbsp;Apply Filter</button>
+                            </div>
+
+                            <!-- Lab Room Status Filter (Initially hidden) -->
+                            <div class="form-group" style="display: none;">
+                                <label for="labroom-filter">Lab Room Status:</label>
+                                <select id="labroom-filter" class="form-control">
+                                <option value="">All</option>
+                                <!-- Options will be populated dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- Date Filter -->
+                            <div class="form-group">
+                                <label for="unseen-date-filter">Date:</label>
+                                <input type="date" id="unseen-date-filter" class="form-control">
+                            </div>
+
+                            <!-- Apply Filter Button -->
+                            <button id="unseen-apply-filter" class="btn btn-primary ml-3 mt-2 mt-md-0">Apply Filter</button>
+                            </div>
                         </div>
 
                         <!-- Data Table -->
-                        <div id="final-screening-done-count-display-container"></div>
-                        <div id="final-list-tab-content-container"></div>    
-                 </div>
-
-                 <div id="UnSeen" class="subtabcontent">
-                     <!-- Filter Controls -->
-                        <div>
-                                <label for="status-filter">Status:</label>
-                                <select id="unseen-status-filter">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                </select>
-                        
-                                <label for="labroom-filter" style="display: none;">Lab Room Status:</label>
-                                <select id="labroom-filter" style="display: none;">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                </select>
-                        
-                                <label for="date-filter">&nbsp;&nbsp;&nbsp;Date:</label>
-                                <input type="date" id="unseen-date-filter">
-                                
-                                <button id="unseen-apply-filter">&nbsp;&nbsp;Apply Filter</button>
-                        </div>
-
-                        <!-- Data Table -->
-                        <div id="unseen-count-display-container"></div>
-                        <div id="unseen-list-tab-content-container"></div>    
-                 </div>
+                        <div id="unseen-count-display-container" class="mb-4"></div>
+                        <div id="unseen-list-tab-content-container"></div>
+                </div>
 
 
                  <div id="ReportEnteryCompleted" class="subtabcontent">
@@ -1159,6 +1176,7 @@ echo '
 
                 
                 const listTable = document.createElement('table');
+                listTable.classList.add('table');
                 listTable.style.borderCollapse = 'collapse'; // Optional: To remove space between borders
                 listTable.style.width = '100%'; // Optional: To make the table use full width
 
@@ -1274,6 +1292,7 @@ echo '
             }
 
             const listTable = document.createElement('table');
+            listTable.classList.add('table');
             listTable.style.borderCollapse = 'collapse'; // Optional: To remove space between borders
             listTable.style.width = '100%'; // Optional: To make the table use full width
 
@@ -1389,6 +1408,7 @@ echo '
             }
 
             const listTable = document.createElement('table');
+            listTable.classList.add('table');
             listTable.style.borderCollapse = 'collapse'; // Optional: To remove space between borders
             listTable.style.width = '100%'; // Optional: To make the table use full width
 

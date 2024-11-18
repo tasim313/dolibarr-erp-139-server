@@ -158,6 +158,9 @@ $order_status_datas = get_order_status_data($labNumberRefs);
 // Fetch track statuses for all lab numbers in one query
 $lab_track_statuses = get_tracking_data($labNumberRefs);
 
+// Fetch gross related info for all lab numbers in one query
+$gross_info_status = getGrossDetailsByLabNumbers($labNumberRefs);
+
 
 if (empty($labNumber_list)) {
     echo "No lab numbers found.";
@@ -175,6 +178,13 @@ if (empty($labNumber_list)) {
             return $status['ref'] === $lab_number['ref'];
         });
 
+        $gross_status_data = array_filter($gross_info_status, function($status) use ($lab_number) {
+            // Ensure both the lab_number and gross_lab_number have the same format, including 'HPL' prefix if needed
+            $formattedLabNumber = (strpos($lab_number['ref'], 'HPL') === 0) ? $lab_number['ref'] : 'HPL' . $lab_number['ref'];
+        
+            // Remove any potential whitespace issues by trimming the values
+            return trim($status['gross_lab_number']) === trim($formattedLabNumber);
+        });
 
         // Now check if $patient_information is not empty
         if (!empty($patient_information)) {
@@ -188,7 +198,8 @@ if (empty($labNumber_list)) {
                     'phone' => $patient['phone'] ?: 'Not provided',
                     'fax' => $patient['fax'] ?: 'Not provided',
                     'order_status' => !empty($order_status_data) ? $order_status_data : 'No status available',
-                    'track_status' => !empty($lab_track_status) ? $lab_track_status : 'No status available'
+                    'track_status' => !empty($lab_track_status) ? $lab_track_status : 'No status available',
+                    'gross_status' => !empty($gross_status_data) ? $gross_status_data : 'No gross status available'
                 ];
 
                 // Add the lab information to $labData
@@ -337,7 +348,7 @@ if (empty($labNumber_list)) {
 
     <!-- Lab Data Table -->
     <div style="margin-top: 20px;">
-		<table id="labDataTable" class="table table-bordered">
+		<table id="labDataTable" class="table">
 			<thead>
 				<tr>
 					<th>Lab Number</th>
@@ -351,6 +362,11 @@ if (empty($labNumber_list)) {
                     <th>Create Date Time</th>
                     <th>Delivery Date Time</th>
                     <th>Status</th>
+                    <th>Gross Station</th>
+                    <th>Gross Doctor</th>
+                    <th>Gross Assistant Name</th>
+                    <th>Gross Create User</th>
+                    <th>Gross Created Date</th>
                     <th>Section</th>
                     <th>WorkSheet Status Name</th>
                     <th>Track Date & Time</th>
@@ -564,35 +580,43 @@ if (empty($labNumber_list)) {
         });
     }
 
-
     function formatTrackCreateTime(trackCreateTime) {
-			// Check if TrackCreateTime is provided
-			if (!trackCreateTime) {
-				return "Not Provided Date";
-			}
+        // Check if TrackCreateTime is provided
+        if (!trackCreateTime) {
+            return "Not Provided Date";
+        }
 
-			// Create a Date object from TrackCreateTime
-			let date = new Date(trackCreateTime);
+        // Convert the timestamp string into ISO format
+        // Assuming 'trackCreateTime' is in the format 'Y-m-d H:i:s.u'
+        let isoFormattedTime = trackCreateTime.replace(' ', 'T'); // Convert to 'YYYY-MM-DDTHH:mm:ss'
+        isoFormattedTime = isoFormattedTime + 'Z'; // Add 'Z' for UTC time (Optional: Adjust if needed)
 
-			// Check if the date is invalid
-			if (isNaN(date)) {
-				return "Not Provided Date";
-			}
+        // Create a Date object from the ISO formatted time
+        let date = new Date(isoFormattedTime);
 
-			// Format options for date and time
-			let options = {
-				year: "numeric",
-				month: "long",
-				day: "numeric",
-				hour: "numeric",
-				minute: "numeric",
-				hour12: true,
-				timeZone: "Asia/Dhaka"
-			};
+        // Check if the date is invalid
+        if (isNaN(date)) {
+            return "Not Provided Date";
+        }
 
-			// Format date to "4 November 2024 4:30 PM" in the Asia/Dhaka timezone
-			return date.toLocaleString("en-GB", options);
-	}
+        // Format options for date and time
+        let options = {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+            hour12: true,
+            timeZone: "Asia/Dhaka"  // Specify the Asia/Dhaka timezone
+        };
+
+        // Create the formatter
+        let formatter = new Intl.DateTimeFormat("en-GB", options);
+
+        // Format the date and return
+        return formatter.format(date);
+    }
 
     // Function to map status values to labels
     function getStatusLabel(status) {
@@ -610,93 +634,22 @@ if (empty($labNumber_list)) {
         }
     }
 
-    // Display the data after applying the filter
-    // function displayLabData(filteredData) {
-    //         const tbody = document.getElementById('labDataTable').getElementsByTagName('tbody')[0];
-    //         tbody.innerHTML = ''; // Clear existing data
-
-    //         filteredData.forEach(item => {
-    //             // Safely access properties, checking for null/undefined
-    //             const customerSupport = item.customerSupport || 'N/A';
-    //             const amount = item.amount || 'N/A';
-    //             const totalAmount = item.totalAmount || 'N/A';
-    //             const createDate = item.createDate ? formatTrackCreateTime(item.createDate) : 'Not Provided Date';
-    //             const deliveryDate = item.deliveryDate ? formatTrackCreateTime(item.deliveryDate) : 'Not Provided Date';
-    //             let status = getStatusLabel(item.status) || 'Unknown'; // Changed from const to let
-
-    //             // Handle order_status array
-    //             let userName = 'Not Provided';
-    //             let amountHT = 'Not Provided';
-    //             let dateCreation = 'Not Provided Date';
-    //             let dateLivraison = 'Not Provided Date';
-    //             let multicurrencyTotalHT = 'Not Provided';
-    //             let section = 'Not Provided';
-    //             let WSStatusName = 'Not Provided';
-    //             let TrackUserName = 'Not Provided';
-    //             let WSStatusCreateTime = 'Not Provided';
-
-
-    //             if (item.order_status) {
-    //                 if (Array.isArray(item.order_status)) {
-    //                     // If it's an array, get values from the first element if it exists
-    //                     if (item.order_status.length > 0) {
-    //                         const firstOrder = item.order_status[0];
-    //                         userName = firstOrder.UserName || userName;
-    //                         amountHT = firstOrder.amount_ht || amountHT;
-    //                         dateCreation = firstOrder.date_creation || dateCreation;
-    //                         dateLivraison = firstOrder.date_livraison || dateLivraison;
-    //                         multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-    //                         status = getStatusLabel(firstOrder.status); // Reassignment now valid
-    //                     }
-    //                 } else if (typeof item.order_status === 'object') {
-    //                     // If it's an object, retrieve the first key dynamically
-    //                     const statusKey = Object.keys(item.order_status)[0];
-    //                     if (statusKey) {
-    //                         const firstOrder = item.order_status[statusKey];
-    //                         userName = firstOrder.UserName || userName;
-    //                         amountHT = firstOrder.amount_ht || amountHT;
-    //                         dateCreation = firstOrder.date_creation || dateCreation;
-    //                         dateLivraison = firstOrder.date_livraison || dateLivraison;
-    //                         multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-    //                         status = getStatusLabel(firstOrder.status); // Reassignment now valid
-    //                     }
-    //                 }
-    //             }
-
-    //             // Handle track_status array
-    //             if (item.track_status && Array.isArray(item.track_status)) {
-    //                 item.track_status.forEach(statusItem => {
-    //                     // Update variables with values from track_status array
-    //                     TrackUserName = statusItem.TrackUserName || TrackUserName;
-    //                     section = statusItem.section || section;
-    //                     WSStatusCreateTime = statusItem.WSStatusCreateTime || WSStatusCreateTime;
-    //                     WSStatusName = statusItem.WSStatusName || WSStatusName;
-    //                 });
-    //             }
-
-    //             // Create row and append data
-    //             const row = document.createElement('tr');
-    //             row.innerHTML = `
-    //                 <td>${item.lab_number}</td>
-    //                 <td>${item.name || 'N/A'}</td>
-    //                 <td>${item.patient_code || 'N/A'}</td>
-    //                 <td>${item.phone || 'N/A'}</td>
-    //                 <td>${item.address || 'N/A'}</td>
-    //                 <td>${userName}</td>
-    //                 <td>${amountHT}</td>
-    //                 <td>${multicurrencyTotalHT}</td>
-    //                 <td>${formatTrackCreateTime(dateCreation)}</td>
-    //                 <td>${formatTrackCreateTime(dateLivraison)}</td>
-    //                 <td>${status}</td>
-    //                 <td>${section}</td>
-    //                 <td>${WSStatusName}</td>
-    //                 <td>${formatTrackCreateTime(WSStatusCreateTime)}</td>
-    //                 <td>${TrackUserName}</td>
-    //             `;
-    //             tbody.appendChild(row);
-    //         });
-    // }
+    function getBatchLabel(batchNumber) {
+        const batchNames = [
+            "First Batch", 
+            "Second Batch", 
+            "Third Batch", 
+            "Fourth Batch", 
+            "Fifth Batch",
+            "Sixth Batch",
+            "Seventh Batch",
+            "Eighth Batch"
+        ]; // Extend this array if more batches are needed
     
+        return batchNames[batchNumber - 1] || `Batch ${batchNumber}`;
+    }
+
+    // Display the data after applying the filter
     function displayLabData(filteredData) {
             const tbody = document.getElementById('labDataTable').getElementsByTagName('tbody')[0];
             const thead = document.getElementById('labDataTable').getElementsByTagName('thead')[0];
@@ -717,9 +670,20 @@ if (empty($labNumber_list)) {
                 <th>Customer Support</th>
                 <th>Test Price</th>
                 <th>Total Test Price</th>
+                <th>Test Type</th>
                 <th>Sample Received Date</th>
                 <th>Report Delivery Date</th>
                 <th>Status</th>
+                <th>Gross Station</th>
+                <th>Gross Doctor</th>
+                <th>Gross Assistant Name</th>
+                <th>Gross Create User</th>
+                <th>Gross Created Date</th>
+                <th>Batch</th>
+                <th>Microscopic Description Create User</th>
+                <th>Microscopic Description Create Date</th>
+                <th>Diagnosis Description Create User</th>
+                <th>Diagnosis Description Create Date</th>
             `;
     
             // Loop through filteredData
@@ -737,6 +701,51 @@ if (empty($labNumber_list)) {
                 let WSStatusName = 'Not Provided';
                 let WSStatusCreateTime = 'Not Provided';
                 let TrackUserName = 'Not Provided';
+                let grossStationType = 'Not Provided';
+                let grossDoctor = 'Not Provided';
+                let grossAssistant = 'Not Provided';
+                let grossCreateUser = 'Not Provided';
+                let grossCreatedDate = 'Not Provided';
+                let batch = 'Not Provided';
+                let microCreateUser = 'Not Provided';
+                let microcreateDate = 'Not Provided'; 
+                let diagnosisCreateUser = 'Not Provided';
+                let diagnosisCreateDate = 'Not Provided';
+                let testType = 'Not Provided';
+
+                if (item.gross_status){
+                    if (Array.isArray(item.gross_status)){
+                        if(item.gross_status.length > 0){
+                            const firstGross = item.gross_status[0];
+                            grossStationType = firstGross.gross_station_type || grossStationType;
+                            grossDoctor = firstGross.gross_doctor_name || grossDoctor;
+                            grossAssistant = firstGross.gross_assistant_name || grossAssistant;
+                            grossCreateUser = firstGross.gross_created_user || grossCreateUser;
+                            grossCreatedDate = firstGross.gross_create_date || grossCreatedDate;
+                            batch = firstGross.batch || batch;
+                            microcreateDate = firstGross.micro_created_date || microcreateDate;
+                            microCreateUser = firstGross.micro_created_user || microCreateUser;
+                            diagnosisCreateUser = firstGross.diagnosis_created_user || diagnosisCreateUser;
+                            diagnosisCreateDate = firstGross.diagnosis_created_date || diagnosisCreateDate;
+                        }
+                    }else if (typeof item.gross_status === 'object') {
+                                // If it's an object, retrieve the first key dynamically
+                                const grossStatusKey = Object.keys(item.gross_status)[0];
+                                if (grossStatusKey) {
+                                    const firstGross = item.gross_status[grossStatusKey];
+                                    grossStationType = firstGross.gross_station_type || grossStationType;
+                                    grossDoctor = firstGross.gross_doctor_name || grossDoctor;
+                                    grossAssistant = firstGross.gross_assistant_name || grossAssistant;
+                                    grossCreateUser = firstGross.gross_created_user || grossCreateUser;
+                                    grossCreatedDate = firstGross.gross_create_date || grossCreatedDate;
+                                    batch = firstGross.batch || batch;
+                                    microcreateDate = firstGross.micro_created_date || microcreateDate;
+                                    microCreateUser = firstGross.micro_created_user || microCreateUser;
+                                    diagnosisCreateUser = firstGross.diagnosis_created_user || diagnosisCreateUser;
+                                    diagnosisCreateDate = firstGross.diagnosis_created_date || diagnosisCreateDate;
+                                }
+                    }
+                }
                 
                 // Check and handle order_status (for order details)
                 if (item.order_status) {
@@ -750,6 +759,7 @@ if (empty($labNumber_list)) {
                                         dateLivraison = firstOrder.date_livraison || dateLivraison;
                                         multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
                                         status = getStatusLabel(firstOrder.status); // Reassignment now valid
+                                        testType = firstOrder.testType || testType;
                         }
                         } else if (typeof item.order_status === 'object') {
                                 // If it's an object, retrieve the first key dynamically
@@ -762,6 +772,7 @@ if (empty($labNumber_list)) {
                                     dateLivraison = firstOrder.date_livraison || dateLivraison;
                                     multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
                                     status = getStatusLabel(firstOrder.status); // Reassignment now valid
+                                    testType = firstOrder.testType || testType;
                                 }
                     }
                 }
@@ -776,10 +787,20 @@ if (empty($labNumber_list)) {
                     <td>${userName}</td>
                     <td>${amountHT}</td>
                     <td>${multicurrencyTotalHT}</td>
+                    <td>${testType}</td>
                     <td>${formatTrackCreateTime(dateCreation)}</td>
                     <td>${formatTrackCreateTime(dateLivraison)}</td>
                     <td>${status}</td>
-                    
+                    <td>${grossStationType}</td>
+                    <td>${grossDoctor}</td>
+                    <td>${grossAssistant}</td>
+                    <td>${grossCreateUser}</td>
+                    <td>${formatTrackCreateTime(grossCreatedDate)}</td>
+                    <td>${getBatchLabel(batch)}</td>
+                    <td>${microCreateUser}</td>
+                    <td>${formatTrackCreateTime(microcreateDate)}</td>
+                    <td>${diagnosisCreateUser}</td>
+                    <td>${formatTrackCreateTime(diagnosisCreateDate)}</td>
                 `;
                 
                 // Check if track_status exists and loop through its keys
