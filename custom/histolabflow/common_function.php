@@ -21,7 +21,7 @@ function labNumber_list($startDate = null, $endDate = null) {
             SELECT c.ref 
             FROM llx_commande AS c
             JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid AND e.test_type = 'HPL'
-            LIMIT 100
+            LIMIT 100;
         ";
         $params = [];
     }
@@ -153,6 +153,9 @@ function get_order_status_data($labNumbers) {
                 f.total_ttc AS total_amount,
                 COALESCE(f.total_ttc - SUM(p.amount), f.total_ttc) AS remaining_amount_due,
                 COALESCE(SUM(p.amount), 0) AS already_paid,
+                fd.description AS line_description,
+                fd.remise_percent AS line_discount_percentage,
+                (fd.total_ht * fd.remise_percent / 100) AS line_discount_value,
                 t.code AS payment_term_code,
                 pm.code AS payment_mode_code,
                 ba.bank AS bank_name,
@@ -160,6 +163,8 @@ function get_order_status_data($labNumbers) {
                 CONCAT(ba.iban_prefix, ba.country_iban, ba.cle_iban) AS bank_iban
             FROM
                 llx_facture f
+            LEFT JOIN
+                llx_facturedet fd ON fd.fk_facture = f.rowid
             LEFT JOIN
                 llx_paiement_facture pf ON f.rowid = pf.fk_facture
             LEFT JOIN
@@ -177,7 +182,9 @@ function get_order_status_data($labNumbers) {
             WHERE
                 c.ref = '" . pg_escape_string($pg_con, $row['ref']) . "'
             GROUP BY
-                f.ref, f.total_ttc, t.code, pm.code, ba.bank, ba.bic, ba.iban_prefix, ba.country_iban, ba.cle_iban";
+                f.ref, f.total_ttc, f.remise_absolue, f.remise_percent, t.code, pm.code, ba.bank, ba.bic, ba.iban_prefix, ba.country_iban, ba.cle_iban, fd.rowid, fd.description, fd.total_ht, fd.remise_percent
+            ORDER BY
+                f.ref";
 
             $invoiceResult = pg_query($pg_con, $invoiceSql);
             $invoiceData = [];
@@ -230,7 +237,7 @@ function get_tracking_data($labNumbers) {
         llx_commande_wsstatus AS ws
         ON t.fk_status_id = ws.id
     WHERE 
-        c.ref IN ($labNumbersList)";
+        c.ref IN ($labNumbersList)  AND ws.section != 'Gross'";
 
     $result = pg_query($pg_con, $sql);
     $trackingData = [];
@@ -285,23 +292,12 @@ function getGrossDetailsByLabNumbers($labNumbers) {
         g.gross_create_date,
         u.login AS gross_created_by,
         g.batch,
-        d.created_user AS diagnosis_created_user,
-        d.created_date AS diagnosis_created_date,
         m.created_user AS micro_created_user,
         m.create_date AS micro_created_date
     FROM 
         llx_gross g
     LEFT JOIN 
         llx_user u ON g.gross_created_user = u.rowid
-    LEFT JOIN 
-        (
-            SELECT lab_number, MAX(row_id) AS max_row_id
-            FROM llx_diagnosis
-            WHERE lab_number IN ($labNumbersList)
-            GROUP BY lab_number
-        ) d_sub ON g.lab_number = d_sub.lab_number
-    LEFT JOIN 
-        llx_diagnosis d ON d.row_id = d_sub.max_row_id
     LEFT JOIN 
         (
             SELECT lab_number, MAX(row_id) AS max_row_id
@@ -328,8 +324,6 @@ function getGrossDetailsByLabNumbers($labNumbers) {
                 'gross_create_date' => $row['gross_create_date'],
                 'gross_created_by' => $row['gross_created_by'],
                 'batch' => $row['batch'],
-                'diagnosis_created_user' => $row['diagnosis_created_user'],
-                'diagnosis_created_date' => $row['diagnosis_created_date'],
                 'micro_created_user' => $row['micro_created_user'],
                 'micro_created_date' => $row['micro_created_date']
             );
