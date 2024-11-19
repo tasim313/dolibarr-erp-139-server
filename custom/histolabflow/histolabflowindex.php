@@ -348,7 +348,7 @@ if (empty($labNumber_list)) {
 
     <!-- Lab Data Table -->
     <div style="margin-top: 20px;">
-		<table id="labDataTable" class="table">
+		<table id="labDataTable" class="table, table-bordered, table-striped, table-hover">
 			<thead>
 				<tr>
 					<th>Lab Number</th>
@@ -672,6 +672,18 @@ if (empty($labNumber_list)) {
                 <th>Total Test Price</th>
                 <th>Test Type</th>
                 <th>Sample Received Date</th>
+                <th>Invoice</th>
+                <th>Invoice Total Amount</th>
+                <th>Paid Amount</th>
+                <th>Due Amount</th>
+                <th>Payment Term Code</th>
+                <th>Payment Mode Code</th>
+                <th>Bank Name</th>
+                <th>Bank Bic</th>
+                <th>Bank Iban</th>
+                <th>Discount Percentage</th>
+                <th>Discount Value</th>
+                <th>Specimen Name</th>
                 <th>Report Delivery Date</th>
                 <th>Status</th>
                 <th>Gross Station</th>
@@ -680,10 +692,8 @@ if (empty($labNumber_list)) {
                 <th>Gross Create User</th>
                 <th>Gross Created Date</th>
                 <th>Batch</th>
-                <th>Microscopic Description Create User</th>
-                <th>Microscopic Description Create Date</th>
-                <th>Diagnosis Description Create User</th>
-                <th>Diagnosis Description Create Date</th>
+                <th>Transcriptionist</th>
+                <th>Transcription Date</th>
             `;
     
             // Loop through filteredData
@@ -709,9 +719,20 @@ if (empty($labNumber_list)) {
                 let batch = 'Not Provided';
                 let microCreateUser = 'Not Provided';
                 let microcreateDate = 'Not Provided'; 
-                let diagnosisCreateUser = 'Not Provided';
-                let diagnosisCreateDate = 'Not Provided';
                 let testType = 'Not Provided';
+                let invoice = 'Not Provided';
+                let invoice_total_amount = 'Not Provided';
+                let invoice_already_paid = 'Not Provided';
+                let invoice_remaining_amount_due = 'Not Provided';
+                let payment_mode_code = 'Not Provided';
+                let payment_term_code = 'Not Provided';
+                let bank_name = 'Not Provided';
+                let bank_bic = 'Not Provided';
+                let bank_iban = 'Not Provided';
+                let discount_percentage = 'Not Provided';
+                let discount_value = 'Not Provided';
+                let specimen_name = 'Not Provided';
+
 
                 if (item.gross_status){
                     if (Array.isArray(item.gross_status)){
@@ -725,8 +746,6 @@ if (empty($labNumber_list)) {
                             batch = firstGross.batch || batch;
                             microcreateDate = firstGross.micro_created_date || microcreateDate;
                             microCreateUser = firstGross.micro_created_user || microCreateUser;
-                            diagnosisCreateUser = firstGross.diagnosis_created_user || diagnosisCreateUser;
-                            diagnosisCreateDate = firstGross.diagnosis_created_date || diagnosisCreateDate;
                         }
                     }else if (typeof item.gross_status === 'object') {
                                 // If it's an object, retrieve the first key dynamically
@@ -741,8 +760,6 @@ if (empty($labNumber_list)) {
                                     batch = firstGross.batch || batch;
                                     microcreateDate = firstGross.micro_created_date || microcreateDate;
                                     microCreateUser = firstGross.micro_created_user || microCreateUser;
-                                    diagnosisCreateUser = firstGross.diagnosis_created_user || diagnosisCreateUser;
-                                    diagnosisCreateDate = firstGross.diagnosis_created_date || diagnosisCreateDate;
                                 }
                     }
                 }
@@ -750,31 +767,99 @@ if (empty($labNumber_list)) {
                 // Check and handle order_status (for order details)
                 if (item.order_status) {
                     if (Array.isArray(item.order_status)) {
-                    // If it's an array, get values from the first element if it exists
+                        // If it's an array, get values from the first element if it exists
                         if (item.order_status.length > 0) {
-                                        const firstOrder = item.order_status[0];
-                                        userName = firstOrder.UserName || userName;
-                                        amountHT = firstOrder.amount_ht || amountHT;
-                                        dateCreation = firstOrder.date_creation || dateCreation;
-                                        dateLivraison = firstOrder.date_livraison || dateLivraison;
-                                        multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-                                        status = getStatusLabel(firstOrder.status); // Reassignment now valid
-                                        testType = firstOrder.testType || testType;
-                        }
-                        } else if (typeof item.order_status === 'object') {
-                                // If it's an object, retrieve the first key dynamically
-                                const statusKey = Object.keys(item.order_status)[0];
-                                if (statusKey) {
-                                    const firstOrder = item.order_status[statusKey];
-                                    userName = firstOrder.UserName || userName;
-                                    amountHT = firstOrder.amount_ht || amountHT;
-                                    dateCreation = firstOrder.date_creation || dateCreation;
-                                    dateLivraison = firstOrder.date_livraison || dateLivraison;
-                                    multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
-                                    status = getStatusLabel(firstOrder.status); // Reassignment now valid
-                                    testType = firstOrder.testType || testType;
+                                const firstOrder = item.order_status[0];
+                                userName = firstOrder.username || userName;
+                                amountHT = firstOrder.amount_ht || amountHT;
+                                dateCreation = firstOrder.date_creation || dateCreation;
+                                dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                status = getStatusLabel(firstOrder.status); // Reassignment now valid
+                                testType = firstOrder.testType || testType;
+                                
+                                // Check if invoiceDetails exists and extract the relevant fields
+                                if (firstOrder.invoiceDetails && Array.isArray(firstOrder.invoiceDetails) && firstOrder.invoiceDetails.length > 0) {
+                                    const invoiceDetail = firstOrder.invoiceDetails[0]; // Assuming invoiceDetails is an array
+                                    invoice = invoiceDetail.invoice_ref || invoice;
+                                    invoice_total_amount = invoiceDetail.total_amount || invoice_total_amount;
+                                    invoice_already_paid = invoiceDetail.already_paid || invoice_already_paid;
+                                    invoice_remaining_amount_due = invoiceDetail.remaining_amount_due || invoice_remaining_amount_due;
+                                    payment_mode_code = invoiceDetail.payment_mode_code || payment_mode_code;
+                                    payment_term_code = invoiceDetail.payment_term_code || payment_term_code;
+                                    bank_name = invoiceDetail.bank_name || bank_name;
+                                    bank_bic = invoiceDetail.bank_bic || bank_bic;
+                                    bank_iban = invoiceDetail.bank_iban || bank_iban;
+                                    discount_percentage = invoiceDetail.line_discount_percentage || discount_percentage;
+                                    discount_value = invoiceDetail.line_discount_value || discount_value;
+                                    specimen_name = invoiceDetail.line_description || specimen_name;
+                                } else if (firstOrder.invoiceDetails && typeof firstOrder.invoiceDetails === 'object') {
+                                    const invoiceDetailKey = Object.keys(firstOrder.invoiceDetails)[0];
+                                    if (invoiceDetailKey) {
+                                        const invoiceDetail = firstOrder.invoiceDetails[invoiceDetailKey];
+                                        invoice = invoiceDetail.invoice_ref || invoice;
+                                        invoice_total_amount = invoiceDetail.total_amount || invoice_total_amount;
+                                        invoice_already_paid = invoiceDetail.already_paid || invoice_already_paid;
+                                        invoice_remaining_amount_due = invoiceDetail.remaining_amount_due || invoice_remaining_amount_due;
+                                        payment_mode_code = invoiceDetail.payment_mode_code || payment_mode_code;
+                                        payment_term_code = invoiceDetail.payment_term_code || payment_term_code;
+                                        bank_name = invoiceDetail.bank_name || bank_name;
+                                        bank_bic = invoiceDetail.bank_bic || bank_bic;
+                                        bank_iban = invoiceDetail.bank_iban || bank_iban;
+                                        discount_percentage = invoiceDetail.line_discount_percentage || discount_percentage;
+                                        discount_value = invoiceDetail.line_discount_value || discount_value;
+                                        specimen_name = invoiceDetail.line_description || specimen_name;
+                                    }
                                 }
-                    }
+                            }
+                        } else if (typeof item.order_status === 'object') {
+                            // Handle when order_status is an object
+                            const statusKey = Object.keys(item.order_status)[0];
+                            if (statusKey) {
+                                const firstOrder = item.order_status[statusKey];
+                                userName = firstOrder.username || userName;
+                                amountHT = firstOrder.amount_ht || amountHT;
+                                dateCreation = firstOrder.date_creation || dateCreation;
+                                dateLivraison = firstOrder.date_livraison || dateLivraison;
+                                multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
+                                status = getStatusLabel(firstOrder.status); // Reassignment now valid
+                                testType = firstOrder.testType || testType;
+
+                                // Extract invoice details from the firstOrder
+                                if (firstOrder.invoiceDetails && Array.isArray(firstOrder.invoiceDetails) && firstOrder.invoiceDetails.length > 0) {
+                                    const invoiceDetail = firstOrder.invoiceDetails[0]; // Assuming invoiceDetails is an array
+                                    invoice = invoiceDetail.invoice_ref || invoice;
+                                    invoice_total_amount = invoiceDetail.total_amount || invoice_total_amount;
+                                    invoice_already_paid = invoiceDetail.already_paid || invoice_already_paid;
+                                    invoice_remaining_amount_due = invoiceDetail.remaining_amount_due || invoice_remaining_amount_due;
+                                    payment_mode_code = invoiceDetail.payment_mode_code || payment_mode_code;
+                                    payment_term_code = invoiceDetail.payment_term_code || payment_term_code;
+                                    bank_name = invoiceDetail.bank_name || bank_name;
+                                    bank_bic = invoiceDetail.bank_bic || bank_bic;
+                                    bank_iban = invoiceDetail.bank_iban || bank_iban;
+                                    discount_percentage = invoiceDetail.line_discount_percentage || discount_percentage;
+                                    discount_value = invoiceDetail.line_discount_value || discount_value;
+                                    specimen_name = invoiceDetail.line_description || specimen_name;
+                                } else if (firstOrder.invoiceDetails && typeof firstOrder.invoiceDetails === 'object') {
+                                    const invoiceDetailKey = Object.keys(firstOrder.invoiceDetails)[0];
+                                    if (invoiceDetailKey) {
+                                        const invoiceDetail = firstOrder.invoiceDetails[invoiceDetailKey];
+                                        invoice = invoiceDetail.invoice_ref || invoice;
+                                        invoice_total_amount = invoiceDetail.total_amount || invoice_total_amount;
+                                        invoice_already_paid = invoiceDetail.already_paid || invoice_already_paid;
+                                        invoice_remaining_amount_due = invoiceDetail.remaining_amount_due || invoice_remaining_amount_due;
+                                        payment_mode_code = invoiceDetail.payment_mode_code || payment_mode_code;
+                                        payment_term_code = invoiceDetail.payment_term_code || payment_term_code;
+                                        bank_name = invoiceDetail.bank_name || bank_name;
+                                        bank_bic = invoiceDetail.bank_bic || bank_bic;
+                                        bank_iban = invoiceDetail.bank_iban || bank_iban;
+                                        discount_percentage = invoiceDetail.line_discount_percentage || discount_percentage;
+                                        discount_value = invoiceDetail.line_discount_value || discount_value;
+                                        specimen_name = invoiceDetail.line_description || specimen_name;
+                                    }
+                                }
+                            }
+                        }
                 }
                 
                 // Create base data cells for the row using order_status values
@@ -789,6 +874,18 @@ if (empty($labNumber_list)) {
                     <td>${multicurrencyTotalHT}</td>
                     <td>${testType}</td>
                     <td>${formatTrackCreateTime(dateCreation)}</td>
+                    <td>${invoice}</td>
+                    <td>${invoice_total_amount}</td>
+                    <td>${invoice_already_paid}</td>
+                    <td>${invoice_remaining_amount_due}</td>
+                    <td>${payment_mode_code}</td>
+                    <td>${payment_term_code}</td>
+                    <td>${bank_name}</td>
+                    <td>${bank_bic}</td>
+                    <td>${bank_iban}</td>
+                    <td>${discount_percentage}</td>
+                    <td>${discount_value}</td>
+                    <td>${specimen_name}</td>
                     <td>${formatTrackCreateTime(dateLivraison)}</td>
                     <td>${status}</td>
                     <td>${grossStationType}</td>
@@ -799,8 +896,6 @@ if (empty($labNumber_list)) {
                     <td>${getBatchLabel(batch)}</td>
                     <td>${microCreateUser}</td>
                     <td>${formatTrackCreateTime(microcreateDate)}</td>
-                    <td>${diagnosisCreateUser}</td>
-                    <td>${formatTrackCreateTime(diagnosisCreateDate)}</td>
                 `;
                 
                 // Check if track_status exists and loop through its keys

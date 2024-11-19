@@ -899,8 +899,10 @@ $pdf->setIsLastPage(true); // Set the last page flag
 // Add the content for the last page
 $pdf->writeHTML($lastPageContent);
 
+$fileName = $LabNumber . '.pdf';
+
 // Get the PDF content as a string  
-$pdfContent = $pdf->Output('', 'S');
+$pdf->Output($fileName, 'I');
 
 // Base64 encode the PDF content
 $pdfData = base64_encode($pdfContent);
