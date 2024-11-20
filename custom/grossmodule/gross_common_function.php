@@ -17,7 +17,7 @@ function get_patient_information($lab_number) {
     if ($result) {
         while ($row = pg_fetch_assoc($result)) {
            $patients[] = [
-			'name' => $row['nom'], 
+		   'name' => $row['nom'], 
 		   'patient_code' => $row['code_client'], 
 		   'address'=> $row['address'],
 		   'phone' => $row['phone'],
