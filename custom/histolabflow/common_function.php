@@ -118,9 +118,9 @@ function get_order_status_data($labNumbers) {
 
     $labNumbersList = implode(",", $escapedLabNumbers);
 
-    // Main query
     $sql = "
     SELECT 
+        -- Order details
         c.ref, 
         c.date_creation,  
         c.date_commande,
@@ -131,76 +131,80 @@ function get_order_status_data($labNumbers) {
         c.multicurrency_total_ht, 
         c.multicurrency_total_tva, 
         c.multicurrency_total_ttc,
-        e.test_type
+        e.test_type,
+
+        -- Invoice details
+        f.ref AS invoice_ref,
+        f.total_ttc AS total_amount,
+        COALESCE(f.total_ttc - SUM(p.amount), f.total_ttc) AS remaining_amount_due,
+        COALESCE(SUM(p.amount), 0) AS already_paid,
+        STRING_AGG(fd.description, ', ') AS line_descriptions,
+        STRING_AGG(fd.remise_percent::TEXT, ', ') AS line_discount_percentages,
+        SUM((fd.total_ht * fd.remise_percent / 100)) AS total_line_discount_value,
+        t.code AS payment_term_code,
+        pm.code AS payment_mode_code,
+        ba.bank AS bank_name,
+        ba.bic AS bank_bic,
+        CONCAT(ba.iban_prefix, ba.country_iban, ba.cle_iban) AS bank_iban,
+
+        -- Company details
+        s.nom AS nom,
+        s.code_client AS code_client,
+        s.address AS address,
+        s.phone AS phone,
+        s.fax AS fax,
+        se.att_name AS attendant_name,
+        se.att_relation AS attendant_relation,
+        se.ageyrs As age,
+	    se.sex as sex,
+	    se.date_of_birth as date_of_birth
     FROM 
         llx_commande AS c
     INNER JOIN 
         llx_user AS u ON c.fk_user_author = u.rowid
     INNER JOIN 
         llx_commande_extrafields AS e ON e.fk_object = c.rowid
+    LEFT JOIN 
+        llx_element_element ee ON ee.fk_source = c.rowid AND ee.sourcetype = 'commande'
+    LEFT JOIN 
+        llx_facture f ON ee.fk_target = f.rowid AND ee.targettype = 'facture'
+    LEFT JOIN 
+        llx_facturedet fd ON fd.fk_facture = f.rowid
+    LEFT JOIN 
+        llx_paiement_facture pf ON f.rowid = pf.fk_facture
+    LEFT JOIN 
+        llx_paiement p ON pf.fk_paiement = p.rowid
+    LEFT JOIN 
+        llx_c_payment_term t ON f.fk_cond_reglement = t.rowid
+    LEFT JOIN 
+        llx_c_paiement pm ON f.fk_mode_reglement = pm.id
+    LEFT JOIN 
+        llx_bank_account ba ON p.fk_bank = ba.rowid
+    JOIN 
+        llx_societe AS s ON c.fk_soc = s.rowid
+    LEFT JOIN 
+        llx_societe_extrafields AS se ON s.rowid = se.fk_object
     WHERE 
-        c.ref IN ($labNumbersList)";
+        c.ref IN ($labNumbersList)
+    GROUP BY 
+        c.ref, c.date_creation, c.date_commande, u.login, c.fk_statut, c.amount_ht, 
+        c.date_livraison, c.multicurrency_total_ht, c.multicurrency_total_tva, 
+        c.multicurrency_total_ttc, e.test_type, 
+        f.ref, f.total_ttc, t.code, pm.code, ba.bank, ba.bic, ba.iban_prefix, 
+        ba.country_iban, ba.cle_iban, 
+        s.nom, s.code_client, s.address, s.phone, s.fax, 
+        se.att_name, se.att_relation, se.ageyrs, se.sex, se.date_of_birth
+    ORDER BY 
+        c.ref, f.ref";
 
     $result = pg_query($pg_con, $sql);
-    $orderStatusData = [];
-
-    if ($result) {
-        while ($row = pg_fetch_assoc($result)) {
-            // Secondary query for payment and invoice details
-            $invoiceSql = "
-            SELECT
-                f.ref AS invoice_ref,
-                f.total_ttc AS total_amount,
-                COALESCE(f.total_ttc - SUM(p.amount), f.total_ttc) AS remaining_amount_due,
-                COALESCE(SUM(p.amount), 0) AS already_paid,
-                fd.description AS line_description,
-                fd.remise_percent AS line_discount_percentage,
-                (fd.total_ht * fd.remise_percent / 100) AS line_discount_value,
-                t.code AS payment_term_code,
-                pm.code AS payment_mode_code,
-                ba.bank AS bank_name,
-                ba.bic AS bank_bic,
-                CONCAT(ba.iban_prefix, ba.country_iban, ba.cle_iban) AS bank_iban
-            FROM
-                llx_facture f
-            LEFT JOIN
-                llx_facturedet fd ON fd.fk_facture = f.rowid
-            LEFT JOIN
-                llx_paiement_facture pf ON f.rowid = pf.fk_facture
-            LEFT JOIN
-                llx_paiement p ON pf.fk_paiement = p.rowid
-            LEFT JOIN
-                llx_c_payment_term t ON f.fk_cond_reglement = t.rowid
-            LEFT JOIN
-                llx_c_paiement pm ON f.fk_mode_reglement = pm.id
-            LEFT JOIN
-                llx_bank_account ba ON p.fk_bank = ba.rowid
-            INNER JOIN
-                llx_element_element ee ON ee.fk_target = f.rowid AND ee.targettype = 'facture'
-            INNER JOIN
-                llx_commande c ON ee.fk_source = c.rowid AND ee.sourcetype = 'commande'
-            WHERE
-                c.ref = '" . pg_escape_string($pg_con, $row['ref']) . "'
-            GROUP BY
-                f.ref, f.total_ttc, f.remise_absolue, f.remise_percent, t.code, pm.code, ba.bank, ba.bic, ba.iban_prefix, ba.country_iban, ba.cle_iban, fd.rowid, fd.description, fd.total_ht, fd.remise_percent
-            ORDER BY
-                f.ref";
-
-            $invoiceResult = pg_query($pg_con, $invoiceSql);
-            $invoiceData = [];
-
-            if ($invoiceResult) {
-                $invoiceData = pg_fetch_all($invoiceResult) ?: [];
-                pg_free_result($invoiceResult);
-            }
-
-            $orderStatusData[] = array_merge($row, ['invoiceDetails' => $invoiceData]);
-        }
-
-        pg_free_result($result);
-    } else {
+    if (!$result) {
         echo 'Error: ' . pg_last_error($pg_con);
+        return [];
     }
+
+    $orderStatusData = pg_fetch_all($result) ?: [];
+    pg_free_result($result);
 
     return $orderStatusData;
 }
@@ -220,7 +224,6 @@ function get_tracking_data($labNumbers) {
         t.create_time,
         t.labno,
         u.login,
-        ws.create_time,
         ws.name,
         ws.section,
         c.rowid,
@@ -237,7 +240,16 @@ function get_tracking_data($labNumbers) {
         llx_commande_wsstatus AS ws
         ON t.fk_status_id = ws.id
     WHERE 
-        c.ref IN ($labNumbersList)  AND ws.section != 'Gross'";
+        c.ref IN ($labNumbersList)  AND ws.section != 'Gross' AND ws.name NOT IN ('Gross Entry Done', 'Gross Completed', 
+        'Regross Completed', 'Recut or Special Stain Completed', 'Waiting - Patient History / Investigation', 'Waiting - Study',
+        'Re-gross Requested', 'Recut or Special Stain Requested', 'Diagnosis Completed', 'Regross Slides Prepared', 'R/C requested', 'R/C Completed',
+        'M/R/C requested', 'M/R/C Completed', 'Deeper Cut requested', 'Deeper Cut Completed', 'Serial Sections requested', 'Serial Sections Completed',
+        'Block D/C & R/C requested', 'Block D/C & R/C Completed', 'Special Stain AFB requested', 'Special Stain AFB Completed', 'Special Stain GMS requested',
+        'Special Stain GMS Completed', 'Special Stain PAS requested', 'Special Stain PAS Completed', 'Special Stain PAS with Diastase requested',
+        'Special Stain PAS with Diastase Completed', 'Special Stain Fite Faraco requested', 'Special Stain Fite Faraco Completed', 'Special Stain Brown-Brenn requested',
+        'Special Stain Brown-Brenn Completed', 'Special Stain Congo-Red requested', 'Special Stain Congo-Red Completed', 'Special Stain others requested', 
+        'Special Stain others Completed', 'Special Stain Bone Decalcification requested', 'Special Stain Bone Decalcification Completed', 'IHC-Block-Markers-requested',
+        'IHC-Block-Markers-completed', 'Final Screening Start', 'Bones Slide Ready', 'R/C Completed')";
 
     $result = pg_query($pg_con, $sql);
     $trackingData = [];
@@ -245,10 +257,9 @@ function get_tracking_data($labNumbers) {
     if ($result) {
         while ($row = pg_fetch_assoc($result)) {
             $trackingData[] = array(
-                'TrackCreateTime' => $row['create_time'],
+                'create_time' => $row['create_time'],
                 'labno' => $row['labno'],
                 'TrackUserName' => $row['login'],
-                'WSStatusCreateTime' => $row['create_time'],
                 'section' => $row['section'],
                 'WSStatusName' => $row['name'],
                 'rowid' => $row['rowid'],
