@@ -717,7 +717,6 @@ if (empty($labNumber_list)) {
                 let status = 'Unknown';
                 let section = 'Not Provided';
                 let WSStatusName = 'Not Provided';
-                // let WSStatusCreateTime = 'Not Provided';
                 let TrackUserName = 'Not Provided';
                 let grossStationType = 'Not Provided';
                 let grossDoctor = 'Not Provided';
@@ -910,6 +909,20 @@ if (empty($labNumber_list)) {
                         if (titles.includes(statusItem.WSStatusName)) {
                             const title = statusItem.WSStatusName;
 
+                            // Format the date
+                            const dhakaDateTime = new Date(statusItem.create_time);
+
+                            // Format the date and time using Intl.DateTimeFormat
+                            const formattedDateTime = dhakaDateTime.toLocaleString('en-US', {
+                                timeZone: 'Asia/Dhaka',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                hour12: true
+                            });
+
                             // Create the dynamic header for this title if it doesn't already exist
                             const titleHeader = `<th>${title}</th>`;
                             const createTimeHeader = `<th>${title} Create Time</th>`;
@@ -924,7 +937,7 @@ if (empty($labNumber_list)) {
                             // Add the data for this title in the corresponding row
                             row.innerHTML += `
                                 <td>${statusItem.WSStatusName || 'N/A'}</td>
-                                <td>${formatTrackCreateTime(statusItem.create_time) || 'N/A'}</td>
+                                <td>${formattedDateTime}</td>
                                 <td>${statusItem.TrackUserName || 'N/A'}</td>
                             `;
                         }
