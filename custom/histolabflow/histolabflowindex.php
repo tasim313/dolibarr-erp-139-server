@@ -250,6 +250,18 @@ if (empty($labNumber_list)) {
                     </select>
                 </div>
                 <div class="col-12 col-md-4 mb-3">
+                    <label for="patientAgeFilterTypeFilter" class="form-label">Patient Age</label>
+                    <select id="patientAgeFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="patientGenderFilterTypeFilter" class="form-label">Patient Gender</label>
+                    <select id="patientGenderFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
                     <label for="patientCodeFilterTypeFilter" class="form-label">Patient Code</label>
                     <select id="patientCodeFilterTypeFilter" class="form-select">
                         <option value="">All</option> <!-- Default option -->
@@ -258,6 +270,24 @@ if (empty($labNumber_list)) {
                 <div class="col-12 col-md-4 mb-3">
                     <label for="phoneFilterTypeFilter" class="form-label">Phone</label>
                     <select id="phoneFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="attendentNameFilterTypeFilter" class="form-label">Attendent Name</label>
+                    <select id="attendentNameFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="attendentRelationFilterTypeFilter" class="form-label">Attendent Relation</label>
+                    <select id="attendentRelationFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="attendentNumberFilterTypeFilter" class="form-label">Attendent Number</label>
+                    <select id="attendentNumberFilterTypeFilter" class="form-select">
                         <option value="">All</option> <!-- Default option -->
                     </select>
                 </div>
@@ -399,6 +429,11 @@ if (empty($labNumber_list)) {
         const worksheetStatusNameSelect = document.getElementById('worksheetStatusNameFilterTypeFilter');
         const worksheetCreateTimeSelect = document.getElementById('worksheetCreateTimeFilterTypeFilter');
         const worksheetTrackUserNameSelect = document.getElementById('worksheetTrackUserNameFilterTypeFilter');
+        const patientAgeSelect = document.getElementById('patientAgeFilterTypeFilter');
+        const patientGenderSelect = document.getElementById('patientGenderFilterTypeFilter');
+        const attendantNameSelect = document.getElementById('attendentNameFilterTypeFilter');
+        const attendantRelationSelect = document.getElementById('attendentRelationFilterTypeFilter');
+        const attendantNumberSelect = document.getElementById('attendentNumberFilterTypeFilter');
         
         // Create a set of unique values for each filter
         const labNumbers = new Set();
@@ -416,14 +451,14 @@ if (empty($labNumber_list)) {
         const worksheetStatusName = new Set();
         const worksheetCreateTime = new Set();
         const worksheetTrackUserName = new Set();
+        const patientAge = new Set();
+        const patientGender = new Set();
+        const attendantName = new Set();
+        const attendant_relation = new Set();
+        const attendantNumber = new Set();
 
         labData.forEach(item => {
             labNumbers.add(item.lab_number);
-            patientNames.add(item.name);
-            patientCodes.add(item.patient_code);
-            phones.add(item.phone);
-            addresses.add(item.address);
-            
             if (item.order_status) {
                 // Ensure that order_status is an array and has at least one element
                 const firstOrder = Array.isArray(item.order_status) ? item.order_status[0] : (item.order_status && Object.values(item.order_status)[0]);
@@ -436,6 +471,15 @@ if (empty($labNumber_list)) {
                     createDates.add(firstOrder.date_creation || "N/A");
                     deliveryDates.add(firstOrder.date_livraison || "N/A");
                     statuses.add(getStatusLabel(firstOrder.status));
+                    patientNames.add(firstOrder.nom || "N/A");
+                    patientCodes.add(firstOrder.code_client || "N/A");
+                    phones.add(firstOrder.phone || "N/A");
+                    addresses.add(firstOrder.address || "N/A");
+                    patientAge.add(firstOrder.age || "N/A");
+                    patientGender.add(getGender(firstOrder.sex) || "N/A");
+                    attendantName.add(firstOrder.attendant_name || "N/A");
+                    attendant_relation.add(firstOrder.attendant_relation || "N/A");
+                    attendantNumber.add(firstOrder.fax || "N/A");
                 }
             }
             if (item.track_status && typeof item.track_status === 'object') {
@@ -465,6 +509,19 @@ if (empty($labNumber_list)) {
             patientNameSelect.appendChild(option);
         });
 
+        patientAge.forEach(age =>{
+            const option = document.createElement('option');
+            option.value = age;
+            option.textContent = age;
+            patientAgeSelect.appendChild(option);
+        });
+        patientGender.forEach(sex =>{
+            const option = document.createElement('option');
+            option.value = sex;
+            option.textContent = sex;
+            patientGenderSelect.appendChild(option);
+        });
+
         patientCodes.forEach(code => {
             const option = document.createElement('option');
             option.value = code;
@@ -478,6 +535,27 @@ if (empty($labNumber_list)) {
             option.textContent = phone;
             phoneSelect.appendChild(option);
         });
+
+        attendantName.forEach(attendant_name =>{
+            const option = document.createElement('option');
+            option.value = attendant_name;
+            option.textContent = attendant_name;
+            attendantNameSelect.appendChild(option);
+        })
+
+        attendant_relation.forEach(attendant_relation =>{
+            const option = document.createElement('option');
+            option.value = attendant_relation;
+            option.textContent = attendant_relation;
+            attendantRelationSelect.appendChild(option);
+        })
+
+        attendantNumber.forEach(fax =>{
+            const option = document.createElement('option');
+            option.value = fax;
+            option.textContent = fax;
+            attendantNumberSelect.appendChild(option);
+        })
 
         addresses.forEach(address => {
             const option = document.createElement('option');
@@ -967,7 +1045,12 @@ if (empty($labNumber_list)) {
                 section: document.getElementById('sectionFilterTypeFilter').value.toLowerCase().trim(),
                 worksheetStatusName: document.getElementById('worksheetStatusNameFilterTypeFilter').value.toLowerCase().trim(),
                 worksheetCreateTime: document.getElementById('worksheetCreateTimeFilterTypeFilter').value.toLowerCase().trim(),
-                worksheetTrackUserName: document.getElementById('worksheetTrackUserNameFilterTypeFilter').value.toLowerCase().trim()
+                worksheetTrackUserName: document.getElementById('worksheetTrackUserNameFilterTypeFilter').value.toLowerCase().trim(),
+                patientAge: document.getElementById('patientAgeFilterTypeFilter').value.toLowerCase().trim(),
+                patientGender: document.getElementById('patientGenderFilterTypeFilter').value.toLowerCase().trim(),
+                attendantName: document.getElementById('attendentNameFilterTypeFilter').value.toLowerCase().trim(),
+                attendant_relation: document.getElementById('attendentRelationFilterTypeFilter').value.toLowerCase().trim(),
+                attendantNumber: document.getElementById('attendentNumberFilterTypeFilter').value.toLowerCase().trim()
             };
 
             const filteredData = labData.filter(item => {
@@ -985,6 +1068,15 @@ if (empty($labNumber_list)) {
                     let worksheetStatusName = 'Not Provided';
                     let worksheetCreateTime = 'Not Provided';
                     let worksheetTrackUserName = 'Not Provided';
+                    let patientName = 'Not Provided';
+                    let patientCode = 'Not Provided';
+                    let phone = 'Not Provided';
+                    let address = 'Not Provided';
+                    let patientAge = 'Not Provided';
+                    let patientGender = 'Not Provided';
+                    let attendantName = 'Not Provided';
+                    let attendant_relation = 'Not Provided';
+                    let attendantNumber = 'Not Provided';
 
                     // Handle order_status array
                     if (order) {
@@ -998,6 +1090,15 @@ if (empty($labNumber_list)) {
                                 dateLivraison = firstOrder.date_livraison || dateLivraison;
                                 multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
                                 status = getStatusLabel(firstOrder.status) || status;
+                                patientName = firstOrder.nom || patientName;
+                                patientCode = firstOrder.code_client || patientCode;
+                                phone = firstOrder.phone || phone;
+                                address = firstOrder.address  || address;
+                                patientAge = firstOrder.age || patientAge;
+                                patientGender = getGender(firstOrder.sex) || patientGender;
+                                attendantName = firstOrder.attendant_name || attendantName;
+                                attendant_relation = firstOrder.attendant_relation || attendant_relation;
+                                attendantNumber = firstOrder.fax || attendantNumber;
                             }
                         } else if (typeof order === 'object') {
                             // If it's an object, retrieve the first key dynamically
@@ -1010,6 +1111,15 @@ if (empty($labNumber_list)) {
                                 dateLivraison = firstOrder.date_livraison || dateLivraison;
                                 multicurrencyTotalHT = firstOrder.multicurrency_total_ht || multicurrencyTotalHT;
                                 status = getStatusLabel(firstOrder.status) || status;
+                                patientName = firstOrder.nom || patientName;
+                                patientCode = firstOrder.code_client || patientCode;
+                                phone = firstOrder.phone || phone;
+                                address = firstOrder.address  || address;
+                                patientAge = firstOrder.age || patientAge;
+                                patientGender = getGender(firstOrder.sex) || patientGender;
+                                attendantName = firstOrder.attendant_name || attendantName;
+                                attendant_relation = firstOrder.attendant_relation || attendant_relation;
+                                attendantNumber = firstOrder.fax || attendantNumber;
                             }
                         }
                     }
@@ -1029,13 +1139,18 @@ if (empty($labNumber_list)) {
                     // Apply the filters based on user input
                     return (
                         (!filters.labNumber || (item.lab_number || "").toLowerCase().includes(filters.labNumber)) &&
-                        (!filters.patientName || (item.name || "").toLowerCase().includes(filters.patientName)) &&
-                        (!filters.patientCode || (item.patient_code || "").toLowerCase().includes(filters.patientCode)) &&
-                        (!filters.phone || (item.phone || "").toLowerCase().includes(filters.phone)) &&
-                        (!filters.address || (item.address || "").toLowerCase().includes(filters.address)) &&
+                        (!filters.patientName || (patientName || "").toLowerCase().includes(filters.patientName)) &&
+                        (!filters.patientAge || (patientAge || "").toLowerCase().includes(filters.patientAge)) &&
+                        (!filters.patientGender || (patientGender || "").toLowerCase() === filters.patientGender) &&
+                        (!filters.patientCode || (patientCode || "").toLowerCase().includes(filters.patientCode)) &&
+                        (!filters.phone || (phone || "").toLowerCase().includes(filters.phone)) &&
+                        (!filters.attendantName || (attendantName || "").toLowerCase() === filters.attendantName) &&
+                        (!filters.attendant_relation || (attendant_relation || "").toLowerCase() === filters.attendant_relation) &&
+                        (!filters.attendantNumber || (attendantNumber || "").toLowerCase().includes(filters.attendantNumber)) &&
+                        (!filters.address || (address || "").toLowerCase().includes(filters.address)) &&
                         (!filters.customerSupport || (userName || "N/A").toLowerCase().includes(filters.customerSupport)) &&
                         (!filters.amount || (amountHT || "N/A").toLowerCase().includes(filters.amount)) &&
-                        (!filters.totalAmount || (multicurrencyTotalHT || "N/A").toLowerCase().includes(filters.totalAmount)) &&
+                        (!filters.totalAmount || multicurrencyTotalHT === filters.totalAmount) &&
                         (!filters.createDate || (dateCreation || "N/A").toLowerCase().includes(filters.createDate)) &&
                         (!filters.deliveryDate || (dateLivraison || "N/A").toLowerCase().includes(filters.deliveryDate)) &&
                         (!filters.status || status.toLowerCase().includes(filters.status)) &&
