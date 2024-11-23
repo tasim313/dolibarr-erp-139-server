@@ -77,15 +77,6 @@ switch (true) {
 
 echo('
 <div class="container">
-
- <!-- Search Container -->
-    <div class="search-container row mb-4">
-        <input type="search" id="searchInput" class="form-control" placeholder="Search" />
-        <button type="button" class="btn btn-primary">
-            <i class="fas fa-search"></i>
-        </button>
-    </div>
-
     <!-- Date Filter -->
     <div class="search-container row mb-4">
         <form method="get" class="search-container row mb-4">
@@ -231,7 +222,6 @@ if (empty($labNumber_list)) {
 </style>
 
 <div class="container">
-   
 
     <!-- Filter Options -->
 	<div id="filterOptions" class="col-md-12">
@@ -322,6 +312,54 @@ if (empty($labNumber_list)) {
                     </select>
                 </div>
                 <div class="col-12 col-md-4 mb-3">
+                    <label for="invoiceTotalAmountFilterTypeFilter" class="form-label">Invoice Total Amount</label>
+                    <select id="invoiceTotalAmountFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="paidAmountFilterTypeFilter" class="form-label">Paid Amount</label>
+                    <select id="paidAmountFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="dueAmountFilterTypeFilter" class="form-label">Due Amount</label>
+                    <select id="dueAmountFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="paymentTermCodeFilterTypeFilter" class="form-label">Payment Term Code</label>
+                    <select id="paymentTermCodeFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="paymentModeCodeFilterTypeFilter" class="form-label">Payment Mode Code</label>
+                    <select id="paymentModeCodeFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="discountPercentageFilterTypeFilter" class="form-label">Discount Percentage</label>
+                    <select id="discountPercentageFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="discountValueFilterTypeFilter" class="form-label">Discount Value</label>
+                    <select id="discountValueFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
+                    <label for="specimenNameFilterTypeFilter" class="form-label">Specimen Name</label>
+                    <select id="specimenNameFilterTypeFilter" class="form-select">
+                        <option value="">All</option> <!-- Default option -->
+                    </select>
+                </div>
+                <div class="col-12 col-md-4 mb-3">
                     <label for="deliverydateTimeFilterTypeFilter" class="form-label">Delivery Date Time</label>
                     <select id="deliverydateTimeFilterTypeFilter" class="form-select">
                         <option value="">All</option> <!-- Default option -->
@@ -360,6 +398,8 @@ if (empty($labNumber_list)) {
             </form>
         </div>
     </div>
+   <!-- Placeholder for row count above the table -->
+    <div id="rowCountDisplay"></div>
 
     <!-- Lab Data Table -->
     <div style="margin-top: 20px;">
@@ -434,6 +474,14 @@ if (empty($labNumber_list)) {
         const attendantNameSelect = document.getElementById('attendentNameFilterTypeFilter');
         const attendantRelationSelect = document.getElementById('attendentRelationFilterTypeFilter');
         const attendantNumberSelect = document.getElementById('attendentNumberFilterTypeFilter');
+        const invoiceTotalAmountSelect = document.getElementById('invoiceTotalAmountFilterTypeFilter');
+        const paidAmountSelect = document.getElementById('paidAmountFilterTypeFilter');
+        const dueAmountSelect = document.getElementById('dueAmountFilterTypeFilter');
+        const paymentTermCodeSelect = document.getElementById('paymentTermCodeFilterTypeFilter');
+        const paymentModeCodeSelect = document.getElementById('paymentModeCodeFilterTypeFilter');
+        const discountPercentageSelect = document.getElementById('discountPercentageFilterTypeFilter');
+        const discountValueSelect = document.getElementById('discountValueFilterTypeFilter');
+        const specimenNameSelect = document.getElementById('specimenNameFilterTypeFilter');
         
         // Create a set of unique values for each filter
         const labNumbers = new Set();
@@ -456,6 +504,14 @@ if (empty($labNumber_list)) {
         const attendantName = new Set();
         const attendant_relation = new Set();
         const attendantNumber = new Set();
+        const invoiceTotalAmount = new Set();
+        const paidAmount = new Set();
+        const dueAmount = new Set();
+        const paymentTermCode = new Set();
+        const paymentModeCode = new Set();
+        const discountPercentage = new Set();
+        const discountValue = new Set();
+        const specimenName = new Set();
 
         labData.forEach(item => {
             labNumbers.add(item.lab_number);
@@ -480,6 +536,14 @@ if (empty($labNumber_list)) {
                     attendantName.add(firstOrder.attendant_name || "N/A");
                     attendant_relation.add(firstOrder.attendant_relation || "N/A");
                     attendantNumber.add(firstOrder.fax || "N/A");
+                    invoiceTotalAmount.add(firstOrder.total_amount || "N/A");
+                    paidAmount.add(firstOrder.already_paid || "N/A");
+                    dueAmount.add(firstOrder.remaining_amount_due || "N/A");
+                    paymentTermCode.add(firstOrder.payment_term_code || "N/A");
+                    paymentModeCode.add(firstOrder.payment_mode_code || "N/A");
+                    discountPercentage.add(firstOrder.line_discount_percentages || "N/A");
+                    discountValue.add(firstOrder.total_line_discount_value || "N/A");
+                    specimenName.add(firstOrder.line_descriptions || "N/A");
                 }
             }
             if (item.track_status && typeof item.track_status === 'object') {
@@ -592,6 +656,58 @@ if (empty($labNumber_list)) {
             option.textContent = formattedDate;  // Use the formatted date for display
             createDateSelect.appendChild(option);
         });
+        invoiceTotalAmount.forEach(total_amount =>{
+            const option = document.createElement('option');
+            option.value = total_amount;
+            option.textContent = total_amount;
+            invoiceTotalAmountSelect.appendChild(option);
+        })
+        paidAmount.forEach(already_paid =>{
+            const option = document.createElement('option');
+            option.value = already_paid;
+            option.textContent = already_paid;
+            paidAmountSelect.appendChild(option);
+        })
+        dueAmount.forEach(remaining_amount_due =>{
+            const option = document.createElement('option');
+            option.value = remaining_amount_due;
+            option.textContent = remaining_amount_due;
+            dueAmountSelect.appendChild(option);
+        })
+        paymentTermCode.forEach(payment_term_code =>{
+            const option = document.createElement('option');
+            option.value = payment_term_code;
+            option.textContent = payment_term_code;
+            paymentTermCodeSelect.appendChild(option);
+        })
+
+        paymentModeCode.forEach(payment_mode_code =>{
+            const option = document.createElement('option');
+            option.value = payment_mode_code;
+            option.textContent = payment_mode_code;
+            paymentModeCodeSelect.appendChild(option);
+        })
+
+        discountPercentage.forEach(line_discount_percentages =>{
+            const option = document.createElement('option');
+            option.value = line_discount_percentages;
+            option.textContent = line_discount_percentages;
+            discountPercentageSelect.appendChild(option);
+        })
+
+        discountValue.forEach(total_line_discount_value =>{
+            const option = document.createElement('option');
+            option.value = total_line_discount_value;
+            option.textContent = total_line_discount_value;
+            discountValueSelect.appendChild(option);
+        })
+
+        specimenName.forEach(line_descriptions =>{
+            const option = document.createElement('option');
+            option.value = line_descriptions;
+            option.textContent = line_descriptions;
+            specimenNameSelect.appendChild(option);
+        })
 
         deliveryDates.forEach(date => {
             const formattedDate = formatTrackCreateTime(date);
@@ -1050,7 +1166,15 @@ if (empty($labNumber_list)) {
                 patientGender: document.getElementById('patientGenderFilterTypeFilter').value.toLowerCase().trim(),
                 attendantName: document.getElementById('attendentNameFilterTypeFilter').value.toLowerCase().trim(),
                 attendant_relation: document.getElementById('attendentRelationFilterTypeFilter').value.toLowerCase().trim(),
-                attendantNumber: document.getElementById('attendentNumberFilterTypeFilter').value.toLowerCase().trim()
+                attendantNumber: document.getElementById('attendentNumberFilterTypeFilter').value.toLowerCase().trim(),
+                invoiceTotalAmount: document.getElementById('invoiceTotalAmountFilterTypeFilter').value.toLowerCase().trim(),
+                paidAmount: document.getElementById('paidAmountFilterTypeFilter').value.toLowerCase().trim(),
+                dueAmount: document.getElementById('dueAmountFilterTypeFilter').value.toLowerCase().trim(),
+                paymentTermCode: document.getElementById('paymentTermCodeFilterTypeFilter').value.toLowerCase().trim(),
+                paymentModeCode: document.getElementById('paymentModeCodeFilterTypeFilter').value.toLowerCase().trim(),
+                discountPercentage: document.getElementById('discountPercentageFilterTypeFilter').value.toLowerCase().trim(),
+                discountValue: document.getElementById('discountValueFilterTypeFilter').value.toLowerCase().trim(),
+                specimenName: document.getElementById('specimenNameFilterTypeFilter').value.toLowerCase().trim()
             };
 
             const filteredData = labData.filter(item => {
@@ -1077,6 +1201,14 @@ if (empty($labNumber_list)) {
                     let attendantName = 'Not Provided';
                     let attendant_relation = 'Not Provided';
                     let attendantNumber = 'Not Provided';
+                    let invoiceTotalAmount = 'Not Provided';
+                    let paidAmount = 'Not Provided';
+                    let dueAmount = 'Not Provided';
+                    let paymentTermCode = 'Not Provided';
+                    let paymentModeCode = 'Not Provided';
+                    let discountPercentage = 'Not Provided';
+                    let discountValue = 'Not Provided';
+                    let specimenName = 'Not Provided';
 
                     // Handle order_status array
                     if (order) {
@@ -1099,6 +1231,14 @@ if (empty($labNumber_list)) {
                                 attendantName = firstOrder.attendant_name || attendantName;
                                 attendant_relation = firstOrder.attendant_relation || attendant_relation;
                                 attendantNumber = firstOrder.fax || attendantNumber;
+                                invoiceTotalAmount = firstOrder.total_amount || invoiceTotalAmount;
+                                paidAmount = firstOrder.already_paid || paidAmount;
+                                dueAmount = firstOrder.remaining_amount_due || dueAmount;
+                                paymentTermCode = firstOrder.payment_term_code || paymentTermCode;
+                                paymentModeCode = firstOrder.payment_mode_code || paymentModeCode;
+                                discountPercentage = firstOrder.line_discount_percentages || discountPercentage;
+                                discountValue = firstOrder.total_line_discount_value || discountValue;
+                                specimenName = firstOrder.line_descriptions || specimenName;
                             }
                         } else if (typeof order === 'object') {
                             // If it's an object, retrieve the first key dynamically
@@ -1120,6 +1260,14 @@ if (empty($labNumber_list)) {
                                 attendantName = firstOrder.attendant_name || attendantName;
                                 attendant_relation = firstOrder.attendant_relation || attendant_relation;
                                 attendantNumber = firstOrder.fax || attendantNumber;
+                                invoiceTotalAmount = firstOrder.total_amount || invoiceTotalAmount;
+                                paidAmount = firstOrder.already_paid || paidAmount;
+                                dueAmount = firstOrder.remaining_amount_due || dueAmount;
+                                paymentTermCode = firstOrder.payment_term_code || paymentTermCode;
+                                paymentModeCode = firstOrder.payment_mode_code || paymentModeCode;
+                                discountPercentage = firstOrder.line_discount_percentages || discountPercentage;
+                                discountValue = firstOrder.total_line_discount_value || discountValue;
+                                specimenName = firstOrder.line_descriptions || specimenName;
                             }
                         }
                     }
@@ -1146,12 +1294,20 @@ if (empty($labNumber_list)) {
                         (!filters.phone || (phone || "").toLowerCase().includes(filters.phone)) &&
                         (!filters.attendantName || (attendantName || "").toLowerCase() === filters.attendantName) &&
                         (!filters.attendant_relation || (attendant_relation || "").toLowerCase() === filters.attendant_relation) &&
-                        (!filters.attendantNumber || (attendantNumber || "").toLowerCase().includes(filters.attendantNumber)) &&
+                        (!filters.attendantNumber || (attendantNumber || "").toLowerCase() === filters.attendantNumber) &&
                         (!filters.address || (address || "").toLowerCase().includes(filters.address)) &&
                         (!filters.customerSupport || (userName || "N/A").toLowerCase().includes(filters.customerSupport)) &&
                         (!filters.amount || (amountHT || "N/A").toLowerCase().includes(filters.amount)) &&
                         (!filters.totalAmount || multicurrencyTotalHT === filters.totalAmount) &&
                         (!filters.createDate || (dateCreation || "N/A").toLowerCase().includes(filters.createDate)) &&
+                        (!filters.invoiceTotalAmount || (invoiceTotalAmount || "").toLowerCase()=== filters.invoiceTotalAmount) &&
+                        (!filters.paidAmount || (paidAmount || "").toLowerCase() === filters.paidAmount) &&
+                        (!filters.dueAmount || (dueAmount || "").toLowerCase() === filters.dueAmount) &&
+                        (!filters.paymentTermCode || (paymentTermCode || "").toLowerCase() === filters.paymentTermCode) &&
+                        (!filters.paymentModeCode || (paymentModeCode || "").toLowerCase() === filters.paymentModeCode) &&
+                        (!filters.discountPercentage || (discountPercentage || "N/A").toLowerCase() === filters.discountPercentage) &&
+                        (!filters.discountValue || (discountValue || "N/A").toLowerCase() === filters.discountValue) &&
+                        (!filters.specimenName || (specimenName || "N/A").toLowerCase() === filters.specimenName) &&
                         (!filters.deliveryDate || (dateLivraison || "N/A").toLowerCase().includes(filters.deliveryDate)) &&
                         (!filters.status || status.toLowerCase().includes(filters.status)) &&
                         (!filters.section || section.toLowerCase().includes(filters.section)) &&
@@ -1161,8 +1317,8 @@ if (empty($labNumber_list)) {
                     );
                 });
             });
-
             displayLabData(filteredData);
+            updateRowCount();
     }
 
 
@@ -1171,22 +1327,57 @@ if (empty($labNumber_list)) {
         selectElement.addEventListener('change', applyFilters);
     });
 
-    // Event listener for the search input
-    document.getElementById('searchInput').addEventListener('input', function () {
-        const searchValue = this.value.toLowerCase();
-        const filteredData = labData.filter(item => {
-            return item.lab_number.toLowerCase().includes(searchValue) ||
-                item.name.toLowerCase().includes(searchValue) ||
-                item.patient_code.toLowerCase().includes(searchValue) ||
-                item.phone.toLowerCase().includes(searchValue) ||
-                item.address.toLowerCase().includes(searchValue);
-        });
-        displayLabData(filteredData);
-    });
-
     // Initialize the page
     populateFilters();
     displayLabData(labData);
+</script>
+
+<script>
+
+    function updateRowCount() {
+        // Get all the rows in the table (excluding the header)
+        const table = document.getElementById("labDataTable");
+        const rows = table.querySelectorAll("tbody tr");
+    
+        // Count the rows that are visible after applying filters
+        let visibleRows = 0;
+        rows.forEach(row => {
+            if (row.style.display !== "none") { // Check if the row is visible
+                visibleRows++;
+            }
+        });
+
+        // Display the row count
+        const rowCountHTML = `
+                <p class="h4"><i class="fas fa-file-alt"></i> <b>List of Lab Numbers:</b> ${visibleRows}</p>
+        `;
+        document.getElementById("rowCountDisplay").innerHTML = rowCountHTML;
+    }
+
+    // Filter by column function
+    function filterByColumn() {
+        const filterValue = document.getElementById("filterInput").value.toLowerCase();
+        const rows = document.querySelectorAll("#labDataTable tbody tr");
+
+        rows.forEach(row => {
+            const cell = row.cells[0]; // Assuming you're filtering by the first column (Test Name)
+            if (cell) {
+                if (cell.textContent.toLowerCase().includes(filterValue)) {
+                    row.style.display = ""; // Show row
+                } else {
+                    row.style.display = "none"; // Hide row
+                }
+            }
+        });
+
+        // Update the row count after filtering
+        updateRowCount();
+    }
+
+    // Initial row count display when the page loads
+    document.addEventListener("DOMContentLoaded", () => {
+        updateRowCount(); // Call it to show the initial count
+    });
 </script>
 
 
