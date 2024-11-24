@@ -1,7 +1,6 @@
 <?php 
 include('connection.php');
 
-
 function labNumber_list($startDate = null, $endDate = null) {
     global $pg_con;
 
@@ -21,7 +20,7 @@ function labNumber_list($startDate = null, $endDate = null) {
             SELECT c.ref 
             FROM llx_commande AS c
             JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid AND e.test_type = 'HPL'
-            LIMIT 100;
+            LIMIT 100
         ";
         $params = [];
     }
@@ -49,65 +48,6 @@ function labNumber_list($startDate = null, $endDate = null) {
         return [];
     }
 }
-
-
-// function get_order_status_data($labNumbers) {
-//     global $pg_con;
-
-//     $escapedLabNumbers = array_map(function($labNumber) use ($pg_con) {
-//         return "'" . pg_escape_string($pg_con, $labNumber) . "'";
-//     }, $labNumbers);
-
-//     $labNumbersList = implode(",", $escapedLabNumbers);
-
-//     $sql = "
-//     SELECT 
-//         c.ref, 
-//         c.date_creation,  
-//         c.date_commande,
-//         u.login,
-//         c.fk_statut,
-//         c.amount_ht, 
-//         c.date_livraison, 
-//         c.multicurrency_total_ht, 
-//         c.multicurrency_total_tva, 
-//         c.multicurrency_total_ttc,
-//         e.test_type
-//     FROM 
-//         llx_commande AS c
-//     INNER JOIN 
-//         llx_user AS u
-//         ON c.fk_user_author = u.rowid
-//     JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid 
-//     WHERE 
-//         c.ref IN ($labNumbersList)";
-
-//     $result = pg_query($pg_con, $sql);
-//     $orderStatusData = [];
-
-//     if ($result) {
-//         while ($row = pg_fetch_assoc($result)) {
-//             $orderStatusData[] = array(
-//                 'ref' => $row['ref'],
-//                 'date_creation' => $row['date_creation'],
-//                 'date_commande' => $row['date_commande'],
-//                 'UserName' => $row['login'],
-//                 'status' => $row['fk_statut'],
-//                 'amount_ht' => $row['amount_ht'],
-//                 'date_livraison' => $row['date_livraison'],
-//                 'multicurrency_total_ht' => $row['multicurrency_total_ht'],
-//                 'multicurrency_total_tva' => $row['multicurrency_total_tva'],
-//                 'multicurrency_total_ttc' => $row['multicurrency_total_ttc'],
-//                 'testType' => $row['test_type']
-//             );
-//         }
-//         pg_free_result($result);
-//     } else {
-//         echo 'Error: ' . pg_last_error($pg_con);
-//     }
-
-//     return $orderStatusData;
-// }
 
 function get_order_status_data($labNumbers) {
     global $pg_con;
@@ -209,7 +149,6 @@ function get_order_status_data($labNumbers) {
     return $orderStatusData;
 }
 
-
 function get_tracking_data($labNumbers) {
     global $pg_con;
 
@@ -240,7 +179,7 @@ function get_tracking_data($labNumbers) {
         llx_commande_wsstatus AS ws
         ON t.fk_status_id = ws.id
     WHERE 
-        c.ref IN ($labNumbersList)  AND ws.section != 'Gross' AND ws.name NOT IN ('Gross Entry Done', 'Gross Completed', 
+        c.ref IN ($labNumbersList) AND ws.section != 'Gross' AND ws.name NOT IN ('Gross Entry Done', 'Gross Completed', 
         'Regross Completed', 'Recut or Special Stain Completed', 'Waiting - Patient History / Investigation', 'Waiting - Study',
         'Re-gross Requested', 'Recut or Special Stain Requested', 'Diagnosis Completed', 'Regross Slides Prepared', 'R/C requested', 'R/C Completed',
         'M/R/C requested', 'M/R/C Completed', 'Deeper Cut requested', 'Deeper Cut Completed', 'Serial Sections requested', 'Serial Sections Completed',
@@ -346,5 +285,91 @@ function getGrossDetailsByLabNumbers($labNumbers) {
 
     return $trackingData;
 }
+
+
+function sample_received_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Define the base SQL query with required joins
+    $baseSQL = "
+        SELECT DISTINCT ON (c.ref) 
+            c.*, 
+            ce.*, 
+            array_agg(de.description) AS specimens -- Aggregate specimens into an array
+        FROM 
+            llx_commande AS c
+        LEFT JOIN 
+            llx_commande_extrafields AS ce ON ce.fk_object = c.rowid
+        LEFT JOIN 
+            llx_commandedet AS de ON de.fk_commande = c.rowid
+    ";
+
+    // Adjust the WHERE clause based on provided parameters or date options
+    if ($startDate && $endDate) {
+        // Query when both start and end dates are provided
+        $sql = $baseSQL . "
+            WHERE c.date_commande BETWEEN $1 AND $2
+            GROUP BY c.rowid, ce.rowid -- Group by necessary fields
+            ORDER BY c.ref, c.date_commande DESC
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        // Handle specific date options (today, yesterday, or both)
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE c.date_commande = CURRENT_DATE - INTERVAL '1 day'
+                    GROUP BY c.rowid, ce.rowid
+                    ORDER BY c.ref, c.date_commande DESC
+                ";
+                $params = [];
+                break;
+
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE c.date_commande IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                    GROUP BY c.rowid, ce.rowid
+                    ORDER BY c.ref, c.date_commande DESC
+                ";
+                $params = [];
+                break;
+
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE c.date_commande = CURRENT_DATE
+                    GROUP BY c.rowid, ce.rowid
+                    ORDER BY c.ref, c.date_commande DESC
+                ";
+                $params = [];
+                break;
+        }
+    }
+
+    // Prepare the SQL query
+    $preparedResult = pg_prepare($pg_con, "get_commande_ref", $sql);
+
+    if (!$preparedResult) {
+        // Handle preparation failure
+        echo 'Error: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Execute the prepared query
+    $executedResult = pg_execute($pg_con, "get_commande_ref", $params);
+
+    if (!$executedResult) {
+        // Handle execution failure
+        echo 'Error: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Fetch and return the results, or an empty array if no results
+    $existingData = pg_fetch_all($executedResult) ?: [];
+    pg_free_result($executedResult);
+
+    return $existingData;
+}
+
 
 ?>
