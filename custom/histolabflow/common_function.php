@@ -290,37 +290,217 @@ function getGrossDetailsByLabNumbers($labNumbers) {
 function sample_received_list($startDate = null, $endDate = null, $dateOption = 'today') {
     global $pg_con;
 
-    // Define the base SQL query with required joins
+    // Start output buffering to catch fatal errors
+    ob_start();
+    try {
+        // Define the base SQL query with required joins
+        $baseSQL = "
+            SELECT DISTINCT ON (c.ref) 
+                c.*, 
+                ce.*, 
+                array_agg(de.description) AS specimens -- Aggregate specimens into an array
+            FROM 
+                llx_commande AS c
+            LEFT JOIN 
+                llx_commande_extrafields AS ce ON ce.fk_object = c.rowid
+            LEFT JOIN 
+                llx_commandedet AS de ON de.fk_commande = c.rowid
+        ";
+
+        // Adjust the WHERE clause based on provided parameters or date options
+        if ($startDate && $endDate) {
+            // Query when both start and end dates are provided
+            $sql = $baseSQL . "
+                WHERE c.date_commande BETWEEN $1 AND $2
+                GROUP BY c.rowid, ce.rowid -- Group by necessary fields
+                ORDER BY c.ref, c.date_commande DESC
+            ";
+            $params = [$startDate, $endDate];
+        } else {
+            // Handle specific date options (today, yesterday, or both)
+            switch ($dateOption) {
+                case 'yesterday':
+                    $sql = $baseSQL . "
+                        WHERE c.date_commande = CURRENT_DATE - INTERVAL '1 day'
+                        GROUP BY c.rowid, ce.rowid
+                        ORDER BY c.ref, c.date_commande DESC
+                    ";
+                    $params = [];
+                    break;
+
+                case 'both':
+                    $sql = $baseSQL . "
+                        WHERE c.date_commande IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                        GROUP BY c.rowid, ce.rowid
+                        ORDER BY c.ref, c.date_commande DESC
+                    ";
+                    $params = [];
+                    break;
+
+                case 'today':
+                default:
+                    $sql = $baseSQL . "
+                        WHERE c.date_commande = CURRENT_DATE
+                        GROUP BY c.rowid, ce.rowid
+                        ORDER BY c.ref, c.date_commande DESC
+                    ";
+                    $params = [];
+                    break;
+            }
+        }
+
+        // Prepare the SQL query
+        $preparedResult = pg_prepare($pg_con, "get_commande_ref", $sql);
+
+        if (!$preparedResult) {
+            throw new Exception('Error preparing SQL: ' . pg_last_error($pg_con));
+        }
+
+        // Execute the prepared query
+        $executedResult = pg_execute($pg_con, "get_commande_ref", $params);
+
+        if (!$executedResult) {
+            throw new Exception('Error executing SQL: ' . pg_last_error($pg_con));
+        }
+
+        // Fetch and return the results, or an empty array if no results
+        $existingData = pg_fetch_all($executedResult) ?: [];
+        pg_free_result($executedResult);
+
+        return $existingData;
+
+    } catch (Throwable $e) {
+        // Handle errors and log them for debugging
+        error_log($e->getMessage());
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.',
+        ];
+    } finally {
+        // Clear the buffer if there was a fatal error
+        ob_end_clean();
+    }
+}
+
+function get_user_groups(){
+    global $pg_con; // Use the global PostgreSQL connection
+
+    // Define the SQL query to fetch user groups
+    $sql = "
+        SELECT *
+        FROM llx_usergroup
+        ORDER BY rowid ASC
+    ";
+
+    // Prepare the SQL query
+    $preparedResult = pg_prepare($pg_con, "get_user_groups", $sql);
+
+    if (!$preparedResult) {
+        // Handle preparation failure
+        echo 'Error during query preparation: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Execute the prepared query
+    $executedResult = pg_execute($pg_con, "get_user_groups", []);
+
+    if (!$executedResult) {
+        // Handle execution failure
+        echo 'Error during query execution: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Fetch and return the results, or an empty array if no results
+    $userGroups = pg_fetch_all($executedResult) ?: [];
+    pg_free_result($executedResult);
+
+    return $userGroups;
+}
+
+
+function get_users_by_group($groupName) {
+    global $pg_con; // Use the global PostgreSQL connection
+
+    // Define the SQL query to fetch users in the specified group
+    $sql = "
+        SELECT u.rowid, u.login, u.firstname, u.lastname, u.email
+        FROM llx_usergroup_user ugu
+        JOIN llx_user u ON ugu.fk_user = u.rowid
+        WHERE ugu.fk_usergroup = (
+            SELECT rowid FROM llx_usergroup WHERE nom = $1
+        )
+    ";
+
+    // Prepare the SQL query
+    $preparedResult = pg_prepare($pg_con, "get_users_by_group", $sql);
+
+    if (!$preparedResult) {
+        // Handle preparation failure
+        echo 'Error during query preparation: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Execute the prepared query with the dynamic group name
+    $executedResult = pg_execute($pg_con, "get_users_by_group", [$groupName]);
+
+    if (!$executedResult) {
+        // Handle execution failure
+        echo 'Error during query execution: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Fetch and return the results, or an empty array if no results
+    $users = pg_fetch_all($executedResult) ?: [];
+    pg_free_result($executedResult);
+
+    return $users;
+}
+
+
+function reception_sample_received_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Start output buffering to catch fatal errors
+    ob_start();
+
+    // SQL Base Query
     $baseSQL = "
-        SELECT DISTINCT ON (c.ref) 
-            c.*, 
-            ce.*, 
-            array_agg(de.description) AS specimens -- Aggregate specimens into an array
+        SELECT 
+            c.rowid, 
+            c.ref,
+            c.date_creation,
+            c.fk_statut,
+            c.note_public,
+            c.date_livraison,
+            ce.test_type,
+            u.login AS author_login
         FROM 
             llx_commande AS c
         LEFT JOIN 
-            llx_commande_extrafields AS ce ON ce.fk_object = c.rowid
+            llx_user AS u ON c.fk_user_author = u.rowid
         LEFT JOIN 
-            llx_commandedet AS de ON de.fk_commande = c.rowid
+            llx_commande_extrafields AS ce ON ce.fk_object = c.rowid
     ";
 
-    // Adjust the WHERE clause based on provided parameters or date options
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
     if ($startDate && $endDate) {
-        // Query when both start and end dates are provided
+        // Case when both start and end dates are provided
         $sql = $baseSQL . "
             WHERE c.date_commande BETWEEN $1 AND $2
-            GROUP BY c.rowid, ce.rowid -- Group by necessary fields
-            ORDER BY c.ref, c.date_commande DESC
+            ORDER BY c.ref ASC
         ";
         $params = [$startDate, $endDate];
     } else {
-        // Handle specific date options (today, yesterday, or both)
+        // Handling date options (today, yesterday, or both)
         switch ($dateOption) {
             case 'yesterday':
                 $sql = $baseSQL . "
                     WHERE c.date_commande = CURRENT_DATE - INTERVAL '1 day'
-                    GROUP BY c.rowid, ce.rowid
-                    ORDER BY c.ref, c.date_commande DESC
+                    ORDER BY c.ref ASC
                 ";
                 $params = [];
                 break;
@@ -328,8 +508,7 @@ function sample_received_list($startDate = null, $endDate = null, $dateOption = 
             case 'both':
                 $sql = $baseSQL . "
                     WHERE c.date_commande IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
-                    GROUP BY c.rowid, ce.rowid
-                    ORDER BY c.ref, c.date_commande DESC
+                    ORDER BY c.ref ASC
                 ";
                 $params = [];
                 break;
@@ -338,38 +517,242 @@ function sample_received_list($startDate = null, $endDate = null, $dateOption = 
             default:
                 $sql = $baseSQL . "
                     WHERE c.date_commande = CURRENT_DATE
-                    GROUP BY c.rowid, ce.rowid
-                    ORDER BY c.ref, c.date_commande DESC
+                    ORDER BY c.ref ASC
                 ";
                 $params = [];
                 break;
         }
     }
 
-    // Prepare the SQL query
-    $preparedResult = pg_prepare($pg_con, "get_commande_ref", $sql);
+    // Log SQL Query and Parameters
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
 
-    if (!$preparedResult) {
-        // Handle preparation failure
-        echo 'Error: ' . pg_last_error($pg_con);
-        return [];
+    // Execute the query using pg_query_params
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for errors in query execution
+    if (!$result) {
+        // Log any error from PostgreSQL
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
     }
 
-    // Execute the prepared query
-    $executedResult = pg_execute($pg_con, "get_commande_ref", $params);
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
 
-    if (!$executedResult) {
-        // Handle execution failure
-        echo 'Error: ' . pg_last_error($pg_con);
-        return [];
-    }
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
 
-    // Fetch and return the results, or an empty array if no results
-    $existingData = pg_fetch_all($executedResult) ?: [];
-    pg_free_result($executedResult);
+    // Free the result
+    pg_free_result($result);
 
+    // Return the data or an empty array if no data found
     return $existingData;
+
+    // Clear the output buffer in case of errors
+    ob_end_clean();
 }
 
+function gross_complete_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Start output buffering to catch fatal errors
+    ob_start();
+
+    // SQL Base Query
+    $baseSQL = "
+        SELECT 
+            g.gross_id,
+            g.lab_number,
+            g.gross_station_type,
+            g.gross_assistant_name,
+            g.gross_doctor_name,
+            g.gross_create_date,
+            g.batch
+        FROM 
+            llx_gross AS g
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
+    if ($startDate && $endDate) {
+        // Case when both start and end dates are provided
+        $sql = $baseSQL . "
+            WHERE DATE(g.gross_create_date) BETWEEN $1 AND $2
+            ORDER BY g.gross_id ASC
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        // Handling date options (today, yesterday, or both)
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE DATE(g.gross_create_date) = CURRENT_DATE - INTERVAL '1 day'
+                    ORDER BY g.gross_id ASC
+                ";
+                $params = [];
+                break;
+
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE DATE(g.gross_create_date) IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                    ORDER BY g.gross_id ASC
+                ";
+                $params = [];
+                break;
+
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE DATE(g.gross_create_date) = CURRENT_DATE
+                    ORDER BY g.gross_id ASC
+                ";
+                $params = [];
+                break;
+        }
+    }
+
+    // Log SQL Query and Parameters
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute the query using pg_query_params
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for errors in query execution
+    if (!$result) {
+        // Log any error from PostgreSQL
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
+
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
+
+    // Free the result
+    pg_free_result($result);
+
+    // Return the data or an empty array if no data found
+    return $existingData;
+
+    // Clear the output buffer in case of errors
+    ob_end_clean();
+}
+
+
+function worksheet_tracking_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Start output buffering to catch fatal errors
+    ob_start();
+
+    // SQL Base Query
+    $baseSQL = "
+        SELECT 
+            t.create_time,
+            t.labno,
+            t.user_id,
+            t.fk_status_id,
+            t.description,
+            t.lab_room_status,
+            ws.name AS status_name,
+            u.login AS user_login
+        FROM 
+            llx_commande_trackws t
+        LEFT JOIN 
+            llx_commande_wsstatus ws ON ws.id = t.fk_status_id
+        LEFT JOIN 
+            llx_user u ON u.rowid = t.user_id
+        WHERE
+            ws.id NOT IN (1, 2)  -- Exclude statuses with ID 1 and 2
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
+    if ($startDate && $endDate) {
+        // Case when both start and end dates are provided
+        $sql = $baseSQL . "
+            AND DATE(t.create_time) BETWEEN $1 AND $2
+            ORDER BY t.create_time ASC
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        // Handling date options (today, yesterday, or both)
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    AND DATE(t.create_time) = CURRENT_DATE - INTERVAL '1 day'
+                    ORDER BY t.create_time ASC
+                ";
+                $params = [];
+                break;
+
+            case 'both':
+                $sql = $baseSQL . "
+                    AND DATE(t.create_time) IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                    ORDER BY t.create_time ASC
+                ";
+                $params = [];
+                break;
+
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    AND DATE(t.create_time) = CURRENT_DATE
+                    ORDER BY t.create_time ASC
+                ";
+                $params = [];
+                break;
+        }
+    }
+
+    // Log SQL Query and Parameters
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute the query using pg_query_params
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for errors in query execution
+    if (!$result) {
+        // Log any error from PostgreSQL
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
+
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
+
+    // Free the result
+    pg_free_result($result);
+
+    // Return the data or an empty array if no data found
+    return $existingData;
+
+    // Clear the output buffer in case of errors
+    ob_end_clean();
+}
 
 ?>
