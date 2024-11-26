@@ -755,4 +755,89 @@ function worksheet_tracking_list($startDate = null, $endDate = null, $dateOption
     ob_end_clean();
 }
 
+function transcription_complete_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Input validation for dates
+    if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+        return ['error' => true, 'message' => 'Invalid start date format.'];
+    }
+    if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+        return ['error' => true, 'message' => 'Invalid end date format.'];
+    }
+
+    // SQL Base Query
+    $baseSQL = "
+        SELECT 
+            lab_number, 
+            created_user, 
+            create_date 
+        FROM 
+            llx_micro
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
+    if ($startDate && $endDate) {
+        $sql = $baseSQL . "
+            WHERE DATE(create_date) BETWEEN $1 AND $2
+            ORDER BY row_id ASC
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE DATE(create_date) = DATE(CURRENT_DATE - INTERVAL '1 day')
+                    ORDER BY row_id ASC
+                ";
+                break;
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE DATE(create_date) IN (CURRENT_DATE, DATE(CURRENT_DATE - INTERVAL '1 day'))
+                    ORDER BY row_id ASC
+                ";
+                break;
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE DATE(create_date) = CURRENT_DATE
+                    ORDER BY row_id ASC
+                ";
+                break;
+        }
+    }
+
+    // Log SQL Query and Parameters
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute the query using pg_query_params
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for errors in query execution
+    if (!$result) {
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
+
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
+
+    // Free the result
+    pg_free_result($result);
+
+    // Return the data
+    return $existingData;
+}
+
 ?>
