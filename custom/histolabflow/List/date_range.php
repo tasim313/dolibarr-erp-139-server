@@ -76,6 +76,8 @@ switch (true) {
         exit; // Terminate script execution
 } 
 
+$start_date = $_GET['start_date'];
+$end_date = $_GET['end_date'];
 
 ?>
 
@@ -150,12 +152,12 @@ switch (true) {
 </head>
 <body>
     <div class="container mt-3">
-        <h3>Today Summary Information</h3>
+        <?php  echo "<h3 class='h1'> $start_date To $end_date  Summary Information</h3>"; ?>
 
         <!-- Horizontal Layout for Buttons and Date Range Form -->
         <div class="horizontal-layout mb-4">
             <!-- Buttons -->
-            <a href="./index.php"><button class="btn btn-primary">Home</button></a>
+            <a href="./index.php"><button class="btn btn-info">Home</button></a>
             <a href="./yesterday.php"><button class="btn btn-info">Yesterday</button></a>
 
             <!-- Date Range Form -->
@@ -176,7 +178,10 @@ switch (true) {
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/group.php?group=" . urlencode($group['nom']);
+                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/date_range_group.php?group=" 
+                            . urlencode($group['nom']) 
+                            . "&start_date=" . urlencode($start_date) 
+                            . "&end_date=" . urlencode($end_date);
                     echo '<li><i class="fas fa-users"></i><a href="' . $groupUrl . '">' . $groupName . '</a></li>';
                 }
                 ?>
