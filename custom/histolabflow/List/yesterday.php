@@ -209,7 +209,7 @@ switch (true) {
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/sampleReceived/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://192.168.1.139:8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;
