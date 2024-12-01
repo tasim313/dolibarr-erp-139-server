@@ -840,4 +840,197 @@ function transcription_complete_list($startDate = null, $endDate = null, $dateOp
     return $existingData;
 }
 
+function invoice_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Input validation for dates
+    if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+        return ['error' => true, 'message' => 'Invalid start date format.'];
+    }
+    if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+        return ['error' => true, 'message' => 'Invalid end date format.'];
+    }
+
+    // SQL Base Query
+    $baseSQL = "
+        SELECT 
+            p.rowid AS payment_rowid, 
+            p.ref AS payment_ref, 
+            p.amount AS payment_amount, 
+            p.datec AS payment_date, 
+            f.rowid AS invoice_rowid, 
+            f.ref AS invoice_ref -- Invoice reference
+        FROM llx_paiement AS p
+        LEFT JOIN llx_paiement_facture AS pf ON p.rowid = pf.fk_paiement
+        LEFT JOIN llx_facture AS f ON pf.fk_facture = f.rowid
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
+    if ($startDate && $endDate) {
+        $sql = $baseSQL . "
+            WHERE DATE(p.datec) BETWEEN $1 AND $2
+            ORDER BY p.rowid DESC
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE DATE(p.datec) = DATE(CURRENT_DATE - INTERVAL '1 day')
+                    ORDER BY p.rowid DESC
+                ";
+                break;
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE DATE(p.datec) IN (CURRENT_DATE, DATE(CURRENT_DATE - INTERVAL '1 day'))
+                    ORDER BY p.rowid DESC
+                ";
+                break;
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE DATE(p.datec) = CURRENT_DATE
+                    ORDER BY p.rowid DESC
+                ";
+                break;
+        }
+    }
+
+    // Log SQL Query and Parameters
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute the query using pg_query_params
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for errors in query execution
+    if (!$result) {
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
+
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
+
+    // Free the result
+    pg_free_result($result);
+
+    // Return the data
+    return $existingData;
+}
+
+function payment_list($invoiceIds = [], $startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Ensure $invoiceIds is an array
+    if (!is_array($invoiceIds)) {
+        return ['error' => true, 'message' => 'Invalid input. Invoice IDs should be an array.'];
+    }
+
+    // Prepare the escaped invoice IDs
+    $escapedInvoiceIds = array_map(function($invoiceId) use ($pg_con) {
+        return "'" . pg_escape_string($pg_con, $invoiceId) . "'";
+    }, $invoiceIds);
+
+    // Create the list of invoice IDs for the WHERE clause
+    $invoiceIdsList = implode(",", $escapedInvoiceIds);
+
+    // Base SQL query
+    $sql = "
+    SELECT 
+        p.rowid AS payment_rowid, 
+        p.ref AS payment_ref, 
+        p.amount AS payment_amount, 
+        p.datec AS payment_date, 
+        pf.rowid AS pf_rowid, 
+        pf.fk_paiement AS fk_payment, 
+        pf.fk_facture AS fk_invoice, 
+        pf.amount AS allocated_amount,
+        f.ref AS invoice_ref, 
+        f.datec AS invoice_date_created, 
+        f.datef AS invoice_due_date, 
+        f.date_valid AS invoice_validation_date, 
+        f.date_closing AS invoice_closing_date, 
+        f.paye AS amount_paid, 
+        f.remise_percent AS discount_percent, 
+        f.remise_absolue AS absolute_discount, 
+        f.remise AS total_discount, 
+        f.close_code AS closing_code, 
+        f.close_note AS closing_note, 
+        f.total_ht AS total_without_tax, 
+        f.fk_statut AS status_numeric,  
+        CASE 
+            WHEN f.fk_statut = 0 THEN 'Draft'
+            WHEN f.fk_statut = 1 THEN 'Unpaid'
+            WHEN f.fk_statut = 2 THEN 'Partially/Completely Paid'
+            WHEN f.fk_statut = 3 THEN 'Abandoned'
+            ELSE 'Unknown'
+        END AS status_text,  
+        author.login AS author_user_login, 
+        closer.login AS closer_user_login, 
+        f.note_private AS private_note, 
+        f.note_public AS public_note
+    FROM llx_paiement_facture AS pf
+    JOIN llx_paiement AS p ON pf.fk_paiement = p.rowid
+    JOIN llx_facture AS f ON pf.fk_facture = f.rowid
+    LEFT JOIN llx_user AS author ON f.fk_user_author = author.rowid 
+    LEFT JOIN llx_user AS closer ON f.fk_user_closing = closer.rowid
+    ";
+
+    // Add invoice filter if provided
+    if (!empty($invoiceIdsList)) {
+        $sql .= " WHERE pf.fk_facture IN ($invoiceIdsList)";
+    }
+
+    // Add date filtering based on the dateOption
+    if ($dateOption === 'range' && $startDate && $endDate) {
+        // Date range filter: BETWEEN startDate and endDate
+        $sql .= " AND DATE(p.datec) BETWEEN $1 AND $2";
+    } elseif ($dateOption === 'yesterday') {
+        // Yesterday filter
+        $sql .= " AND DATE(p.datec) = DATE(CURRENT_DATE - INTERVAL '1 day')";
+    } elseif ($dateOption === 'today') {
+        // Today filter (current date)
+        $sql .= " AND DATE(p.datec) = CURRENT_DATE";
+    }
+
+    // Add order by clause
+    $sql .= " ORDER BY p.rowid DESC";
+
+    // Prepare parameters for query
+    $params = [];
+    if ($dateOption === 'range' && $startDate && $endDate) {
+        $params[] = $startDate;
+        $params[] = $endDate;
+    }
+
+    // Execute the query with parameters
+    $result = pg_query_params($pg_con, $sql, $params);
+
+    // Check for query errors
+    if (!$result) {
+        echo 'Error: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Fetch all results
+    $paymentData = pg_fetch_all($result) ?: [];
+
+    // Free the result resource
+    pg_free_result($result);
+
+    // Return the payment data
+    return $paymentData;
+}
+
 ?>
