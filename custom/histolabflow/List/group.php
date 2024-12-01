@@ -80,6 +80,8 @@ switch (true) {
 $groupName = isset($_GET['group']) ? htmlspecialchars($_GET['group']) : 'Unknown Group';
 $users = get_users_by_group($groupName);
 
+$group_name = $_GET['group'];
+
 $reception = reception_sample_received_list(null, null, 'today');
 $receptionJson = json_encode($reception);
 
@@ -89,6 +91,15 @@ $grossJson = json_encode($gross);
 
 $worksheet_tracking = worksheet_tracking_list(null, null, 'today');
 $worksheetTrackingJson = json_encode($worksheet_tracking);
+
+$transcription = transcription_complete_list(null, null, 'today');
+$transcriptionJson = json_encode($transcription);
+
+$invoice = invoice_list(null, null, 'today');
+// Extract 'invoice_rowid' values from the $invoice array
+$invoiceIds = array_column($invoice, 'invoice_rowid');
+
+$payment = payment_list($invoiceIds, null, null, 'today');
 
 ?>
 
@@ -644,7 +655,171 @@ $worksheetTrackingJson = json_encode($worksheet_tracking);
         }
 
     </script>
+    
+    <!-- JavaScript to show the message if the group name is "Accounting" -->
+    <script>
+    
+        var groupName = "<?php echo htmlspecialchars($group_name); ?>";
+    
+        // Check if the group name is "Accounting"
+        if (groupName === "Accounting") {
+            // Dynamically inject the HTML content for the table
+            document.body.innerHTML += `
+                <div class="container mt-4">
+                    <!-- Totals Section -->
+                    <div id="totalsSection" class="table-responsive mb-4">
+                            <table class="table table-bordered text-center">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Total Due</th>
+                                        <th>Total Due Collection(Previous Sample Collection)</th>
+                                        <th>Total Amount Received(Today Sample Collection)</th>
+                                        <th>Total Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="totalDue">0</td>
+                                        <td id="totalDueCollection">0</td>
+                                        <td id="totalAmountReceived">0</td>
+                                        <td id="total">0</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
 
+                    <!-- Search Filter -->
+                    <div style="margin-bottom:20px;">
+                        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search ...">
+                    </div>
+
+                    <!-- Table -->
+                    <table class="table table-striped table-bordered">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Payment Row ID</th>
+                                <th>Payment Ref</th>
+                                <th>Payment Amount</th>
+                                <th>Payment Date</th>
+                                <th>pf_rowid</th>
+                                <th>fk_payment</th>
+                                <th>fk_invoice</th>
+                                <th>allocated_amount</th>
+                                <th>Invoice Ref</th>
+                                <th>invoice_date_created</th>
+                                <th>Invoice Due Date</th>
+                                <th>invoice_validation_date</th>
+                                <th>invoice_closing_date</th>
+                                <th>amount_paid</th>
+                                <th>discount_percent</th>
+                                <th>absolute_discount</th>
+                                <th>total_discount</th>
+                                <th>closing_code</th>
+                                <th>closing_note</th>
+                                <th>total_without_tax</th>
+                                <th>status_numeric</th>
+                                <th>Status Text</th>
+                                <th>Author User</th>
+                                <th>Closer User</th>
+                                <th>private_note</th>
+                                <th>public_note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            `;
+
+            // Payment data
+            var payments = <?php echo json_encode($payment); ?>;
+            // Calculate Totals
+            var totalDue = 0;
+            var totalDueCollection = 0;
+            var totalAmountReceived = 0;
+            payments.forEach(payment => {
+
+                var closingDate = new Date(payment.invoice_closing_date).toISOString().split("T")[0];
+                var createdDate = new Date(payment.invoice_date_created).toISOString().split("T")[0];
+
+                // Total Due
+                if (payment.status_text === "Unpaid") {
+                    totalDue += parseFloat(payment.total_without_tax) - parseFloat(payment.payment_amount);
+                }
+                // Total Due Collection (Invoice Closing Date > Invoice Created Date)
+                if (closingDate > createdDate) {
+                    totalDueCollection += parseFloat(payment.payment_amount);
+                }
+
+                // Total Amount Received
+                if (createdDate >= closingDate) {
+                    totalAmountReceived += parseFloat(payment.payment_amount);
+                }
+                
+            });
+
+            // Calculate the Total (Due Collection + Amount Received)
+            var total = totalDueCollection + totalAmountReceived;
+
+            // Update Totals Section
+            document.getElementById("totalDue").textContent = totalDue.toLocaleString();
+            document.getElementById("totalDueCollection").textContent = totalDueCollection.toLocaleString();
+            document.getElementById("totalAmountReceived").textContent = totalAmountReceived.toLocaleString();
+            // Display the Total
+            document.getElementById("total").textContent = total.toLocaleString();
+
+            // Dynamically populate the table
+            var tableBody = document.getElementById("tableBody");
+            payments.forEach(payment => {
+                var row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${payment.payment_rowid}</td>
+                    <td>${payment.payment_ref}</td>
+                    <td>${parseFloat(payment.payment_amount).toLocaleString()}</td>
+                    <td>${payment.payment_date}</td>
+                    <td>${payment.pf_rowid}</td>
+                    <td>${payment.fk_payment}</td>
+                    <td>${payment.fk_invoice}</td>
+                    <td>${payment.allocated_amount}</td>
+                    <td>${payment.invoice_ref}</td>
+                    <td>${payment.invoice_date_created}</td>
+                    <td>${payment.invoice_due_date}</td>
+                    <td>${payment.invoice_validation_date}</td>
+                    <td>${payment.invoice_closing_date}</td>
+                    <td>${payment.amount_paid}</td>
+                    <td>${payment.discount_percent}</td>
+                    <td>${payment.absolute_discount}</td>
+                    <td>${payment.total_discount}</td>
+                    <td>${payment.closing_code}</td>
+                    <td>${payment.closing_note}</td>
+                    <td>${parseFloat(payment.total_without_tax).toLocaleString()}</td>
+                    <td>${payment.status_numeric}</td>
+                    <td>${payment.status_text}</td>
+                    <td>${payment.author_user_login}</td>
+                    <td>${payment.closer_user_login}</td>
+                    <td>${payment.private_note}</td>
+                    <td>${payment.public_note}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Search Filter Functionality
+            document.getElementById("searchInput").addEventListener("input", function () {
+                var filter = this.value.toLowerCase();
+                var rows = tableBody.getElementsByTagName("tr");
+                for (var i = 0; i < rows.length; i++) {
+                    var cells = rows[i].getElementsByTagName("td");
+                    var match = false;
+                    for (var j = 0; j < cells.length; j++) {
+                        if (cells[j].textContent.toLowerCase().includes(filter)) {
+                            match = true;
+                            break;
+                        }
+                    }
+                    rows[i].style.display = match ? "" : "none";
+                }
+            });
+        }
+    </script>
 
     <script>
         $(document).ready(function(){
