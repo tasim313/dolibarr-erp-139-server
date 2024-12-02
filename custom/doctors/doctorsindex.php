@@ -120,313 +120,312 @@ switch (true) {
     <link rel="stylesheet" type="text/css" href="trackwsfiles/css.css"  />
     <style>
         body {
-    font-family: Verdana;
-}
+            font-family: Verdana;
+        }
 
-.today {
-    color: red;
-}
+        .today {
+            color: red;
+        }
 
-.tomorrow {
-    color: yellow;
-}
+        .tomorrow {
+            color: yellow;
+        }
 
-.flex-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between; /* Distribute space between items */
-}
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; /* Distribute space between items */
+        }
 
-.flex-container > div {
-    margin: 10px;
-    padding: 20px;
-    font-size: 10px;
-    flex: 1; /* Make divs flexible */
-}
+        .flex-container > div {
+            margin: 10px;
+            padding: 20px;
+            font-size: 10px;
+            flex: 1; /* Make divs flexible */
+        }
 
-.tab-content { 
-    display: block; 
-}
+        .tab-content { 
+            display: block; 
+        }
 
-.tab-content.grayed-out { 
-    opacity: 0.5; 
-    pointer-events: none; 
-}
+        .tab-content.grayed-out { 
+            opacity: 0.5; 
+            pointer-events: none; 
+        }
 
-.semi-bold { 
-    font-weight: 300; 
-}
+        .semi-bold { 
+            font-weight: 300; 
+        }
 
-.red { 
-    color: red; 
-}
+        .red { 
+            color: red; 
+        }
 
-.tab-buttons {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    position: relative;
-}
+        .tab-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            position: relative;
+        }
 
-.tab-buttons button { 
-    margin-right: 10px; 
-}
+        .tab-buttons button { 
+            margin-right: 10px; 
+        }
 
-.tab-buttons button.inactive { 
-    opacity: 0.5; 
-}
+        .tab-buttons button.inactive { 
+            opacity: 0.5; 
+        }
 
-.tab-buttons button.active { 
-    font-weight: bold; 
-}
+        .tab-buttons button.active { 
+            font-weight: bold; 
+        }
 
-.hidden { 
-    display: none; 
-}
+        .hidden { 
+            display: none; 
+        }
 
-.tab {
-    overflow: hidden;
-}
+        .tab {
+            overflow: hidden;
+        }
 
-/* Style the buttons inside the tab */
-.tab button {
-    background-color: inherit;
-    font-size: 15px;
-    border: none;
-    cursor: pointer;
-    outline: none;
-    float: left;
-}
+        /* Style the buttons inside the tab */
+        .tab button {
+            background-color: inherit;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            float: left;
+        }
 
-/* Create an active/current tablink class */
-.tab button.active {
-    background-color: #ccc;
-}
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
 
-/* Style the tab content */
-.tabcontent_1 {
-    display: none;
-    padding: 6px 12px;
-    -webkit-animation: fadeEffect 1s;
-    animation: fadeEffect 1s;
-}
+        /* Style the tab content */
+        .tabcontent_1 {
+            display: none;
+            padding: 6px 12px;
+            -webkit-animation: fadeEffect 1s;
+            animation: fadeEffect 1s;
+        }
 
-/* Button container styles */
-.button-container {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
+        /* Button container styles */
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
 
-.button-container li {
-    margin: 0 -250px;
-}
+        .button-container li {
+            margin: 0 -250px;
+        }
 
-.button-container li:first-child,
-.button-container li:last-child {
-    flex: 0 0 auto; /* Prevent stretching */
-}
+        .button-container li:first-child,
+        .button-container li:last-child {
+            flex: 0 0 auto; /* Prevent stretching */
+        }
 
-.button-container li:nth-child(2) {
-    flex: 10; /* Make the second button flexible */
-}
+        .button-container li:nth-child(2) {
+            flex: 10; /* Make the second button flexible */
+        }
 
-.btn-group button {
-    /* cursor: pointer; */
-    float: left; /* Float the buttons side by side */
-}
+        .btn-group button {
+            /* cursor: pointer; */
+            float: left; /* Float the buttons side by side */
+        }
 
-/* Clear floats (clearfix hack) */
-.btn-group:after {
-    content: "";
-    clear: both;
-    display: table;
-}
+        /* Clear floats (clearfix hack) */
+        .btn-group:after {
+            content: "";
+            clear: both;
+            display: table;
+        }
 
-.btn-group button:not(:last-child) {
-    border-right: none; /* Prevent double borders */
-}
+        .btn-group button:not(:last-child) {
+            border-right: none; /* Prevent double borders */
+        }
 
-/* Set font size for h2 tags */
-.h2 {
-    font-size: 20px;
-}
+        /* Set font size for h2 tags */
+        .h2 {
+            font-size: 20px;
+        }
 
-.h3 {
-    font-size: 15px;
-}
+        .h3 {
+            font-size: 15px;
+        }
 
-/* Fade in tabs */
-@-webkit-keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
+        /* Fade in tabs */
+        @-webkit-keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
 
-@keyframes fadeEffect {
-    from {opacity: 0;}
-    to {opacity: 1;}
-}
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
 
-/* Responsive Styles */
+        /* Responsive Styles */
 
-/* Extra Large Screens (Large Monitors) */
-@media only screen and (min-width: 1200px) {
-    .flex-container > div {
-        font-size: 14px;
-    }
+        /* Extra Large Screens (Large Monitors) */
+        @media only screen and (min-width: 1200px) {
+            .flex-container > div {
+                font-size: 14px;
+            }
 
-    .tab-buttons.button-container {
-        justify-content: space-around;
-    }
-}
+            .tab-buttons.button-container {
+                justify-content: space-around;
+            }
+        }
 
-/* Large Screens (Desktops) */
-@media only screen and (min-width: 992px) and (max-width: 1199px) {
-    .flex-container > div {
-        font-size: 12px;
-    }
+        /* Large Screens (Desktops) */
+        @media only screen and (min-width: 992px) and (max-width: 1199px) {
+            .flex-container > div {
+                font-size: 12px;
+            }
 
-    .tab-buttons.button-container {
-        justify-content: space-around;
-    }
+            .tab-buttons.button-container {
+                justify-content: space-around;
+            }
 
-    
-}
+            
+        }
 
-/* Medium Screens (Tablets in Landscape Mode) */
-@media only screen and (min-width: 768px) and (max-width: 991px) {
-    .flex-container > div {
-        font-size: 10px;
-    }
+        /* Medium Screens (Tablets in Landscape Mode) */
+        @media only screen and (min-width: 768px) and (max-width: 991px) {
+            .flex-container > div {
+                font-size: 10px;
+            }
 
-    .tab-buttons.button-container {
-        justify-content: space-between;
-    }
+            .tab-buttons.button-container {
+                justify-content: space-between;
+            }
 
-    .tab-buttons.button-container li {
-        flex: 1 1 30%;
-        text-align: center;
-    }
+            .tab-buttons.button-container li {
+                flex: 1 1 30%;
+                text-align: center;
+            }
 
-    .tab-buttons.button-container button {
-        font-size: 18px;
-    }
-}
+            .tab-buttons.button-container button {
+                font-size: 18px;
+            }
+        }
 
-@media only screen and (min-width: 824px) and (max-width: 1022px) {
-    .flex-container {
-        flex-direction: row; /* Ensure row layout for the flex container */
-        justify-content: space-around; /* Adjust the space around the items */
-    }
+        @media only screen and (min-width: 824px) and (max-width: 1022px) {
+            .flex-container {
+                flex-direction: row; /* Ensure row layout for the flex container */
+                justify-content: space-around; /* Adjust the space around the items */
+            }
 
-    .flex-container > div {
-        font-size: 12px; /* Adjust font size for better readability */
-        padding: 15px; /* Adjust padding */
-    }
+            .flex-container > div {
+                font-size: 12px; /* Adjust font size for better readability */
+                padding: 15px; /* Adjust padding */
+            }
 
-    .button-container {
-        flex-direction: row; /* Ensure row layout for the button container */
-        justify-content: space-between; /* Space between the buttons */
-    }
+            .button-container {
+                flex-direction: row; /* Ensure row layout for the button container */
+                justify-content: space-between; /* Space between the buttons */
+            }
 
-    .button-container li {
-        flex: 1 1 30%; /* Distribute space equally */
-        text-align: center; /* Center-align the text */
-        margin: 10px 0; /* Adjust margin for better spacing */
-    }
+            .button-container li {
+                flex: 1 1 30%; /* Distribute space equally */
+                text-align: center; /* Center-align the text */
+                margin: 10px 0; /* Adjust margin for better spacing */
+            }
 
-    .button-container button {
-        font-size: 18px; /* Adjust button font size */
-        width: auto; /* Let the width be determined by content */
-        text-align: center; /* Center-align text within buttons */
-    }
+            .button-container button {
+                font-size: 18px; /* Adjust button font size */
+                width: auto; /* Let the width be determined by content */
+                text-align: center; /* Center-align text within buttons */
+            }
 
-    .tab-buttons {
-        flex-direction: row; /* Ensure row layout for the tab buttons */
-        align-items: center; /* Center-align items vertically */
-    }
+            .tab-buttons {
+                flex-direction: row; /* Ensure row layout for the tab buttons */
+                align-items: center; /* Center-align items vertically */
+            }
 
-    .tab-buttons button {
-        width: auto; /* Let the width be determined by content */
-        margin: 5px; /* Margin between buttons */
-    }
-}
+            .tab-buttons button {
+                width: auto; /* Let the width be determined by content */
+                margin: 5px; /* Margin between buttons */
+            }
+        }
 
-/* Small Screens (Tablets in Portrait Mode) */
-@media only screen and (min-width: 600px) and (max-width: 767px) {
-    .flex-container > div {
-        font-size: 8px;
-        padding: 15px;
-    }
+        /* Small Screens (Tablets in Portrait Mode) */
+        @media only screen and (min-width: 600px) and (max-width: 767px) {
+            .flex-container > div {
+                font-size: 8px;
+                padding: 15px;
+            }
 
-    .button-container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+            .button-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-    .tab-buttons.button-container {
-        flex-direction: column;
-        align-items: center;
-    }
+            .tab-buttons.button-container {
+                flex-direction: column;
+                align-items: center;
+            }
 
-    .tab-buttons.button-container li {
-        width: 100%;
-        margin: 5px 0;
-    }
+            .tab-buttons.button-container li {
+                width: 100%;
+                margin: 5px 0;
+            }
 
-    .tab-buttons.button-container button {
-        font-size: 18px;
-        width: 100%;
-        text-align: center;
-    }
-}
+            .tab-buttons.button-container button {
+                font-size: 18px;
+                width: 100%;
+                text-align: center;
+            }
+        }
 
-/* Mobile Phones */
-@media only screen and (max-width: 599px) {
-    .flex-container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+        /* Mobile Phones */
+        @media only screen and (max-width: 599px) {
+            .flex-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-    .flex-container > div {
-        font-size: 6px;
-        padding: 10px;
-        width: 100%;
-    }
+            .flex-container > div {
+                font-size: 6px;
+                padding: 10px;
+                width: 100%;
+            }
 
-    .tab-buttons {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+            .tab-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-    .tab button {
-        width: 100%;
-        text-align: left;
-    }
-    .tab-buttons.button-container {
-        flex-direction: column;
-        align-items: center;
-    }
+            .tab button {
+                width: 100%;
+                text-align: left;
+            }
+            .tab-buttons.button-container {
+                flex-direction: column;
+                align-items: center;
+            }
 
-    .tab-buttons.button-container li {
-        width: 100%;
-        margin: 5px 0;
-    }
+            .tab-buttons.button-container li {
+                width: 100%;
+                margin: 5px 0;
+            }
 
-    .tab-buttons.button-container button {
-        font-size: 16px;
-        width: 100%;
-        text-align: center;
-    }
-}
-
+            .tab-buttons.button-container button {
+                font-size: 16px;
+                width: 100%;
+                text-align: center;
+            }
+        }
 
     </style>
 </head>
 <body>
 
-<a href="doctorsindex.php">
+    <a href="doctorsindex.php">
     <button style="border:none; background-color: white; color: black;">
         <i class="fas fa-home" aria-hidden="true"></i> Doctors
     </button></a>
@@ -436,30 +435,30 @@ switch (true) {
               <input type="text" id="labno" name="labno" autofocus>
     </form>
 
-<ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
-            <div class="tab-buttons button-container">
-                
-                    <li role="presentation">
-                        <span style="color: red;">
-                            <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
-                                <i class="fas fa-microscope" aria-hidden="true"></i>Screening</button>
-                        </span>
-                    </li>
-                    <li role="presentation">
-                        <span style="color:green">
-                            <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i>Finalization</button>
-                        </span>
-                    </li>
-                    <li role="presentation">
-                        <span style="color:blue">
-                            <button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showTab('status')">
-                            <i class="fa fa-search" aria-hidden="true"></i>Status</button>
-                        </span>
-                    </li> 
-                
-            </div>
-</ul>
+    <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+                <div class="tab-buttons button-container">
+                    
+                        <li role="presentation">
+                            <span style="color: red;">
+                                <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
+                                    <i class="fas fa-microscope" aria-hidden="true"></i>Screening</button>
+                            </span>
+                        </li>
+                        <li role="presentation">
+                            <span style="color:green">
+                                <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
+                                <i class="fas fa-microscope" aria-hidden="true"></i>Finalization</button>
+                            </span>
+                        </li>
+                        <li role="presentation">
+                            <span style="color:blue">
+                                <button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showTab('status')">
+                                <i class="fa fa-search" aria-hidden="true"></i>Status</button>
+                            </span>
+                        </li> 
+                    
+                </div>
+    </ul>
 
     <div class="flex-container">
 
