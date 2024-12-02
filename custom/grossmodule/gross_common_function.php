@@ -1143,4 +1143,30 @@ function get_labNumber_batch_details_list($lab_number) {
     return $existingdata;
 }
 
+
+function get_cyto_tech_list() {
+    global $pg_con;
+
+    $sql = "SELECT u.rowid, u.firstname, u.lastname, u.login
+            FROM llx_usergroup_user AS ugu
+            JOIN llx_usergroup AS ug ON ugu.fk_usergroup = ug.rowid
+            JOIN llx_user AS u ON ugu.fk_user = u.rowid
+            WHERE ug.nom = 'Cyto Techs'";
+    $result = pg_query($pg_con, $sql);
+
+    $assistants = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $assistants[] = ['assistants_name' =>$row['firstname'] . ' ' . $row['lastname'], 'username' => $row['login'], 'userId' => $row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $assistants;
+}
+
 ?>

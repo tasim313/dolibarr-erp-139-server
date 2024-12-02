@@ -187,7 +187,6 @@ if (empty($labNumber_list)) {
     }
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -217,9 +216,7 @@ if (empty($labNumber_list)) {
 </head>
 <body>
 
-<style>
-	
-</style>
+
 
 <div class="container">
 
@@ -1383,3 +1380,15 @@ if (empty($labNumber_list)) {
 
 </body>
 </html>
+
+
+<?php 
+    $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+    $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+
+    print '</div></div>';
+
+    // End of page
+    llxFooter();
+    $db->close();
+?>
