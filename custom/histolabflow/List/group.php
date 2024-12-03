@@ -269,13 +269,12 @@ $payment = payment_list($invoiceIds, null, null, 'today');
     </div>
 
    <!-- Reception Data visualization -->
-    <script>
-        
+    <script>  
         const receptionData = <?php echo $receptionJson; ?>;
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
-        console.log('worksheet tracking', worksheetdata);
-
+        const transcriptiondata = <?php echo $transcriptionJson; ?>;
+        
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
             link.addEventListener('click', function (event) {
@@ -297,7 +296,8 @@ $payment = payment_list($invoiceIds, null, null, 'today');
 
                 // Find all objects where user_login matches the username
                 const userWorksheetInformation = worksheetdata.filter(worksheet => worksheet.user_login?.trim().toLowerCase() === normalizedUsername);
-                
+                const userTranscriptionInformation = transcriptiondata.filter(transcription => transcription.created_user?.trim().toLowerCase() === normalizedUsername);
+
                 // Check if there are any matches
                 if (userReceptions.length > 0) {
                     // Process and display the data for the matched user
@@ -311,8 +311,11 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                     // Process and display the data for the matched user
                     displayWorksheetDetails(userWorksheetInformation);
                 }
+                if(userTranscriptionInformation.length >0){
+                    displayTranscriptionDetails(userTranscriptionInformation);
+                }
                 else {
-                    alert('No reception data found for ' + username);
+                    console.log('No reception data found for ' + username);
                 }
             });
         });
@@ -453,6 +456,7 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                         <div class="card-body">
                             <div style="display: flex; justify-content: space-between;">
                                 <div><strong>Lab Number:</strong> ${reception.ref}</div>
+                                <div><strong>Test Type:</strong> ${reception.testType}</div>
                                 <div><strong>Delivery Date:</strong> ${reception.dateLivraison}</div>
                                 <div><strong>Created At:</strong> ${reception.dateCreation}</div>
                                 <div><strong>Note:</strong> ${reception.notePublic}</div>
@@ -645,6 +649,93 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                 document.getElementById('userTabs').appendChild(tab);
         }
 
+        function displayTranscriptionDetails(userTranscriptionInformation) {
+            // Ensure the userTabs container exists
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Build the tab content dynamically
+            const user = userTranscriptionInformation[0]?.created_user || 'Unknown User';
+
+            // Use a Set to track unique Lab Number and Time combinations
+            const uniqueEntries = new Set();
+
+            // Collect unique entries
+            const uniqueRecords = userTranscriptionInformation.filter(record => {
+                const labNumber = record.lab_number || 'N/A';
+                const createDate = record.create_date ? formatTrackCreateTime(record.create_date) : 'N/A';
+                const uniqueKey = `${labNumber}-${createDate}`;
+                if (!uniqueEntries.has(uniqueKey)) {
+                    uniqueEntries.add(uniqueKey);
+                    return true; // Include in the filtered list
+                }
+                return false; // Exclude duplicate entries
+            });
+
+            const totalCount = uniqueRecords.length; // Count only unique records
+
+            // Start the table structure
+            let content = `
+                <h5>Total Micro Entry: ${totalCount}</h5>
+                <table class="table table-bordered table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Lab Number</th>
+                            <th>Times</th>
+                            <th>Lab Number</th>
+                            <th>Times</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // Add unique records to the table with alternating layout
+            for (let i = 0; i < uniqueRecords.length; i += 2) {
+                const record1 = uniqueRecords[i];
+                const record2 = uniqueRecords[i + 1] || {}; // Handle odd number of records
+
+                const labNumber1 = record1.lab_number || 'N/A';
+                const createDate1 = record1.create_date ? formatTrackCreateTime(record1.create_date) : 'N/A';
+
+                const labNumber2 = record2.lab_number || 'N/A';
+                const createDate2 = record2.create_date ? formatTrackCreateTime(record2.create_date) : 'N/A';
+
+                content += `
+                    <tr>
+                        <td>${labNumber1}</td>
+                        <td>${createDate1}</td>
+                        <td>${labNumber2}</td>
+                        <td>${createDate2}</td>
+                    </tr>
+                `;
+            }
+
+            content += `
+                    </tbody>
+                </table>
+            `;
+
+            // Add close button and user-transcription content
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Transcription Details</h1>
+                <h1>${user}</h1>
+                ${content}
+            `;
+
+            // Append the tab to the userTabs container
+            userTabs.appendChild(tab);
+        }
 
         // Function to close a tab
         function closeTab() {

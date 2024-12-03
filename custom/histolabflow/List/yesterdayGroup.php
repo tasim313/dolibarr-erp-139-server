@@ -271,8 +271,7 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
     <div id="feature-message"></div>
 
    <!-- Reception Data visualization -->
-    <script>
-        
+    <script>   
         const receptionData = <?php echo $receptionJson; ?>;
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
@@ -460,6 +459,7 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
                         <div class="card-body">
                             <div style="display: flex; justify-content: space-between;">
                                 <div><strong>Lab Number:</strong> ${reception.ref}</div>
+                                <div><strong>Test Type:</strong> ${reception.testType}</div>
                                 <div><strong>Delivery Date:</strong> ${reception.dateLivraison}</div>
                                 <div><strong>Created At:</strong> ${reception.dateCreation}</div>
                                 <div><strong>Note:</strong> ${reception.notePublic}</div>
@@ -667,7 +667,23 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
 
             // Build the tab content dynamically
             const user = userTranscriptionInformation[0]?.created_user || 'Unknown User';
-            const totalCount = userTranscriptionInformation.length;
+
+            // Use a Set to track unique Lab Number and Time combinations
+            const uniqueEntries = new Set();
+
+            // Collect unique entries
+            const uniqueRecords = userTranscriptionInformation.filter(record => {
+                const labNumber = record.lab_number || 'N/A';
+                const createDate = record.create_date ? formatTrackCreateTime(record.create_date) : 'N/A';
+                const uniqueKey = `${labNumber}-${createDate}`;
+                if (!uniqueEntries.has(uniqueKey)) {
+                    uniqueEntries.add(uniqueKey);
+                    return true; // Include in the filtered list
+                }
+                return false; // Exclude duplicate entries
+            });
+
+            const totalCount = uniqueRecords.length; // Count only unique records
 
             // Start the table structure
             let content = `
@@ -684,10 +700,10 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
                     <tbody>
             `;
 
-            // Add table rows with alternating layout
-            for (let i = 0; i < userTranscriptionInformation.length; i += 2) {
-                const record1 = userTranscriptionInformation[i];
-                const record2 = userTranscriptionInformation[i + 1] || {}; // Handle odd number of records
+            // Add unique records to the table with alternating layout
+            for (let i = 0; i < uniqueRecords.length; i += 2) {
+                const record1 = uniqueRecords[i];
+                const record2 = uniqueRecords[i + 1] || {}; // Handle odd number of records
 
                 const labNumber1 = record1.lab_number || 'N/A';
                 const createDate1 = record1.create_date ? formatTrackCreateTime(record1.create_date) : 'N/A';
