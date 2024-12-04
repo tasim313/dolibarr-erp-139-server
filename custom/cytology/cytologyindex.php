@@ -1,4 +1,5 @@
 <?php
+include('common_function.php');
 
 $res = 0;
 // Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
@@ -70,11 +71,79 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
 	<div class="container">
     	<h3>Cytopathology</h3>
         <ul class="nav nav-tabs">
-            <li><a href="patient/index.php">New</a></li>
-            <li><a href="patient/recall.php" class="tab">Recall</a></li>
-            <li><a href="patient/repeat.php" class="tab">Repeat</a></li>
+            <!-- <li><a href="patient/index.php">New</a></li>
+            <li><a href="patient/recall.php" class="tab">Recall</a></li> -->
+            <!-- <li><a href="patient/repeat.php" class="tab">Repeat</a></li> -->
         </ul>
+		<div id="form-box">
+    			<h3>Please scan the FNA Lab Number to proceed</h3>
+    			<p>After scanning the Lab Number:</p>
+    		<ul>
+        		<li>If it is a new Lab Number, you will be directed to the <strong>Patient Registration</strong> page.</li>
+        		<li>If the Lab Number already exists, you will be directed to the <strong>Recall Patient</strong> page.</li>
+    		</ul>
+			<div id="input-group">
+				<input id="input-field" placeholder="Scan Lab number" type="text" onkeypress="handleLabNumberScan(event)" autofocus>
+				<label id="input-label">Enter or Scan the Lab Number</label>
+				<!-- Error message container -->
+				<div id="error-message" style="color: red; font-size: 14px; margin-top: 5px; display: none;"></div>
+			</div>
+		</div>
+
 	</div>
+
+	<script>
+        // Embed the lab numbers from PHP as JavaScript variables
+        const labList = <?php
+            $labNumbers = get_cyto_labnumber_list();
+            echo json_encode(array_column($labNumbers, 'lab_number'));
+        ?>;
+
+        const recallList = <?php
+            $recallNumbers = get_cyto_recall_list();
+            echo json_encode(array_column($recallNumbers, 'lab_number'));
+        ?>;
+
+        // Function to handle scanning of Lab Number
+		function handleLabNumberScan(event) {
+			if (event.key === "Enter") {
+				const inputField = document.getElementById("input-field");
+				const labNumber = inputField.value.trim();
+				const errorMessage = document.getElementById("error-message");
+
+				// Clear previous error message
+				errorMessage.style.display = "none";
+				errorMessage.textContent = "";
+
+				if (!labNumber) {
+					errorMessage.style.display = "block";
+					errorMessage.textContent = "Please scan or enter a valid Lab Number.";
+					return;
+				}
+
+				// Prepend "FNA" if not already included
+				let formattedLabNumber = labNumber;
+				if (!labNumber.startsWith("FNA")) {
+					formattedLabNumber = `FNA${labNumber}`;
+					inputField.value = formattedLabNumber; // Update the input field
+				}
+
+				// Check against lab lists (mocked here for demonstration)
+				if (labList.includes(formattedLabNumber)) {
+					window.location.href = `patient/index.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
+				} else if (recallList.includes(formattedLabNumber)) {
+					window.location.href = `patient/recall.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
+				} else {
+					errorMessage.style.display = "block";
+					errorMessage.textContent = "Lab Number not found in the system. Please check and try again.";
+				}
+			}
+    	}
+
+        // Add event listener to the input field
+        document.getElementById("input-field").addEventListener("keypress", handleLabNumberScan);
+    </script>
+
 </body>
 </html>
 
