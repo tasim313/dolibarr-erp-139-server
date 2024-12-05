@@ -59,7 +59,7 @@ llxHeader("", $langs->trans("Specimen Received"));
 $loggedInUsername = $user->login;
 $loggedInUserId = $user->id;
 
-
+$host = $_SERVER['HTTP_HOST'];
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
@@ -178,7 +178,7 @@ $end_date = $_GET['end_date'];
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/date_range_group.php?group=" 
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/date_range_group.php?group=" 
                             . urlencode($group['nom']) 
                             . "&start_date=" . urlencode($start_date) 
                             . "&end_date=" . urlencode($end_date);
@@ -214,7 +214,7 @@ $end_date = $_GET['end_date'];
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;

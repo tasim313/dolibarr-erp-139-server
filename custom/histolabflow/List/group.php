@@ -81,6 +81,7 @@ $groupName = isset($_GET['group']) ? htmlspecialchars($_GET['group']) : 'Unknown
 $users = get_users_by_group($groupName);
 
 $group_name = $_GET['group'];
+$host = $_SERVER['HTTP_HOST'];
 
 $reception = reception_sample_received_list(null, null, 'today');
 $receptionJson = json_encode($reception);
@@ -221,7 +222,7 @@ $payment = payment_list($invoiceIds, null, null, 'today');
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/group.php?group=" . urlencode($group['nom']);
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/group.php?group=" . urlencode($group['nom']);
                     echo '<li><i class="fas fa-users"></i><a href="' . $groupUrl . '">' . $groupName . '</a></li>';
                 }
                 ?>
@@ -267,7 +268,10 @@ $payment = payment_list($invoiceIds, null, null, 'today');
             <div id="userTabs" class="mt-4"></div>
         </div>
     </div>
-
+    
+    <script>
+         var hostname = window.location.hostname;
+    </script>
    <!-- Reception Data visualization -->
     <script>  
         const receptionData = <?php echo $receptionJson; ?>;
@@ -938,7 +942,7 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/sampleReceived/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/sampleReceived/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;

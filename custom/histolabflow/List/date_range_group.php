@@ -59,7 +59,7 @@ llxHeader("", $langs->trans("A I Khan Lab"));
 $loggedInUsername = $user->login;
 $loggedInUserId = $user->id;
 
-
+$host = $_SERVER['HTTP_HOST'];
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
@@ -227,7 +227,7 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/date_range_group.php?group=" 
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/date_range_group.php?group=" 
                     . urlencode($group['nom']) 
                     . "&start_date=" . urlencode($start_date) 
                     . "&end_date=" . urlencode($end_date);
@@ -278,6 +278,10 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
     </div>
 
     <div id="feature-message"></div>
+
+    <script>
+         var hostname = window.location.hostname;
+    </script>
 
    <!-- Reception Data visualization -->
     <script>
@@ -954,8 +958,7 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
-                    
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     // Redirect to the constructed URL
                     window.location.href = url;
                 }
