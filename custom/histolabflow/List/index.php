@@ -62,7 +62,7 @@ $loggedInUserId = $user->id;
 
 
 $isAdmin = isUserAdmin($loggedInUserId);
-
+$host = $_SERVER['HTTP_HOST'];
 
 // Access control using switch statement
 switch (true) {
@@ -176,12 +176,16 @@ switch (true) {
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/group.php?group=" . urlencode($group['nom']);
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/group.php?group=" . urlencode($group['nom']);
                     echo '<li><i class="fas fa-users"></i><a href="' . $groupUrl . '">' . $groupName . '</a></li>';
                 }
                 ?>
             </ul>
     </div>
+
+    <script>
+         var hostname = window.location.hostname;
+    </script>
 
     <script>
         $(document).ready(function(){
@@ -209,7 +213,7 @@ switch (true) {
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;

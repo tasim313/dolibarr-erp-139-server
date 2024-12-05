@@ -59,7 +59,7 @@ llxHeader("", $langs->trans("Specimen Received"));
 $loggedInUsername = $user->login;
 $loggedInUserId = $user->id;
 
-
+$host = $_SERVER['HTTP_HOST'];
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
@@ -176,13 +176,16 @@ switch (true) {
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/yesterdayGroup.php?group=" . urlencode($group['nom']);
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/yesterdayGroup.php?group=" . urlencode($group['nom']);
                     echo '<li><i class="fas fa-users"></i><a href="' . $groupUrl . '">' . $groupName . '</a></li>';
                 }
                 ?>
             </ul>
     </div>
-
+    
+    <script>
+         var hostname = window.location.hostname;
+    </script>
     <script>
         $(document).ready(function(){
             // Initialize datetimepicker
@@ -209,7 +212,7 @@ switch (true) {
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/List/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;

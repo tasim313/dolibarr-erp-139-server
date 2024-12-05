@@ -67,4 +67,70 @@ function get_cyto_recall_list() {
     return $labnumbers;
 }
 
+function get_cyto_patient_history_list($labnumber) {
+    global $pg_con;
+
+    // Query to retrieve patient history
+    $sql = "SELECT 
+                e.rowid, 
+                e.test_type, 
+                e.prev_fnac, 
+                e.prev_biopsy_date, 
+                e.prev_biopsy_op, 
+                e.informed, 
+                e.given, 
+                e.referredby_dr, 
+                e.referred_from, 
+                e.add_history, 
+                e.other_labno, 
+                e.referred_by_dr, 
+                e.referred_from, 
+                e.prev_biopsy, 
+                e.prev_fnac_date, 
+                e.prev_fnac_op, 
+                e.referred_by_dr_text, 
+                e.referredfrom_text
+            FROM 
+                llx_commande_extrafields e
+            JOIN 
+                llx_commande c
+            ON 
+                c.rowid = e.fk_object
+            WHERE 
+                c.ref = $1";
+
+    // Execute the query with parameterized values
+    $result = pg_query_params($pg_con, $sql, [$labnumber]);
+
+    $labnumbers = [];
+
+    if ($result) {
+        // Fetch results into the labnumbers array
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = [
+                'rowid' => $row['rowid'],
+                'test_type' => $row['test_type'],
+                'prev_fnac' => $row['prev_fnac'],
+                'given' => $row['given'],
+                'prev_biopsy_op' => $row['prev_biopsy_op'],
+                'informed' => $row['informed'],
+                'referredby_dr' => $row['referredby_dr'],
+                'referred_from' => $row['referred_from'],
+                'prev_biopsy' => $row['prev_biopsy'],
+                'prev_fnac_date' => $row['prev_fnac_date'],
+                'prev_fnac_op' => $row['prev_fnac_op'],
+                'referred_by_dr_text' => $row['referred_by_dr_text'],
+                'referredfrom_text' => $row['referredfrom_text']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        // Log or handle the error
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
 ?>

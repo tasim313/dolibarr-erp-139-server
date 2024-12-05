@@ -76,6 +76,8 @@ switch (true) {
         exit; // Terminate script execution
 } 
 
+$host = $_SERVER['HTTP_HOST'];
+
 // Check if 'group' parameter exists in the URL
 $groupName = isset($_GET['group']) ? htmlspecialchars($_GET['group']) : 'Unknown Group';
 $users = get_users_by_group($groupName);
@@ -221,7 +223,7 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
 
                 foreach ($userGroups as $group) {
                     $groupName = htmlspecialchars($group['nom']); // Sanitize the group name
-                    $groupUrl = "http://192.168.1.139:8881/custom/histolabflow/List/yesterdayGroup.php?group=" . urlencode($group['nom']);
+                    $groupUrl = "http://" . $host . "/custom/histolabflow/List/yesterdayGroup.php?group=" . urlencode($group['nom']);
                     echo '<li><i class="fas fa-users"></i><a href="' . $groupUrl . '">' . $groupName . '</a></li>';
                 }
                 ?>
@@ -270,14 +272,16 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
 
     <div id="feature-message"></div>
 
+    <script>
+         var hostname = window.location.hostname;
+    </script>
+
    <!-- Reception Data visualization -->
     <script>   
         const receptionData = <?php echo $receptionJson; ?>;
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
-       
-
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
             link.addEventListener('click', function (event) {
@@ -939,7 +943,7 @@ $payment = payment_list($invoiceIds, null, null, 'yesterday');
                     alert("Please select both start and end dates.");
                 } else {
                     // Construct the URL with query parameters
-                    var url = "http://192.168.1.139:8881/custom/histolabflow/sampleReceived/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
+                    var url = "http://" + hostname + ":8881/custom/histolabflow/sampleReceived/date_range.php?start_date=" + encodeURIComponent(startDate) + "&end_date=" + encodeURIComponent(endDate);
                     
                     // Redirect to the constructed URL
                     window.location.href = url;
