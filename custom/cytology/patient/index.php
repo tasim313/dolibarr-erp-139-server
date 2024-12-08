@@ -113,6 +113,62 @@ switch (true) {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- Import the JavaScript file -->
 	<link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-group-slide {
+            display: flex;
+            align-items: center; /* Vertically align the elements */
+            justify-content: flex-start; /* Optional: Align the items to the start (left side) */
+        }
+
+        .form-group-slide .form-control {
+            width: auto; /* Let the input fields take up only as much space as needed */
+        }
+
+        .form-group-slide .btn {
+            margin-left: 10px; /* Add space between button and inputs */
+        }
+        .dropbtn {
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #myInput {
+            box-sizing: border-box;
+            background-position: 14px 12px;
+            background-repeat: no-repeat;
+            font-size: 16px;
+            padding: 14px 20px 12px 45px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #myInput:focus {outline: 3px solid #ddd;}
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #FFFFFF;
+            min-width: 230px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .show {display: block;}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -363,144 +419,134 @@ switch (true) {
             <div class="container">
                     <h3>Clinical Information</h3>
                     <form id="clinical-information-form">
-
-                        <!-- Reason for FNAC -->
-                        <div class="form-group">
-                            <label for="reason-for-fnac">Chief Complain:</label>
-                            <select id="reason-for-fnac" name="reason_for_fnac" class="form-control">
-                                <option value="Lump/Swelling">Lump/Swelling</option>
-                                <option value="Lymphadenopathy">Lymphadenopathy</option>
-                                <option value="Suspected malignancy">Suspected malignancy</option>
-                                <option value="Others">Others</option>
-                            </select>
-                            <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify">
-                        </div>
                         
+                        <!-- Reason for FNAC -->
+                        <div class="form-group dropdown">
+                                <label for="chief-complain">Chief Complain:</label>
+                                <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
+                                <div id="myDropdown" class="dropdown-content" style="display: none;">
+                                    <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
+                                    <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()">
+                                        <option value="Lump/Swelling">Lump/Swelling</option>
+                                        <option value="Lymphadenopathy">Lymphadenopathy</option>
+                                        <option value="Suspected malignancy">Suspected malignancy</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                                <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify" style="display: none;">
+                        </div>
+
                         <!-- Clinical History -->
                         <div class="form-group">
                             <label for="clinical-history">Relevant Clinical History:</label>
-                            <textarea id="clinical-history" name="clinical_history" class="form-control" rows="4" placeholder="Enter detailed clinical notes"></textarea>
+                            <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes"></textarea>
                         </div>
                         
                         <!-- Site of Aspiration -->
                         <div class="form-group">
                             <label for="site-of-aspiration">OnExamination:</label>
-                            <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" placeholder="Enter on examination note"></textarea>
+                            <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="3" placeholder="Enter on examination note"></textarea>
                         </div>
 
                         <!-- Indication for Aspiration -->
-                        <div id="aspirationNoteSection" class="form-group">
-                        <label for="indication-for-aspiration">Aspiration Note:</label><br>
-                        <select id="regionSelector">
-                            <option value="">Select Region</option>
-                            <option value="thyroid">Thyroid Region</option>
-                            <option value="cervical">Cervical Region</option>
-                            <option value="parotid">Parotid Region</option>
-                            <option value="lymphNode">Lymph Node</option>
-                            <option value="tongueAndOral">Tongue and Oral Region</option>
-                            <option value="chestWall">Chest Wall</option>
-                            <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
-                            <option value="axillaryRegion">Axillary Region</option>
-                            <option value="miscellaneous">Miscellaneous</option>
-                            <option value="cytologySlides">Cytology Slides</option>
-                            
-                            <!-- Add other regions as needed -->
-                        </select>
-                            
-                            <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" placeholder="Enter aspiration note"></textarea>
+                        <div  class="form-group">
+                            <label for="indication-for-aspiration">Aspiration Note:</label><br>
+                            <select id="regionSelector">
+                                <option value="">Select Region</option>
+                                <option value="thyroid">Thyroid Region</option>
+                                <option value="cervical">Cervical Region</option>
+                                <option value="parotid">Parotid Region</option>
+                                <option value="lymphNode">Lymph Node</option>
+                                <option value="tongueAndOral">Tongue and Oral Region</option>
+                                <option value="chestWall">Chest Wall</option>
+                                <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
+                                <option value="axillaryRegion">Axillary Region</option>
+                                <option value="miscellaneous">Miscellaneous</option>
+                                <option value="cytologySlides">Cytology Slides</option>
+                            </select>
+                            <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" rows="4" placeholder="Enter aspiration note"></textarea>
                         </div>
 
-                        <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+                        <!-- FNAC Collection Details -->
+                        <?php
+                            $slideBaseCode = preg_replace('/^[A-Za-z]{3}/', '', $LabNumber); 
+                            $locationOptions = ['','Proper','Thyroid', 'Breast', 'Lymph node', 'Lung', 'Other'];
+                        ?>
+                        <h3>FNAC Fixation Details</h3>
+                         <!-- Total Slides Prepared -->
+                        <div class="form-group form-group-slide d-flex align-items-center">
+                            <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
+                            <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" required> &nbsp;  &nbsp;  &nbsp; 
+                            <label for="location-input" class="mr-2">Location:</label> &nbsp; 
+                            <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" required> &nbsp; 
+                            <button type="button" class="btn btn-primary" id="populate-table">Generate slide</button>
+                        </div>
+
+                        <!-- Slide Fixation Details -->
+                        <div class="form-group">
+                            <label>Slide Fixation Details:</label>
+                            <table class="table table-bordered" id="fixation-details-table">
+                                <thead>
+                                    <tr>
+                                        <th>Slide Number</th>
+                                        <th>Slide Code</th>
+                                        <th>Location</th>
+                                        <th>Fixation Method</th>
+                                        <th>Dry</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fixation-details-body">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Dry Slides Description -->
+                        <div class="form-group">
+                            <label for="dry-slides-description">
+                                Dry Slides Description (if any):
+                                <button type="button" class="btn btn-link toggle-btn" data-target="#dry-slides-section">+</button>
+                            </label>
+                            <div id="dry-slides-section" class="toggle-section" style="display: none;">
+                                <textarea id="dry-slides-description" name="dry_slides_description" class="form-control" rows="3" placeholder="Enter Dry Slides Description"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div class="form-group">
+                            <label for="fixation-comments">
+                                Additional Notes on Fixation:
+                                <button type="button" class="btn btn-link toggle-btn" data-target="#fixation-comments-section">+</button>
+                            </label>
+                            <div id="fixation-comments-section" class="toggle-section" style="display: none;">
+                                <textarea id="fixation-comments" name="fixation_comments" class="form-control" rows="3" placeholder="Enter Additional Notes on Fixation"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Special Instructions or Tests Required -->
+                        <div class="form-group">
+                            <label for="special-instructions">
+                                Special Instructions or Tests Required:
+                                <button type="button" class="btn btn-link toggle-btn" data-target="#special-instructions-section">+</button>
+                            </label>
+                            <div id="special-instructions-section" class="toggle-section" style="display: none;">
+                                <textarea id="special-instructions" name="special_instructions" class="form-control" rows="3" placeholder="Enter tests like special stains, immunocytochemistry, etc."></textarea>
+                            </div>
+                        </div>
+                    
+                        <!-- Number of Passes Performed -->
+                        <div class="form-group">
+                            <label for="number-of-needle">Number of Needle Used:</label>
+                            <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="number-of-syringe">Number of Syringe Used:</label>
+                            <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
             </div>
-
-            
-            <!-- FNAC Collection Details -->
-            <?php
-
-                $slideBaseCode = preg_replace('/^[A-Za-z]{3}/', '', $LabNumber); 
-                $locationOptions = ['','Proper','Thyroid', 'Breast', 'Lymph node', 'Lung', 'Other'];
-            ?>
-            <div class="container mt-4">
-                <h3>FNAC Fixation Details</h3>
-                <form id="fnac-fixation-form">
-                    <!-- Total Slides Prepared -->
-                    <div class="form-group">
-                        <label for="total-slides">Total Slides Prepared:</label>
-                        <input type="number" id="total-slides" name="total_slides" class="form-control" min="1" required>
-                    </div>
-
-                    <!-- Slide Fixation Details -->
-                    <div class="form-group">
-                        <label>Slide Fixation Details:</label>
-                        <table class="table table-bordered" id="fixation-details-table">
-                            <thead>
-                                <tr>
-                                    <th>Slide Number</th>
-                                    <th>Slide Code</th>
-                                    <th>Location</th>
-                                    <th>Fixation Method</th>
-                                    <th>Dry</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fixation-details-body">
-                                <!-- Dynamic Rows -->
-                            </tbody>
-                        </table>
-                        <button type="button" class="btn btn-success" id="add-row">+ Add More</button>
-                    </div>
-
-                   <!-- Dry Slides Description -->
-                    <div class="form-group">
-                        <label for="dry-slides-description">
-                            Dry Slides Description (if any):
-                            <button type="button" class="btn btn-link toggle-btn" data-target="#dry-slides-section">+</button>
-                        </label>
-                        <div id="dry-slides-section" class="toggle-section" style="display: none;">
-                            <textarea id="dry-slides-description" name="dry_slides_description" class="form-control" rows="3" placeholder="Enter Dry Slides Description"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Additional Notes -->
-                    <div class="form-group">
-                        <label for="fixation-comments">
-                            Additional Notes on Fixation:
-                            <button type="button" class="btn btn-link toggle-btn" data-target="#fixation-comments-section">+</button>
-                        </label>
-                        <div id="fixation-comments-section" class="toggle-section" style="display: none;">
-                            <textarea id="fixation-comments" name="fixation_comments" class="form-control" rows="3" placeholder="Enter Additional Notes on Fixation"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Special Instructions or Tests Required -->
-                    <div class="form-group">
-                        <label for="special-instructions">
-                            Special Instructions or Tests Required:
-                            <button type="button" class="btn btn-link toggle-btn" data-target="#special-instructions-section">+</button>
-                        </label>
-                        <div id="special-instructions-section" class="toggle-section" style="display: none;">
-                            <textarea id="special-instructions" name="special_instructions" class="form-control" rows="3" placeholder="Enter tests like special stains, immunocytochemistry, etc."></textarea>
-                        </div>
-                    </div>
-                    
-                    
-                    <!-- Number of Passes Performed -->
-                    <div class="form-group">
-                        <label for="number-of-needle">Number of Needle Used:</label>
-                        <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="number-of-syringe">Number of Syringe Used:</label>
-                        <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
-            </div>
-            
-           
-
     </div>
 </body>
 </html>
@@ -564,133 +610,167 @@ switch (true) {
     document.getElementById('reason-for-fnac').dispatchEvent(new Event('change'));
 </script>
 
-
-
 <!-- FNAC Fixation Details -->
 <script>
-    const locationOptions = [" ", "Proper", "Thyroid", "Breast", "Lymph node", "Lung", "Other"]; // Available locations
-    let locationCounter = { "Proper": 0 }; // Keeps track of counts for "Proper" location, initialized to 0
-    let locationLetters = {}; // Keeps track of the assigned letters for other locations
-    let rowCounter = 1; // Row counter to track the rows
+    document.addEventListener("DOMContentLoaded", function () {
+        const locationOptions = [" ", "proper", "thyroid", "beast", "lymph node", "lung", "other"];
+        let locationCounter = { "Proper": 0 };
+        let locationLetters = {};
+        let rowCounter = 1;
 
-    // Function to update slide code dynamically based on location
-    function updateSlideCode(row, location) {
-        let slideCode;
-        const slideBaseCode = "<?php echo $slideBaseCode; ?>".replace(/-/g, ''); // Use PHP to insert the slide base code
+        // Function to update slide code dynamically
+        function updateSlideCode(row, location) {
+                const slideBaseCode = "<?php echo $slideBaseCode; ?>".replace(/-/g, '');
+                let slideCode;
 
-        if (location === "Proper") {
-            // For "Proper", use "Pro" and increment sequentially
-            const proCount = (locationCounter['Proper'] || 0) + 1;
-            slideCode = `${slideBaseCode}FC-Pro-${proCount}`;
-            locationCounter['Proper'] = proCount;
-        } else {
-            // For other locations, assign letters A, B, C, etc. and increment sequentially
-            if (!locationLetters[location]) {
-                // If it's the first time this location is selected, assign a letter
-                const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                locationLetters[location] = letters[Object.keys(locationLetters).length]; // Assign letter to location
-                locationCounter[location] = 1; // Start counting from 1
+                if (location.toLowerCase() === "proper") {
+                    // Handle Proper location separately
+                    const proCount = (locationCounter["Proper"] || 0) + 1;
+                    slideCode = `${slideBaseCode}FC-Pro-${proCount}`;
+                    locationCounter["Proper"] = proCount; // Increment the count for "Proper"
+                } else {
+                    // For other locations, use letters like A, B, C, etc.
+                    if (!locationLetters[location]) {
+                        // Assign letters for each unique location type (A, B, C, etc.)
+                        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                        locationLetters[location] = letters[Object.keys(locationLetters).length];
+                        locationCounter[location] = 1; // Start counting for the new location
+                    }
+
+                    const locationLetter = locationLetters[location]; // A, B, C, etc.
+                    const locationCount = locationCounter[location];
+                    slideCode = `${slideBaseCode}FC-${locationLetter}-${locationCount}`;
+                    locationCounter[location] = locationCount + 1; // Increment the count for that location
+                }
+
+                // Update the slide code in the respective row
+                row.querySelector('.slide-code').textContent = slideCode;
+        }
+
+        // Function to handle changes in Location and Fixation Method
+        function handleLocationOrFixationChange(row, locationDropdown, fixationDropdown, dryCheckbox) {
+            const otherLocationInput = row.querySelector('.other-location-input');
+            const otherFixationInput = row.querySelector('.other-fixation-input');
+
+            // Show or hide the "other" input fields based on selection
+            otherLocationInput.style.display = locationDropdown.value === "Other" ? "inline-block" : "none";
+            otherFixationInput.style.display = fixationDropdown.value === "Other" ? "inline-block" : "none";
+
+            // Disable fixation dropdown if Dry is selected
+            if (dryCheckbox.checked) {
+                fixationDropdown.disabled = true;
+                fixationDropdown.style.display = "none";  // Hide fixation dropdown
+            } else {
+                fixationDropdown.disabled = false;
+                fixationDropdown.style.display = "inline-block";  // Show fixation dropdown
+            }
+        }
+
+        // Function to add a row to the table
+        function addRow(location, isDry) {
+                const tbody = document.getElementById('fixation-details-body');
+                const newRow = document.createElement('tr');
+
+                newRow.innerHTML = `
+                    <td>${rowCounter}</td>
+                    <td class="slide-code"></td>
+                    <td>
+                        <select class="form-control location-select">
+                            ${locationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                        </select>
+                        <input type="text" class="form-control other-location-input" placeholder="Specify other location" style="display: none;">
+                    </td>
+                    <td>
+                        <select class="form-control fixation-method-select">
+                            <option value="Alcohol">Alcohol fixation</option>
+                            <option value="Formalin">Formalin fixation</option>
+                            <option value="Air-dried">Air-dried</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" class="form-control other-fixation-input" placeholder="Specify fixation method" style="display: none;">
+                    </td>
+                    <td>
+                        <input type="checkbox" class="dry-checkbox" ${isDry ? 'checked' : ''}>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger remove-row">Remove</button>
+                    </td>
+                `;
+
+                const locationDropdown = newRow.querySelector('.location-select');
+                const fixationDropdown = newRow.querySelector('.fixation-method-select');
+                const dryCheckbox = newRow.querySelector('.dry-checkbox');
+
+                // Set default location and handle other inputs
+                locationDropdown.value = location;
+                handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox);
+
+                // Location change handler
+                locationDropdown.addEventListener('change', () => {
+                    const locationValue = locationDropdown.value.trim().toLowerCase();
+                    const matchingLocation = locationOptions.find(option => option.toLowerCase() === locationValue);
+
+                    if (matchingLocation) {
+                        locationDropdown.value = matchingLocation; // Set the matched location
+                    } else {
+                        locationDropdown.value = "Other"; // If no match, select "Other"
+                    }
+
+                    updateSlideCode(newRow, locationDropdown.value);
+                });
+
+                // Dry checkbox and fixation method handling
+                dryCheckbox.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
+                fixationDropdown.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
+
+                newRow.querySelector('.remove-row').addEventListener('click', () => tbody.removeChild(newRow));
+
+                tbody.appendChild(newRow);
+                updateSlideCode(newRow, location);
+                rowCounter++;
             }
 
-            const locationLetter = locationLetters[location]; // Use the assigned letter for the location
-            const locationCount = locationCounter[location];
+        // Populate table based on user input
+        document.getElementById('populate-table').addEventListener('click', function () {
+            const slidesInput = document.getElementById('slides-input').value.trim();
+            let locationInput = document.getElementById('location-input').value.trim();
 
-            slideCode = `${slideBaseCode}FC-${locationLetter}-${locationCount}`;
-            locationCounter[location] = locationCount + 1;
-        }
+            if (!slidesInput || !locationInput) {
+                alert('Please fill in all fields.');
+                return;
+            }
 
-        // Update the slide code in the row
-        const slideCodeCell = row.querySelector('.slide-code');
-        slideCodeCell.textContent = slideCode;
-    }
+            const [fixationSlides, drySlides] = slidesInput.split('+').map(Number);
+            if (isNaN(fixationSlides) || isNaN(drySlides)) {
+                alert('Invalid slide input format. Use "2+1" format.');
+                return;
+            }
 
-    // Function to handle changes in the Location or Fixation Method selection
-    function handleLocationOrFixationChange(row, locationDropdown, fixationDropdown, dryCheckbox) {
-        const otherLocationInput = row.querySelector('.other-location-input');
-        const otherFixationInput = row.querySelector('.other-fixation-input');
-        
-        // Handle "Other" Location input
-        if (locationDropdown.value === "Other") {
-            otherLocationInput.style.display = "inline-block"; // Show input field for "Other"
-        } else {
-            otherLocationInput.style.display = "none"; // Hide input field for "Other"
-        }
+            // Case-insensitive matching for location
+            const matchingLocation = locationOptions.find(opt => opt.toLowerCase() === locationInput.toLowerCase());
+            if (matchingLocation) {
+                locationInput = matchingLocation; // Set matched location
+            } else {
+                alert(`Location "${locationInput}" not found. Using "Other" as default.`);
+                locationInput = "Other";
+            }
 
-        // Handle "Other" Fixation Method input
-        if (fixationDropdown.value === "Other") {
-            otherFixationInput.style.display = "inline-block"; // Show input field for "Other"
-        } else {
-            otherFixationInput.style.display = "none"; // Hide input field for "Other"
-        }
+            // Add rows for fixation slides
+            for (let i = 0; i < fixationSlides; i++) addRow(locationInput, false);
 
-        // Handle Dry checkbox - Hide Fixation Method if selected
-        if (dryCheckbox.checked) {
-            fixationDropdown.style.display = "none"; // Hide Fixation Method dropdown
-            fixationDropdown.disabled = true; // Disable the Fixation Method dropdown
-        } else {
-            fixationDropdown.style.display = "inline-block"; // Show Fixation Method dropdown
-            fixationDropdown.disabled = false; // Enable the Fixation Method dropdown
-        }
-    }
+            // Add rows for dry slides
+            for (let i = 0; i < drySlides; i++) addRow(locationInput, true);
 
-    // Add row to table
-    document.getElementById('add-row').addEventListener('click', function () {
-        const tbody = document.getElementById('fixation-details-body');
-        const newRow = document.createElement('tr');
-
-        newRow.innerHTML = `
-            <td>${rowCounter}</td>
-            <td class="slide-code"></td>
-            <td>
-                <select class="form-control location-select">
-                    ${locationOptions.map(option => `<option value="${option}">${option}</option>`).join('')}
-                </select>
-                <input type="text" class="form-control other-location-input" placeholder="Specify other location" style="display: none;">
-            </td>
-            <td>
-                <select class="form-control fixation-method-select">
-                    <option value="Alcohol">Alcohol fixation</option>
-                    <option value="Formalin">Formalin fixation</option>
-                    <option value="Air-dried">Air-dried</option>
-                    <option value="Other">Other</option>
-                </select>
-                <input type="text" class="form-control other-fixation-input" placeholder="Specify fixation method" style="display: none;">
-            </td>
-            <td>
-                <input type="checkbox" class="dry-checkbox">
-            </td>
-            <td>
-                <button type="button" class="btn btn-danger remove-row">Remove</button>
-            </td>
-        `;
-
-        const locationDropdown = newRow.querySelector('.location-select');
-        const fixationDropdown = newRow.querySelector('.fixation-method-select');
-        const dryCheckbox = newRow.querySelector('.dry-checkbox');
-        
-        // Handle changes in location and fixation method selection
-        locationDropdown.addEventListener('change', function () {
-            updateSlideCode(newRow, this.value);
-            handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox);
+            // If locationInput was set to "Other", focus the input for custom location
+            if (locationInput === "Other") {
+                const otherInputs = document.querySelectorAll('.other-location-input');
+                otherInputs[otherInputs.length - 1].style.display = "inline-block";
+            }
         });
-
-        fixationDropdown.addEventListener('change', function () {
-            handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox);
-        });
-
-        dryCheckbox.addEventListener('change', function () {
-            handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox);
-        });
-
-        newRow.querySelector('.remove-row').addEventListener('click', function () {
-            tbody.removeChild(newRow);
-        });
-
-        tbody.appendChild(newRow);
-        rowCounter++;
     });
 
 </script>
+
 
 <!-- FNAC Collection Details -->
 <script>
@@ -718,6 +798,7 @@ switch (true) {
     });
 </script>
 
+<!-- Dry Slides Description/Additional Notes/Special Instructions or Tests Required -->
 <script>
     // Toggle visibility of sections
     document.querySelectorAll('.toggle-btn').forEach(button => {
@@ -734,6 +815,7 @@ switch (true) {
     });
 </script>
 
+<!-- Aspiration Note -->
 <script>
     document.getElementById('regionSelector').addEventListener('change', function () {
     const editor = document.getElementById('aspirationNoteEditor');
@@ -743,31 +825,119 @@ switch (true) {
     const templates = {
         thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
 Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
-        cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
+            cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
 Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
 Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
-        parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
+            parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
 Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
-        lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
+            lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
 Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
 Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
-        tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
-        chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
-        preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
-        axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
-        miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
+            tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
+            chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
+            preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
+            axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
+            miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
 Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
-        cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
+            cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
 Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
-        // Add other regions with their respective templates
-    };
+            // Add other regions with their respective templates
+        };
 
-    if (region && templates[region]) {
-        editor.value = templates[region];
-    } else {
-        editor.value = ''; // Clear editor if no region is selected
+        if (region && templates[region]) {
+            editor.value = templates[region];
+        } else {
+            editor.value = ''; // Clear editor if no region is selected
+        }
+    });
+</script>
+
+<!-- Search feature for dropdown Reason for FNAC -->
+<script>
+    // Toggle dropdown visibility
+    function toggleDropdown() {
+        const dropdown = document.getElementById("myDropdown");
+        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
     }
-});
+
+    // Function to filter dropdown options
+    function filterFunction() {
+        const input = document.getElementById("search-reason");
+        const filter = input.value.toUpperCase();
+        const select = document.getElementById("reason-for-fnac");
+        const options = select.options;
+
+        for (let i = 0; i < options.length; i++) {
+            const txtValue = options[i].textContent || options[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                options[i].style.display = ""; // Show matching options
+            } else {
+                options[i].style.display = "none"; // Hide non-matching options
+            }
+        }
+    }
+
+    // Update the selected value when an option is chosen
+    function selectOption() {
+        const select = document.getElementById("reason-for-fnac");
+        const selectedValue = select.options[select.selectedIndex].text;
+        document.getElementById("selected-value").innerText = selectedValue;
+
+        // Show "Other" input if "Others" is selected
+        const otherReasonInput = document.getElementById("other-reason");
+        if (select.value === "Others") {
+            otherReasonInput.style.display = "block";
+        } else {
+            otherReasonInput.style.display = "none";
+        }
+
+        // Hide dropdown after selection
+        document.getElementById("myDropdown").style.display = "none";
+    }
+</script>
+
+<!-- Aspiration Note -->
+<script>
+    // Function to toggle the dropdown visibility
+    function toggleAspirationNoteDropdown() {
+        const dropdown = document.getElementById("myDropdown");
+        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+    }
+
+    // Function to filter regions in the dropdown
+    function filterRegions() {
+        const input = document.getElementById("search-region");
+        const filter = input.value.toUpperCase();
+        const select = document.getElementById("regionSelector");
+        const options = select.options;
+
+        for (let i = 0; i < options.length; i++) {
+            const txtValue = options[i].textContent || options[i].innerText;
+            options[i].style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
+        }
+    }
+
+    // Function to handle region selection
+    function selectRegionOption() {
+        const select = document.getElementById("regionSelector");
+        const selectedValue = select.options[select.selectedIndex].text;
+        const button = document.getElementById("selected-value");
+        const otherRegionInput = document.getElementById("other-region");
+
+        // Update button text with the selected value
+        button.textContent = selectedValue;
+
+        // Show or hide the "Other" input field based on the selection
+        if (select.value === "Others") {
+            otherRegionInput.style.display = "block";
+        } else {
+            otherRegionInput.style.display = "none";
+            otherRegionInput.value = ""; // Clear the "Other" input field
+        }
+
+        // Hide the dropdown after selection
+        document.getElementById("myDropdown").style.display = "none";
+    }
 </script>
 
 
