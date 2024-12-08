@@ -338,8 +338,8 @@ switch (true) {
                                                 ?>
                                                 
                                             </td>
-                                            <td><?= htmlspecialchars($history['referredby_dr']) ?></td>
-                                            <td><?= htmlspecialchars($history['referred_from']) ?></td>
+                                            <td><?= htmlspecialchars($history['referred_by_dr_lastname']) ?></td>
+                                            <td><?= htmlspecialchars($history['referred_from_lastname']) ?></td>
                                             <td><?= htmlspecialchars($history['add_history']) ?></td>
                                             <td><?= htmlspecialchars($history['other_labno']) ?></td>
                                             <td><?= htmlspecialchars($history['prev_biopsy']) ?></td>
@@ -366,7 +366,7 @@ switch (true) {
 
                         <!-- Reason for FNAC -->
                         <div class="form-group">
-                            <label for="reason-for-fnac">Cheif Complain:</label>
+                            <label for="reason-for-fnac">Chief Complain:</label>
                             <select id="reason-for-fnac" name="reason_for_fnac" class="form-control">
                                 <option value="Lump/Swelling">Lump/Swelling</option>
                                 <option value="Lymphadenopathy">Lymphadenopathy</option>
@@ -388,32 +388,26 @@ switch (true) {
                             <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" placeholder="Enter on examination note"></textarea>
                         </div>
 
-                        <!-- Sample Type Collected -->
-                        <div class="form-group">
-                            <label>Sample Type Collected:</label>
-                            <div class="form-check">
-                                <input type="checkbox" id="solid-tissue" name="sample_type[]" value="Solid tissue" class="form-check-input">
-                                <label class="form-check-label" for="solid-tissue">Solid tissue</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="cystic-fluid" name="sample_type[]" value="Cystic fluid" class="form-check-input">
-                                <label class="form-check-label" for="cystic-fluid">Cystic fluid</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="blood-stained-fluid" name="sample_type[]" value="Blood-stained fluid" class="form-check-input">
-                                <label class="form-check-label" for="blood-stained-fluid">Blood-stained fluid</label>
-                            </div>
-                            <div class="form-check">
-                                <input type="checkbox" id="other-sample-type" name="sample_type[]" value="Others" class="form-check-input">
-                                <label class="form-check-label" for="other-sample-type">Others:</label>
-                            </div>
-                            <input type="text" id="other-sample-input" name="other_sample" class="form-control mt-2" placeholder="If Other, specify">
-                        </div>
-
                         <!-- Indication for Aspiration -->
-                        <div class="form-group">
-                            <label for="indication-for-aspiration">Aspiration Note:</label>
-                            <textarea type="text" id="indication-for-aspiration" name="indication_for_aspiration" class="form-control" placeholder="Enter aspiration note"></textarea>
+                        <div id="aspirationNoteSection" class="form-group">
+                        <label for="indication-for-aspiration">Aspiration Note:</label><br>
+                        <select id="regionSelector">
+                            <option value="">Select Region</option>
+                            <option value="thyroid">Thyroid Region</option>
+                            <option value="cervical">Cervical Region</option>
+                            <option value="parotid">Parotid Region</option>
+                            <option value="lymphNode">Lymph Node</option>
+                            <option value="tongueAndOral">Tongue and Oral Region</option>
+                            <option value="chestWall">Chest Wall</option>
+                            <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
+                            <option value="axillaryRegion">Axillary Region</option>
+                            <option value="miscellaneous">Miscellaneous</option>
+                            <option value="cytologySlides">Cytology Slides</option>
+                            
+                            <!-- Add other regions as needed -->
+                        </select>
+                            
+                            <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" placeholder="Enter aspiration note"></textarea>
                         </div>
 
                         <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
@@ -570,17 +564,7 @@ switch (true) {
     document.getElementById('reason-for-fnac').dispatchEvent(new Event('change'));
 </script>
 
-<!-- Procedure Details -->
-<script>
-    // Show/hide "Others" text inputs based on checkbox selection
-    document.getElementById('other-sample-type').addEventListener('change', function() {
-        document.getElementById('other-sample-input').style.display = this.checked ? 'block' : 'none';
-    });
 
-    // Hide "Others" inputs by default
-    document.getElementById('other-sample-input').style.display = 'none';
-    
-</script>
 
 <!-- FNAC Fixation Details -->
 <script>
@@ -748,6 +732,42 @@ switch (true) {
             }
         });
     });
+</script>
+
+<script>
+    document.getElementById('regionSelector').addEventListener('change', function () {
+    const editor = document.getElementById('aspirationNoteEditor');
+    const region = this.value;
+
+    // Predefined templates
+    const templates = {
+        thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
+Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
+        cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
+Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
+Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
+        parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
+Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
+        lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
+Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
+Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
+        tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
+        chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
+        preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
+        axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
+        miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
+Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
+        cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
+Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
+        // Add other regions with their respective templates
+    };
+
+    if (region && templates[region]) {
+        editor.value = templates[region];
+    } else {
+        editor.value = ''; // Clear editor if no region is selected
+    }
+});
 </script>
 
 
