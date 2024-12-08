@@ -67,29 +67,44 @@ function get_cyto_recall_list() {
     return $labnumbers;
 }
 
+
 function get_cyto_patient_history_list($labnumber) {
     global $pg_con;
 
-    // Query to retrieve patient history
-    $sql = "SELECT 
-                e.rowid, 
-                e.test_type, 
-                e.prev_fnac, 
-                e.prev_biopsy_date, 
-                e.prev_biopsy_op, 
-                e.informed, 
-                e.given, 
-                e.referredby_dr, 
-                e.referred_from, 
-                e.add_history, 
-                e.other_labno, 
-                e.referred_by_dr, 
-                e.referred_from, 
-                e.prev_biopsy, 
-                e.prev_fnac_date, 
-                e.prev_fnac_op, 
-                e.referred_by_dr_text, 
-                e.referredfrom_text
+    // Updated query with subqueries for referred_by_dr_lastname and referred_from_lastname
+    $sql = "
+        SELECT 
+            e.rowid, 
+            e.test_type, 
+            e.prev_fnac, 
+            e.prev_biopsy_date, 
+            e.prev_biopsy_op, 
+            e.informed, 
+            e.given, 
+            e.add_history, 
+            e.other_labno, 
+            e.referred_by_dr_text, 
+            e.referredfrom_text, 
+            -- Subquery for e.referred_by_dr
+            (SELECT lastname 
+            FROM llx_socpeople sp1
+            WHERE sp1.rowid IN (
+                SELECT fk_socpeople 
+                FROM llx_categorie_contact 
+                WHERE fk_categorie = 3
+            ) 
+            AND sp1.rowid = e.referred_by_dr::integer
+            ) AS referred_by_dr_lastname,
+            -- Subquery for e.referred_from
+            (SELECT lastname 
+            FROM llx_socpeople sp2
+            WHERE sp2.rowid IN (
+                SELECT fk_socpeople 
+                FROM llx_categorie_contact 
+                WHERE fk_categorie = 4
+            ) 
+            AND sp2.rowid = e.referred_from::integer
+            ) AS referred_from_lastname
             FROM 
                 llx_commande_extrafields e
             JOIN 
@@ -97,7 +112,8 @@ function get_cyto_patient_history_list($labnumber) {
             ON 
                 c.rowid = e.fk_object
             WHERE 
-                c.ref = $1";
+                c.ref = $1
+    ";
 
     // Execute the query with parameterized values
     $result = pg_query_params($pg_con, $sql, [$labnumber]);
@@ -114,13 +130,12 @@ function get_cyto_patient_history_list($labnumber) {
                 'given' => $row['given'],
                 'prev_biopsy_op' => $row['prev_biopsy_op'],
                 'informed' => $row['informed'],
-                'referredby_dr' => $row['referredby_dr'],
-                'referred_from' => $row['referred_from'],
-                'prev_biopsy' => $row['prev_biopsy'],
-                'prev_fnac_date' => $row['prev_fnac_date'],
-                'prev_fnac_op' => $row['prev_fnac_op'],
+                'add_history' => $row['add_history'],
+                'other_labno' => $row['other_labno'],
                 'referred_by_dr_text' => $row['referred_by_dr_text'],
-                'referredfrom_text' => $row['referredfrom_text']
+                'referredfrom_text' => $row['referredfrom_text'],
+                'referred_by_dr_lastname' => $row['referred_by_dr_lastname'], // Newly added field
+                'referred_from_lastname' => $row['referred_from_lastname']  // Newly added field
             ];
         }
 
