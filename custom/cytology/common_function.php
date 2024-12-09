@@ -13,7 +13,7 @@ function get_cyto_labnumber_list() {
         JOIN 
             llx_commande_extrafields AS e ON e.fk_object = c.rowid 
         LEFT JOIN 
-            llx_cyto AS cy ON cy.lab_number = c.ref
+            llx_cyto AS cy ON TRIM(LEADING 'FNA' FROM cy.lab_number) = c.ref
         JOIN 
             llx_societe AS soc ON c.fk_soc = soc.rowid
         WHERE 

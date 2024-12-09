@@ -170,256 +170,240 @@ switch (true) {
         .show {display: block;}
     </style>
 </head>
-<body>
-    <div class="container">
-            <div class=" text-center mt-5 ">
-                <h3>New Patient</h3>
-                <div class="row">
-                    <div class="col-lg-7 mx-auto">
-                        <div class="card mt-2 mx-auto p-4 bg-light">
-                            <div class="container card-body bg-light">
-                                <form role="form" style="margin-top: 20px;" id="cytoForm" method="post" action="../Cyto/new_patient_create.php">
-                                    <table class="table table-bordered table-striped">
-                                        <tbody>
-                                            <!-- Doctor Selection -->
-                                            <tr>
-                                                <th scope="col">
-                                                    <label for="doctor" class="form-label">Doctor</label>
-                                                </th>
-                                                <th scope="col">
-                                                    <label for="assistant" class="form-label">Assistant</label>
-                                                </th>
-                                                <th scope="col">
-                                                    <label for="station" class="form-label">FNA Station</label>
-                                                </th>
-                                                <th scope="col">
-                                                    <label for="lab_number" class="form-label">Lab Number</label>
-                                                </th>
-                                            </tr>
+<body>   
+            <div class="container"> 
+                    <div class=" text-center mt-5 ">
+                        <h3>New Patient</h3>
+                    </div>
+                    <form id="clinical-information-form" action="../Cyto/new_patient_create.php" method="post">
+                        <table class="table table-bordered table-striped">
+                            <tbody>
+                            <!-- Doctor Selection -->
+                                <tr>
+                                    <th scope="col">
+                                        <label for="doctor" class="form-label">Doctor</label>
+                                    </th>
+                                    <th scope="col">
+                                        <label for="assistant" class="form-label">Assistant</label>
+                                    </th>
+                                    <th scope="col">
+                                        <label for="station" class="form-label">FNA Station</label>
+                                    </th>
+                                    <th scope="col">
+                                        <label for="lab_number" class="form-label">Lab Number</label>
+                                    </th>
+                                </tr>
                                                             
-                                            <tr>
-                                                <td>
-                                                    <select id="doctor_name" name="doctor_name" class="form-control" aria-label="Doctor selection" data-error="Please specify your need." required>
-                                                    <option value="" selected disabled>--Select a Doctor--</option>
-                                                    <?php
-                                                        $doctors = get_doctor_list();
-                                                        $loggedInUsername = $user->login; 
+                                <tr>
+                                    <td>
+                                        <select id="doctor_name" name="doctor_name" class="form-control" aria-label="Doctor selection" data-error="Please specify your need." required>
+                                        <option value="" selected disabled>--Select a Doctor--</option>
+                                        <?php
+                                            $doctors = get_doctor_list();
+                                            $loggedInUsername = $user->login; 
 
-                                                        foreach ($doctors as $doctor) {
-                                                            $selected = '';
-                                                            if ($doctor['doctor_username'] == $loggedInUsername) {
-                                                                $selected = 'selected';
-                                                            }
-                                                            echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                                                        }
-                                                    ?>
-                                                    </select>
-                                                </td>
+                                            foreach ($doctors as $doctor) {
+                                                $selected = '';
+                                                if ($doctor['doctor_username'] == $loggedInUsername) {
+                                                    $selected = 'selected';
+                                                }
+                                                echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
+                                            }
+                                        ?>
+                                        </select>
+                                    </td>
                                                             
-                                                <td>
-                                                    <select id="assistant" name="assistant" class="form-control" aria-label="Assistant selection" data-error="Please specify your need." required>
-                                                    <option value="">--Select an Assistant--</option>
-                                                    <?php
-                                                        $assistants = get_cyto_tech_list();
-                                                        $loggedInUsername = $user->login;
-                                                        foreach ($assistants as $assistant) {
-                                                            $selected = '';
-                                                            if ($assistant['username'] == $loggedInUsername) {
-                                                                $selected = 'selected';
-                                                                $storedAssistant = isset($_SESSION['cyto_assistant_name']) && $_SESSION['cyto_assistant_name'] === $assistant['username'] ? 'selected' : '';
-                                                            }
-                                                            echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
-                                                        }
+                                    <td>
+                                        <select id="assistant" name="assistant" class="form-control" aria-label="Assistant selection" data-error="Please specify your need." required>
+                                        <option value="">--Select an Assistant--</option>
+                                        <?php
+                                            $assistants = get_cyto_tech_list();
+                                            $loggedInUsername = $user->login;
+                                            foreach ($assistants as $assistant) {
+                                                $selected = '';
+                                                if ($assistant['username'] == $loggedInUsername) {
+                                                    $selected = 'selected';
+                                                    $storedAssistant = isset($_SESSION['cyto_assistant_name']) && $_SESSION['cyto_assistant_name'] === $assistant['username'] ? 'selected' : '';
+                                                }
+                                                echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
+                                            }
+                                        ?>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="cyto_station_type" name='cyto_station_type' class="form-control" required>
+                                            <option value="">--Select a Station--</option>
+                                            <option value="One" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'One' ? 'selected' : ''; ?>>One</option>
+                                            <option value="Two" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'Two' ? 'selected' : ''; ?>>Two</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input id="lab_number" name="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>">
+                                        <input type="hidden" id="status" name="status" value="done">
+                                        <input type="hidden" id="created_user" name="created_user" value="<?php echo $loggedInUsername; ?>">
+                                    </td>
+                                                
+                                </tr>
+                            </tbody>
+                        </table>
+                         <!-- Patient Information -->
+                        <?php
+                            // Function to trim "FNA" from the LabNumber
+                            function remove_prefix($lab_number) {
+                                return substr($lab_number, 3); // Removes the first three characters
+                            }
+
+                            $trimmedLabNumber = remove_prefix($LabNumber); // Remove the "FNA" prefix
+
+                            // Fetch patient information using the trimmed LabNumber
+                            $patient_information = get_patient_details_information($trimmedLabNumber);
+                            $genderOptions = [
+                                '1' => 'Male',
+                                '2' => 'Female',
+                                '3' => 'Other'
+                            ];
+                        ?>
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <?php if (!empty($patient_information)) { ?>
+                                        <table class="table table-bordered table-striped">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th scope="col">Patient Name</th>
+                                                    <th scope="col">Patient Code</th>
+                                                    <th scope="col">Address</th>
+                                                    <th scope="col">Phone</th>
+                                                    <th scope="col">Fax</th>
+                                                    <th scope="col">Date of Birth</th>
+                                                    <th scope="col">Gender</th>
+                                                    <th scope="col">Age</th>
+                                                    <th scope="col">Attendant Name</th>
+                                                    <th scope="col">Attendant Relation</th>
+                                                </tr>
+                                            </thead>
+                                                <tbody>
+                                                    <?php foreach ($patient_information as $patient) { 
+                                                        $gender = isset($genderOptions[$patient['Gender']]) ? $genderOptions[$patient['Gender']] : 'Unknown'; // Default to 'Unknown' if gender code is not in the array
                                                     ?>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select id="cyto_station_type" class="form-control" required>
-                                                        <option value="">--Select a Station--</option>
-                                                        <option value="One" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'One' ? 'selected' : ''; ?>>One</option>
-                                                        <option value="Two" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'Two' ? 'selected' : ''; ?>>Two</option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input id="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>">
-                                                    <input type="hidden" id="gross_status" name="gross_status" value="Done">
-                                                    <input type="hidden" id="gross_created_user" name="gross_created_user" value="<?php echo $gross_created_user; ?>">
-                                                </td>
-                                                <!-- <td colspan="2" class="text-center">
-                                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                                </td> -->
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </form>
-                                        
+                                                        <tr>
+                                                            <td><?php echo htmlspecialchars($patient['name']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['patient_code']); ?></td>
+                                                            <input id="patient_code" name="patient_code" class="form-control" type="text" value="<?php echo $patient['patient_code']; ?>">
+                                                            <td><?php echo htmlspecialchars($patient['address']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['phone']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['fax']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['date_of_birth']); ?></td>
+                                                            <td><?php echo $gender; ?></td> <!-- Display gender using the mapped value -->
+                                                            <td><?php echo htmlspecialchars($patient['Age']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['att_name']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['att_relation']); ?></td>
+                                                        </tr>
+                                                    <?php } ?>
+                                                </tbody>
+                                        </table>
+                                            <?php } else { ?>
+                                                <div class="alert alert-warning" role="alert">
+                                                    No patient information found for Lab Number: <?php echo htmlspecialchars($trimmedLabNumber); ?>
+                                                </div>
+                                            <?php } ?>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <!-- Patient Information -->
-                <?php
-                    // Function to trim "FNA" from the LabNumber
-                    function remove_prefix($lab_number) {
-                        return substr($lab_number, 3); // Removes the first three characters
-                    }
-
-                    $trimmedLabNumber = remove_prefix($LabNumber); // Remove the "FNA" prefix
-
-                    // Fetch patient information using the trimmed LabNumber
-                    $patient_information = get_patient_details_information($trimmedLabNumber);
-                    $genderOptions = [
-                        '1' => 'Male',
-                        '2' => 'Female',
-                        '3' => 'Other'
-                    ];
-                ?>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-12">
-                            <?php if (!empty($patient_information)) { ?>
-                                <table class="table table-bordered table-striped">
-                                    <thead class="thead-dark">
-                                        <tr>
-                                            <th scope="col">Patient Name</th>
-                                            <th scope="col">Patient Code</th>
-                                            <th scope="col">Address</th>
-                                            <th scope="col">Phone</th>
-                                            <th scope="col">Fax</th>
-                                            <th scope="col">Date of Birth</th>
-                                            <th scope="col">Gender</th>
-                                            <th scope="col">Age</th>
-                                            <th scope="col">Attendant Name</th>
-                                            <th scope="col">Attendant Relation</th>
-                                        </tr>
-                                    </thead>
+                        <?php 
+                        $patient_history = get_cyto_patient_history_list($trimmedLabNumber)
+                        ?>
+                        <div class="container ">
+                            <?php if (!empty($patient_history)): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Previous FNAC</th>
+                                                <th>Previous Biopsy Date</th>
+                                                <th>Previous Biopsy Operation</th>
+                                                <th>Informed</th>
+                                                <th>Given</th>
+                                                <th>Referred By Dr</th>
+                                                <th>Referred From</th>
+                                                <th>Additional History</th>
+                                                <th>Other Lab No</th>
+                                                <th>Prev Biopsy</th>
+                                                <th>Prev FNAC Date</th>
+                                                <th>Prev FNAC OP</th>
+                                                <th>Referred By Dr (Text)</th>
+                                                <th>Referred From (Text)</th>
+                                            </tr>
+                                        </thead>
                                         <tbody>
-                                            <?php foreach ($patient_information as $patient) { 
-                                                $gender = isset($genderOptions[$patient['Gender']]) ? $genderOptions[$patient['Gender']] : 'Unknown'; // Default to 'Unknown' if gender code is not in the array
-                                            ?>
+                                            <?php foreach ($patient_history as $index => $history): ?>
                                                 <tr>
-                                                    <td><?php echo htmlspecialchars($patient['name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['patient_code']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['address']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['phone']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['fax']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['date_of_birth']); ?></td>
-                                                    <td><?php echo $gender; ?></td> <!-- Display gender using the mapped value -->
-                                                    <td><?php echo htmlspecialchars($patient['Age']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['att_name']); ?></td>
-                                                    <td><?php echo htmlspecialchars($patient['att_relation']); ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_fnac']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_biopsy_date']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_biopsy_op']) ?></td>
+                                                    <td>
+                                                        <?php
+                                                            // Mapping array for informed values
+                                                            $informedLabels = [
+                                                                1 => 'CT Scan Report',
+                                                                2 => 'CT Scan Film',
+                                                                3 => 'MRI Report',
+                                                                4 => 'MRI Film',
+                                                                5 => 'Others'
+                                                            ];
+
+                                                            // Process 'informed' values if they are comma-separated
+                                                            $informedValues = explode(',', $history['informed']); // Split by comma
+                                                            $mappedLabels = array_map(function ($value) use ($informedLabels) {
+                                                                return $informedLabels[trim($value)] ?? $value; // Map to label or keep the original value
+                                                            }, $informedValues);
+
+                                                            // Join the mapped labels and display
+                                                            echo htmlspecialchars(implode(', ', $mappedLabels));
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                            // Mapping array for given values
+                                                            $givenLabels = [
+                                                                1 => 'CT Scan Report',
+                                                                2 => 'CT Scan Film',
+                                                                3 => 'MRI Report',
+                                                                4 => 'MRI Film',
+                                                                5 => 'Others'
+                                                            ];
+
+                                                            // Process 'given' values if they are comma-separated
+                                                            $givenValues = explode(',', $history['given']); // Split by comma
+                                                            $mappedgivenLabels = array_map(function ($value) use ($givenLabels) {
+                                                                return $givenLabels[trim($value)] ?? $value; // Map to label or keep the original value
+                                                            }, $givenValues);
+
+                                                            // Join the mapped labels and display
+                                                            echo htmlspecialchars(implode(', ', $mappedgivenLabels));
+                                                        ?>
+                                                        
+                                                    </td>
+                                                    <td><?= htmlspecialchars($history['referred_by_dr_lastname']) ?></td>
+                                                    <td><?= htmlspecialchars($history['referred_from_lastname']) ?></td>
+                                                    <td><?= htmlspecialchars($history['add_history']) ?></td>
+                                                    <td><?= htmlspecialchars($history['other_labno']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_biopsy']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_fnac_date']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_fnac_op']) ?></td>
+                                                    <td><?= htmlspecialchars($history['referred_by_dr_text']) ?></td>
+                                                    <td><?= htmlspecialchars($history['referredfrom_text']) ?></td>
                                                 </tr>
-                                            <?php } ?>
+                                            <?php endforeach; ?>
                                         </tbody>
-                                </table>
-                                    <?php } else { ?>
-                                        <div class="alert alert-warning" role="alert">
-                                            No patient information found for Lab Number: <?php echo htmlspecialchars($trimmedLabNumber); ?>
-                                        </div>
-                                    <?php } ?>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-center text-danger">No patient history available for the provided lab number.</p>
+                            <?php endif; ?>
                         </div>
-                    </div>
-                </div>
-                <?php 
-                   $patient_history = get_cyto_patient_history_list($trimmedLabNumber)
-                ?>
-                <div class="container ">
-                    <?php if (!empty($patient_history)): ?>
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Previous FNAC</th>
-                                        <th>Previous Biopsy Date</th>
-                                        <th>Previous Biopsy Operation</th>
-                                        <th>Informed</th>
-                                        <th>Given</th>
-                                        <th>Referred By Dr</th>
-                                        <th>Referred From</th>
-                                        <th>Additional History</th>
-                                        <th>Other Lab No</th>
-                                        <th>Prev Biopsy</th>
-                                        <th>Prev FNAC Date</th>
-                                        <th>Prev FNAC OP</th>
-                                        <th>Referred By Dr (Text)</th>
-                                        <th>Referred From (Text)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($patient_history as $index => $history): ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($history['prev_fnac']) ?></td>
-                                            <td><?= htmlspecialchars($history['prev_biopsy_date']) ?></td>
-                                            <td><?= htmlspecialchars($history['prev_biopsy_op']) ?></td>
-                                            <td>
-                                                <?php
-                                                    // Mapping array for informed values
-                                                    $informedLabels = [
-                                                        1 => 'CT Scan Report',
-                                                        2 => 'CT Scan Film',
-                                                        3 => 'MRI Report',
-                                                        4 => 'MRI Film',
-                                                        5 => 'Others'
-                                                    ];
-
-                                                    // Process 'informed' values if they are comma-separated
-                                                    $informedValues = explode(',', $history['informed']); // Split by comma
-                                                    $mappedLabels = array_map(function ($value) use ($informedLabels) {
-                                                        return $informedLabels[trim($value)] ?? $value; // Map to label or keep the original value
-                                                    }, $informedValues);
-
-                                                    // Join the mapped labels and display
-                                                    echo htmlspecialchars(implode(', ', $mappedLabels));
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                    // Mapping array for given values
-                                                    $givenLabels = [
-                                                        1 => 'CT Scan Report',
-                                                        2 => 'CT Scan Film',
-                                                        3 => 'MRI Report',
-                                                        4 => 'MRI Film',
-                                                        5 => 'Others'
-                                                    ];
-
-                                                    // Process 'given' values if they are comma-separated
-                                                    $givenValues = explode(',', $history['given']); // Split by comma
-                                                    $mappedgivenLabels = array_map(function ($value) use ($givenLabels) {
-                                                        return $givenLabels[trim($value)] ?? $value; // Map to label or keep the original value
-                                                    }, $givenValues);
-
-                                                    // Join the mapped labels and display
-                                                    echo htmlspecialchars(implode(', ', $mappedgivenLabels));
-                                                ?>
-                                                
-                                            </td>
-                                            <td><?= htmlspecialchars($history['referred_by_dr_lastname']) ?></td>
-                                            <td><?= htmlspecialchars($history['referred_from_lastname']) ?></td>
-                                            <td><?= htmlspecialchars($history['add_history']) ?></td>
-                                            <td><?= htmlspecialchars($history['other_labno']) ?></td>
-                                            <td><?= htmlspecialchars($history['prev_biopsy']) ?></td>
-                                            <td><?= htmlspecialchars($history['prev_fnac_date']) ?></td>
-                                            <td><?= htmlspecialchars($history['prev_fnac_op']) ?></td>
-                                            <td><?= htmlspecialchars($history['referred_by_dr_text']) ?></td>
-                                            <td><?= htmlspecialchars($history['referredfrom_text']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-center text-danger">No patient history available for the provided lab number.</p>
-                    <?php endif; ?>
-                </div>
-
-            </div>
-        
-            <!-- Clinical Information -->
-            <div class="container">
-                    <h3>Clinical Information</h3>
-                    <form id="clinical-information-form">
-                        
+                        <!-- Clinical Information -->
+                        <h3>Clinical Information</h3>
                         <!-- Reason for FNAC -->
                         <div class="form-group dropdown">
                                 <label for="chief-complain">Chief Complain:</label>
@@ -488,8 +472,8 @@ switch (true) {
                             <table class="table table-bordered" id="fixation-details-table">
                                 <thead>
                                     <tr>
+                                        <th>RowId</th>
                                         <th>Slide Number</th>
-                                        <th>Slide Code</th>
                                         <th>Location</th>
                                         <th>Fixation Method</th>
                                         <th>Dry</th>
@@ -547,7 +531,7 @@ switch (true) {
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
             </div>
-    </div>
+    
 </body>
 </html>
 
@@ -766,6 +750,62 @@ switch (true) {
                 const otherInputs = document.querySelectorAll('.other-location-input');
                 otherInputs[otherInputs.length - 1].style.display = "inline-block";
             }
+        });
+        
+        // When the form is submitted, collect the fixation details and add them to the form
+        document.getElementById("clinical-information-form").addEventListener("submit", function(event) {
+            // Prevent the default form submission for handling data collection
+            event.preventDefault();
+            const tbody = document.getElementById('fixation-details-body');
+            const fixationData = [];
+            // Loop through each row in the table to collect data
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const slideNumber = row.querySelector('.slide-code').textContent;
+                const location = row.querySelector('.location-select').value;
+                const fixationMethod = row.querySelector('.fixation-method-select').value;
+                const isDry = row.querySelector('.dry-checkbox').checked ? 'Yes' : 'No';
+
+                // Push this data into the fixationData array
+                fixationData.push({
+                    slideNumber,
+                    location,
+                    fixationMethod,
+                    isDry
+                });
+            });
+            // Create hidden inputs for each piece of data and append them to the form
+            fixationData.forEach((data, index) => {
+                // Create hidden input for Slide Number
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `fixation_data[${index}][slide_number]`;
+                input.value = data.slideNumber;
+                document.getElementById('clinical-information-form').appendChild(input);
+
+                // Create hidden input for Location
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `fixation_data[${index}][location]`;
+                input.value = data.location;
+                document.getElementById('clinical-information-form').appendChild(input);
+
+                // Create hidden input for Fixation Method
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `fixation_data[${index}][fixation_method]`;
+                input.value = data.fixationMethod;
+                document.getElementById('clinical-information-form').appendChild(input);
+
+                // Create hidden input for Dry
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `fixation_data[${index}][dry]`;
+                input.value = data.isDry;
+                document.getElementById('clinical-information-form').appendChild(input);
+            });
+            // Now submit the form
+            this.submit();
         });
     });
 
