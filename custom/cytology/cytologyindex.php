@@ -104,6 +104,11 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
             echo json_encode(array_column($recallNumbers, 'lab_number'));
         ?>;
 
+		const completeCytoList = <?php
+            $completeLabNumbers = get_cyto_complete_labnumber_list();
+            echo json_encode(array_column($completeLabNumbers, 'lab_number'));
+        ?>;
+
         // Function to handle scanning of Lab Number
 		function handleLabNumberScan(event) {
 			if (event.key === "Enter") {
@@ -133,7 +138,10 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
 					window.location.href = `patient/index.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
 				} else if (recallList.includes(formattedLabNumber)) {
 					window.location.href = `patient/recall.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
-				} else {
+				} else if (completeCytoList.includes(formattedLabNumber)) {
+					window.location.href = `patient/patient_info_update.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
+				} 
+				else {
 					errorMessage.style.display = "block";
 					errorMessage.textContent = "Lab Number not found in the system. Please check and try again.";
 				}
