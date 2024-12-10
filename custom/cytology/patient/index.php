@@ -206,6 +206,7 @@ switch (true) {
                                                 $selected = '';
                                                 if ($doctor['doctor_username'] == $loggedInUsername) {
                                                     $selected = 'selected';
+                                                    $storeDoctor = isset($_SESSION['doctor_name']) && $_SESSION['doctor_name'] === $doctor['doctor_username'] ? 'selected' : '';
                                                 }
                                                 echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
                                             }
@@ -223,7 +224,7 @@ switch (true) {
                                                 $selected = '';
                                                 if ($assistant['username'] == $loggedInUsername) {
                                                     $selected = 'selected';
-                                                    $storedAssistant = isset($_SESSION['cyto_assistant_name']) && $_SESSION['cyto_assistant_name'] === $assistant['username'] ? 'selected' : '';
+                                                    $storedAssistant = isset($_SESSION['assistant']) && $_SESSION['assistant'] === $assistant['username'] ? 'selected' : '';
                                                 }
                                                 echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
                                             }
@@ -537,45 +538,31 @@ switch (true) {
 
 <!-- Doctor , Assistant and Station information -->
 <script>
-    function selectLabNumber(searchText) {
-        var select = document.getElementById('lab_number');
-        var options = select.getElementsByTagName('option');
-
-        for (var i = 0; i < options.length; i++) {
-            var option = options[i];
-            if (option.textContent.toLowerCase().indexOf(searchText.toLowerCase()) !== -1) {
-                option.selected = true;
-                break;
-            }
-        }
-    }
-
     window.onload = function() {
-        const storedAssistant = sessionStorage.getItem('cyto_assistant_name');
+        const storeDoctor = sessionStorage.getItem('doctor_name');
+        const storedAssistant = sessionStorage.getItem('assistant');
         const storedStation = sessionStorage.getItem('cyto_station_type');
         if (storedAssistant) {
-            document.getElementById('cyto_assistant_name').value = storedAssistant;
+            document.getElementById('assistant').value = storedAssistant;
         }
         if (storedStation) {
             document.getElementById('cyto_station_type').value = storedStation;
         }
+        if(storeDoctor){
+            document.getElementById('doctor_name').value = storeDoctor;
+        }
     };
 
     
-    document.getElementById('cytoForm').addEventListener('submit', function(event) {
-        const selectedAssistant = document.getElementById('cyto_assistant_name').value;
+    document.getElementById('clinical-information-form').addEventListener('submit', function(event) {
+        const selectedAssistant = document.getElementById('assistant').value;
         const selectedStation = document.getElementById('cyto_station_type').value;
-        sessionStorage.setItem('gross_assistant_name', selectedAssistant);
-        sessionStorage.setItem('gross_station_type', selectedStation);
+        const selectedDoctor = document.getElementById('doctor_name').value;
+        sessionStorage.setItem('assistant', selectedAssistant);
+        sessionStorage.setItem('cyto_station_type', selectedStation);
+        sessionStorage.setItem('doctor_name', selectedDoctor);
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-            var searchInput = document.getElementById("searchLabNumber");
-            if (searchInput) {
-                searchInput.focus(); 
-            }
-        }
-    );
 </script>
 
 
@@ -597,124 +584,87 @@ switch (true) {
 <!-- FNAC Fixation Details -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const locationOptions = [" ", "proper", "thyroid", "beast", "lymph node", "lung", "other"];
+        const locationOptions = [" ", "Proper", "Thyroid", "Beast", "Lymph Node", "Lung", "Other"];
         let locationCounter = { "Proper": 0 };
         let locationLetters = {};
         let rowCounter = 1;
 
-        // Function to update slide code dynamically
         function updateSlideCode(row, location) {
-                const slideBaseCode = "<?php echo $slideBaseCode; ?>".replace(/-/g, '');
-                let slideCode;
+            const slideBaseCode = "<?php echo $slideBaseCode; ?>".replace(/-/g, '');
+            let slideCode;
 
-                if (location.toLowerCase() === "proper") {
-                    // Handle Proper location separately
-                    const proCount = (locationCounter["Proper"] || 0) + 1;
-                    slideCode = `${slideBaseCode}FC-Pro-${proCount}`;
-                    locationCounter["Proper"] = proCount; // Increment the count for "Proper"
-                } else {
-                    // For other locations, use letters like A, B, C, etc.
-                    if (!locationLetters[location]) {
-                        // Assign letters for each unique location type (A, B, C, etc.)
-                        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                        locationLetters[location] = letters[Object.keys(locationLetters).length];
-                        locationCounter[location] = 1; // Start counting for the new location
-                    }
-
-                    const locationLetter = locationLetters[location]; // A, B, C, etc.
-                    const locationCount = locationCounter[location];
-                    slideCode = `${slideBaseCode}FC-${locationLetter}-${locationCount}`;
-                    locationCounter[location] = locationCount + 1; // Increment the count for that location
+            if (location.toLowerCase() === "proper") {
+                const proCount = (locationCounter["Proper"] || 0) + 1;
+                slideCode = `${slideBaseCode}FC-Pro-${proCount}`;
+                locationCounter["Proper"] = proCount;
+            } else {
+                if (!locationLetters[location]) {
+                    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                    locationLetters[location] = letters[Object.keys(locationLetters).length];
+                    locationCounter[location] = 1;
                 }
 
-                // Update the slide code in the respective row
-                row.querySelector('.slide-code').textContent = slideCode;
-        }
-
-        // Function to handle changes in Location and Fixation Method
-        function handleLocationOrFixationChange(row, locationDropdown, fixationDropdown, dryCheckbox) {
-            const otherLocationInput = row.querySelector('.other-location-input');
-            const otherFixationInput = row.querySelector('.other-fixation-input');
-
-            // Show or hide the "other" input fields based on selection
-            otherLocationInput.style.display = locationDropdown.value === "Other" ? "inline-block" : "none";
-            otherFixationInput.style.display = fixationDropdown.value === "Other" ? "inline-block" : "none";
-
-            // Disable fixation dropdown if Dry is selected
-            if (dryCheckbox.checked) {
-                fixationDropdown.disabled = true;
-                fixationDropdown.style.display = "none";  // Hide fixation dropdown
-            } else {
-                fixationDropdown.disabled = false;
-                fixationDropdown.style.display = "inline-block";  // Show fixation dropdown
+                const locationLetter = locationLetters[location];
+                const locationCount = locationCounter[location];
+                slideCode = `${slideBaseCode}FC-${locationLetter}-${locationCount}`;
+                locationCounter[location] = locationCount + 1;
             }
+
+            row.querySelector('.slide-code').textContent = slideCode;
         }
 
-        // Function to add a row to the table
         function addRow(location, isDry) {
-                const tbody = document.getElementById('fixation-details-body');
-                const newRow = document.createElement('tr');
+            const tbody = document.getElementById('fixation-details-body');
+            const newRow = document.createElement('tr');
 
-                newRow.innerHTML = `
-                    <td>${rowCounter}</td>
-                    <td class="slide-code"></td>
-                    <td>
-                        <select class="form-control location-select">
-                            ${locationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                        </select>
-                        <input type="text" class="form-control other-location-input" placeholder="Specify other location" style="display: none;">
-                    </td>
-                    <td>
-                        <select class="form-control fixation-method-select">
-                            <option value="Alcohol">Alcohol fixation</option>
-                            <option value="Formalin">Formalin fixation</option>
-                            <option value="Air-dried">Air-dried</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <input type="text" class="form-control other-fixation-input" placeholder="Specify fixation method" style="display: none;">
-                    </td>
-                    <td>
-                        <input type="checkbox" class="dry-checkbox" ${isDry ? 'checked' : ''}>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger remove-row">Remove</button>
-                    </td>
-                `;
+            newRow.innerHTML = `
+                <td>${rowCounter}</td>
+                <td class="slide-code"></td>
+                <td>
+                    <select class="form-control location-select">
+                        ${locationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                    </select>
+                    <input type="text" class="form-control other-location-input" placeholder="Specify other location" style="display: none;">
+                </td>
+                <td>
+                    <select class="form-control fixation-method-select">
+                        <option value="Alcohol">Alcohol fixation</option>
+                        <option value="Formalin">Formalin fixation</option>
+                        <option value="Air-dried">Air-dried</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" class="form-control other-fixation-input" placeholder="Specify fixation method" style="display: none;">
+                </td>
+                <td>
+                    <input type="checkbox" class="dry-checkbox" ${isDry ? 'checked' : ''}>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-row">Remove</button>
+                </td>
+            `;
 
-                const locationDropdown = newRow.querySelector('.location-select');
-                const fixationDropdown = newRow.querySelector('.fixation-method-select');
-                const dryCheckbox = newRow.querySelector('.dry-checkbox');
+            const locationDropdown = newRow.querySelector('.location-select');
+            const fixationDropdown = newRow.querySelector('.fixation-method-select');
+            const dryCheckbox = newRow.querySelector('.dry-checkbox');
 
-                // Set default location and handle other inputs
-                locationDropdown.value = location;
-                handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox);
-
-                // Location change handler
-                locationDropdown.addEventListener('change', () => {
-                    const locationValue = locationDropdown.value.trim().toLowerCase();
-                    const matchingLocation = locationOptions.find(option => option.toLowerCase() === locationValue);
-
-                    if (matchingLocation) {
-                        locationDropdown.value = matchingLocation; // Set the matched location
-                    } else {
-                        locationDropdown.value = "Other"; // If no match, select "Other"
-                    }
-
-                    updateSlideCode(newRow, locationDropdown.value);
-                });
-
-                // Dry checkbox and fixation method handling
-                dryCheckbox.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
-                fixationDropdown.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
-
-                newRow.querySelector('.remove-row').addEventListener('click', () => tbody.removeChild(newRow));
-
-                tbody.appendChild(newRow);
-                updateSlideCode(newRow, location);
-                rowCounter++;
+            if (!locationOptions.includes(location)) {
+                locationOptions.push(location); // Add new location to options
+                const newOption = document.createElement('option');
+                newOption.value = location;
+                newOption.textContent = location;
+                locationDropdown.appendChild(newOption);
             }
 
-        // Populate table based on user input
+            locationDropdown.value = location;
+            locationDropdown.addEventListener('change', () => updateSlideCode(newRow, locationDropdown.value));
+            dryCheckbox.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
+            newRow.querySelector('.remove-row').addEventListener('click', () => tbody.removeChild(newRow));
+
+            tbody.appendChild(newRow);
+            updateSlideCode(newRow, location);
+            rowCounter++;
+        }
+
         document.getElementById('populate-table').addEventListener('click', function () {
             const slidesInput = document.getElementById('slides-input').value.trim();
             let locationInput = document.getElementById('location-input').value.trim();
@@ -730,26 +680,8 @@ switch (true) {
                 return;
             }
 
-            // Case-insensitive matching for location
-            const matchingLocation = locationOptions.find(opt => opt.toLowerCase() === locationInput.toLowerCase());
-            if (matchingLocation) {
-                locationInput = matchingLocation; // Set matched location
-            } else {
-                alert(`Location "${locationInput}" not found. Using "Other" as default.`);
-                locationInput = "Other";
-            }
-
-            // Add rows for fixation slides
             for (let i = 0; i < fixationSlides; i++) addRow(locationInput, false);
-
-            // Add rows for dry slides
             for (let i = 0; i < drySlides; i++) addRow(locationInput, true);
-
-            // If locationInput was set to "Other", focus the input for custom location
-            if (locationInput === "Other") {
-                const otherInputs = document.querySelectorAll('.other-location-input');
-                otherInputs[otherInputs.length - 1].style.display = "inline-block";
-            }
         });
         
         // When the form is submitted, collect the fixation details and add them to the form
@@ -808,7 +740,6 @@ switch (true) {
             this.submit();
         });
     });
-
 </script>
 
 

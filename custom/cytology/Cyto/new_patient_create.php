@@ -1,6 +1,9 @@
 <?php 
 include('../connection.php');
 
+$host = $_SERVER['HTTP_HOST'];
+$groupUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Extract values from POST with null coalescing operator for safety
     $doctor_name = $_POST['doctor_name'] ?? '';
@@ -98,6 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $location = isset($fixation['location']) ? $fixation['location'] : '';
                 $fixation_method = isset($fixation['fixation_method']) ? $fixation['fixation_method'] : '';
                 $dry = isset($fixation['dry']) ? $fixation['dry'] : '';
+
+                 // If $dry is 'Yes', set $fixation_method to an empty string
+                if (strtolower($dry) === 'yes') {
+                    $fixation_method = null; // or an empty string if the database expects it
+                }
                 
                 // Insert each fixation entry into llx_cyto_fixation_details
                 $sql_fixation = "INSERT INTO llx_cyto_fixation_details (
@@ -120,6 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Redirect to the group URL
+        header("Location: $groupUrl");
+        exit; // Ensure script execution stops after redirection
+        
         // header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
 
     } else {
