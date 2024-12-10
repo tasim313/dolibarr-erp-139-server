@@ -105,3 +105,28 @@ switch (true) {
 }
 
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Here We Can Update Data</h1>
+</body>
+</html>
+
+
+<?php 
+$NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+$max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+
+
+print '</div></div>';
+
+// End of page
+llxFooter();
+$db->close();
+?>

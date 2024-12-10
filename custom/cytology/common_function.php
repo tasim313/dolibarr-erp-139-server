@@ -187,4 +187,45 @@ function get_cyto_complete_labnumber_list() {
     return $labnumbers;
 }
 
+function get_cyto_list($labnumber) {
+    global $pg_con;
+
+    $sql = "select 
+        rowid,
+        lab_number,
+        patient_code,
+        fna_station_type,
+        doctor,
+        assistant,
+        status,
+        created_user,
+        created_date,
+        updated_user,
+        updated_date from llx_cyto where lab_number = ''";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['rowid' => $row['rowid'],
+            'lab_number' => $row['lab_number'], 
+            'fna_station_type' => $row['fna_station_type'],
+            'doctor' => $row['doctor'],
+            'assistant' => $row['assistant'],
+            'status' => $row['status'],
+            'created_user' => $row['created_user'],
+            'created_date' => $row['created_date'],
+            'updated_user' => $row['updated_user'],
+            'updated_date'=>$row['updated_date']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
 ?>
