@@ -2,7 +2,7 @@
 include('../connection.php');
 
 $host = $_SERVER['HTTP_HOST'];
-$groupUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
+$homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Extract values from POST with null coalescing operator for safety
@@ -129,9 +129,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Redirect to the group URL
-        header("Location: $groupUrl");
+        header("Location: $homeUrl");
         exit; // Ensure script execution stops after redirection
-        
+
         // header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
 
     } else {
