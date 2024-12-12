@@ -239,7 +239,7 @@ switch (true) {
                                         </select>
                                     </td>
                                     <td>
-                                        <input id="lab_number" name="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>">
+                                        <input id="lab_number" name="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>" readonly>
                                         <input type="hidden" id="status" name="status" value="done">
                                         <input type="hidden" id="created_user" name="created_user" value="<?php echo $loggedInUsername; ?>">
                                     </td>
@@ -247,7 +247,7 @@ switch (true) {
                                 </tr>
                             </tbody>
                         </table>
-                         <!-- Patient Information -->
+                        <!-- Patient Information -->
                         <?php
                             // Function to trim "FNA" from the LabNumber
                             function remove_prefix($lab_number) {

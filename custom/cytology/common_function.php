@@ -201,15 +201,16 @@ function get_cyto_list($labnumber) {
         created_user,
         created_date,
         updated_user,
-        updated_date from llx_cyto where lab_number = ''";
-    $result = pg_query($pg_con, $sql);
+        updated_date from llx_cyto where lab_number = $1";
+    $result = pg_query_params($pg_con, $sql, [$labnumber]);
 
     $labnumbers = [];
-
+    
     if ($result) {
         while ($row = pg_fetch_assoc($result)) {
             $labnumbers[] = ['rowid' => $row['rowid'],
             'lab_number' => $row['lab_number'], 
+            'patient_code' => $row['patient_code'],
             'fna_station_type' => $row['fna_station_type'],
             'doctor' => $row['doctor'],
             'assistant' => $row['assistant'],
@@ -226,6 +227,115 @@ function get_cyto_list($labnumber) {
     }
 
     return $labnumbers;
+}
+
+
+function get_cyto_clinical_information($cyto_id) {
+    global $pg_con;
+
+    $sql = "select 
+        rowid,
+        cyto_id,
+        chief_complain,
+        relevant_clinical_history,
+        on_examination,
+        aspiration_note 
+        from llx_cyto_clinical_information where cyto_id = $1 order by rowid ASC";
+
+    $result = pg_query_params($pg_con, $sql, [$cyto_id]);
+
+    $cyto_ids = [];
+    
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $cyto_ids[] = ['rowid' => $row['rowid'],
+            'cyto_id' => $row['cyto_id'], 
+            'chief_complain' => $row['chief_complain'],
+            'relevant_clinical_history' => $row['relevant_clinical_history'],
+            'on_examination' => $row['on_examination'],
+            'aspiration_note' => $row['aspiration_note']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $cyto_ids;
+}
+
+function get_cyto_fixation_details($cyto_id) {
+    global $pg_con;
+
+    $sql = "select 
+        rowid,
+        cyto_id,
+        slide_number,
+        location,
+        fixation_method,
+        dry
+        from llx_cyto_fixation_details where cyto_id = $1 order by rowid ASC";
+
+    $result = pg_query_params($pg_con, $sql, [$cyto_id]);
+
+    $cyto_ids = [];
+    
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $cyto_ids[] = ['rowid' => $row['rowid'],
+            'cyto_id' => $row['cyto_id'], 
+            'slide_number' => $row['slide_number'],
+            'location' => $row['location'],
+            'fixation_method' => $row['fixation_method'],
+            'dry' => $row['dry']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $cyto_ids;
+}
+
+function get_cyto_fixation_additional_details($cyto_id) {
+    global $pg_con;
+
+    $sql = "select 
+        rowid,
+        cyto_id,
+        dry_slides_description,
+        additional_notes_on_fixation,
+        special_instructions_or_tests_required,
+        number_of_needle_used,
+        number_of_syringe_used
+        from llx_cyto_fixation_additional_details where cyto_id = $1 order by rowid ASC";
+
+    $result = pg_query_params($pg_con, $sql, [$cyto_id]);
+
+    $cyto_ids = [];
+    
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $cyto_ids[] = ['rowid' => $row['rowid'],
+            'cyto_id' => $row['cyto_id'], 
+            'dry_slides_description' => $row['dry_slides_description'],
+            'additional_notes_on_fixation' => $row['additional_notes_on_fixation'],
+            'fixation_method' => $row['fixation_method'],
+            'special_instructions_or_tests_required' => $row['special_instructions_or_tests_required'],
+            'number_of_needle_used' => $row['number_of_needle_used'],
+            'number_of_syringe_used' => $row['number_of_syringe_used']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $cyto_ids;
 }
 
 ?>
