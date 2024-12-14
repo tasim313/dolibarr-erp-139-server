@@ -427,8 +427,8 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                 <td>
                                     <!-- Include the row ID as a hidden field -->
                                     <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
-                                    <button type="submit" class="btn btn-link p-0">
-                                        <i class="fas fa-edit" style="font-size: 18px; color: #007bff;" title="Edit"></i>
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"  title="Edit"></i>
                                     </button>
                                 </td>
                             </form>
@@ -447,34 +447,40 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                             <th>Special Instructions Or Test Required</th>
                             <th>Number of Needle Used</th>
                             <th>Number of Syringe</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($fixationAdditionalDetails as $info): ?>
                         <tr>
-                            <td>
-                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="dry_slides_description"><?= htmlspecialchars($info['dry_slides_description']) ?></textarea>
-                            </td>
-                            <td>
-                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="additional_notes_on_fixation"><?= htmlspecialchars($info['additional_notes_on_fixation']) ?></textarea>
-                            </td>
-                            <td>
-                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="special_instructions_or_tests_required"><?= htmlspecialchars($info['special_instructions_or_tests_required']) ?></textarea>
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" value="<?= htmlspecialchars($info['number_of_needle_used']) ?>" data-rowid="<?= $info['rowid'] ?>" data-field="number_of_needle_used">
-                            </td>
-                            <td>
-                                <input type="text" class="form-control" value="<?= htmlspecialchars($info['number_of_syringe_used']) ?>" data-rowid="<?= $info['rowid'] ?>" data-field="number_of_syringe_used">
-                            </td>
+                            <form method="post" action="../Cyto/fixation_additional_details.php">
+                                <td>
+                                    <textarea class="form-control" name="dry_slides_description"><?= htmlspecialchars($info['dry_slides_description']) ?></textarea>
+                                </td>
+                                <td>
+                                    <textarea class="form-control" name="additional_notes_on_fixation"><?= htmlspecialchars($info['additional_notes_on_fixation']) ?></textarea>
+                                </td>
+                                <td>
+                                    <textarea class="form-control" name="special_instructions_or_tests_required"><?= htmlspecialchars($info['special_instructions_or_tests_required']) ?></textarea>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="number_of_needle_used" value="<?= htmlspecialchars($info['number_of_needle_used']) ?>">
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control" name="number_of_syringe_used" value="<?= htmlspecialchars($info['number_of_syringe_used']) ?>">
+                                </td>
+                                <td>
+                                    <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </form>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-
-           
-        </form>
     </div>
 </body>
 </html>
