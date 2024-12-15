@@ -338,4 +338,39 @@ function get_cyto_fixation_additional_details($cyto_id) {
     return $cyto_ids;
 }
 
+
+function get_cyto_chief_complain_list() {
+    global $pg_con;
+
+    // Validate the database connection
+    if (!$pg_con) {
+        error_log('Database connection is not established.');
+        return [];
+    }
+
+    $sql = "SELECT DISTINCT ON (LOWER(chief_complain)) chief_complain
+            FROM llx_cyto_clinical_information
+            ORDER BY LOWER(chief_complain) ASC
+            LIMIT 100";
+
+    $result = pg_query($pg_con, $sql);
+    $chief_complains = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $chief_complains[] = ['chief_complain' => $row['chief_complain']];
+        }
+
+        pg_free_result($result);
+    } else {
+        // Log the error instead of echoing it
+        error_log('SQL Error: ' . pg_last_error($pg_con));
+    }
+
+    return $chief_complains;
+}
+
+
+
+
 ?>

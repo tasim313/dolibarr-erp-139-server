@@ -274,13 +274,12 @@ switch (true) {
                                                     <th scope="col">Patient Name</th>
                                                     <th scope="col">Patient Code</th>
                                                     <th scope="col">Address</th>
-                                                    <th scope="col">Phone</th>
-                                                    <th scope="col">Fax</th>
-                                                    <th scope="col">Date of Birth</th>
+                                                    <th scope="col">Patient Phone Number</th>
                                                     <th scope="col">Gender</th>
                                                     <th scope="col">Age</th>
                                                     <th scope="col">Attendant Name</th>
                                                     <th scope="col">Attendant Relation</th>
+                                                    <th scope="col">Attendant Phone Number</th>
                                                 </tr>
                                             </thead>
                                                 <tbody>
@@ -290,15 +289,14 @@ switch (true) {
                                                         <tr>
                                                             <td><?php echo htmlspecialchars($patient['name']); ?></td>
                                                             <td><?php echo htmlspecialchars($patient['patient_code']); ?></td>
-                                                            <input id="patient_code" name="patient_code" class="form-control" type="text" value="<?php echo $patient['patient_code']; ?>">
+                                                            <input id="patient_code" name="patient_code" class="form-control" type="hidden" value="<?php echo $patient['patient_code']; ?>">
                                                             <td><?php echo htmlspecialchars($patient['address']); ?></td>
                                                             <td><?php echo htmlspecialchars($patient['phone']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['fax']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['date_of_birth']); ?></td>
                                                             <td><?php echo $gender; ?></td> <!-- Display gender using the mapped value -->
                                                             <td><?php echo htmlspecialchars($patient['Age']); ?></td>
                                                             <td><?php echo htmlspecialchars($patient['att_name']); ?></td>
                                                             <td><?php echo htmlspecialchars($patient['att_relation']); ?></td>
+                                                            <td><?php echo htmlspecialchars($patient['fax']); ?></td>
                                                         </tr>
                                                     <?php } ?>
                                                 </tbody>
@@ -321,17 +319,17 @@ switch (true) {
                                         <thead class="table-dark">
                                             <tr>
                                                 <th>Previous FNAC</th>
-                                                <th>Previous Biopsy Date</th>
-                                                <th>Previous Biopsy Operation</th>
+                                                <th>Prev FNAC Date</th>
+                                                <th>Prev FNAC OP</th>
                                                 <th>Informed</th>
                                                 <th>Given</th>
                                                 <th>Referred By Dr</th>
                                                 <th>Referred From</th>
-                                                <th>Additional History</th>
+                                                <th>Clinical History</th>
                                                 <th>Other Lab No</th>
                                                 <th>Prev Biopsy</th>
-                                                <th>Prev FNAC Date</th>
-                                                <th>Prev FNAC OP</th>
+                                                <th>Previous Biopsy Date</th>
+                                                <th>Previous Biopsy Operation</th>
                                                 <th>Referred By Dr (Text)</th>
                                                 <th>Referred From (Text)</th>
                                             </tr>
@@ -340,8 +338,8 @@ switch (true) {
                                             <?php foreach ($patient_history as $index => $history): ?>
                                                 <tr>
                                                     <td><?= htmlspecialchars($history['prev_fnac']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_biopsy_date']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_biopsy_op']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_fnac_date']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_fnac_op']) ?></td>
                                                     <td>
                                                         <?php
                                                             // Mapping array for informed values
@@ -390,8 +388,8 @@ switch (true) {
                                                     <td><?= htmlspecialchars($history['add_history']) ?></td>
                                                     <td><?= htmlspecialchars($history['other_labno']) ?></td>
                                                     <td><?= htmlspecialchars($history['prev_biopsy']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_fnac_date']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_fnac_op']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_biopsy_date']) ?></td>
+                                                    <td><?= htmlspecialchars($history['prev_biopsy_op']) ?></td>
                                                     <td><?= htmlspecialchars($history['referred_by_dr_text']) ?></td>
                                                     <td><?= htmlspecialchars($history['referredfrom_text']) ?></td>
                                                 </tr>
@@ -412,9 +410,12 @@ switch (true) {
                                 <div id="myDropdown" class="dropdown-content" style="display: none;">
                                     <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
                                     <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()">
-                                        <option value="Lump/Swelling">Lump/Swelling</option>
-                                        <option value="Lymphadenopathy">Lymphadenopathy</option>
-                                        <option value="Suspected malignancy">Suspected malignancy</option>
+                                        <?php $chief_complain_list = get_cyto_chief_complain_list(); ?>
+                                        <?php foreach ($chief_complain_list as $complain): ?>
+                                            <option value="<?= htmlspecialchars($complain['chief_complain']); ?>">
+                                                <?= htmlspecialchars($complain['chief_complain']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
                                         <option value="Others">Others</option>
                                     </select>
                                 </div>

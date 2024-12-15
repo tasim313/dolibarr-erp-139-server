@@ -201,21 +201,31 @@ switch (true) {
                     </div>
 
                     <div class="col-md-6" id="finalization-section">
-                        <h4 class="mt-3">
-                            <i class="fas fa-microscope text-success mr-2"></i> Finalization
-                        </h4>
-                        <h4 class="mt-3">
-                            <i class="fas fa-book-open mr-2"></i> Study / History
-                        </h4>
-                        <h4 class="mt-3">
-                            <i class="fas fa-flask mr-2"></i> Lab Instructions
-                        </h4>
-                        <h4 class="mt-3">
-                            <i class="fas fa-undo mr-2"></i> Recall Instruction
-                        </h4>
-                        <h4 class="mt-3">
-                            <i class="fas fa-check-circle mr-2"></i> Finalization Done
-                        </h4>
+                        <div id="finalization-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="finalization-header">
+                                <i class="fas fa-microscope text-success mr-2"></i> Finalization
+                            </h4>
+                        </div>
+                        <div id="final-study-history-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="final-study-history-header">
+                                <i class="fas fa-book-open mr-2"></i> Study / History
+                            </h4>
+                        </div>
+                        <div id="final-lab-instructions-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="final-lab-instructions-header">
+                                <i class="fas fa-flask mr-2"></i> Lab Instructions
+                            </h4>
+                        </div>
+                        <div id="final-cyto-instruction-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="final-cyto-instruction-header">
+                                <i class="fas fa-undo mr-2"></i> Recall Instruction
+                            </h4>
+                        </div>
+                        <div id="finalization-done-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="finalization-done-header">
+                                <i class="fas fa-check-circle mr-2"></i> Finalization Done
+                            </h4>
+                        </div>
                     </div>
             </div>
 
@@ -339,57 +349,22 @@ switch (true) {
                                 <div class="col-md-3">
                                     <input type="checkbox" id="pas-stain-checkbox">&nbsp;&nbsp;<b>PAS</b>
                                 </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Hematoxylin-Eosin-checkbox">&nbsp;&nbsp;<b>Hematoxylin and Eosin (H&E)</b>
-                                </div>
                                 
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Auramine-Rhodamine-checkbox">&nbsp;&nbsp;<b>Auramine-Rhodamine</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Mucicarmine-checkbox">&nbsp;&nbsp;<b>Mucicarmine</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Alcian-Blue-checkbox">&nbsp;&nbsp;<b>Alcian Blue</b>
-                                </div>
                                 <div class="col-md-3">
                                     <input type="checkbox" id="Congo-Red-checkbox">&nbsp;&nbsp;<b>Congo Red</b>
                                 </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Reticulin-checkbox">&nbsp;&nbsp;<b>Reticulin</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="Masson-checkbox">&nbsp;&nbsp;<b>Masson's Trichrome</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="oil-red-sudan-checkbox">&nbsp;&nbsp;<b>Oil Red O or Sudan Black Stain</b>
-                                </div>
+                                
                                 <div class="col-md-3">
                                     <input type="checkbox" id="Grocott-Methenamine-checkbox">&nbsp;&nbsp;<b>GMS</b>
                                 </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="toluidine-checkbox">&nbsp;&nbsp;<b>Toluidine Blue</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="fite-faraco-checkbox">&nbsp;&nbsp;<b>Fite-Faraco</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="iron-checkbox">&nbsp;&nbsp;<b>Iron (Prussian Blue)</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="van-gieson-checkbox">&nbsp;&nbsp;<b>Van Gieson</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="warthin-starry-checkbox">&nbsp;&nbsp;<b>Warthin-Starry</b>
-                                </div>
-                                <div class="col-md-3">
-                                    <input type="checkbox" id="reticulin-silver-checkbox">&nbsp;&nbsp;<b>Reticulin Silver</b>
-                                </div>
-
+                               
                                 <!-- Other Option (Textbox for Custom Input) -->
-                                <div class="col-md-3 mt-3">
-                                    <input type="checkbox" id="labInstructions-other-checkbox" class="labInstructions-history-option" value="other" />&nbsp;&nbsp;<b>Other</b>
+                                <div class="row">
+                                    <div class="col-md-3 mt-3">
+                                        <input type="checkbox" id="labInstructions-other-checkbox" class="labInstructions-history-option" value="other" />&nbsp;&nbsp;<b>Other</b>
+                                    </div>
                                 </div>
+                                
                                 <div id="Instructions-other-history"  style="display: none;">
                                     <label for="Instructions-other-history-text">Please specify:</label>
                                     <textarea id="Instructions-other-history-text" class="form-control" rows="3"></textarea>
@@ -402,7 +377,7 @@ switch (true) {
             </div>
     </div>
     
-     <!-- Screening study and history -->
+     <!-- Recall instruction -->
      <div class="container" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="cyto-instruction-tab" style="display: none;">
@@ -414,26 +389,187 @@ switch (true) {
                                 <div class="row">
                                     <h3>Recall Instruction</h3>
                                     <div class="col-sm-md-1">
-                                        <input type="checkbox" id="incomplete-specimen-checkbox" />&nbsp;&nbsp;<b>Incomplete Specimen collection</b>
-                                    </div>
-                                    <div class="col-sm-md-1">
                                         <input type="checkbox" id="sample-quality-inadequate-checkbox">&nbsp;&nbsp;<b>Sample Quality Inadequate</b>
-                                    </div>
-                                    <div class="col-sm-md-1">
-                                        <input type="checkbox" id="additional-slide-checkbox">&nbsp;&nbsp;<b>Additional Slides Needed</b>
                                     </div>
                                     <div class="col-sm-md-1">
                                         <input type="checkbox" id="wrong-site-collected-checkbox">&nbsp;&nbsp;<b>Wrong Site Collected</b>
                                     </div>
-                                    <div class="col-sm-md-1">
+                                    <div class="row">
                                         <!-- Other Option (Textbox for Custom Input) -->
                                         <div class="col-md-3 mt-3">
                                             <input type="checkbox" id="recall-other-checkbox" class="recall-history-option" value="other" />&nbsp;&nbsp;<b>Other</b> 
                                         </div>
-                                        <div id="recall-other-history"  style="display: none;">
-                                            <label for="recall-other-history-text">Please specify:</label>
-                                            <textarea id="recall-other-history-text" class="form-control" rows="3"></textarea>
+                                    </div>
+                                    <div id="recall-other-history"  style="display: none;">
+                                        <label for="recall-other-history-text">Please specify:</label>
+                                        <textarea id="recall-other-history-text" class="form-control" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+     <!-- Finalization study and history -->
+     <div class="container" style="margin-top: 20px;">
+           <!-- Separate Tab that appears when clicked -->
+            <div class="row" id="final-study-history-tab" style="display: none;">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>Finalization Study/History</h3>
+                            <!-- Study Choice (Checkbox) -->
+                            <div id="final-study-choice">
+                                <input type="checkbox" id="study-checkbox" value="study"/>&nbsp;&nbsp;<b>Study</b>
+                            </div>
+
+                            <!-- Patient History / Investigations -->
+                            <div id="final-ipatient-history" style="margin-top: 20px;">
+                                <h5><b>Patient History / Investigations:</b></h5>
+
+                                <!-- First Row of Options (Horizontal) -->
+                                <div class="row" style="margin-top: 10px;">
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="self" /> Self</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="transcription" /> Transcription</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="it-space" /> IT Space</label>
+                                    </div>
+                                </div>
+
+                                <!-- Second Row of Options (Horizontal) -->
+                                <div class="row mt-3" style="margin-top: 10px;">
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="ultrasonography" /> Ultrasonography</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="xray" /> X-Ray</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="ct-scan-report" /> CT Scan Report</label>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="ct-scan-film" /> CT Scan Film</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="mri-report" /> MRI Report</label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label><input type="checkbox" class="history-option" value="mri-film" /> MRI Film</label>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <label>
+                                            <input type="checkbox" id="final-other-checkbox" class="history-option" value="other" /> Other
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Other Option (Textbox for Custom Input) -->
+                                <div id="final-other-history" class="mt-3" style="display: none;">
+                                    <label for="final-other-history-text">Please specify:</label>
+                                    <textarea id="final-other-history-text" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <!-- Finalization Lab Instructions Section -->
+    <div class="container" style="margin-top: 20px;">
+           <!-- Separate Tab that appears when clicked -->
+            <div class="row" id="final-Lab-instruction-tab" style="display: none;">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Special Stain  Choice (Checkbox) -->
+                            <div id="stain-choice" class="row">
+                                <h3>Finalizationl Lab Instructions</h3>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="centrifuge-checkbox" />&nbsp;&nbsp;<b>Centrifuge</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="zn-checkbox">&nbsp;&nbsp;<b>Zn</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="Gram-stain-checkbox">&nbsp;&nbsp;<b>Gram</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="Fite-Faraco-checkbox">&nbsp;&nbsp;<b>Fite-Faraco</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="leishmain-checkbox">&nbsp;&nbsp;<b>Leishmain</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="pap-stain-checkbox">&nbsp;&nbsp;<b>Pap Stain</b>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="pas-stain-checkbox">&nbsp;&nbsp;<b>PAS</b>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="Congo-Red-checkbox">&nbsp;&nbsp;<b>Congo Red</b>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <input type="checkbox" id="Grocott-Methenamine-checkbox">&nbsp;&nbsp;<b>GMS</b>
+                                </div>
+                                <!-- Other Option (Textbox for Custom Input) -->
+                                <div class="row">
+                                    <div class="col-md-3 mt-3">
+                                        <input type="checkbox" id="final-labInstructions-other-checkbox" class="labInstructions-history-option" value="other" />&nbsp;&nbsp;<b>Other</b>
+                                    </div>
+                                </div>
+                                <div id="final-Instructions-other-history"  style="display: none;">
+                                    <label for="final-Instructions-other-history-text">Please specify:</label>
+                                    <textarea id="final-Instructions-other-history-text" class="form-control" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <!-- Finalization Recall instruction -->
+    <div class="container" style="margin-top: 20px;">
+           <!-- Separate Tab that appears when clicked -->
+            <div class="row" id="final-cyto-instruction-tab" style="display: none;">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- cyto Intruction Choice (Checkbox) -->
+                            <div id="recall-choice">
+                                <div class="row">
+                                    <h3>Finalization Recall Instruction</h3>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="sample-quality-inadequate-checkbox">&nbsp;&nbsp;<b>Sample Quality Inadequate</b>
+                                    </div>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="wrong-site-collected-checkbox">&nbsp;&nbsp;<b>Wrong Site Collected</b>
+                                    </div>
+                                    <div class="row">
+                                        <!-- Other Option (Textbox for Custom Input) -->
+                                        <div class="col-md-3 mt-3">
+                                            <input type="checkbox" id="final-recall-other-checkbox" class="recall-history-option" value="other" />&nbsp;&nbsp;<b>Other</b> 
                                         </div>
+                                    </div>
+                                    <div id="final-recall-other-history"  style="display: none;">
+                                        <label for="final-recall-other-history-text">Please specify:</label>
+                                        <textarea id="final-recall-other-history-text" class="form-control" rows="3"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -570,6 +706,91 @@ switch (true) {
 </script>
 
 
+<!-- Finalization Study/History -->
+<script>
+    // Toggle visibility of the new Study / History tab when clicked
+    document.getElementById("final-study-history-header").addEventListener("click", function() {
+        var finalstudyHistoryTab = document.getElementById("final-study-history-tab");
+        // Toggle between showing and hiding the separate tab
+        if (finalstudyHistoryTab.style.display === "none") {
+            finalstudyHistoryTab.style.display = "block"; // Show the tab
+        } else {
+            finalstudyHistoryTab.style.display = "none"; // Hide the tab
+        }
+    });
+
+    // Show or hide the 'Other' textbox based on selected checkboxes
+    document.querySelectorAll(".final-history-option").forEach(function(option) {
+        option.addEventListener("change", function() {
+            var finalotherHistory = document.getElementById("final-other-history");
+            // Check if 'Other' is selected
+            if (this.value === "other" && this.checked) {
+                finalotherHistory.style.display = "block"; // Show textarea for 'Other'
+            } else if (this.value === "other" && !this.checked) {
+                finalotherHistory.style.display = "none"; // Hide textarea for 'Other'
+            }
+        });
+    });
+
+    document.getElementById('final-other-checkbox').addEventListener('change', function () {
+        const otherHistoryDiv = document.getElementById('final-other-history');
+        if (this.checked) {
+            otherHistoryDiv.style.display = 'block';
+        } else {
+            otherHistoryDiv.style.display = 'none';
+        }
+    });
+</script>
+
+<!-- Finalization Lab Related Instruction -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Toggle visibility of the Lab instruction tab when clicked
+        document.getElementById("final-lab-instructions-header").addEventListener("click", function() {
+            var finallabInstructionsTab = document.getElementById("final-Lab-instruction-tab");
+            if (finallabInstructionsTab.style.display === "none") {
+                finallabInstructionsTab.style.display = "block"; // Show the tab
+            } else {
+                finallabInstructionsTab.style.display = "none"; // Hide the tab
+            }
+        });
+
+        // Show or hide the 'Other' textbox based on selected checkboxes
+        document.getElementById('final-labInstructions-other-checkbox').addEventListener('change', function () {
+            const finalotherHistoryDiv = document.getElementById('final-Instructions-other-history');
+            if (this.checked) {
+                finalotherHistoryDiv.style.display = 'block'; // Show the textarea for 'Other'
+            } else {
+                finalotherHistoryDiv.style.display = 'none'; // Hide the textarea for 'Other'
+            }
+        });
+    });
+</script>
+
+<!-- Finalization Cyto Related Instruction -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Toggle visibility of the Lab instruction tab when clicked
+        document.getElementById("final-cyto-instruction-header").addEventListener("click", function() {
+            var finalcytoInstructionsTab = document.getElementById("final-cyto-instruction-tab");
+            if (finalcytoInstructionsTab.style.display === "none") {
+                finalcytoInstructionsTab.style.display = "block"; // Show the tab
+            } else {
+                finalcytoInstructionsTab.style.display = "none"; // Hide the tab
+            }
+        });
+
+        // Show or hide the 'Other' textbox based on selected checkboxes
+        document.getElementById('final-recall-other-checkbox').addEventListener('change', function () {
+            const finalotherHistoryDiv = document.getElementById('final-recall-other-history');
+            if (this.checked) {
+                finalotherHistoryDiv.style.display = 'block'; // Show the textarea for 'Other'
+            } else {
+                finalotherHistoryDiv.style.display = 'none'; // Hide the textarea for 'Other'
+            }
+        });
+    });
+</script>
 
 
 <?php 
