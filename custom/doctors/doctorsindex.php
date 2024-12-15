@@ -2207,7 +2207,7 @@ switch (true) {
         </script>
 
 
-        <script>
+        <!-- <script>
             $(document).ready(function() {
                 $('#readlabno').on('submit', function(e) {
                     e.preventDefault();
@@ -2234,7 +2234,45 @@ switch (true) {
                     }
                 });
             });
+        </script> -->
+
+        <script>
+            $(document).ready(function() {
+                // Retrieve the lab numbers from PHP
+                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list()); ?>;
+
+                function checkLabNumberAndRedirect(labno) {
+                    if (labno) {
+                        
+                        // Check if the labno exists in cytoLab
+                        const found = cytoLab.some(lab => lab.lab_number === labno);
+
+                        if (found) {
+                            
+                            // Redirect to cytoindex.php if labno is valid
+                            window.location.href = 'Cyto/index.php?labno=' + labno;
+                        } else {
+                            
+                            window.location.href = 'lab_status.php?labno=' + labno;
+                        }
+                    } else {
+                        console.error("Lab number is empty. No redirection performed.");
+                    }
+                }
+
+                $('#readlabno').on('submit', function(e) {
+                    e.preventDefault();
+                    let labno = $('#labno').val();
+                    checkLabNumberAndRedirect(labno);
+                });
+
+                $('#tab-screening, #tab-final-screening, #tab-status').on('click', function() {
+                    let labno = $('#labno').val();
+                    checkLabNumberAndRedirect(labno);
+                });
+            });
         </script>
+
   
 </body>
 </html>
