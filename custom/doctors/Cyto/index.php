@@ -101,6 +101,7 @@ switch (true) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="../../grossmodule/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
     <style>
         .custom-flex-container {
             display: flex;
@@ -131,8 +132,92 @@ switch (true) {
             padding: 5px 10px;
             font-size: 16px;
         }
+        .disabled-section {
+            pointer-events: none;
+            opacity: 0.5;
+        }
 
     </style>
+    <style>
+    /* Custom Modal Styling */
+    .custom-modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0); /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+    }
+
+    /* Modal Content */
+    .custom-modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        max-width: 500px;
+        border-radius: 8px;
+    }
+
+    /* Modal Header */
+    .custom-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .custom-modal-header h5 {
+        margin: 0;
+    }
+
+    /* Close Button */
+    .custom-modal-close {
+        font-size: 1.5rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #aaa;
+        transition: color 0.3s;
+    }
+
+    .custom-modal-close:hover {
+        color: black;
+    }
+
+    /* Footer Buttons */
+    .custom-modal-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    /* Button Styling */
+    button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    button:disabled {
+        background-color: #ccc;
+    }
+
+
+</style>
 </head>
 <body>
     
@@ -200,7 +285,7 @@ switch (true) {
                         </div>
                     </div>
 
-                    <div class="col-md-6" id="finalization-section">
+                    <div class="col-md-6" id="finalization-section" class="disabled-section">
                         <div id="finalization-section">
                             <h4 class="mt-3" style="cursor: pointer;" id="finalization-header">
                                 <i class="fas fa-microscope text-success mr-2"></i> Finalization
@@ -579,8 +664,6 @@ switch (true) {
             </div>
     </div>
 
-
-
 </body>
 </html>
 
@@ -792,6 +875,111 @@ switch (true) {
     });
 </script>
 
+<!-- here modal and shadow logic -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+            let isScreeningDone = false; // Default state: Screening is not done
+            let isLeaving = false; // Track if the user is leaving the page
+
+            // Get references to necessary elements
+            const screeningDoneHeader = document.getElementById("screening-done-header");
+            const finalizationSection = document.getElementById("finalization-section");
+            const customModal = document.getElementById("customModal");
+
+            const modalConfirmLeave = document.getElementById("modalConfirmLeave");
+            const modalCancelLeave = document.getElementById("modalCancelLeave");
+            const modalClose = document.getElementById("modalClose");
+
+            // Add a click event listener to "Screening Done"
+            screeningDoneHeader.addEventListener("click", function () {
+                isScreeningDone = true; // Mark screening as done
+                finalizationSection.classList.remove("disabled-section"); // Enable finalization section
+                finalizationSection.style.pointerEvents = "auto"; // Allow clicks
+                finalizationSection.style.opacity = "1"; // Make it fully visible
+            });
+
+            // Disable finalization options initially
+            finalizationSection.classList.add("disabled-section");
+            finalizationSection.style.pointerEvents = "none"; // Prevent clicks
+            finalizationSection.style.opacity = "0.5"; // Add a shadow effect
+
+            // Add click event listeners to finalization options
+            finalizationSection.addEventListener("click", function (event) {
+                if (!isScreeningDone) {
+                    event.preventDefault(); // Prevent default action
+                    customModal.style.display = "block"; // Show the custom modal with the message
+                }
+            });
+
+            // Custom page exit confirmation (without showing the default alert)
+            window.addEventListener('beforeunload', function (event) {
+                if (!isScreeningDone && !isLeaving) {
+                    event.preventDefault(); // Prevent page unload/reload
+                    customModal.style.display = "block"; // Show the custom modal
+                    isLeaving = true; // Mark that the user is attempting to leave
+                    return false; // For most browsers, cancel the unload
+                }
+            });
+
+            // Handle modal button clicks
+            modalConfirmLeave.addEventListener("click", function() {
+                isLeaving = true; // Allow leaving the page
+                window.location.href = "../doctorsindex.php"; // Navigate to doctorsindex.php
+            });
+
+            modalCancelLeave.addEventListener("click", function() {
+                isLeaving = false; // Cancel leaving, keep the page as it is
+                customModal.style.display = "none"; // Hide the custom modal
+            });
+
+            // Close modal on 'X' click
+            modalClose.addEventListener("click", function() {
+                customModal.style.display = "none"; // Hide the custom modal
+            });
+
+            // Close modal if user clicks outside the modal content
+            window.addEventListener("click", function(event) {
+                if (event.target == customModal) {
+                    customModal.style.display = "none"; // Hide the modal if user clicks outside
+                }
+            });
+
+            // Prevent default behavior for form submission if Screening is not done
+            const form = document.getElementById("readlabno");
+            form.addEventListener("submit", function(event) {
+                if (!isScreeningDone) {
+                    event.preventDefault(); // Prevent form submission
+                    customModal.style.display = "block"; // Show the custom modal with the message
+                }
+            });
+
+            // Prevent default behavior for the leave link if Screening is not done
+            const leaveLink = document.getElementById("leaveLink");
+            leaveLink.addEventListener("click", function(event) {
+                if (!isScreeningDone) {
+                    event.preventDefault(); // Prevent the link from being followed
+                    customModal.style.display = "block"; // Show the custom modal with the message
+                }
+            });
+    });
+</script>
+
+ <!-- Custom Modal -->
+<div id="customModal" class="custom-modal">
+    <div class="custom-modal-content">
+        <div class="custom-modal-header">
+            <span class="custom-modal-close" id="modalClose">&times;</span>
+            <h5>Confirm Exit</h5>
+        </div>
+        <div class="custom-modal-body">
+            You haven't completed the "Screening Done" step. Are you sure you want to leave or reload the page?
+        </div>
+        <div class="custom-modal-footer">
+            <button id="modalCancelLeave">Cancel</button>
+            <button id="modalConfirmLeave">Leave</button>
+        </div>
+    </div>
+</div>
 
 <?php 
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
