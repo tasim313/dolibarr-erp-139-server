@@ -234,4 +234,43 @@ function get_histo_doctor_instruction_history_list($user_id) {
     return $existingdata;
 }
 
+
+function get_cyto_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            c.ref AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+        LEFT JOIN 
+            llx_cyto AS cy ON TRIM(LEADING 'FNA' FROM cy.lab_number) = c.ref
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            fk_statut = 1 
+            AND date_commande BETWEEN '2024-05-03' AND CURRENT_DATE 
+            AND e.test_type = 'FNA'
+            AND (cy.status = 'done')";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
 ?>
