@@ -173,8 +173,8 @@ switch (true) {
             <div class="col-md-6">
                 
                     <div class="col-md-6" id="screening-section">
-                        <div >
-                            <h4 class="mt-3" >
+                        <div id="screening-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="screening-header">
                                 <i class="fas fa-microscope text-primary mr-2"></i> Screening
                             </h4>
                         </div>
@@ -185,7 +185,7 @@ switch (true) {
                         </div>
                         <div id="lab-instructions-section">
                             <h4 class="mt-3" style="cursor: pointer;" id="lab-instructions-header">
-                                <i class="fas fa-clipboard-list mr-2"></i> Lab Instructions
+                                <i class="fas fa-flask mr-2"></i> Lab Instructions
                             </h4>
                         </div>
                         <div id="cyto-instruction-section">
@@ -193,8 +193,8 @@ switch (true) {
                                 <i class="fas fa-undo mr-2"></i> Recall Instruction
                             </h4>
                         </div>
-                        <div>
-                            <h4 class="mt-3">
+                        <div id="screening-done-section">
+                            <h4 class="mt-3" style="cursor: pointer;" id="screening-done-header">
                                 <i class="fas fa-check-circle mr-2"></i> Screening Done
                             </h4>
                         </div>
@@ -208,10 +208,10 @@ switch (true) {
                             <i class="fas fa-book-open mr-2"></i> Study / History
                         </h4>
                         <h4 class="mt-3">
-                            <i class="fas fa-clipboard-list mr-2"></i> Lab Instructions
+                            <i class="fas fa-flask mr-2"></i> Lab Instructions
                         </h4>
                         <h4 class="mt-3">
-                            <i class="fas fa-flask mr-2"></i> Cyto Instructions
+                            <i class="fas fa-undo mr-2"></i> Recall Instruction
                         </h4>
                         <h4 class="mt-3">
                             <i class="fas fa-check-circle mr-2"></i> Finalization Done
@@ -242,8 +242,7 @@ switch (true) {
                             <h3>Study/History</h3>
                             <!-- Study Choice (Checkbox) -->
                             <div id="study-choice">
-                                <label for="study-checkbox">Study:</label>
-                                <input type="checkbox" id="study-checkbox" />
+                                <input type="checkbox" id="study-checkbox" value="study"/>&nbsp;&nbsp;<b>Study</b>
                             </div>
 
                             <!-- Patient History / Investigations -->
@@ -320,100 +319,76 @@ switch (true) {
                             <div id="stain-choice" class="row">
                                 <h3>Lab Instructions</h3>
                                 <div class="col-md-3">
-                                    <label for="centrifuge-checkbox">Centrifuge</label>
-                                    <input type="checkbox" id="centrifuge-checkbox" />
+                                    <input type="checkbox" id="centrifuge-checkbox" />&nbsp;&nbsp;<b>Centrifuge</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="zn-checkbox">Zn</label>
-                                    <input type="checkbox" id="zn-checkbox">
+                                    <input type="checkbox" id="zn-checkbox">&nbsp;&nbsp;<b>Zn</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Gram-stain-checkbox">Gram</label>
-                                    <input type="checkbox" id="Gram-stain-checkbox">
+                                    <input type="checkbox" id="Gram-stain-checkbox">&nbsp;&nbsp;<b>Gram</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Fite-Faraco-checkbox">Fite-Faraco</label>
-                                    <input type="checkbox" id="Fite-Faraco-checkbox">
+                                    <input type="checkbox" id="Fite-Faraco-checkbox">&nbsp;&nbsp;<b>Fite-Faraco</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="leishmain-checkbox">Leishmain</label>
-                                    <input type="checkbox" id="leishmain-checkbox">
+                                    <input type="checkbox" id="leishmain-checkbox">&nbsp;&nbsp;<b>Leishmain</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="pap-stain-checkbox">Pap Stain</label>
-                                    <input type="checkbox" id="pap-stain-checkbox">
+                                    <input type="checkbox" id="pap-stain-checkbox">&nbsp;&nbsp;<b>Pap Stain</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="pas-stain-checkbox">PAS</label>
-                                    <input type="checkbox" id="pas-stain-checkbox">
+                                    <input type="checkbox" id="pas-stain-checkbox">&nbsp;&nbsp;<b>PAS</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Hematoxylin-Eosin-checkbox">Hematoxylin and Eosin (H&E)</label>
-                                    <input type="checkbox" id="Hematoxylin-Eosin-checkbox">
+                                    <input type="checkbox" id="Hematoxylin-Eosin-checkbox">&nbsp;&nbsp;<b>Hematoxylin and Eosin (H&E)</b>
                                 </div>
                                 
                                 <div class="col-md-3">
-                                    <label for="Auramine-Rhodamine-checkbox">Auramine-Rhodamine</label>
-                                    <input type="checkbox" id="Auramine-Rhodamine-checkbox">
+                                    <input type="checkbox" id="Auramine-Rhodamine-checkbox">&nbsp;&nbsp;<b>Auramine-Rhodamine</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Mucicarmine-checkbox">Mucicarmine</label>
-                                    <input type="checkbox" id="Mucicarmine-checkbox">
+                                    <input type="checkbox" id="Mucicarmine-checkbox">&nbsp;&nbsp;<b>Mucicarmine</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Alcian-Blue-checkbox">Alcian Blue</label>
-                                    <input type="checkbox" id="Alcian-Blue-checkbox">
+                                    <input type="checkbox" id="Alcian-Blue-checkbox">&nbsp;&nbsp;<b>Alcian Blue</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Congo-Red-checkbox">Congo Red</label>
-                                    <input type="checkbox" id="Congo-Red-checkbox">
+                                    <input type="checkbox" id="Congo-Red-checkbox">&nbsp;&nbsp;<b>Congo Red</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Reticulin-checkbox">Reticulin</label>
-                                    <input type="checkbox" id="Reticulin-checkbox">
+                                    <input type="checkbox" id="Reticulin-checkbox">&nbsp;&nbsp;<b>Reticulin</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Masson-checkbox">Masson's Trichrome</label>
-                                    <input type="checkbox" id="Masson-checkbox">
+                                    <input type="checkbox" id="Masson-checkbox">&nbsp;&nbsp;<b>Masson's Trichrome</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="oil-red-sudan-checkbox">Oil Red O or Sudan Black Stain</label>
-                                    <input type="checkbox" id="oil-red-sudan-checkbox">
+                                    <input type="checkbox" id="oil-red-sudan-checkbox">&nbsp;&nbsp;<b>Oil Red O or Sudan Black Stain</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="Grocott-Methenamine-checkbox">GMS</label>
-                                    <input type="checkbox" id="Grocott-Methenamine-checkbox">
+                                    <input type="checkbox" id="Grocott-Methenamine-checkbox">&nbsp;&nbsp;<b>GMS</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="toluidine-checkbox">Toluidine Blue</label>
-                                    <input type="checkbox" id="toluidine-checkbox">
+                                    <input type="checkbox" id="toluidine-checkbox">&nbsp;&nbsp;<b>Toluidine Blue</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="fite-faraco-checkbox">Fite-Faraco</label>
-                                    <input type="checkbox" id="fite-faraco-checkbox">
+                                    <input type="checkbox" id="fite-faraco-checkbox">&nbsp;&nbsp;<b>Fite-Faraco</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="iron-checkbox">Iron (Prussian Blue)</label>
-                                    <input type="checkbox" id="iron-checkbox">
+                                    <input type="checkbox" id="iron-checkbox">&nbsp;&nbsp;<b>Iron (Prussian Blue)</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="van-gieson-checkbox">Van Gieson</label>
-                                    <input type="checkbox" id="van-gieson-checkbox">
+                                    <input type="checkbox" id="van-gieson-checkbox">&nbsp;&nbsp;<b>Van Gieson</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="warthin-starry-checkbox">Warthin-Starry</label>
-                                    <input type="checkbox" id="warthin-starry-checkbox">
+                                    <input type="checkbox" id="warthin-starry-checkbox">&nbsp;&nbsp;<b>Warthin-Starry</b>
                                 </div>
                                 <div class="col-md-3">
-                                    <label for="reticulin-silver-checkbox">Reticulin Silver</label>
-                                    <input type="checkbox" id="reticulin-silver-checkbox">
+                                    <input type="checkbox" id="reticulin-silver-checkbox">&nbsp;&nbsp;<b>Reticulin Silver</b>
                                 </div>
 
                                 <!-- Other Option (Textbox for Custom Input) -->
                                 <div class="col-md-3 mt-3">
-                                    <label for="labInstructions-other-checkbox">Other
-                                        <input type="checkbox" id="labInstructions-other-checkbox" class="labInstructions-history-option" value="other" />
-                                    </label>
+                                    <input type="checkbox" id="labInstructions-other-checkbox" class="labInstructions-history-option" value="other" />&nbsp;&nbsp;<b>Other</b>
                                 </div>
                                 <div id="Instructions-other-history"  style="display: none;">
                                     <label for="Instructions-other-history-text">Please specify:</label>
@@ -434,27 +409,32 @@ switch (true) {
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-body">
-                            <h3>Cyto Instructions</h3>
                             <!-- cyto Intruction Choice (Checkbox) -->
                             <div id="recall-choice">
-                                <label for="incomplete-specimen-checkbox">Incomplete Specimen collection</label>
-                                <input type="checkbox" id="incomplete-specimen-checkbox" />
-                                <label for="sample-quality-inadequate-checkbox">Sample Quality Inadequate</label>
-                                <input type="checkbox" id="sample-quality-inadequate-checkbox">
-                                <label for="additional-slide-checkbox">Additional Slides Needed</label>
-                                <input type="checkbox" id="additional-slide-checkbox">
-                                <label for="wrong-site-collected-checkbox">Wrong Site Collected</label>
-                                <input type="checkbox" id="wrong-site-collected-checkbox">
-
-                                <!-- Other Option (Textbox for Custom Input) -->
-                                <div class="col-md-3 mt-3">
-                                    <label for="recall-other-checkbox">Other
-                                        <input type="checkbox" id="recall-other-checkbox" class="recall-history-option" value="other" />
-                                    </label>
-                                </div>
-                                <div id="recall-other-history"  style="display: none;">
-                                    <label for="recall-other-history-text">Please specify:</label>
-                                    <textarea id="recall-other-history-text" class="form-control" rows="3"></textarea>
+                                <div class="row">
+                                    <h3>Recall Instruction</h3>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="incomplete-specimen-checkbox" />&nbsp;&nbsp;<b>Incomplete Specimen collection</b>
+                                    </div>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="sample-quality-inadequate-checkbox">&nbsp;&nbsp;<b>Sample Quality Inadequate</b>
+                                    </div>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="additional-slide-checkbox">&nbsp;&nbsp;<b>Additional Slides Needed</b>
+                                    </div>
+                                    <div class="col-sm-md-1">
+                                        <input type="checkbox" id="wrong-site-collected-checkbox">&nbsp;&nbsp;<b>Wrong Site Collected</b>
+                                    </div>
+                                    <div class="col-sm-md-1">
+                                        <!-- Other Option (Textbox for Custom Input) -->
+                                        <div class="col-md-3 mt-3">
+                                            <input type="checkbox" id="recall-other-checkbox" class="recall-history-option" value="other" />&nbsp;&nbsp;<b>Other</b> 
+                                        </div>
+                                        <div id="recall-other-history"  style="display: none;">
+                                            <label for="recall-other-history-text">Please specify:</label>
+                                            <textarea id="recall-other-history-text" class="form-control" rows="3"></textarea>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
