@@ -353,7 +353,7 @@ switch (true) {
                                         <label><input type="checkbox" class="history-option" value="transcription" /> Transcription</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="it-space" /> IT Space</label>
+                                        <label><input type="checkbox" class="history-option" value="dispatch-center" /> Dispatch Center</label>
                                     </div>
                                 </div>
 
@@ -664,6 +664,11 @@ switch (true) {
             </div>
     </div>
 
+    <!-- this div to display the success message -->
+    <div id="screening-message" style="display:none; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; border-radius: 5px;">
+        Screening Started
+    </div>
+
 </body>
 </html>
 
@@ -679,7 +684,7 @@ switch (true) {
                     const found = cytoLab.some(lab => lab.lab_number === labno);
                     if (found) {
                         // Redirect to cytoindex.php if labno is valid
-                        window.location.href = 'Cyto/index.php?labno=' + labno;
+                        window.location.href = 'index.php?labno=' + labno;
                     } else {    
                         window.location.href = '../lab_status.php?labno=' + labno;
                     }
@@ -875,7 +880,7 @@ switch (true) {
     });
 </script>
 
-<!-- here modal and shadow logic -->
+<!-- here modal logic -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
             let isScreeningDone = false; // Default state: Screening is not done
@@ -969,7 +974,7 @@ switch (true) {
     <div class="custom-modal-content">
         <div class="custom-modal-header">
             <span class="custom-modal-close" id="modalClose">&times;</span>
-            <h5>Confirm Exit</h5>
+            
         </div>
         <div class="custom-modal-body">
             You haven't completed the "Screening Done" step. Are you sure you want to leave or reload the page?
@@ -980,6 +985,67 @@ switch (true) {
         </div>
     </div>
 </div>
+
+<!-- Screening Start data store -->
+<script>
+    document.getElementById('screening-header').addEventListener('click', function() {
+            const labNumber = "<?php echo $LabNumber; ?>"; 
+            const username = "<?php echo $loggedInUsername; ?>"; 
+            const currentTimestamp = new Date().toISOString(); // Get current timestamp
+
+            // Send an AJAX request to the PHP backend
+            fetch('insert/screening_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    lab_number: labNumber,
+                    username: username,
+                    timestamp: currentTimestamp
+                })
+            })
+            .then(response => response.text()) // Get raw text response
+            .then(text => {
+                // console.log("Raw Response from PHP:", text); // Log raw response
+                try {
+                    // Attempt to parse the response as JSON
+                    const data = JSON.parse(text);
+                    // console.log("Parsed JSON:", data);
+                    if (data.status === 'success') {
+                        const messageDiv = document.getElementById('screening-message');
+                        messageDiv.style.display = 'block';
+                        messageDiv.textContent = 'Screening Started';
+                        setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+                    } else {
+                        console.log('Error:', data.message);
+                    }
+                } catch (error) {
+                    // Handle any errors with JSON parsing
+                    // console.error('JSON Parsing Error:', error.message);
+                    // console.log('Raw Response:', text); // Log raw response
+                    // alert('Invalid JSON response');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                // console.log('json data:', JSON.stringify({
+                //     lab_number: labNumber,
+                //     username: username,
+                //     timestamp: currentTimestamp
+                // }));
+                const messageDiv = document.getElementById('screening-message');
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = 'An error occurred. Please try again.';
+            });
+    });
+</script>
+
+
+
+
+
+
 
 <?php 
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
