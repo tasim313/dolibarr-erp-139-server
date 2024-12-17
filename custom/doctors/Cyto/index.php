@@ -413,6 +413,11 @@ switch (true) {
                             <!-- Special Stain  Choice (Checkbox) -->
                             <div id="stain-choice" class="row">
                                 <h3>Lab Instructions</h3>
+                                <br>
+                                <div>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="save_lab_instructions" id="screening_lab_instruction_save">&nbsp;&nbsp;<b>Save</b>
+                                </div>
+                                <br>
                                 <div class="col-md-3">
                                     <input type="checkbox" id="centrifuge-checkbox" />&nbsp;&nbsp;<b>Centrifuge</b>
                                 </div>
@@ -462,8 +467,8 @@ switch (true) {
             </div>
     </div>
     
-     <!-- Recall instruction -->
-     <div class="container" style="margin-top: 20px;">
+    <!-- Recall instruction -->
+    <div class="container" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="cyto-instruction-tab" style="display: none;">
                 <div class="col-md-12">
@@ -473,6 +478,13 @@ switch (true) {
                             <div id="recall-choice">
                                 <div class="row">
                                     <h3>Recall Instruction</h3>
+                                    <!-- Submit Button -->
+                                    <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <button id="submit-recall-data" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                    <br>
                                     <div class="col-sm-md-1">
                                         <input type="checkbox" id="sample-quality-inadequate-checkbox">&nbsp;&nbsp;<b>Sample Quality Inadequate</b>
                                     </div>
@@ -665,9 +677,11 @@ switch (true) {
     </div>
 
     <!-- this div to display the success message -->
-    <div id="screening-message" style="display:none; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; border-radius: 5px;">
-        Screening Started
+    <div id="screening-message-screening" style="display:none; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; border-radius: 5px;">
+        Screening has commenced.
     </div>
+    <!-- Success/Error Message Div -->
+    <div id="screening-message" style="display: none;" class="alert"></div>
 
 </body>
 </html>
@@ -917,55 +931,55 @@ switch (true) {
             });
 
             // Custom page exit confirmation (without showing the default alert)
-            window.addEventListener('beforeunload', function (event) {
-                if (!isScreeningDone && !isLeaving) {
-                    event.preventDefault(); // Prevent page unload/reload
-                    customModal.style.display = "block"; // Show the custom modal
-                    isLeaving = true; // Mark that the user is attempting to leave
-                    return false; // For most browsers, cancel the unload
-                }
-            });
+            // window.addEventListener('beforeunload', function (event) {
+            //     if (!isScreeningDone && !isLeaving) {
+            //         event.preventDefault(); // Prevent page unload/reload
+            //         customModal.style.display = "block"; // Show the custom modal
+            //         isLeaving = true; // Mark that the user is attempting to leave
+            //         return false; // For most browsers, cancel the unload
+            //     }
+            // });
 
-            // Handle modal button clicks
-            modalConfirmLeave.addEventListener("click", function() {
-                isLeaving = true; // Allow leaving the page
-                window.location.href = "../doctorsindex.php"; // Navigate to doctorsindex.php
-            });
+            // // Handle modal button clicks
+            // modalConfirmLeave.addEventListener("click", function() {
+            //     isLeaving = true; // Allow leaving the page
+            //     window.location.href = "../doctorsindex.php"; // Navigate to doctorsindex.php
+            // });
 
-            modalCancelLeave.addEventListener("click", function() {
-                isLeaving = false; // Cancel leaving, keep the page as it is
-                customModal.style.display = "none"; // Hide the custom modal
-            });
+            // modalCancelLeave.addEventListener("click", function() {
+            //     isLeaving = false; // Cancel leaving, keep the page as it is
+            //     customModal.style.display = "none"; // Hide the custom modal
+            // });
 
-            // Close modal on 'X' click
-            modalClose.addEventListener("click", function() {
-                customModal.style.display = "none"; // Hide the custom modal
-            });
+            // // Close modal on 'X' click
+            // modalClose.addEventListener("click", function() {
+            //     customModal.style.display = "none"; // Hide the custom modal
+            // });
 
-            // Close modal if user clicks outside the modal content
-            window.addEventListener("click", function(event) {
-                if (event.target == customModal) {
-                    customModal.style.display = "none"; // Hide the modal if user clicks outside
-                }
-            });
+            // // Close modal if user clicks outside the modal content
+            // window.addEventListener("click", function(event) {
+            //     if (event.target == customModal) {
+            //         customModal.style.display = "none"; // Hide the modal if user clicks outside
+            //     }
+            // });
 
-            // Prevent default behavior for form submission if Screening is not done
-            const form = document.getElementById("readlabno");
-            form.addEventListener("submit", function(event) {
-                if (!isScreeningDone) {
-                    event.preventDefault(); // Prevent form submission
-                    customModal.style.display = "block"; // Show the custom modal with the message
-                }
-            });
+            // // Prevent default behavior for form submission if Screening is not done
+            // const form = document.getElementById("readlabno");
+            // form.addEventListener("submit", function(event) {
+            //     if (!isScreeningDone) {
+            //         event.preventDefault(); // Prevent form submission
+            //         customModal.style.display = "block"; // Show the custom modal with the message
+            //     }
+            // });
 
             // Prevent default behavior for the leave link if Screening is not done
-            const leaveLink = document.getElementById("leaveLink");
-            leaveLink.addEventListener("click", function(event) {
-                if (!isScreeningDone) {
-                    event.preventDefault(); // Prevent the link from being followed
-                    customModal.style.display = "block"; // Show the custom modal with the message
-                }
-            });
+            // const leaveLink = document.getElementById("leaveLink");
+            // leaveLink.addEventListener("click", function(event) {
+            //     if (!isScreeningDone) {
+            //         event.preventDefault(); // Prevent the link from being followed
+            //         customModal.style.display = "block"; // Show the custom modal with the message
+            //     }
+            // });
     });
 </script>
 
@@ -1013,7 +1027,7 @@ switch (true) {
                     const data = JSON.parse(text);
                     // console.log("Parsed JSON:", data);
                     if (data.status === 'success') {
-                        const messageDiv = document.getElementById('screening-message');
+                        const messageDiv = document.getElementById('screening-message-screening');
                         messageDiv.style.display = 'block';
                         messageDiv.textContent = 'Screening Started';
                         setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
@@ -1038,6 +1052,305 @@ switch (true) {
                 messageDiv.style.display = 'block';
                 messageDiv.textContent = 'An error occurred. Please try again.';
             });
+    });
+</script>
+
+
+<!-- Screening Study & History data store-->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+            // Submit the screening study
+            document.getElementById('study-checkbox').addEventListener('change', function () {
+                if (this.checked) {
+                    submitStudyData();
+                }
+            });
+
+            function submitStudyData() {
+                // Collect patient history checkbox values
+                let historyOptions = [];
+                document.querySelectorAll('.history-option:checked').forEach(el => {
+                    if (el.value === 'other') {
+                        const otherInput = document.getElementById('other-history-text').value;
+                        historyOptions.push({ "other": otherInput });
+                    } else {
+                        historyOptions.push(el.value);
+                    }
+                });
+
+            // Prepare data to send
+            const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
+            const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
+            const timestamp = new Date().toISOString(); // Current timestamp
+            const data = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp,
+                screening_study: true,
+                screening_patient_history: historyOptions
+            };
+
+            // Send data to server via Fetch API
+            fetch('insert/screening_study_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    showMessage('This case has been moved to the Study/History section.', 'success');
+                } else {
+                    showMessage('An error occurred: ' + result.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Show/Hide Other History Textbox
+        document.getElementById('other-checkbox').addEventListener('change', function () {
+            document.getElementById('other-history').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Function to show success/error messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('screening-message');
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = message;
+
+            // Set the class for styling
+            if (type === 'success') {
+                messageDiv.className = 'alert alert-success';
+                // Reload the page after 3 seconds
+                setTimeout(() => { 
+                    location.reload(); 
+                }, 3000);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                // Hide the error message after 6 seconds
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+            }
+        }
+
+    });
+</script>
+
+
+<!-- Screening Lab Instruction -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Event Listener for the Checkbox Submission
+        document.getElementById('screening_lab_instruction_save').addEventListener('change', function () {
+            if (this.checked) {
+                submitLabInstructions();
+            }
+        });
+
+        // Function to Submit Lab Instructions
+        function submitLabInstructions() {
+            // Collect Lab Instructions data
+            let stainOptions = [];
+            document.querySelectorAll('#stain-choice input[type="checkbox"]:checked').forEach(el => {
+                
+                // Exclude the "Save" checkbox
+                if (el.id === 'screening_lab_instruction_save') {
+                    return; // Skip this checkbox
+                }
+
+                if (el.id === 'labInstructions-other-checkbox') {
+                    const otherInput = document.getElementById('Instructions-other-history-text').value.trim();
+                    if (otherInput) stainOptions.push({ "other": otherInput });
+                } else {
+                    stainOptions.push(el.id.replace('-checkbox', '').replace(/-/g, ' '));
+                }
+            });
+
+            // Prepare Data for Submission
+            const labNumber = "<?php echo htmlspecialchars($LabNumber); ?>"; // Safe PHP echo
+            const username = "<?php echo htmlspecialchars($loggedInUsername); ?>";
+            const timestamp = new Date().toISOString();
+
+            const data = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp,
+                screening_stain_name: stainOptions
+            };
+
+            // Fetch API Call to the Server
+            fetch('insert/lab_instruction_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text()) // Ensure raw text to debug any issues
+            .then(rawData => {
+                console.log('Raw Response:', rawData); // Log raw response for debugging
+
+                try {
+                    const result = JSON.parse(rawData); // Attempt to parse JSON
+                    
+                    if (result.status === 'success') {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage('Error: ' + result.message, 'error');
+                    }
+                } catch (e) {
+                    console.error('JSON Parse Error:', e, 'Raw Response:', rawData);
+                    showMessage('Invalid server response. Please contact support.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Show/Hide "Other" Input Box
+        document.getElementById('labInstructions-other-checkbox').addEventListener('change', function () {
+            document.getElementById('Instructions-other-history').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Function to Display Messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('screening-message');
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = message;
+
+            if (type === 'success') {
+                messageDiv.className = 'alert alert-success';
+                setTimeout(() => { location.reload(); }, 3000);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+            }
+        }
+    });
+</script>
+
+<!-- recall instruction -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Show/Hide the "Other" input box
+        document.getElementById('recall-other-checkbox').addEventListener('change', function () {
+            const otherHistoryDiv = document.getElementById('recall-other-history');
+            otherHistoryDiv.style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Submit recall data
+        document.getElementById('submit-recall-data').addEventListener('click', function () {
+            // Fetch user and lab details
+            const username = "<?php echo htmlspecialchars($loggedInUsername ?? ''); ?>";
+            const labNumber = "<?php echo htmlspecialchars($LabNumber ?? ''); ?>";
+            const timestamp = new Date().toISOString();
+
+            if (!username || !labNumber) {
+                alert("User or Lab Number is missing.");
+                return;
+            }
+
+            // Collect recall reasons
+            let reasons = [];
+            document.querySelectorAll('#recall-choice input[type="checkbox"]:checked').forEach(el => {
+                if (el.id === 'recall-other-checkbox') {
+                    const otherReason = document.getElementById('recall-other-history-text').value.trim();
+                    if (otherReason) {
+                        reasons.push(`Other: ${otherReason}`);
+                    } else {
+                        alert("Please enter a reason for 'Other'.");
+                    }
+                } else if (el.id !== 'screening_recall_instruction') {
+                    const reasonText = el.nextElementSibling ? el.nextElementSibling.textContent.trim() : '';
+                    if (reasonText) reasons.push(reasonText);
+                }
+            });
+
+            if (reasons.length === 0) {
+                alert('Please select at least one reason.');
+                return;
+            }
+
+            // Prepare the data payload
+            const data = {
+                lab_number: labNumber,
+                recalled_doctor: username,
+                recall_reason: reasons,
+                timestamp: timestamp
+            };
+
+            console.log("Sending Data:", data); // Log payload for debugging
+
+            // Send data to the server
+            fetch('insert/recall_instruction_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server returned an error.');
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log("Response:", result); // Log server response
+                if (result.status === 'success') {
+                    alert('Recall instruction saved successfully.');
+                    location.reload(); // Optional: Reload the page after success
+                } else {
+                    alert('Error: ' + (result.message || 'Unknown error occurred.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving the recall instruction. Please try again.');
+            });
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Constants for data
+        const labNumber = "<?php echo htmlspecialchars($LabNumber ?? ''); ?>";
+        const username = "<?php echo htmlspecialchars($loggedInUsername ?? ''); ?>";
+
+        // Click event listener
+        document.getElementById('screening-done-header').addEventListener('click', function () {
+            const timestamp = new Date().toISOString(); // Current timestamp
+
+            // Prepare data to send
+            const requestData = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp
+            };
+
+            // Send data to the backend
+            fetch('insert/screening_done_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert('Screening updated successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
     });
 </script>
 
