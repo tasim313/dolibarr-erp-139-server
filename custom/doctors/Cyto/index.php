@@ -139,85 +139,85 @@ switch (true) {
 
     </style>
     <style>
-    /* Custom Modal Styling */
-    .custom-modal {
-        display: none; /* Hidden by default */
-        position: fixed;
-        z-index: 1; /* Sit on top */
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0); /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
-    }
+        /* Custom Modal Styling */
+        .custom-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+        }
 
-    /* Modal Content */
-    .custom-modal-content {
-        background-color: #fff;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%; /* Could be more or less, depending on screen size */
-        max-width: 500px;
-        border-radius: 8px;
-    }
+        /* Modal Content */
+        .custom-modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 500px;
+            border-radius: 8px;
+        }
 
-    /* Modal Header */
-    .custom-modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        /* Modal Header */
+        .custom-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .custom-modal-header h5 {
-        margin: 0;
-    }
+        .custom-modal-header h5 {
+            margin: 0;
+        }
 
-    /* Close Button */
-    .custom-modal-close {
-        font-size: 1.5rem;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: #aaa;
-        transition: color 0.3s;
-    }
+        /* Close Button */
+        .custom-modal-close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #aaa;
+            transition: color 0.3s;
+        }
 
-    .custom-modal-close:hover {
-        color: black;
-    }
+        .custom-modal-close:hover {
+            color: black;
+        }
 
-    /* Footer Buttons */
-    .custom-modal-footer {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-    }
+        /* Footer Buttons */
+        .custom-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
 
-    /* Button Styling */
-    button {
-        padding: 10px 20px;
-        background-color: #007bff;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
+        /* Button Styling */
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
 
-    button:hover {
-        background-color: #0056b3;
-    }
+        button:hover {
+            background-color: #0056b3;
+        }
 
-    button:disabled {
-        background-color: #ccc;
-    }
+        button:disabled {
+            background-color: #ccc;
+        }
 
 
-</style>
+    </style>
 </head>
 <body>
     
@@ -1048,6 +1048,67 @@ switch (true) {
                 //     username: username,
                 //     timestamp: currentTimestamp
                 // }));
+                const messageDiv = document.getElementById('screening-message');
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = 'An error occurred. Please try again.';
+            });
+    });
+</script>
+
+<!-- Finalization Start data store -->
+<script>
+    document.getElementById('finalization-header').addEventListener('click', function() {
+            const labNumber = "<?php echo $LabNumber; ?>";
+            const username = "<?php echo $loggedInUsername; ?>";
+            const currentTimestamp = new Date().toISOString(); // Get current timestamp
+
+            // // Log data before sending
+            // console.log("Sending data to PHP:", {
+            //     lab_number: labNumber,
+            //     username: username,
+            //     timestamp: currentTimestamp
+            // });
+
+            // Send an AJAX request to the PHP backend
+            fetch('insert/final_screening_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    lab_number: labNumber,
+                    username: username,
+                    timestamp: currentTimestamp
+                })
+            })
+            .then(response => {
+                // Log the response status and body
+                // console.log('Response received from PHP:', response);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Log the received data for debugging
+                // console.log('Data received from PHP:', data);
+
+                const messageDiv = document.getElementById('screening-message-screening');
+
+                // Display success or error message
+                messageDiv.style.display = 'block';
+                messageDiv.textContent = data.message;
+
+                if (data.status === 'success') {
+                    // Hide the message after 1 second
+                    setTimeout(() => { messageDiv.style.display = 'none'; }, 1000);
+                } else {
+                    // console.error('Error:', data.message);
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                // console.error('Fetch Error:', error);
                 const messageDiv = document.getElementById('screening-message');
                 messageDiv.style.display = 'block';
                 messageDiv.textContent = 'An error occurred. Please try again.';
