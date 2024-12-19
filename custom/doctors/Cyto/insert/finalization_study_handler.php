@@ -95,17 +95,24 @@ try {
             if (!isset($currentData[$username])) {
                 $currentData[$username] = [];
             }
+
             $currentData[$username][] = $timestamp;
+
+            // Increment the count
+            $finalization_study_count = $row['finalization_study_count'] + 1;
 
             $updateQuery = "
                 UPDATE llx_cyto_doctor_study_patient_info
                 SET 
                     finalization_patient_history = $1,
-                    finalization_study_count_data = $2
-                WHERE lab_number = $3
+                    finalization_study_count = $2,
+                    finalization_study_count_data = $3
+                WHERE lab_number = $4
             ";
+
             $updateResult = pg_query_params($pg_con, $updateQuery, [
                 json_encode($currentHistory), // Save updated history
+                $finalization_study_count, // Incremented count
                 json_encode($currentData),
                 $lab_number
             ]);
