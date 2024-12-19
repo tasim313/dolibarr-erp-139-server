@@ -599,7 +599,7 @@ switch (true) {
                     <div class="card">
                         <div class="card-body">
                             <!-- Special Stain  Choice (Checkbox) -->
-                            <div id="stain-choice" class="row">
+                            <div id="final-stain-choice" class="row">
                                 <h3>Finalization Lab Instructions</h3>
                                 <br>
                                 <div>
@@ -1213,40 +1213,55 @@ switch (true) {
     });
 </script>
 
-
 <!-- Finalization Study & History data store -->
-<!-- <script>
+<script>
     document.addEventListener('DOMContentLoaded', () => {
-            // Submit the screening study
-            document.getElementById('final-study-checkbox').addEventListener('change', function () {
-                if (this.checked) {
-                    submitStudyData();
+        // Submit the screening study
+        document.getElementById('final-study-checkbox').addEventListener('change', function () {
+            if (this.checked) {
+                submitStudyData();
+            }
+        });
+
+        // Function to handle form submission and send data to the server
+        function submitStudyData() {
+            // Collect patient history checkbox values
+            let historyOptions = [];
+            document.querySelectorAll('.final-history-option:checked').forEach(el => {
+                if (el.value === 'other') {
+                    const otherInput = document.getElementById('final-other-history-text').value;
+                    if (otherInput.trim() !== '') {
+                        historyOptions.push({ "other": otherInput });
+                    } else {
+                        alert('Please provide a value for "Other" history.');
+                        return; // Prevent submission if "Other" is empty
+                    }
+                } else {
+                    historyOptions.push(el.value);
                 }
             });
 
-            function submitStudyData() {
-                // Collect patient history checkbox values
-                let historyOptions = [];
-                document.querySelectorAll('.final-history-option:checked').forEach(el => {
-                    if (el.value === 'other') {
-                        const otherInput = document.getElementById('final-other-history-text').value;
-                        historyOptions.push({ "other": otherInput });
-                    } else {
-                        historyOptions.push(el.value);
-                    }
-                });
+            // Ensure at least one history option is selected
+            if (historyOptions.length === 0) {
+                alert('Please select at least one history option.');
+                return;
+            }
 
             // Prepare data to send
             const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
             const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
             const timestamp = new Date().toISOString(); // Current timestamp
+
             const data = {
                 lab_number: labNumber,
                 username: username,
                 timestamp: timestamp,
-                finalization_study: true,
+                finalization_study: true, // You can dynamically set this based on form input
                 finalization_patient_history: historyOptions
             };
+
+            // Debug: Log data before sending
+            console.log("Sending data:", data); // Log the data being sent
 
             // Send data to server via Fetch API
             fetch('insert/finalization_study_handler.php', {
@@ -1258,6 +1273,7 @@ switch (true) {
             })
             .then(response => response.json())
             .then(result => {
+                console.log("Server response:", result); // Log the server response
                 if (result.status === 'success') {
                     showMessage('This case has been moved to the Study/History section.', 'success');
                 } else {
@@ -1296,113 +1312,7 @@ switch (true) {
         }
 
     });
-</script> -->
-
-
-<!-- Finalization Study & History data store -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Submit the screening study
-    document.getElementById('final-study-checkbox').addEventListener('change', function () {
-        if (this.checked) {
-            submitStudyData();
-        }
-    });
-
-    // Function to handle form submission and send data to the server
-    function submitStudyData() {
-        // Collect patient history checkbox values
-        let historyOptions = [];
-        document.querySelectorAll('.final-history-option:checked').forEach(el => {
-            if (el.value === 'other') {
-                const otherInput = document.getElementById('final-other-history-text').value;
-                if (otherInput.trim() !== '') {
-                    historyOptions.push({ "other": otherInput });
-                } else {
-                    alert('Please provide a value for "Other" history.');
-                    return; // Prevent submission if "Other" is empty
-                }
-            } else {
-                historyOptions.push(el.value);
-            }
-        });
-
-        // Ensure at least one history option is selected
-        if (historyOptions.length === 0) {
-            alert('Please select at least one history option.');
-            return;
-        }
-
-        // Prepare data to send
-        const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
-        const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
-        const timestamp = new Date().toISOString(); // Current timestamp
-
-        const data = {
-            lab_number: labNumber,
-            username: username,
-            timestamp: timestamp,
-            finalization_study: true, // You can dynamically set this based on form input
-            finalization_patient_history: historyOptions
-        };
-
-        // Debug: Log data before sending
-        console.log("Sending data:", data); // Log the data being sent
-
-        // Send data to server via Fetch API
-        fetch('insert/finalization_study_handler.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            console.log("Server response:", result); // Log the server response
-            if (result.status === 'success') {
-                showMessage('This case has been moved to the Study/History section.', 'success');
-            } else {
-                showMessage('An error occurred: ' + result.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Fetch Error:', error);
-            showMessage('An error occurred. Please try again.', 'error');
-        });
-    }
-
-    // Show/Hide Other History Textbox
-    document.getElementById('final-other-checkbox').addEventListener('change', function () {
-        document.getElementById('final-other-history').style.display = this.checked ? 'block' : 'none';
-    });
-
-    // Function to show success/error messages
-    function showMessage(message, type) {
-        const messageDiv = document.getElementById('screening-message');
-        messageDiv.style.display = 'block';
-        messageDiv.textContent = message;
-
-        // Set the class for styling
-        if (type === 'success') {
-            messageDiv.className = 'alert alert-success';
-            // Reload the page after 3 seconds
-            setTimeout(() => { 
-                location.reload(); 
-            }, 3000);
-        } else {
-            messageDiv.className = 'alert alert-danger';
-            // Hide the error message after 6 seconds
-            setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
-        }
-    }
-
-});
-
-
 </script>
-
-
 
 <!-- Screening Lab Instruction -->
 <script>
@@ -1500,7 +1410,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
-        document.getElementById('screening_lab_instruction_save').addEventListener('change', function () {
+        document.getElementById('finalization_lab_instruction_save').addEventListener('change', function () {
             if (this.checked) {
                 submitLabInstructions();
             }
@@ -1510,15 +1420,15 @@ document.addEventListener('DOMContentLoaded', () => {
         function submitLabInstructions() {
             // Collect Lab Instructions data
             let stainOptions = [];
-            document.querySelectorAll('#stain-choice input[type="checkbox"]:checked').forEach(el => {
+            document.querySelectorAll('#final-stain-choice input[type="checkbox"]:checked').forEach(el => {
                 
                 // Exclude the "Save" checkbox
-                if (el.id === 'screening_lab_instruction_save') {
+                if (el.id === 'finalization_lab_instruction_save') {
                     return; // Skip this checkbox
                 }
 
-                if (el.id === 'labInstructions-other-checkbox') {
-                    const otherInput = document.getElementById('Instructions-other-history-text').value.trim();
+                if (el.id === 'final-labInstructions-other-checkbox') {
+                    const otherInput = document.getElementById('final-Instructions-other-history-text').value.trim();
                     if (otherInput) stainOptions.push({ "other": otherInput });
                 } else {
                     stainOptions.push(el.id.replace('-checkbox', '').replace(/-/g, ' '));
@@ -1534,11 +1444,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 lab_number: labNumber,
                 username: username,
                 timestamp: timestamp,
-                screening_stain_name: stainOptions
+                finalization_stain_name: stainOptions
             };
 
             // Fetch API Call to the Server
-            fetch('insert/lab_instruction_handler.php', {
+            fetch('insert/final_lab_instruction_handler.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
