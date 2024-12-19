@@ -664,6 +664,13 @@ switch (true) {
                             <div id="recall-choice">
                                 <div class="row">
                                     <h3>Finalization Recall Instruction</h3>
+                                     <!-- Submit Button -->
+                                     <div class="row mt-3">
+                                        <div class="col-md-12">
+                                            <button id="finalization-submit-recall-data" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </div>
+                                    <br>
                                     <div class="col-sm-md-1">
                                         <input type="checkbox" id="sample-quality-inadequate-checkbox">&nbsp;&nbsp;<b>Sample Quality Inadequate</b>
                                     </div>
@@ -1314,7 +1321,7 @@ switch (true) {
     });
 </script>
 
-<!-- Screening Lab Instruction -->
+<!-- Screening Lab Instruction data store -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
@@ -1406,7 +1413,7 @@ switch (true) {
     });
 </script>
 
-<!-- Finalization Lab Instruction -->
+<!-- Finalization Lab Instruction data store -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
@@ -1498,7 +1505,7 @@ switch (true) {
     });
 </script>
 
-<!-- recall instruction -->
+<!-- recall instruction data store-->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Show/Hide the "Other" input box
@@ -1579,7 +1586,93 @@ switch (true) {
     });
 </script>
 
+<!-- Finalization recall instruction data store--> 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Show/Hide the "Other" input box
+        document.getElementById('final-recall-other-checkbox').addEventListener('change', function () {
+            const otherHistoryDiv = document.getElementById('final-recall-other-history');
+            otherHistoryDiv.style.display = this.checked ? 'block' : 'none';
+        });
 
+        // Submit recall data
+        document.getElementById('finalization-submit-recall-data').addEventListener('click', function () {
+            // Fetch user and lab details
+            const username = "<?php echo htmlspecialchars($loggedInUsername ?? ''); ?>";
+            const labNumber = "<?php echo htmlspecialchars($LabNumber ?? ''); ?>";
+            const timestamp = new Date().toISOString();
+
+            if (!username || !labNumber) {
+                alert("User or Lab Number is missing.");
+                return;
+            }
+
+            // Collect recall reasons
+            let reasons = [];
+            // Collect reasons from checked checkboxes
+            document.querySelectorAll('#recall-choice input[type="checkbox"]:checked').forEach(el => {
+                if (el.id === 'final-recall-other-checkbox') {
+                    // If "Other" is selected, get the value from the textarea
+                    const otherReason = document.getElementById('final-recall-other-history-text').value.trim();
+                    if (otherReason) {
+                        reasons.push(`Other: ${otherReason}`);
+                    } else {
+                        alert("Please enter a reason for 'Other'.");
+                        return; // Stop submission if 'Other' is selected but not filled in
+                    }
+                } else if (el.id !== 'screening_recall_instruction') {
+                    // Add the text from the other checkboxes
+                    const reasonText = el.nextElementSibling ? el.nextElementSibling.textContent.trim() : '';
+                    if (reasonText) reasons.push(reasonText);
+                }
+            });
+
+            // Ensure that at least one reason is selected
+            if (reasons.length === 0) {
+                alert('Please select at least one reason.');
+                return;
+            }
+
+            // Prepare the data payload
+            const data = {
+                lab_number: labNumber,
+                recalled_doctor: username,
+                recall_reason: reasons,
+                timestamp: timestamp
+            };
+
+            console.log("Sending Data:", data); // Log payload for debugging
+
+            // Send data to the server
+            fetch('insert/recall_instruction_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Server returned an error.');
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log("Response:", result); // Log server response
+                if (result.status === 'success') {
+                    alert('Recall instruction saved successfully.');
+                    location.reload(); // Optional: Reload the page after success
+                } else {
+                    alert('Error: ' + (result.message || 'Unknown error occurred.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving the recall instruction. Please try again.');
+            });
+        });
+    });
+</script>
+
+<!-- Screening Done Complete data store -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Constants for data
