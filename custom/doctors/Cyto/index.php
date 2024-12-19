@@ -509,17 +509,24 @@ switch (true) {
             </div>
     </div>
 
-     <!-- Finalization study and history -->
-     <div class="container" style="margin-top: 20px;">
+    <!-- Finalization study and history -->
+    <div class="container" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="final-study-history-tab" style="display: none;">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-body">
                             <h3>Finalization Study/History</h3>
+                            <br>
+                            <!-- <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <button id="finalization-study-history" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div> -->
+                            <br>
                             <!-- Study Choice (Checkbox) -->
                             <div id="final-study-choice">
-                                <input type="checkbox" id="study-checkbox" value="study"/>&nbsp;&nbsp;<b>Study</b>
+                                <input type="checkbox" id="final-study-checkbox" value="study"/>&nbsp;&nbsp;<b>Study</b>
                             </div>
 
                             <!-- Patient History / Investigations -->
@@ -529,45 +536,45 @@ switch (true) {
                                 <!-- First Row of Options (Horizontal) -->
                                 <div class="row" style="margin-top: 10px;">
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="self" /> Self</label>
+                                        <label><input type="checkbox" class="final-history-option" value="self" /> Self</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="transcription" /> Transcription</label>
+                                        <label><input type="checkbox" class="final-history-option" value="transcription" /> Transcription</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="it-space" /> IT Space</label>
+                                        <label><input type="checkbox" class="final-history-option" value="dispatch-center" /> Dispatch Center</label>
                                     </div>
                                 </div>
 
                                 <!-- Second Row of Options (Horizontal) -->
                                 <div class="row mt-3" style="margin-top: 10px;">
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="ultrasonography" /> Ultrasonography</label>
+                                        <label><input type="checkbox" class="final-history-option" value="ultrasonography" /> Ultrasonography</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="xray" /> X-Ray</label>
+                                        <label><input type="checkbox" class="final-history-option" value="xray" /> X-Ray</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="ct-scan-report" /> CT Scan Report</label>
+                                        <label><input type="checkbox" class="final-history-option" value="ct-scan-report" /> CT Scan Report</label>
                                     </div>
                                 </div>
 
                                 <div class="row mt-3">
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="ct-scan-film" /> CT Scan Film</label>
+                                        <label><input type="checkbox" class="final-history-option" value="ct-scan-film" /> CT Scan Film</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="mri-report" /> MRI Report</label>
+                                        <label><input type="checkbox" class="final-history-option" value="mri-report" /> MRI Report</label>
                                     </div>
                                     <div class="col-md-4">
-                                        <label><input type="checkbox" class="history-option" value="mri-film" /> MRI Film</label>
+                                        <label><input type="checkbox" class="final-history-option" value="mri-film" /> MRI Film</label>
                                     </div>
                                 </div>
 
                                 <div class="row mt-3">
                                     <div class="col-md-4">
                                         <label>
-                                            <input type="checkbox" id="final-other-checkbox" class="history-option" value="other" /> Other
+                                            <input type="checkbox" id="final-other-checkbox" class="final-history-option" value="other" /> Other
                                         </label>
                                     </div>
                                 </div>
@@ -593,7 +600,12 @@ switch (true) {
                         <div class="card-body">
                             <!-- Special Stain  Choice (Checkbox) -->
                             <div id="stain-choice" class="row">
-                                <h3>Finalizationl Lab Instructions</h3>
+                                <h3>Finalization Lab Instructions</h3>
+                                <br>
+                                <div>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="save_finalization_lab_instructions" id="finalization_lab_instruction_save">&nbsp;&nbsp;<b>Save</b>
+                                </div>
+                                <br>
                                 <div class="col-md-3">
                                     <input type="checkbox" id="centrifuge-checkbox" />&nbsp;&nbsp;<b>Centrifuge</b>
                                 </div>
@@ -1202,7 +1214,289 @@ switch (true) {
 </script>
 
 
+<!-- Finalization Study & History data store -->
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', () => {
+            // Submit the screening study
+            document.getElementById('final-study-checkbox').addEventListener('change', function () {
+                if (this.checked) {
+                    submitStudyData();
+                }
+            });
+
+            function submitStudyData() {
+                // Collect patient history checkbox values
+                let historyOptions = [];
+                document.querySelectorAll('.final-history-option:checked').forEach(el => {
+                    if (el.value === 'other') {
+                        const otherInput = document.getElementById('final-other-history-text').value;
+                        historyOptions.push({ "other": otherInput });
+                    } else {
+                        historyOptions.push(el.value);
+                    }
+                });
+
+            // Prepare data to send
+            const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
+            const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
+            const timestamp = new Date().toISOString(); // Current timestamp
+            const data = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp,
+                finalization_study: true,
+                finalization_patient_history: historyOptions
+            };
+
+            // Send data to server via Fetch API
+            fetch('insert/finalization_study_handler.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    showMessage('This case has been moved to the Study/History section.', 'success');
+                } else {
+                    showMessage('An error occurred: ' + result.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Show/Hide Other History Textbox
+        document.getElementById('final-other-checkbox').addEventListener('change', function () {
+            document.getElementById('final-other-history').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Function to show success/error messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('screening-message');
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = message;
+
+            // Set the class for styling
+            if (type === 'success') {
+                messageDiv.className = 'alert alert-success';
+                // Reload the page after 3 seconds
+                setTimeout(() => { 
+                    location.reload(); 
+                }, 3000);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                // Hide the error message after 6 seconds
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+            }
+        }
+
+    });
+</script> -->
+
+
+<!-- Finalization Study & History data store -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Submit the screening study
+    document.getElementById('final-study-checkbox').addEventListener('change', function () {
+        if (this.checked) {
+            submitStudyData();
+        }
+    });
+
+    // Function to handle form submission and send data to the server
+    function submitStudyData() {
+        // Collect patient history checkbox values
+        let historyOptions = [];
+        document.querySelectorAll('.final-history-option:checked').forEach(el => {
+            if (el.value === 'other') {
+                const otherInput = document.getElementById('final-other-history-text').value;
+                if (otherInput.trim() !== '') {
+                    historyOptions.push({ "other": otherInput });
+                } else {
+                    alert('Please provide a value for "Other" history.');
+                    return; // Prevent submission if "Other" is empty
+                }
+            } else {
+                historyOptions.push(el.value);
+            }
+        });
+
+        // Ensure at least one history option is selected
+        if (historyOptions.length === 0) {
+            alert('Please select at least one history option.');
+            return;
+        }
+
+        // Prepare data to send
+        const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
+        const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
+        const timestamp = new Date().toISOString(); // Current timestamp
+
+        const data = {
+            lab_number: labNumber,
+            username: username,
+            timestamp: timestamp,
+            finalization_study: true, // You can dynamically set this based on form input
+            finalization_patient_history: historyOptions
+        };
+
+        // Debug: Log data before sending
+        console.log("Sending data:", data); // Log the data being sent
+
+        // Send data to server via Fetch API
+        fetch('insert/finalization_study_handler.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            console.log("Server response:", result); // Log the server response
+            if (result.status === 'success') {
+                showMessage('This case has been moved to the Study/History section.', 'success');
+            } else {
+                showMessage('An error occurred: ' + result.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            showMessage('An error occurred. Please try again.', 'error');
+        });
+    }
+
+    // Show/Hide Other History Textbox
+    document.getElementById('final-other-checkbox').addEventListener('change', function () {
+        document.getElementById('final-other-history').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Function to show success/error messages
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('screening-message');
+        messageDiv.style.display = 'block';
+        messageDiv.textContent = message;
+
+        // Set the class for styling
+        if (type === 'success') {
+            messageDiv.className = 'alert alert-success';
+            // Reload the page after 3 seconds
+            setTimeout(() => { 
+                location.reload(); 
+            }, 3000);
+        } else {
+            messageDiv.className = 'alert alert-danger';
+            // Hide the error message after 6 seconds
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+        }
+    }
+
+});
+
+
+</script>
+
+
+
 <!-- Screening Lab Instruction -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Event Listener for the Checkbox Submission
+        document.getElementById('screening_lab_instruction_save').addEventListener('change', function () {
+            if (this.checked) {
+                submitLabInstructions();
+            }
+        });
+
+        // Function to Submit Lab Instructions
+        function submitLabInstructions() {
+            // Collect Lab Instructions data
+            let stainOptions = [];
+            document.querySelectorAll('#stain-choice input[type="checkbox"]:checked').forEach(el => {
+                
+                // Exclude the "Save" checkbox
+                if (el.id === 'screening_lab_instruction_save') {
+                    return; // Skip this checkbox
+                }
+
+                if (el.id === 'labInstructions-other-checkbox') {
+                    const otherInput = document.getElementById('Instructions-other-history-text').value.trim();
+                    if (otherInput) stainOptions.push({ "other": otherInput });
+                } else {
+                    stainOptions.push(el.id.replace('-checkbox', '').replace(/-/g, ' '));
+                }
+            });
+
+            // Prepare Data for Submission
+            const labNumber = "<?php echo htmlspecialchars($LabNumber); ?>"; // Safe PHP echo
+            const username = "<?php echo htmlspecialchars($loggedInUsername); ?>";
+            const timestamp = new Date().toISOString();
+
+            const data = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp,
+                screening_stain_name: stainOptions
+            };
+
+            // Fetch API Call to the Server
+            fetch('insert/lab_instruction_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text()) // Ensure raw text to debug any issues
+            .then(rawData => {
+                console.log('Raw Response:', rawData); // Log raw response for debugging
+
+                try {
+                    const result = JSON.parse(rawData); // Attempt to parse JSON
+                    
+                    if (result.status === 'success') {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage('Error: ' + result.message, 'error');
+                    }
+                } catch (e) {
+                    console.error('JSON Parse Error:', e, 'Raw Response:', rawData);
+                    showMessage('Invalid server response. Please contact support.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch Error:', error);
+                showMessage('An error occurred. Please try again.', 'error');
+            });
+        }
+
+        // Show/Hide "Other" Input Box
+        document.getElementById('labInstructions-other-checkbox').addEventListener('change', function () {
+            document.getElementById('Instructions-other-history').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // Function to Display Messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('screening-message');
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = message;
+
+            if (type === 'success') {
+                messageDiv.className = 'alert alert-success';
+                setTimeout(() => { location.reload(); }, 3000);
+            } else {
+                messageDiv.className = 'alert alert-danger';
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 6000);
+            }
+        }
+    });
+</script>
+
+<!-- Finalization Lab Instruction -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
