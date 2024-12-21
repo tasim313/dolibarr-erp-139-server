@@ -1712,8 +1712,46 @@ switch (true) {
     });
 </script>
 
+<!-- Finalization Done Complete data store -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Constants for data
+        const labNumber = "<?php echo htmlspecialchars($LabNumber ?? ''); ?>";
+        const username = "<?php echo htmlspecialchars($loggedInUsername ?? ''); ?>";
 
+    
+        // Click event listener
+        document.getElementById('finalization-done-header').addEventListener('click', function () {
+            const timestamp = new Date().toISOString(); // Current timestamp
 
+            // Prepare data to send
+            const requestData = {
+                lab_number: labNumber,
+                username: username,
+                timestamp: timestamp
+            };
+
+            // Send data to the backend
+            fetch('insert/finalization_done_handler.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    alert('Finalization Done successfully!');
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+    });
+</script>
 
 
 
