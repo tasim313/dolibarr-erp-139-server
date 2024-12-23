@@ -118,12 +118,15 @@ $homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Quill's CSS and JS -->
+    <link href="https://cdn.quilljs.com/2.0.0-dev.3/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
 </head>
 <body>
     <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>
     <div class="container">
         <div class=" text-center mt-5 ">
-            <h3>Create Microscopic Description</h3>
+            <h3>Microscopic Details</h3>
         </div>
         <form id="cyto-information-update" method="post" action="../../cytology/Cyto/patient_update.php">
             <table class="table table-bordered table-striped">
@@ -202,117 +205,153 @@ $homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
 
                 // Fetch patient information using the trimmed LabNumber
                 $patient_information = get_patient_details_information($trimmedLabNumber);
-                $genderOptions = [
-                    '1' => 'Male',
-                    '2' => 'Female',
-                    '3' => 'Other'
-                ];
+                
             ?>
+            
+            <!-- Patient Information -->
             <div class="container">
                 <div class="row">
                     <div class="col-12">
-                        <?php if (!empty($patient_information)) { ?>
+                        <h4 class="mb-4">Patient Information</h4>
+                        <?php 
+                        print('<form id="patientForm" method="post" action="../patient_info_update.php">'); 
+                        foreach ($patient_information as $list) {
+                            $genderOptions = [
+                                '1' => 'Male',
+                                '2' => 'Female',
+                                '3' => 'Other'
+                            ];
+                            $currentGender = $list['Gender'];
+                            
+                            print('
                             <table class="table table-bordered table-striped">
-                                <thead class="thead-dark">
-                                    <tr>
-                                        <th scope="col">Patient Name</th>
-                                        <th scope="col">Patient Code</th>
-                                        <th scope="col">Address</th>
-                                        <th scope="col">Phone</th>
-                                        <th scope="col">Fax</th>
-                                        <th scope="col">Date of Birth</th>
-                                        <th scope="col">Gender</th>
-                                        <th scope="col">Age</th>
-                                        <th scope="col">Attendant Name</th>
-                                        <th scope="col">Attendant Relation</th>
-                                    </tr>
-                                </thead>
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Name</th> 
+                                    <th>Patient Code</th>
+                                    <th>Address</th>
+                                    <th>Phone</th>
+                                    <th>Attendant Number</th>
+                                    <th>Date of Birth</th>
+                                    <th>Age</th>
+                                    <th>Attendant Name</th>
+                                    <th>Attendant Relation</th>
+                                    <th>Gender</th>			
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                            <?php foreach ($patient_information as $patient) { 
-                                $gender = isset($genderOptions[$patient['Gender']]) ? $genderOptions[$patient['Gender']] : 'Unknown'; // Default to 'Unknown' if gender code is not in the array
-                            ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($patient['name']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['patient_code']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['address']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['phone']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['fax']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['date_of_birth']); ?></td>
-                                <td><?php echo $gender; ?></td> <!-- Display gender using the mapped value -->
-                                <td><?php echo htmlspecialchars($patient['Age']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['att_name']); ?></td>
-                                <td><?php echo htmlspecialchars($patient['att_relation']); ?></td>
-                            </tr>
-                            <?php } ?>
+                                <tr>
+                                    <td>
+                                        <input type="text" name="name[]" class="form-control" value="' . $list['name'] . '" placeholder="Patient Name">
+                                        <input type="hidden" name="rowid[]" value="' . $list['rowid'] . '">
+                                    </td> 
+                                    <td>
+                                        <input type="text" name="patient_code[]" class="form-control" value="' . $list['patient_code'] . '" placeholder="Patient Code">
+                                    </td> 
+                                    <td>
+                                        <input type="text" name="address[]" class="form-control" value="' . $list['address'] . '" placeholder="Patient Address">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="phone[]" class="form-control" value="' . $list['phone'] . '" placeholder="Mobile Number">
+                                    </td> 
+                                    <td>
+                                        <input type="text" name="fax[]" class="form-control" value="' . $list['fax'] . '" placeholder="Attendant Number">
+                                    </td> 
+                                    <td>
+                                        <input type="date" name="date_of_birth[]" class="form-control" value="' . $list['date_of_birth'] . '">
+                                    </td> 
+                                    <td>
+                                        <input type="number" name="age[]" class="form-control" value="' . $list['Age'] . '" placeholder="Age">
+                                    </td> 
+                                    <td>
+                                        <input type="text" name="att_name[]" class="form-control" value="' . $list['att_name'] . '" placeholder="Attendant Name">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="att_relation[]" class="form-control" value="' . $list['att_relation'] . '" placeholder="Attendant Relation">
+                                    </td>
+                                    <td>
+                                        <select name="gender[]" class="form-select">');
+                                        foreach ($genderOptions as $value => $label) {
+                                            echo '<option value="' . $value . '" ' . ($currentGender == $value ? 'selected' : '') . '>' . $label . '</option>';
+                                        }
+                                        print('</select>
+                                    </td>
+                                    <td>
+                                        <button type="submit" name="submit" value="update" class="btn btn-primary btn-sm">Save</button>
+                                    </td>
+                                </tr>
                             </tbody>
                             </table>
-                            <?php } else { ?>
-                                <div class="alert alert-warning" role="alert">
-                                    No patient information found for Lab Number: <?php echo htmlspecialchars($trimmedLabNumber); ?>
-                                </div>
-                            <?php } ?>
+                            ');
+                        }
+                        print('</form>');
+                        ?>
                     </div>
-                    </div>
-                    </div>
-                    
-                   
-
-                <div class="mt-4">
-                    <h4>Clinical Information</h4>
-                    <?php 
-                        $clinicalInformation = get_cyto_clinical_information($cyto_id);
-                        
-                    ?>
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Chief Complain</th>
-                                <th>Relevant Clinical History</th>
-                                <th>On Examination</th>
-                                <th>Aspiration Note</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($clinicalInformation)): ?>
-                                <tr><td colspan="5">No data found.</td></tr>
-                            <?php else: ?>
-                                <?php foreach ($clinicalInformation as $info): ?>
-                                    <tr>
-                                        <form id="cyto-clinical-information-update" method="post" action="../Cyto/patient_clinical_info_update.php">
-                                            <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
-                                            </td>
-                                            <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
-                                            </td>
-                                            <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
-                                            </td>
-                                            <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="aspiration_note"><?= htmlspecialchars($info['aspiration_note']) ?></textarea>
-                                            </td>
-                                            <td>
-                                                <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
-                                                    <i class="fas fa-edit"></i> 
-                                                </button>
-                                            </td>
-                                        </form>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                </div>
             </div>
 
+
+            <div class="container">        
+                    <!-- Clinical Information -->
+                    <div class="mt-4">
+                        <h4>Clinical Information</h4>
+                        <?php 
+                            $clinicalInformation = get_cyto_clinical_information($cyto_id);
+                            
+                        ?>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Chief Complain</th>
+                                    <th>Relevant Clinical History</th>
+                                    <th>On Examination</th>
+                                    <th>Aspiration Note</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($clinicalInformation)): ?>
+                                    <tr><td colspan="5">No data found.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($clinicalInformation as $info): ?>
+                                        <tr>
+                                            <form id="cyto-clinical-information-update" method="post" action="../Cyto/patient_clinical_info_update.php">
+                                                <td>
+                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
+                                                </td>
+                                                <td>
+                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
+                                                </td>
+                                                <td>
+                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
+                                                </td>
+                                                <td>
+                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="aspiration_note"><?= htmlspecialchars($info['aspiration_note']) ?></textarea>
+                                                </td>
+                                                <td>
+                                                    <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-edit"></i> 
+                                                    </button>
+                                                </td>
+                                            </form>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+            </diV>
             
-               
-            <div class="mt-4">
+            <?php
+                // Fetch data using the function
+                $data = cyto_microscopic_description_lab($LabNumber);
+            ?>
+            <!-- Microscopic Decscription-->
+            <div class="container">
+                <div class="mt-4">
                     <h4>Microscopic Information</h4>
-                    <?php 
-                        $clinicalInformation = get_cyto_clinical_information($cyto_id);
-                        
-                    ?>
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
@@ -323,35 +362,189 @@ $homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
                             </tr>
                         </thead>
                         <tbody>
-                                <tr>
-                                    <form id="cyto-microscopic-information" method="post" action="../Cyto/patient_clinical_info_update.php">
-                                        <td>
-                                            <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
-                                        </td>
-                                        <td>
-                                            <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
-                                        </td>
-                                        <td>
-                                            <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
-                                        </td>
-                                        
-                                        <td>
-                                            <button id="microscopicInformationBtn" class="btn btn-primary btn-sm" title="Create New Microscopic Information">
-                                                <i class="fas fa-plus"></i> 
-                                            </button>
-                                        </td>
-                                    </form>
-                                </tr>
-                               
+                            <tr>
+                                <!-- Microscopic Description -->
+                                <td>
+                                    <div id="microscopic-description-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['microscopic_description'] ?? ''); ?>
+                                    </div>
+                                </td>
+
+                                <!-- Conclusion -->
+                                <td>
+                                    <div id="conclusion-description-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['conclusion'] ?? ''); ?>
+                                    </div>
+                                </td>
+
+                                <!-- Comment -->
+                                <td>
+                                    <div id="comment-description-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['comment'] ?? ''); ?>
+                                    </div>
+                                </td>
+
+                                <!-- Action -->
+                                <td>
+                                    <button id="editMicroscopicBtn" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button id="saveMicroscopicBtn" class="btn btn-primary btn-sm" style="display: none;">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
+                </div>
             </div>
 
             
+            <?php 
+                    $details = get_doctor_assisted_by_signature_details($LabNumber);
+                    $finalized_by = get_doctor_finalized_by_signature_details($LabNumber);
+                    $information = get_doctor_degination_details();
+            ?>
+
+            <style>
+                .container {
+                    margin-top: 20px;
+                }
+                .form-control {
+                    margin-bottom: 15px;
+                }
+                .row {
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 15px;
+                }
+                .row label {
+                    font-weight: bold;
+                    margin-bottom: 5px;
+                }
+                .btn-primary {
+                    width: 100%;
+                }
+            </style>
+
+            <div class="container">
+                <?php if (!empty($details)): ?>
+                    <?php foreach ($details as $list): ?>
+                        <div class="card mb-4">
+                            <div class="card-header ">
+                                <h5 class="mb-0">Assisted By</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="./insert/doctor_signature_update.php">
+                                    <div class="form-group">
+                                        <label for="doctor_username">Doctor</label>
+                                        <select id="doctor_username" name="doctor_username" class="form-control">
+                                            <option value=""></option>
+                                            <?php foreach ($information as $list_info): ?>
+                                                <option value="<?= $list_info['username'] ?>" <?= $list_info['username'] == $list['username'] ? 'selected' : '' ?>>
+                                                    <?= $list_info['username'] ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="lab_number" value="<?= $LabNumber ?>" readonly>
+                                    <input type="hidden" name="created_user" value="<?= htmlspecialchars($loggedInUsername) ?>">
+                                    <input type="hidden" name="row_id" value="<?= htmlspecialchars($list['row_id']) ?>">
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Create Assisted By</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="./insert/doctor_assist_create.php">
+                                <div class="form-group">
+                                    <label for="doctor_username">Doctor</label>
+                                    <select id="doctor_username" name="doctor_username" class="form-control">
+                                        <option value=""></option>
+                                        <?php foreach ($information as $list): ?>
+                                            <option value="<?= $list['username'] ?>" <?= $list['username'] == $loggedInUsername ? 'selected' : '' ?>>
+                                                <?= $list['username'] ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <input type="hidden" name="lab_number" value="<?= $LabNumber ?>" readonly>
+                                <input type="hidden" name="created_user" value="<?= htmlspecialchars($loggedInUsername) ?>">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($finalized_by)): ?>
+                    <?php foreach ($finalized_by as $list): ?>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Finalized By</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="./insert/doctor_signature_finalized_update.php">
+                                    <div class="form-group">
+                                        <label for="doctor_username">Doctor</label>
+                                        <select id="doctor_username" name="doctor_username" class="form-control">
+                                            <option value=""></option>
+                                            <?php foreach ($information as $list_info): ?>
+                                                <option value="<?= $list_info['username'] ?>" <?= $list_info['username'] == $list['username'] ? 'selected' : '' ?>>
+                                                    <?= $list_info['username'] ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <input type="hidden" name="lab_number" value="<?= $LabNumber ?>" readonly>
+                                    <input type="hidden" name="created_user" value="<?= htmlspecialchars($loggedInUsername) ?>">
+                                    <input type="hidden" name="row_id" value="<?= htmlspecialchars($list['row_id']) ?>">
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Create Finalized By</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" action="./insert/doctor_finalized_create.php">
+                                <div class="form-group">
+                                    <label for="doctor_username">Doctor</label>
+                                    <select id="doctor_username" name="doctor_username" class="form-control">
+                                        <option value=""></option>
+                                        <?php foreach ($information as $list): ?>
+                                            <option value="<?= $list['username'] ?>" <?= $list['username'] == $loggedInUsername ? 'selected' : '' ?>>
+                                                <?= $list['username'] ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <input type="hidden" name="lab_number" value="<?= $LabNumber ?>" readonly>
+                                <input type="hidden" name="created_user" value="<?= htmlspecialchars($loggedInUsername) ?>">
+                                <input type="hidden" name="status" value="Finalized">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+
     </div>
 </body>
 </html>
 
+
+
+
+<!-- Clinical Information Update -->
 <script>
     $(document).ready(function() {
         // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
@@ -392,7 +585,95 @@ $homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
     });
 </script>
 
+<!-- Rich text editor for Microscopic Information -->
+<script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
+<script>
+        let isEditing = false;
 
+        // Initialize Quill editors
+        const microscopicDescriptionEditor = new Quill('#microscopic-description-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Microscopic Description',
+            modules: { toolbar: false }
+        });
+        microscopicDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['microscopic_description'] ?? ''); ?>`;
+
+        const conclusionDescriptionEditor = new Quill('#conclusion-description-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Conclusion',
+            modules: { toolbar: false }
+        });
+        conclusionDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['conclusion'] ?? ''); ?>`;
+
+        const commentDescriptionEditor = new Quill('#comment-description-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Comment',
+            modules: { toolbar: false }
+        });
+        commentDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['comment'] ?? ''); ?>`;
+
+        // Edit button handler
+        document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
+            if (!isEditing) {
+                // Enable editing
+                microscopicDescriptionEditor.enable();
+                conclusionDescriptionEditor.enable();
+                commentDescriptionEditor.enable();
+
+                // Show Save button
+                document.getElementById('editMicroscopicBtn').style.display = 'none';
+                document.getElementById('saveMicroscopicBtn').style.display = 'inline-block';
+
+                isEditing = true;
+            }
+        });
+
+        // Save button handler
+        document.getElementById('saveMicroscopicBtn').addEventListener('click', function () {
+            if (isEditing) {
+                // Gather data from editors (HTML content)
+                const microscopicDescription = microscopicDescriptionEditor.root.innerHTML.trim();
+                const conclusionDescription = conclusionDescriptionEditor.root.innerHTML.trim();
+                const commentDescription = commentDescriptionEditor.root.innerHTML.trim();
+
+                // Disable editing
+                microscopicDescriptionEditor.disable();
+                conclusionDescriptionEditor.disable();
+                commentDescriptionEditor.disable();
+
+                // Prepare data for submission
+                const formData = new FormData();
+                formData.append('microscopic-description', microscopicDescription);
+                formData.append('conclusion-description', conclusionDescription);
+                formData.append('comment-description', commentDescription);
+                formData.append('LabNumber', '<?= htmlspecialchars($LabNumber); ?>');
+                formData.append('created_user', '<?= htmlspecialchars($loggedInUsername); ?>');
+
+                // AJAX to submit data
+                fetch('./insert/microscopic_create.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(result => {
+                    alert('Microscopic information updated successfully!');
+                    console.log(result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+                // Reset buttons
+                document.getElementById('saveMicroscopicBtn').style.display = 'none';
+                document.getElementById('editMicroscopicBtn').style.display = 'inline-block';
+
+                isEditing = false;
+            }
+        });
+</script>
 
 <?php 
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
