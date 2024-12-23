@@ -16,6 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
+     // Sanitize the data (optional but recommended)
+     $chief_complain = pg_escape_string($chief_complain);
+     $relevant_clinical_history = pg_escape_string($relevant_clinical_history);
+     $on_examination = pg_escape_string($on_examination);
+     $aspiration_note = pg_escape_string($aspiration_note);
+
     // Construct the SQL query with placeholders
     $sql = "UPDATE llx_cyto_clinical_information
             SET chief_complain = $1, 
