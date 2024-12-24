@@ -478,6 +478,13 @@ if (!$clinical_details_result) {
     die("Query failed for clinical_details: " . pg_last_error());
 }
 
+$examination_query = "SELECT on_examination FROM llx_cyto_clinical_information WHERE cyto_id = '$fk_cyto_id'";
+$examination_result = pg_query($pg_con, $examination_query);
+
+if (!$examination_result) {
+    die("Error in SQL query for examination : " . pg_last_error());
+}
+
 // SQL operation for aspiration_note
 $aspiration_note_query = "SELECT aspiration_note FROM llx_cyto_clinical_information WHERE cyto_id = '$fk_cyto_id'";
 $aspiration_note_result = pg_query($pg_con, $aspiration_note_query);
@@ -535,14 +542,60 @@ while ($row = pg_fetch_assoc($clinical_details_result)) {
 $html .= implode('<br/>', $clinical_details_rows);
 $html .= '</td></tr>';
 
+// Add on_examination
+$html .= '<tr>
+            <th style="width: 26%;"><b>OnExamination:</b></th>
+            <td style="width: 74%;">';
+
+$examination_rows = [];
+while ($row = pg_fetch_assoc($examination_result)) {
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $examination = $row['on_examination'];
+    $examination = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $examination);
+    
+    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+    $examination = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $examination);
+    
+    // Remove trailing <br> tags if they don't precede text
+    $examination = preg_replace('/<br>\s*$/', '', $examination);
+    
+    // Trim to remove leading and trailing whitespace
+    $examination = trim($examination);
+
+    // Add the formatted examination to the rows
+    $examination_rows[] = $examination;
+}
+
+// Combine the rows with <br/> for output
+$html .= implode('<br/>', $examination_rows);
+$html .= '</td></tr>';
+
+
 // Add Aspiration Note
 $html .= '<tr>
             <th style="width: 26%;"><b>Aspiration Note:</b></th>
             <td style="width: 74%;">';
+
 $aspiration_note_rows = [];
 while ($row = pg_fetch_assoc($aspiration_note_result)) {
-    $aspiration_note_rows[] = htmlspecialchars($row['aspiration_note']);
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $aspiration_note = $row['aspiration_note'];
+    $aspiration_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $aspiration_note);
+    
+    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+    $aspiration_note = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $aspiration_note);
+    
+    // Remove trailing <br> tags if they don't precede text
+    $aspiration_note = preg_replace('/<br>\s*$/', '', $aspiration_note);
+    
+    // Trim to remove leading and trailing whitespace
+    $aspiration_note = trim($aspiration_note);
+
+    // Add the formatted Aspiration Note to the rows
+    $aspiration_note_rows[] = $aspiration_note;
 }
+
+// Combine the rows with <br/> for output
 $html .= implode('<br/>', $aspiration_note_rows);
 $html .= '</td></tr>';
 

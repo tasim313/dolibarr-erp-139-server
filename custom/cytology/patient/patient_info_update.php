@@ -106,6 +106,7 @@ switch (true) {
 
 $host = $_SERVER['HTTP_HOST'];
 $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
+$reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNumber=" . urlencode($LabNumber) . "&username=" . urlencode($loggedInUsername);
 
 ?>
 
@@ -116,9 +117,13 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.quilljs.com/2.0.0-dev.3/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
+
 </head>
 <body>
-    <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>
+    <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
+    <a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>
     <div class="container">
         <div class=" text-center mt-5 ">
             <h3>Update or View Information</h3>
@@ -341,11 +346,10 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                         <?php endif; ?>
             </div>
 
-                <div class="mt-4">
+            <div class="mt-4">
                     <h4>Clinical Information</h4>
                     <?php 
                         $clinicalInformation = get_cyto_clinical_information($cyto_id);
-                        
                     ?>
                     <table class="table table-bordered table-striped">
                         <thead>
@@ -374,7 +378,11 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                                 <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
                                             </td>
                                             <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="aspiration_note"><?= htmlspecialchars($info['aspiration_note']) ?></textarea>
+                                                <div id="aspirationNoteEditor-<?= $info['rowid'] ?>" class="quill-editor">
+                                                    <?= htmlspecialchars_decode($info['aspiration_note'] ?? ''); ?>
+                                                </div>
+                                                <!-- Hidden input to store the content of the aspiration note -->
+                                                <input type="hidden" id="hiddenAspirationNote-<?= $info['rowid'] ?>" name="aspiration_note" />
                                             </td>
                                             <td>
                                                 <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
@@ -387,7 +395,7 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                             <?php endif; ?>
                         </tbody>
                     </table>
-                </div>
+            </div>
 
             <div class="mt-4">
                 <h4>Fixation Details</h4>
@@ -485,8 +493,20 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 </body>
 </html>
 
+
 <script>
     $(document).ready(function() {
+
+        <?php foreach ($clinicalInformation as $info): ?>
+            var quill<?= $info['rowid'] ?> = new Quill('#aspirationNoteEditor-<?= $info['rowid'] ?>', {
+                theme: 'snow',
+                placeholder: 'Type the Aspiration Note...',
+                modules: { toolbar: false }
+            });
+            quill<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['aspiration_note']) ?>`;
+
+        <?php endforeach; ?>
+
         // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
         <?php foreach ($clinicalInformation as $info): ?>
             $("#clinicalInformationBtn-<?= $info['rowid'] ?>").on("click", function(e) {
@@ -496,7 +516,10 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                 var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
                 var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
                 var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
-                var aspiration_note = $("textarea[data-rowid='" + rowid + "'][data-field='aspiration_note']").val();
+                var aspiration_note = quill<?= $info['rowid'] ?>.root.innerHTML;  // Get the content from the Quill editor
+
+                // Update hidden input with the aspiration_note content
+                $("#hiddenAspirationNote-" + rowid).val(aspiration_note);
 
                 // Send the data via AJAX
                 $.ajax({
@@ -522,8 +545,10 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                 });
             });
         <?php endforeach; ?>
+
     });
 </script>
+
 
 
 

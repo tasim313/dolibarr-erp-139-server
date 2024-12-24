@@ -42,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirect to the previous page
             exit();
         } else {
-            echo 'Failed to update Clinical Information: ' . pg_last_error($pg_con);
+            header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirect to the previous page
+            exit();
         }
     } catch (Exception $e) {
         echo 'Error: ' . $e->getMessage();
