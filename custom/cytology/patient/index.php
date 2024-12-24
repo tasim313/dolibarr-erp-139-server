@@ -104,6 +104,11 @@ switch (true) {
         exit; // Terminate script execution
 }
 
+$host = $_SERVER['HTTP_HOST'];
+$homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
+$reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNumber=" . urlencode($LabNumber) . "&username=" . urlencode($loggedInUsername);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -171,6 +176,8 @@ switch (true) {
     </style>
 </head>
 <body>   
+<a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
+<a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>
             <div class="container"> 
                     <div class=" text-center mt-5 ">
                         <h3>New Patient</h3>
@@ -430,8 +437,13 @@ switch (true) {
                         
                         <!-- Site of Aspiration -->
                         <div class="form-group">
-                            <label for="site-of-aspiration">OnExamination:</label>
-                            <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="3" placeholder="Enter on examination note"></textarea>
+                            <label for="site-of-aspiration">OnExamination:</label><br>
+                            <select id="onExaminationSelector">
+                                <option value="">Select Format</option>
+                                <option value="format1">General Examination</option>
+                                <option value="format2">Default</option>
+                            </select>
+                            <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
                         </div>
 
                         <!-- Indication for Aspiration -->
@@ -439,6 +451,8 @@ switch (true) {
                             <label for="indication-for-aspiration">Aspiration Note:</label><br>
                             <select id="regionSelector">
                                 <option value="">Select Region</option>
+                                <option value="format1">General Examination</option>
+                                <option value="format2">Default</option>
                                 <option value="thyroid">Thyroid Region</option>
                                 <option value="cervical">Cervical Region</option>
                                 <option value="parotid">Parotid Region</option>
@@ -795,6 +809,13 @@ switch (true) {
 
     // Predefined templates
     const templates = {
+        format1: `Amount:
+Color: 
+Consistency:`,
+
+            format2: `Amount: Very scanty / Scanty / Moderate / Plenty
+Color: 
+Consistency:`,
         thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
 Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
             cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
@@ -910,6 +931,47 @@ Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received 
         // Hide the dropdown after selection
         document.getElementById("myDropdown").style.display = "none";
     }
+</script>
+
+
+<script>
+    document.getElementById('onExaminationSelector').addEventListener('change', function () {
+        const editor = document.getElementById('site-of-aspiration');
+        const format = this.value;
+
+        // Predefined templates
+        const templates = {
+            format1: `Location:
+Side: 
+Level: 
+Appearance:
+     - Consistency: 
+     - Surface: 
+     - Mobility: 
+     - Tenderness: 
+Number of Swelling: 
+Size:`,
+
+            format2: `Location:
+Side: Right/Left
+Level: 
+
+Appearance:
+     - Consistency: Hard/Soft/Firm/Rubbery/Matted
+     - Surface: Regular/ Smooth/Irregular/Ulcerated/Nodular
+     - Mobility: Mobile/ Nonmobile/ Moves With Deglutition
+     - Tenderness: Tender/ Nontender
+
+Number of Swelling: 
+Size : [__cm to __cm]`
+        };
+
+        if (format && templates[format]) {
+            editor.value = templates[format];
+        } else {
+            editor.value = ''; // Clear editor if no format is selected
+        }
+    });
 </script>
 
 

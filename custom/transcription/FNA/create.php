@@ -309,7 +309,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <th>Relevant Clinical History</th>
                                     <th>On Examination</th>
                                     <th>Aspiration Note</th>
-                                    <th>Action</th>
+                                    <th>Edit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -329,7 +329,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                                     <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
                                                 </td>
                                                 <td>
-                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="aspiration_note"><?= htmlspecialchars($info['aspiration_note']) ?></textarea>
+                                                    <div id="aspirationNoteEditor-<?= $info['rowid'] ?>" class="quill-editor">
+                                                        <?= htmlspecialchars_decode($info['aspiration_note'] ?? ''); ?>
+                                                    </div>
+                                                    <!-- Hidden input to store the content of the aspiration note -->
+                                                    <input type="hidden" id="hiddenAspirationNote-<?= $info['rowid'] ?>" name="aspiration_note" />
                                                 </td>
                                                 <td>
                                                     <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
@@ -549,6 +553,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 <!-- Clinical Information Update -->
 <script>
     $(document).ready(function() {
+
+        <?php foreach ($clinicalInformation as $info): ?>
+            var quill<?= $info['rowid'] ?> = new Quill('#aspirationNoteEditor-<?= $info['rowid'] ?>', {
+                theme: 'snow',
+                placeholder: 'Type the Aspiration Note...',
+                modules: { toolbar: false }
+            });
+            quill<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['aspiration_note']) ?>`;
+
+        <?php endforeach; ?>
+
         // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
         <?php foreach ($clinicalInformation as $info): ?>
             $("#clinicalInformationBtn-<?= $info['rowid'] ?>").on("click", function(e) {
@@ -558,7 +573,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
                 var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
                 var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
-                var aspiration_note = $("textarea[data-rowid='" + rowid + "'][data-field='aspiration_note']").val();
+                var aspiration_note = quill<?= $info['rowid'] ?>.root.innerHTML;  // Get the content from the Quill editor
+
+                // Update hidden input with the aspiration_note content
+                $("#hiddenAspirationNote-" + rowid).val(aspiration_note);
 
                 // Send the data via AJAX
                 $.ajax({
@@ -584,6 +602,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 });
             });
         <?php endforeach; ?>
+
     });
 </script>
 
