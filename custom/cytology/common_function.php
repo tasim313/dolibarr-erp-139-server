@@ -372,5 +372,36 @@ function get_cyto_chief_complain_list() {
 
 
 
+function get_cyto_recall_management($lab_number) {
+    global $pg_con;
+
+    $sql = "SELECT rowid, lab_number, recall_reason, notified_user, notified_method, follow_up_date 
+            FROM llx_cyto_recall_management 
+            WHERE lab_number = $1";
+
+    $result = pg_query_params($pg_con, $sql, [$lab_number]);
+
+    $lab_numbers = [];
+    
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $lab_numbers[] = [
+                'rowid' => $row['rowid'],
+                'lab_number' => $row['lab_number'],
+                'recall_reason' => $row['recall_reason'],
+                'notified_user' => $row['notified_user'],
+                'notified_method' => $row['notified_method'],
+                'follow_up_date' => $row['follow_up_date']
+            ];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $lab_numbers;
+} 
+
 
 ?>

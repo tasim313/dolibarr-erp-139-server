@@ -326,8 +326,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                                     <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
                                                 </td>
                                                 <td>
-                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
+                                                    <!-- Quill editor for "On Examination" field -->
+                                                    <div id="onExaminationEditor-<?= $info['rowid'] ?>" class="quill-editor"></div>
+                                                    <input type="hidden" id="hiddenOnExamination-<?= $info['rowid'] ?>" name="on_examination" />
                                                 </td>
+                                                <!-- <td>
+                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
+                                                </td> -->
                                                 <td>
                                                     <div id="aspirationNoteEditor-<?= $info['rowid'] ?>" class="quill-editor">
                                                         <?= htmlspecialchars_decode($info['aspiration_note'] ?? ''); ?>
@@ -562,6 +567,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             });
             quill<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['aspiration_note']) ?>`;
 
+            var quillOnExamination<?= $info['rowid'] ?> = new Quill('#onExaminationEditor-<?= $info['rowid'] ?>', {
+                    theme: 'snow',
+                    placeholder: 'Type the On Examination details...',
+                    modules: { toolbar: false }
+            });
+            quillOnExamination<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['on_examination']) ?>`;
+
         <?php endforeach; ?>
 
         // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
@@ -572,10 +584,12 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 var rowid = $(this).attr("id").split('-')[1];  // Extract rowid from the button id
                 var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
                 var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
-                var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
+                var on_examination = quillOnExamination<?= $info['rowid'] ?>.root.innerHTML;  // Get content from Quill for on examination
+                // var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
                 var aspiration_note = quill<?= $info['rowid'] ?>.root.innerHTML;  // Get the content from the Quill editor
 
                 // Update hidden input with the aspiration_note content
+                $("#hiddenOnExamination-" + rowid).val(on_examination);
                 $("#hiddenAspirationNote-" + rowid).val(aspiration_note);
 
                 // Send the data via AJAX
