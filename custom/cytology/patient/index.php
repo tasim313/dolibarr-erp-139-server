@@ -105,7 +105,7 @@ switch (true) {
 }
 
 $host = $_SERVER['HTTP_HOST'];
-$homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
+$homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNumber=" . urlencode($LabNumber) . "&username=" . urlencode($loggedInUsername);
 
 
@@ -118,6 +118,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- Import the JavaScript file -->
 	<link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         .form-group-slide {
             display: flex;
@@ -176,8 +177,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     </style>
 </head>
 <body>   
-<a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
-<a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <!-- Left-side buttons -->
+        <div style="display: flex; gap: 10px;">
+            <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Back</a>
+            <a href="./recall.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-info btn-md">Recall</a>
+        </div>
+        <!-- Right-side button -->
+        <div>
+            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel</a>
+        </div>
+    </div>
             <div class="container"> 
                     <div class=" text-center mt-5 ">
                         <h3>New Patient</h3>
