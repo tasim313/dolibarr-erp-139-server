@@ -144,7 +144,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         Are you sure you want to cancel this action?
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="history.back()">Exit</button>
+                        <!-- <button type="button" class="btn btn-secondary" onclick="history.back()">Exit</button> -->
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='index.php?LabNumber=<?php echo $LabNumber; ?>';">Exit</button>
                         <button type="button" class="btn btn-primary" id="confirmCancel">Confirm</button>
                     </div>
                 </div>
