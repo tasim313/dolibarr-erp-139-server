@@ -185,86 +185,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         </div>
         <!-- Right-side button -->
         <div>
-            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel</a>
+            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a>
         </div>
     </div>
             <div class="container"> 
                     <div class=" text-center mt-5 ">
                         <h3>New Patient</h3>
                     </div>
-                    <form id="clinical-information-form" action="../Cyto/new_patient_create.php" method="post">
-                        <table class="table table-bordered table-striped">
-                            <tbody>
-                            <!-- Doctor Selection -->
-                                <tr>
-                                    <th scope="col">
-                                        <label for="doctor" class="form-label">Doctor</label>
-                                    </th>
-                                    <th scope="col">
-                                        <label for="assistant" class="form-label">Assistant</label>
-                                    </th>
-                                    <th scope="col">
-                                        <label for="station" class="form-label">FNA Station</label>
-                                    </th>
-                                    <th scope="col">
-                                        <label for="lab_number" class="form-label">Lab Number</label>
-                                    </th>
-                                </tr>
-                                                            
-                                <tr>
-                                    <td>
-                                        <select id="doctor_name" name="doctor_name" class="form-control" aria-label="Doctor selection" data-error="Please specify your need." required>
-                                        <option value="" selected disabled>--Select a Doctor--</option>
-                                        <?php
-                                            $doctors = get_doctor_list();
-                                            $loggedInUsername = $user->login; 
-
-                                            foreach ($doctors as $doctor) {
-                                                $selected = '';
-                                                if ($doctor['doctor_username'] == $loggedInUsername) {
-                                                    $selected = 'selected';
-                                                    $storeDoctor = isset($_SESSION['doctor_name']) && $_SESSION['doctor_name'] === $doctor['doctor_username'] ? 'selected' : '';
-                                                }
-                                                echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                                            }
-                                        ?>
-                                        </select>
-                                    </td>
-                                                            
-                                    <td>
-                                        <select id="assistant" name="assistant" class="form-control" aria-label="Assistant selection" data-error="Please specify your need." required>
-                                        <option value="">--Select an Assistant--</option>
-                                        <?php
-                                            $assistants = get_cyto_tech_list();
-                                            $loggedInUsername = $user->login;
-                                            foreach ($assistants as $assistant) {
-                                                $selected = '';
-                                                if ($assistant['username'] == $loggedInUsername) {
-                                                    $selected = 'selected';
-                                                    $storedAssistant = isset($_SESSION['assistant']) && $_SESSION['assistant'] === $assistant['username'] ? 'selected' : '';
-                                                }
-                                                echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
-                                            }
-                                        ?>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <select id="cyto_station_type" name='cyto_station_type' class="form-control" required>
-                                            <option value="">--Select a Station--</option>
-                                            <option value="One" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'One' ? 'selected' : ''; ?>>One</option>
-                                            <option value="Two" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'Two' ? 'selected' : ''; ?>>Two</option>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <input id="lab_number" name="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>" readonly>
-                                        <input type="hidden" id="status" name="status" value="done">
-                                        <input type="hidden" id="created_user" name="created_user" value="<?php echo $loggedInUsername; ?>">
-                                    </td>
-                                                
-                                </tr>
-                            </tbody>
-                        </table>
-                        <!-- Patient Information -->
+                    <!-- Patient Information -->
                         <?php
                             // Function to trim "FNA" from the LabNumber
                             function remove_prefix($lab_number) {
@@ -297,27 +225,54 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                                     <th scope="col">Attendant Name</th>
                                                     <th scope="col">Attendant Relation</th>
                                                     <th scope="col">Attendant Phone Number</th>
+                                                    <th scope="col">Edit</th>
                                                 </tr>
                                             </thead>
-                                                <tbody>
-                                                    <?php foreach ($patient_information as $patient) { 
-                                                        $gender = isset($genderOptions[$patient['Gender']]) ? $genderOptions[$patient['Gender']] : 'Unknown'; // Default to 'Unknown' if gender code is not in the array
-                                                    ?>
-                                                        <tr>
-                                                            <td><?php echo htmlspecialchars($patient['name']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['patient_code']); ?></td>
-                                                            <input id="patient_code" name="patient_code" class="form-control" type="hidden" value="<?php echo $patient['patient_code']; ?>">
-                                                            <td><?php echo htmlspecialchars($patient['address']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['phone']); ?></td>
-                                                            <td><?php echo $gender; ?></td> <!-- Display gender using the mapped value -->
-                                                            <td><?php echo htmlspecialchars($patient['Age']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['att_name']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['att_relation']); ?></td>
-                                                            <td><?php echo htmlspecialchars($patient['fax']); ?></td>
-                                                        </tr>
-                                                    <?php } ?>
-                                                </tbody>
+                                            <tbody>
+                                                <?php foreach ($patient_information as $patient) { 
+                                                    $gender = isset($genderOptions[$patient['Gender']]) ? $genderOptions[$patient['Gender']] : 'Unknown';
+                                                ?>
+                                                <tr data-rowid="<?php echo htmlspecialchars($patient['rowid']); ?>">
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="name" value="<?php echo htmlspecialchars($patient['name']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="patient_code" value="<?php echo htmlspecialchars($patient['patient_code']); ?>" readonly>
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="address" value="<?php echo htmlspecialchars($patient['address']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="phone" value="<?php echo htmlspecialchars($patient['phone']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <select class="form-control edit-field d-none" name="gender">
+                                                            <?php foreach ($genderOptions as $key => $value) { ?>
+                                                                <option value="<?php echo htmlspecialchars($key); ?>" <?php echo $patient['Gender'] == $key ? 'selected' : ''; ?>><?php echo htmlspecialchars($value); ?></option>
+                                                            <?php } ?>
+                                                        </select>
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="age" value="<?php echo htmlspecialchars($patient['Age']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="att_name" value="<?php echo htmlspecialchars($patient['att_name']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="att_relation" value="<?php echo htmlspecialchars($patient['att_relation']); ?>">
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <input class="form-control edit-field d-none" name="fax" value="<?php echo htmlspecialchars($patient['fax']); ?>">
+                                                    </td>
+                                                    <td>
+                                                        
+                                                        <button class="btn btn-primary save-btn d-none">Save</button>
+                                                    </td>
+                                                </tr>
+                                                <?php } ?>
+                                            </tbody>
                                         </table>
+
                                             <?php } else { ?>
                                                 <div class="alert alert-warning" role="alert">
                                                     No patient information found for Lab Number: <?php echo htmlspecialchars($trimmedLabNumber); ?>
@@ -326,236 +281,337 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 </div>
                             </div>
                         </div>
+
                         <?php 
-                        $patient_history = get_cyto_patient_history_list($trimmedLabNumber)
+                            $patient_history = get_cyto_patient_history_list($trimmedLabNumber);
                         ?>
-                        <div class="container ">
+                        <div class="container">
                             <?php if (!empty($patient_history)): ?>
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-bordered">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Previous FNAC</th>
-                                                <th>Prev FNAC Date</th>
-                                                <th>Prev FNAC OP</th>
-                                                <th>Informed</th>
-                                                <th>Given</th>
-                                                <th>Referred By Dr</th>
-                                                <th>Referred From</th>
-                                                <th>Clinical History</th>
-                                                <th>Other Lab No</th>
-                                                <th>Prev Biopsy</th>
-                                                <th>Previous Biopsy Date</th>
-                                                <th>Previous Biopsy Operation</th>
-                                                <th>Referred By Dr (Text)</th>
-                                                <th>Referred From (Text)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($patient_history as $index => $history): ?>
+                                <form action="../Cyto/save_patient_history.php" method="POST">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered">
+                                            <thead class="table-dark">
                                                 <tr>
-                                                    <td><?= htmlspecialchars($history['prev_fnac']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_fnac_date']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_fnac_op']) ?></td>
-                                                    <td>
-                                                        <?php
-                                                            // Mapping array for informed values
-                                                            $informedLabels = [
-                                                                1 => 'CT Scan Report',
-                                                                2 => 'CT Scan Film',
-                                                                3 => 'MRI Report',
-                                                                4 => 'MRI Film',
-                                                                5 => 'Others'
-                                                            ];
-
-                                                            // Process 'informed' values if they are comma-separated
-                                                            $informedValues = explode(',', $history['informed']); // Split by comma
-                                                            $mappedLabels = array_map(function ($value) use ($informedLabels) {
-                                                                return $informedLabels[trim($value)] ?? $value; // Map to label or keep the original value
-                                                            }, $informedValues);
-
-                                                            // Join the mapped labels and display
-                                                            echo htmlspecialchars(implode(', ', $mappedLabels));
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php
-                                                            // Mapping array for given values
-                                                            $givenLabels = [
-                                                                1 => 'CT Scan Report',
-                                                                2 => 'CT Scan Film',
-                                                                3 => 'MRI Report',
-                                                                4 => 'MRI Film',
-                                                                5 => 'Others'
-                                                            ];
-
-                                                            // Process 'given' values if they are comma-separated
-                                                            $givenValues = explode(',', $history['given']); // Split by comma
-                                                            $mappedgivenLabels = array_map(function ($value) use ($givenLabels) {
-                                                                return $givenLabels[trim($value)] ?? $value; // Map to label or keep the original value
-                                                            }, $givenValues);
-
-                                                            // Join the mapped labels and display
-                                                            echo htmlspecialchars(implode(', ', $mappedgivenLabels));
-                                                        ?>
-                                                        
-                                                    </td>
-                                                    <td><?= htmlspecialchars($history['referred_by_dr_lastname']) ?></td>
-                                                    <td><?= htmlspecialchars($history['referred_from_lastname']) ?></td>
-                                                    <td><?= htmlspecialchars($history['add_history']) ?></td>
-                                                    <td><?= htmlspecialchars($history['other_labno']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_biopsy']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_biopsy_date']) ?></td>
-                                                    <td><?= htmlspecialchars($history['prev_biopsy_op']) ?></td>
-                                                    <td><?= htmlspecialchars($history['referred_by_dr_text']) ?></td>
-                                                    <td><?= htmlspecialchars($history['referredfrom_text']) ?></td>
+                                                    <th>Previous FNAC</th>
+                                                    <th>Prev FNAC Date</th>
+                                                    <th>Prev FNAC Operation</th>
+                                                    <th>Report Informed Submit To The Lab</th>
+                                                    <th>Report Collected From Patient</th>
+                                                    <th>Referred By Dr</th>
+                                                    <th>Referred From Hospital</th>
+                                                    <th>Clinical History</th>
+                                                    <th>Other Lab No</th>
+                                                    <th>Prev Biopsy</th>
+                                                    <th>Previous Biopsy Date</th>
+                                                    <th>Previous Biopsy Operation</th>
+                                                    <th>Referred By Dr (Text)</th>
+                                                    <th>Referred From Hospital (Text)</th>
+                                                    <th>Edit</th>
                                                 </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($patient_history as $index => $history): ?>
+                                                    <tr>
+                                                        <!-- Hidden input to pass the rowid -->
+                                                        <input type="hidden" name="rowid[<?= $index ?>]" value="<?= htmlspecialchars($history['rowid']) ?>">
+
+                                                        <!-- Columns -->
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_fnac[<?= $index ?>]" value="<?= htmlspecialchars($history['prev_fnac']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_fnac_date[<?= $index ?>]" value="<?= htmlspecialchars($history['prev_fnac_date']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_fnac_op[<?= $index ?>]" value="<?= htmlspecialchars($history['prev_fnac_op']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control" name="informed[<?= $index ?>]" style="width: 200px; height: 70px;" multiple>
+                                                                <?php 
+                                                                $informedLabels = [1 => 'CT Scan Report', 2 => 'CT Scan Film', 3 => 'MRI Report', 4 => 'MRI Film', 5 => 'Others'];
+                                                                $informedValues = explode(',', $history['informed']);
+                                                                foreach ($informedLabels as $key => $label) {
+                                                                    $selected = in_array($key, $informedValues) ? 'selected' : '';
+                                                                    echo "<option value='$key' $selected>$label</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select class="form-control" name="given[<?= $index ?>]" style="width: 200px; height: 70px;" multiple>
+                                                                <?php 
+                                                                $givenLabels = [1 => 'CT Scan Report', 2 => 'CT Scan Film', 3 => 'MRI Report', 4 => 'MRI Film', 5 => 'Others'];
+                                                                $givenValues = explode(',', $history['given']);
+                                                                foreach ($givenLabels as $key => $label) {
+                                                                    $selected = in_array($key, $givenValues) ? 'selected' : '';
+                                                                    echo "<option value='$key' $selected>$label</option>";
+                                                                }
+                                                                ?>
+                                                            </select>
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="text" class="form-control" name="referred_by_dr_lastname[<?= $index ?>]" value="<?= htmlspecialchars($history['referred_by_dr_lastname']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="referred_from_lastname[<?= $index ?>]" value="<?= htmlspecialchars($history['referred_from_lastname']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <textarea class="form-control" name="add_history[<?= $index ?>]" style="width: 250px; height: 50px;"><?= htmlspecialchars($history['add_history']) ?></textarea>
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="other_labno[<?= $index ?>]" style="width: 100px; height: 50px;" value="<?= htmlspecialchars($history['other_labno']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_biopsy[<?= $index ?>]" style="width: 100px; height: 50px;" value="<?= htmlspecialchars($history['prev_biopsy']) ?>">
+                                                        </td>
+
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_biopsy_date[<?= $index ?>]" value="<?= htmlspecialchars($history['prev_biopsy_date']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="prev_biopsy_op[<?= $index ?>]" value="<?= htmlspecialchars($history['prev_biopsy_op']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="referred_by_dr_text[<?= $index ?>]" style="width: 200px; height: 50px;" value="<?= htmlspecialchars($history['referred_by_dr_text']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <input type="text" class="form-control" name="referredfrom_text[<?= $index ?>]" style="width: 200px; height: 50px;" value="<?= htmlspecialchars($history['referredfrom_text']) ?>">
+                                                        </td>
+                                                        <td>
+                                                            <button type="submit" class="btn btn-primary">Save</button>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </form>
                             <?php else: ?>
                                 <p class="text-center text-danger">No patient history available for the provided lab number.</p>
                             <?php endif; ?>
                         </div>
-                        <!-- Clinical Information -->
-                        <h3>Clinical Information</h3>
-                        <!-- Reason for FNAC -->
-                        <div class="form-group dropdown">
-                                <label for="chief-complain">Chief Complain:</label>
-                                <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
-                                <div id="myDropdown" class="dropdown-content" style="display: none;">
-                                    <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
-                                    <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()">
-                                        <?php $chief_complain_list = get_cyto_chief_complain_list(); ?>
-                                        <?php foreach ($chief_complain_list as $complain): ?>
-                                            <option value="<?= htmlspecialchars($complain['chief_complain']); ?>">
-                                                <?= htmlspecialchars($complain['chief_complain']); ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                        <option value="Others">Others</option>
-                                    </select>
-                                </div>
-                                <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify" style="display: none;">
-                        </div>
 
-                        <!-- Clinical History -->
-                        <div class="form-group">
-                            <label for="clinical-history">Relevant Clinical History:</label>
-                            <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes"></textarea>
-                        </div>
-                        
-                        <!-- Site of Aspiration -->
-                        <div class="form-group">
-                            <label for="site-of-aspiration">OnExamination:</label><br>
-                            <select id="onExaminationSelector">
-                                <option value="">Select Format</option>
-                                <option value="format1">General Examination</option>
-                                <option value="format2">Default</option>
-                            </select>
-                            <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
-                        </div>
-
-                        <!-- Indication for Aspiration -->
-                        <div  class="form-group">
-                            <label for="indication-for-aspiration">Aspiration Note:</label><br>
-                            <select id="regionSelector">
-                                <option value="">Select Region</option>
-                                <option value="format1">General Examination</option>
-                                <option value="format2">Default</option>
-                                <option value="thyroid">Thyroid Region</option>
-                                <option value="cervical">Cervical Region</option>
-                                <option value="parotid">Parotid Region</option>
-                                <option value="lymphNode">Lymph Node</option>
-                                <option value="tongueAndOral">Tongue and Oral Region</option>
-                                <option value="chestWall">Chest Wall</option>
-                                <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
-                                <option value="axillaryRegion">Axillary Region</option>
-                                <option value="miscellaneous">Miscellaneous</option>
-                                <option value="cytologySlides">Cytology Slides</option>
-                            </select>
-                            <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" rows="4" placeholder="Enter aspiration note"></textarea>
-                        </div>
-
-                        <!-- FNAC Collection Details -->
-                        <?php
-                            $slideBaseCode = preg_replace('/^[A-Za-z]{3}/', '', $LabNumber); 
-                            $locationOptions = ['','Proper','Thyroid', 'Breast', 'Lymph node', 'Lung', 'Other'];
-                        ?>
-                        <h3>FNAC Fixation Details</h3>
-                         <!-- Total Slides Prepared -->
-                        <div class="form-group form-group-slide d-flex align-items-center">
-                            <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
-                            <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" required> &nbsp;  &nbsp;  &nbsp; 
-                            <label for="location-input" class="mr-2">Location:</label> &nbsp; 
-                            <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" required> &nbsp; 
-                            <button type="button" class="btn btn-primary" id="populate-table">Generate slide</button>
-                        </div>
-
-                        <!-- Slide Fixation Details -->
-                        <div class="form-group">
-                            <label>Slide Fixation Details:</label>
-                            <table class="table table-bordered" id="fixation-details-table">
-                                <thead>
+                        <br><br>
+                        <form id="clinical-information-form" action="../Cyto/new_patient_create.php" method="post">
+                            <table class="table table-bordered table-striped">
+                                <tbody>
+                                <!-- Doctor Selection -->
                                     <tr>
-                                        <th>RowId</th>
-                                        <th>Slide Number</th>
-                                        <th>Location</th>
-                                        <th>Fixation Method</th>
-                                        <th>Dry</th>
-                                        <th>Actions</th>
+                                        <th scope="col">
+                                            <label for="doctor" class="form-label">Doctor</label>
+                                        </th>
+                                        <th scope="col">
+                                            <label for="assistant" class="form-label">Assistant</label>
+                                        </th>
+                                        <th scope="col">
+                                            <label for="station" class="form-label">FNA Station</label>
+                                        </th>
+                                        <th scope="col">
+                                            <label for="lab_number" class="form-label">Lab Number</label>
+                                        </th>
                                     </tr>
-                                </thead>
-                                <tbody id="fixation-details-body">
-                                    <!-- Dynamic Rows -->
+                                                                
+                                    <tr>
+                                        <td>
+                                            <select id="doctor_name" name="doctor_name" class="form-control" aria-label="Doctor selection" data-error="Please specify your need." required>
+                                            <option value="" selected disabled>--Select a Doctor--</option>
+                                            <?php
+                                                $doctors = get_doctor_list();
+                                                $loggedInUsername = $user->login; 
+
+                                                foreach ($doctors as $doctor) {
+                                                    $selected = '';
+                                                    if ($doctor['doctor_username'] == $loggedInUsername) {
+                                                        $selected = 'selected';
+                                                        $storeDoctor = isset($_SESSION['doctor_name']) && $_SESSION['doctor_name'] === $doctor['doctor_username'] ? 'selected' : '';
+                                                    }
+                                                    echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
+                                                }
+                                            ?>
+                                            </select>
+                                        </td>
+                                                                
+                                        <td>
+                                            <select id="assistant" name="assistant" class="form-control" aria-label="Assistant selection" data-error="Please specify your need." required>
+                                            <option value="">--Select an Assistant--</option>
+                                            <?php
+                                                $assistants = get_cyto_tech_list();
+                                                $loggedInUsername = $user->login;
+                                                foreach ($assistants as $assistant) {
+                                                    $selected = '';
+                                                    if ($assistant['username'] == $loggedInUsername) {
+                                                        $selected = 'selected';
+                                                        $storedAssistant = isset($_SESSION['assistant']) && $_SESSION['assistant'] === $assistant['username'] ? 'selected' : '';
+                                                    }
+                                                    echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
+                                                }
+                                            ?>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select id="cyto_station_type" name='cyto_station_type' class="form-control" required>
+                                                <option value="">--Select a Station--</option>
+                                                <option value="One" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'One' ? 'selected' : ''; ?>>One</option>
+                                                <option value="Two" <?php echo isset($_SESSION['cyto_station_type']) && $_SESSION['cyto_station_type'] === 'Two' ? 'selected' : ''; ?>>Two</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input id="lab_number" name="lab_number" class="form-control" type="text" value="<?php echo $LabNumber; ?>" readonly>
+                                            <input type="hidden" id="status" name="status" value="done">
+                                            <input type="hidden" id="created_user" name="created_user" value="<?php echo $loggedInUsername; ?>">
+                                        </td>
+                                                    
+                                    </tr>
                                 </tbody>
                             </table>
-                        </div>
-
-                        <!-- Dry Slides Description -->
-                        <div class="form-group">
-                            <label for="dry-slides-description">
-                                Dry Slides Description (if any):
-                                <button type="button" class="btn btn-link toggle-btn" data-target="#dry-slides-section">+</button>
-                            </label>
-                            <div id="dry-slides-section" class="toggle-section" style="display: none;">
-                                <textarea id="dry-slides-description" name="dry_slides_description" class="form-control" rows="3" placeholder="Enter Dry Slides Description"></textarea>
+                        
+                            <!-- Clinical Information -->
+                            <h3>Clinical Information</h3>
+                            <!-- Reason for FNAC -->
+                            <div class="form-group dropdown">
+                                    <label for="chief-complain">Chief Complain:</label>
+                                    <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
+                                    <div id="myDropdown" class="dropdown-content" style="display: none;">
+                                        <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
+                                        <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()">
+                                            <option value="Others">Others</option>
+                                            <?php $chief_complain_list = get_cyto_chief_complain_list(); ?>
+                                            <?php foreach ($chief_complain_list as $complain): ?>
+                                                <option value="<?= htmlspecialchars($complain['chief_complain']); ?>">
+                                                    <?= htmlspecialchars($complain['chief_complain']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify" style="display: none;">
                             </div>
-                        </div>
 
-                        <!-- Additional Notes -->
-                        <div class="form-group">
-                            <label for="fixation-comments">
-                                Additional Notes on Fixation:
-                                <button type="button" class="btn btn-link toggle-btn" data-target="#fixation-comments-section">+</button>
-                            </label>
-                            <div id="fixation-comments-section" class="toggle-section" style="display: none;">
-                                <textarea id="fixation-comments" name="fixation_comments" class="form-control" rows="3" placeholder="Enter Additional Notes on Fixation"></textarea>
+                            <!-- Clinical History -->
+                            <div class="form-group">
+                                <label for="clinical-history">Relevant Clinical History:</label>
+                                <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes"></textarea>
                             </div>
-                        </div>
+                            
+                            <!-- Site of Aspiration -->
+                            <div class="form-group">
+                                <label for="site-of-aspiration">OnExamination:</label><br>
+                                <select id="onExaminationSelector">
+                                    <option value="">Select Format</option>
+                                    <option value="format1">General Examination</option>
+                                    <option value="format2">Default</option>
+                                    <option value="thyroid">Thyroid Region</option>
+                                    <option value="cervical">Cervical Region</option>
+                                    <option value="parotid">Parotid Region</option>
+                                    <option value="lymphNode">Lymph Node</option>
+                                    <option value="tongueAndOral">Tongue and Oral Region</option>
+                                    <option value="chestWall">Chest Wall</option>
+                                    <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
+                                    <option value="axillaryRegion">Axillary Region</option>
+                                    <option value="miscellaneous">Miscellaneous</option>
+                                    <option value="cytologySlides">Cytology Slides</option>
+                                </select>
+                                <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
+                            </div>
 
-                        <!-- Special Instructions or Tests Required -->
-                        <div class="form-group">
-                            <label for="special-instructions">
-                                Special Instructions or Tests Required:
-                                <button type="button" class="btn btn-link toggle-btn" data-target="#special-instructions-section">+</button>
-                            </label>
-                            <div id="special-instructions-section" class="toggle-section" style="display: none;">
-                                <textarea id="special-instructions" name="special_instructions" class="form-control" rows="3" placeholder="Enter tests like special stains, immunocytochemistry, etc."></textarea>
+                            <!-- Indication for Aspiration -->
+                            <div  class="form-group">
+                                <label for="indication-for-aspiration"></label><br>
+                                <select id="regionSelector">
+                                    <option value="">Select Region</option>
+                                    <option value="format1">General Examination</option>
+                                    <option value="format2">Default</option>
+                                </select>
+                                <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" rows="4" placeholder="Enter aspiration note"></textarea>
                             </div>
-                        </div>
-                    
-                        <!-- Number of Passes Performed -->
-                        <div class="form-group">
-                            <label for="number-of-needle">Number of Needle Used:</label>
-                            <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="number-of-syringe">Number of Syringe Used:</label>
-                            <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
+
+                            <!-- FNAC Collection Details -->
+                            <?php
+                                $slideBaseCode = preg_replace('/^[A-Za-z]{3}/', '', $LabNumber); 
+                                $locationOptions = ['','Proper','Thyroid', 'Breast', 'Lymph node', 'Lung', 'Other'];
+                            ?>
+                            <h3>Aspiration Note:</h3>
+                            <!-- Total Slides Prepared -->
+                            <div class="form-group form-group-slide d-flex align-items-center">
+                                <label for="location-input" class="mr-2">Location:</label> &nbsp; 
+                                <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" required> &nbsp; &nbsp; &nbsp;
+
+                                <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
+                                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" required> &nbsp; &nbsp; &nbsp; 
+
+                                <label for="aspiration_materials-input" class="mr-2">Aspiration Materials:</label>&nbsp;
+                                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" required> &nbsp; &nbsp; &nbsp;
+
+                                <label for="special_instruction-input" class="mr-2">Special Instruction:</label>
+                                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" required> &nbsp; &nbsp; &nbsp;
+                                
+                                <button type="button" class="btn btn-primary" id="populate-table">Generate slide</button>
+                            </div>
+
+                            <!-- Slide Fixation Details -->
+                            <div class="form-group">
+                                <label>Slide Fixation Details:</label>
+                                <table class="table table-bordered" id="fixation-details-table">
+                                    <thead>
+                                        <tr>
+                                            <th>RowId</th>
+                                            <th>Slide Number</th>
+                                            <th>Location</th>
+                                            <th>Fixation Method</th>
+                                            <th>Dry</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fixation-details-body">
+                                        <!-- Dynamic Rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Dry Slides Description -->
+                            <div class="form-group">
+                                <label for="dry-slides-description">
+                                    Dry Slides Description (if any):
+                                    <button type="button" class="btn btn-link toggle-btn" data-target="#dry-slides-section">+</button>
+                                </label>
+                                <div id="dry-slides-section" class="toggle-section" style="display: none;">
+                                    <textarea id="dry-slides-description" name="dry_slides_description" class="form-control" rows="3" placeholder="Enter Dry Slides Description"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Additional Notes -->
+                            <div class="form-group">
+                                <label for="fixation-comments">
+                                    Additional Notes on Fixation:
+                                    <button type="button" class="btn btn-link toggle-btn" data-target="#fixation-comments-section">+</button>
+                                </label>
+                                <div id="fixation-comments-section" class="toggle-section" style="display: none;">
+                                    <textarea id="fixation-comments" name="fixation_comments" class="form-control" rows="3" placeholder="Enter Additional Notes on Fixation"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Special Instructions or Tests Required -->
+                            <div class="form-group">
+                                <label for="special-instructions">
+                                    Special Instructions or Tests Required:
+                                    <button type="button" class="btn btn-link toggle-btn" data-target="#special-instructions-section">+</button>
+                                </label>
+                                <div id="special-instructions-section" class="toggle-section" style="display: none;">
+                                    <textarea id="special-instructions" name="special_instructions" class="form-control" rows="3" placeholder="Enter tests like special stains, immunocytochemistry, etc."></textarea>
+                                </div>
+                            </div>
+                        
+                            <!-- Number of Passes Performed -->
+                            <div class="form-group">
+                                <label for="number-of-needle">Number of Needle Used:</label>
+                                <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="number-of-syringe">Number of Syringe Used:</label>
+                                <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
             </div>
     
 </body>
@@ -593,12 +649,15 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 <!-- Clinical Information -->
 <script>
-    // Show/hide "Others" text inputs based on the selection of dropdown options
+    // Show/hide "Others" text input based on the selection of dropdown options
     document.getElementById('reason-for-fnac').addEventListener('change', function() {
+        var otherReasonField = document.getElementById('other-reason');
         if (this.value === 'Others') {
-            document.getElementById('other-reason').style.display = 'block';
+            otherReasonField.style.display = 'block';
+            otherReasonField.style.border = '2px solid red';  // Red border when visible
         } else {
-            document.getElementById('other-reason').style.display = 'none';
+            otherReasonField.style.display = 'none';
+            otherReasonField.style.border = '';  // Remove border when hidden
         }
     });
 
@@ -826,24 +885,7 @@ Consistency:`,
             format2: `Amount: Very scanty / Scanty / Moderate / Plenty
 Color: 
 Consistency:`,
-        thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
-Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
-            cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
-Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
-Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
-            parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
-Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
-            lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
-Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
-Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
-            tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
-            chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
-            preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
-            axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
-            miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
-Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
-            cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
-Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
+        
             // Add other regions with their respective templates
         };
 
@@ -973,7 +1015,25 @@ Appearance:
      - Tenderness: Tender/ Nontender
 
 Number of Swelling: 
-Size : [__cm to __cm]`
+Size : [__cm to __cm]`,
+            thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
+Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
+            cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
+Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
+Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
+            parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
+Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
+            lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
+Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
+Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
+            tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
+            chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
+            preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
+            axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
+            miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
+Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
+            cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
+Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
         };
 
         if (format && templates[format]) {
@@ -983,6 +1043,44 @@ Size : [__cm to __cm]`
         }
     });
 </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Save button functionality
+        document.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const row = this.closest('tr');
+                const rowid = row.getAttribute('data-rowid');
+                const formData = new FormData();
+                formData.append('rowid', rowid);
+
+                row.querySelectorAll('.edit-field').forEach(input => {
+                    formData.append(input.name, input.value);
+                });
+
+                fetch('../Cyto/update_patient.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert('Data updated successfully!');
+                    // Update the displayed values and reset visibility
+                    row.querySelectorAll('.text').forEach(el => {
+                        const name = el.nextElementSibling.name;
+                        el.textContent = formData.get(name);
+                        el.classList.remove('d-none');
+                    });
+                    row.querySelector('.save-btn').classList.add('d-none');
+                   
+                })
+                .catch(err => console.error('Error:', err));
+            });
+        });
+    });
+
+</script>
+
 
 
 <?php 
