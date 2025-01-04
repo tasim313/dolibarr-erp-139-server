@@ -123,7 +123,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </head>
 <body>
     <div class="container">
-        <h4>Please confirm if you want to cancel this action. You can either exit this page or proceed with cancellation by providing additional information.</h4>
+        <h4>Please confirm if you want to cancel this FANC. You can either exit this page or proceed with cancellation by providing additional information.</h4>
         <br>
         <!-- Button trigger modal -->
         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#cancelModal">
@@ -141,11 +141,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         </button>
                     </div>
                     <div class="modal-body">
-                        Are you sure you want to cancel this action?
+                        Are you sure you want to cancel this FANC?
                     </div>
                     <div class="modal-footer">
                         <!-- <button type="button" class="btn btn-secondary" onclick="history.back()">Exit</button> -->
-                        <button type="button" class="btn btn-secondary" onclick="window.location.href='index.php?LabNumber=<?php echo $LabNumber; ?>';">Exit</button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='index.php?LabNumber=<?php echo $LabNumber; ?>';">Return Back</button>
                         <button type="button" class="btn btn-primary" id="confirmCancel">Confirm</button>
                     </div>
                 </div>
