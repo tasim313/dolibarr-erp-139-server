@@ -274,7 +274,9 @@ function get_cyto_fixation_details($cyto_id) {
         slide_number,
         location,
         fixation_method,
-        dry
+        dry,
+        aspiration_materials,
+        special_instructions
         from llx_cyto_fixation_details where cyto_id = $1 order by rowid ASC";
 
     $result = pg_query_params($pg_con, $sql, [$cyto_id]);
@@ -288,7 +290,9 @@ function get_cyto_fixation_details($cyto_id) {
             'slide_number' => $row['slide_number'],
             'location' => $row['location'],
             'fixation_method' => $row['fixation_method'],
-            'dry' => $row['dry']
+            'dry' => $row['dry'],
+            'aspiration_materials' => $row['aspiration_materials'],
+            'special_instructions' => $row['special_instructions']
             ];
         }
 
