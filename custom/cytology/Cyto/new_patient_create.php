@@ -5,6 +5,7 @@ $host = $_SERVER['HTTP_HOST'];
 $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     // Extract values from POST with null coalescing operator for safety
     $doctor_name = $_POST['doctor_name'] ?? '';
     $assistant = $_POST['assistant'] ?? '';
@@ -16,14 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $reason_for_fnac = $_POST['reason_for_fnac'] ?? '';
     $other_reason = $_POST['other_reason'] ?? '';
     $clinical_history = $_POST['clinical_history'] ?? '';
-    $site_of_aspiration = $_POST['site-of-aspiration'] ?? '';
-    $indication_for_aspiration = $_POST['indication_for_aspiration'] ?? '';
+    $site_of_aspiration = $_POST['site-of-aspiration-editor'] ?? '';
     $fixation_comments = $_POST['fixation_comments'] ?? '';
     $dry_slides_description = $_POST['dry_slides_description'] ?? '';
-    $special_instructions = $_POST['special_instructions'] ?? '';
+    $special_instructions = $_POST['special_instruction_input'] ?? '';
+    $aspiration_materials = $_POST['aspiration_materials_input'] ?? '';
     $number_of_needle = $_POST['number_of_needle'] ?? '';
     $number_of_syringe = $_POST['number_of_syringe'] ?? '';
     $fixation_data = $_POST['fixation_data'] ?? [];
+
 
     // Insert into llx_cyto table and return the generated rowid
     $sql = "INSERT INTO llx_cyto
@@ -60,18 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $chief_complain = $reason_for_fnac;  // Otherwise, use $reason_for_fnac
         }
         
+        var_dump($cyto_id, $chief_complain, $clinical_history, $site_of_aspiration);
         $sql_summary = "INSERT INTO llx_cyto_clinical_information (
                             cyto_id,
                             chief_complain,
                             relevant_clinical_history,
-                            on_examination,
-                            aspiration_note
+                            on_examination
+                            
                         ) VALUES (
                             '$cyto_id',
                             '$chief_complain',
                             '$clinical_history',
-                            '$site_of_aspiration',
-                            '$indication_for_aspiration'
+                            '$site_of_aspiration'
                         )";
 
         $result_summary = pg_query($pg_con, $sql_summary);
@@ -80,46 +82,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             cyto_id,
                             dry_slides_description,
                             additional_notes_on_fixation,
-                            special_instructions_or_tests_required,
                             number_of_needle_used,
                             number_of_syringe_used
                         ) VALUES (
                             '$cyto_id',
                             '$dry_slides_description',
                             '$fixation_comments',
-                            '$special_instructions',
                             '$number_of_needle',
                             '$number_of_syringe'
                         )";
 
         $result_fixation_additional = pg_query($pg_con, $sql_fixation_additional);
 
-         // Insert fixation data if available
+        // Insert fixation data if available
         if (!empty($fixation_data)) {
             foreach ($fixation_data as $fixation) {
-                $slide_number = isset($fixation['slide_number']) ? $fixation['slide_number'] : '';
-                $location = isset($fixation['location']) ? $fixation['location'] : '';
-                $fixation_method = isset($fixation['fixation_method']) ? $fixation['fixation_method'] : '';
-                $dry = isset($fixation['dry']) ? $fixation['dry'] : '';
+                $slide_number = $fixation['slideNumber'] ?? ''; // Use the correct key
+                $location = $fixation['location'] ?? ''; // Use the correct key
+                $fixation_method = $fixation['fixationMethod'] ?? ''; // Use the correct key
+                $dry = $fixation['isDry'] ?? ''; // Use the correct key
+                $aspiration_materials = $fixation['aspirationMaterials'] ?? ''; // Use the correct key
+                $special_instructions = $fixation['specialInstruction'] ?? ''; // Use the correct key
 
-                 // If $dry is 'Yes', set $fixation_method to an empty string
+                // If $dry is 'Yes', set $fixation_method to null
                 if (strtolower($dry) === 'yes') {
                     $fixation_method = null; // or an empty string if the database expects it
                 }
-                
+
                 // Insert each fixation entry into llx_cyto_fixation_details
                 $sql_fixation = "INSERT INTO llx_cyto_fixation_details (
                                     cyto_id,
                                     slide_number,
                                     location,
                                     fixation_method,
-                                    dry
+                                    dry,
+                                    aspiration_materials,
+                                    special_instructions
                                 ) VALUES (
                                     '$cyto_id',
                                     '$slide_number',
                                     '$location',
-                                    '$fixation_method',
-                                    '$dry'
+                                    " . ($fixation_method === null ? "NULL" : "'$fixation_method'") . ",
+                                    '$dry',
+                                    '$aspiration_materials',
+                                    '$special_instructions'
                                 )";
                 $result_fixation = pg_query($pg_con, $sql_fixation);
                 if (!$result_fixation) {
@@ -127,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
         }
+
 
         // Redirect to the group URL
         header("Location: $homeUrl");
