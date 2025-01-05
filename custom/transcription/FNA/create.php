@@ -139,7 +139,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <th>FNA Station Type</th>
                         <th>Doctor</th>
                         <th>Assistant</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -161,14 +160,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <td>{$record['lab_number']}</td>
                             <td>{$record['patient_code']}</td>
                             <td>
-                                <select name='fna_station_type[{$record['rowid']}]' class='form-control'>
+                                <select name='fna_station_type[{$record['rowid']}]' class='form-control' readonly>
                                     <option value=''>--Select a Station--</option>
                                     <option value='One' " . ($record['fna_station_type'] === 'One' ? 'selected' : '') . ">One</option>
                                     <option value='Two' " . ($record['fna_station_type'] === 'Two' ? 'selected' : '') . ">Two</option>
                                 </select>
                             </td>
                              <td>
-                        <select name='doctor[{$record['rowid']}]' class='form-control'>";
+                        <select name='doctor[{$record['rowid']}]' class='form-control' readonly>";
                         foreach ($doctors as $doctor) {
                             $selected = $doctor['doctor_username'] === $record['doctor'] ? 'selected' : '';
                             echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
@@ -176,19 +175,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 echo "</select>
                     </td>
                     <td>
-                        <select name='assistant[{$record['rowid']}]' class='form-control'>";
+                        <select name='assistant[{$record['rowid']}]' class='form-control' readonly>";
                         foreach ($assistants as $assistant) {
                             $selected = $assistant['username'] === $record['assistant'] ? 'selected' : '';
                             echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
                         }
                 echo "</select>
                     </td>
-                            <td>
-                                <input type='hidden' id='updated_user' name='updated_user' value='$loggedInUsername'>
-                                <button class='btn btn-primary btn-sm edit-btn' data-rowid='{$record['rowid']}'>
-                                    <i class='fas fa-edit'></i> 
-                                </button>
-                            </td>  
+                            
                         </tr>";
                     }
                     ?>
@@ -211,7 +205,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             ?>
             
             <!-- Patient Information -->
-            <div class="container">
+            <div>
                 <div class="row">
                     <div class="col-12">
                         <h4 class="mb-4">Patient Information</h4>
@@ -293,8 +287,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 </div>
             </div>
 
-
-            <div class="container">        
+            <!-- Clinical Information -->
+            <div> 
                     <!-- Clinical Information -->
                     <div class="mt-4">
                         <h4>Clinical Information</h4>
@@ -308,8 +302,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <th>Chief Complain</th>
                                     <th>Relevant Clinical History</th>
                                     <th>On Examination</th>
-                                    <th>Aspiration Note</th>
-                                    <th>Edit</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -318,34 +310,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <?php else: ?>
                                     <?php foreach ($clinicalInformation as $info): ?>
                                         <tr>
-                                            <form id="cyto-clinical-information-update" method="post" action="../Cyto/patient_clinical_info_update.php">
                                                 <td>
-                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
+                                                    <?= htmlspecialchars($info['chief_complain']) ?>
                                                 </td>
                                                 <td>
-                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
+                                                   <?= htmlspecialchars($info['relevant_clinical_history']) ?>
                                                 </td>
+                                                
                                                 <td>
-                                                    <!-- Quill editor for "On Examination" field -->
-                                                    <div id="onExaminationEditor-<?= $info['rowid'] ?>" class="quill-editor"></div>
-                                                    <input type="hidden" id="hiddenOnExamination-<?= $info['rowid'] ?>" name="on_examination" />
+                                                    <?= htmlspecialchars($info['on_examination']) ?>
                                                 </td>
-                                                <!-- <td>
-                                                    <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
-                                                </td> -->
-                                                <td>
-                                                    <div id="aspirationNoteEditor-<?= $info['rowid'] ?>" class="quill-editor">
-                                                        <?= htmlspecialchars_decode($info['aspiration_note'] ?? ''); ?>
-                                                    </div>
-                                                    <!-- Hidden input to store the content of the aspiration note -->
-                                                    <input type="hidden" id="hiddenAspirationNote-<?= $info['rowid'] ?>" name="aspiration_note" />
-                                                </td>
-                                                <td>
-                                                    <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
-                                                        <i class="fas fa-edit"></i> 
-                                                    </button>
-                                                </td>
-                                            </form>
+                                               
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -354,7 +329,64 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     </div>
 
             </diV>
+
+            <!-- Fixation Details -->
             
+        
+                    <div class="mt-4">
+                        <?php 
+                            $fixationInformation = get_cyto_fixation_details($cyto_id);
+                            
+                        ?>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Slide Number</th>
+                                    <th>Aspiration Materials</th>
+                                    <th>Special Instruction</th>
+                                    <th>Fixation Method</th>
+                                    <th>Dry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($fixationInformation)): ?>
+                                    <tr><td colspan="5">No data found.</td></tr>
+                                <?php else: ?>
+                                    <?php foreach ($fixationInformation as $info_fixation): ?>
+                                        <tr>
+                                                <td>
+                                                    <?= htmlspecialchars($info_fixation['location']) ?>
+                                                </td>
+                                                <td>
+                                                   <?= htmlspecialchars($info_fixation['slide_number']) ?>
+                                                </td>
+                                                
+                                                <td>
+                                                    <?= htmlspecialchars($info_fixation['aspiration_materials']) ?>
+                                                </td>
+
+                                                <td>
+                                                    <?= htmlspecialchars($info_fixation['special_instructions']) ?>
+                                                </td>
+
+                                                <td>
+                                                    <?= htmlspecialchars($info_fixation['fixation_method']) ?>
+                                                </td>
+
+                                                <td>
+                                                    <?= htmlspecialchars($info_fixation['dry']) ?>
+                                                </td>
+                                               
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
             <?php
                 // Fetch data using the function
                 $data = cyto_microscopic_description_lab($LabNumber);
@@ -366,6 +398,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
+                                <th>Aspiration Notes</th>
+                                <th>Gross Note</th>
                                 <th>Microscopic Description</th>
                                 <th>Conclusion</th>
                                 <th>Comment</th>
@@ -374,6 +408,20 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         </thead>
                         <tbody>
                             <tr>
+                                <!-- Aspiration Notes -->
+                                <td>
+                                    <div id="aspiration-notes-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode(!empty($data['aspiration_notes']) ? $data['aspiration_notes'] : ($info['on_examination'] ?? '')); ?>
+                                    </div>
+                                </td>
+
+                                <!-- Gross Note -->
+                                <td>
+                                    <div id="gross-note-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['gross_note'] ?? ''); ?>
+                                    </div>
+                                </td>
+
                                 <!-- Microscopic Description -->
                                 <td>
                                     <div id="microscopic-description-container" class="quill-editor">
@@ -554,76 +602,27 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 
 
-
-<!-- Clinical Information Update -->
-<script>
-    $(document).ready(function() {
-
-        <?php foreach ($clinicalInformation as $info): ?>
-            var quill<?= $info['rowid'] ?> = new Quill('#aspirationNoteEditor-<?= $info['rowid'] ?>', {
-                theme: 'snow',
-                placeholder: 'Type the Aspiration Note...',
-                modules: { toolbar: false }
-            });
-            quill<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['aspiration_note']) ?>`;
-
-            var quillOnExamination<?= $info['rowid'] ?> = new Quill('#onExaminationEditor-<?= $info['rowid'] ?>', {
-                    theme: 'snow',
-                    placeholder: 'Type the On Examination details...',
-                    modules: { toolbar: false }
-            });
-            quillOnExamination<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['on_examination']) ?>`;
-
-        <?php endforeach; ?>
-
-        // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
-        <?php foreach ($clinicalInformation as $info): ?>
-            $("#clinicalInformationBtn-<?= $info['rowid'] ?>").on("click", function(e) {
-                e.preventDefault();  // Prevent form submission
-
-                var rowid = $(this).attr("id").split('-')[1];  // Extract rowid from the button id
-                var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
-                var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
-                var on_examination = quillOnExamination<?= $info['rowid'] ?>.root.innerHTML;  // Get content from Quill for on examination
-                // var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
-                var aspiration_note = quill<?= $info['rowid'] ?>.root.innerHTML;  // Get the content from the Quill editor
-
-                // Update hidden input with the aspiration_note content
-                $("#hiddenOnExamination-" + rowid).val(on_examination);
-                $("#hiddenAspirationNote-" + rowid).val(aspiration_note);
-
-                // Send the data via AJAX
-                $.ajax({
-                    url: '../../cytology/Cyto/patient_clinical_info_update.php',  // Change this path as per your directory structure
-                    type: 'POST',
-                    data: {
-                        rowid: rowid,
-                        chief_complain: chief_complain,
-                        relevant_clinical_history: relevant_clinical_history,
-                        on_examination: on_examination,
-                        aspiration_note: aspiration_note
-                    },
-                    success: function(response) {
-                        if (response.trim() === 'success') {
-                            alert('Clinical Information updated successfully!');
-                        } else {
-                            alert('Clinical Information updated successfully!');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error);
-                    }
-                });
-            });
-        <?php endforeach; ?>
-
-    });
-</script>
-
 <!-- Rich text editor for Microscopic Information -->
 <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
 <script>
         let isEditing = false;
+
+        const aspirationNotesEditor = new Quill('#aspiration-notes-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Aspiration Notes',
+            modules: { toolbar: false }
+        });
+
+        aspirationNotesEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['aspiration_notes'] ?? htmlspecialchars($info['on_examination'] ?? '')); ?>`;
+
+        const grossNoteEditor = new Quill('#gross-note-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Gross Note',
+            modules: { toolbar: false }
+        });
+
 
         // Initialize Quill editors
         const microscopicDescriptionEditor = new Quill('#microscopic-description-container', {
@@ -654,6 +653,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
             if (!isEditing) {
                 // Enable editing
+                aspirationNotesEditor.enable(); 
+                grossNoteEditor.enable();  
                 microscopicDescriptionEditor.enable();
                 conclusionDescriptionEditor.enable();
                 commentDescriptionEditor.enable();
@@ -670,17 +671,23 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         document.getElementById('saveMicroscopicBtn').addEventListener('click', function () {
             if (isEditing) {
                 // Gather data from editors (HTML content)
+                const aspirationNotes = aspirationNotesEditor.root.innerHTML.trim();
+                const grossNote = grossNoteEditor.root.innerHTML.trim(); 
                 const microscopicDescription = microscopicDescriptionEditor.root.innerHTML.trim();
                 const conclusionDescription = conclusionDescriptionEditor.root.innerHTML.trim();
                 const commentDescription = commentDescriptionEditor.root.innerHTML.trim();
 
                 // Disable editing
+                aspirationNotesEditor.disable();
+                grossNoteEditor.disable();
                 microscopicDescriptionEditor.disable();
                 conclusionDescriptionEditor.disable();
                 commentDescriptionEditor.disable();
 
                 // Prepare data for submission
                 const formData = new FormData();
+                formData.append('aspiration-notes', aspirationNotes);
+                formData.append('gross-note', grossNote);
                 formData.append('microscopic-description', microscopicDescription);
                 formData.append('conclusion-description', conclusionDescription);
                 formData.append('comment-description', commentDescription);

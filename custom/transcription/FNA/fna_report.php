@@ -478,15 +478,21 @@ if (!$clinical_details_result) {
     die("Query failed for clinical_details: " . pg_last_error());
 }
 
-$examination_query = "SELECT on_examination FROM llx_cyto_clinical_information WHERE cyto_id = '$fk_cyto_id'";
-$examination_result = pg_query($pg_con, $examination_query);
+$gross_note_query = "select gross_note from llx_cyto_microscopic_description where lab_number ='$LabNumber' AND gross_note != '<p><br></p>' 
+AND gross_note != '<br>' 
+AND gross_note != '<p>&nbsp;</p>' 
+AND NOT gross_note ~ '^<p\s*[^>]*>\s*</p>$'";
+$gross_note_result = pg_query($pg_con, $gross_note_query);
 
-if (!$examination_result) {
-    die("Error in SQL query for examination : " . pg_last_error());
+if (!$gross_note_result) {
+    die("Error in SQL query for gross_note : " . pg_last_error());
 }
 
 // SQL operation for aspiration_note
-$aspiration_note_query = "SELECT aspiration_note FROM llx_cyto_clinical_information WHERE cyto_id = '$fk_cyto_id'";
+$aspiration_note_query = "select aspiration_notes from llx_cyto_microscopic_description where lab_number ='$LabNumber' AND aspiration_notes != '<p><br></p>' 
+AND aspiration_notes != '<br>' 
+AND aspiration_notes != '<p>&nbsp;</p>' 
+AND NOT aspiration_notes ~ '^<p\s*[^>]*>\s*</p>$'";
 $aspiration_note_result = pg_query($pg_con, $aspiration_note_query);
 
 if (!$aspiration_note_result) {
@@ -542,44 +548,48 @@ while ($row = pg_fetch_assoc($clinical_details_result)) {
 $html .= implode('<br/>', $clinical_details_rows);
 $html .= '</td></tr>';
 
-// Add on_examination
-$html .= '<tr>
-            <th style="width: 26%;"><b>OnExamination:</b></th>
-            <td style="width: 74%;">';
+// Add gross_note
+// Check if there are rows in the result
+if (pg_num_rows($gross_note_result) > 0) {
+    $html .= '<tr>
+                <th style="width: 26%;"><b>Gross Note:</b></th>
+                <td style="width: 74%;">';
 
-$examination_rows = [];
-while ($row = pg_fetch_assoc($examination_result)) {
-    // Normalize <br> tags: collapse multiple <br> to a single <br>
-    $examination = $row['on_examination'];
-    $examination = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $examination);
-    
-    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
-    $examination = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $examination);
-    
-    // Remove trailing <br> tags if they don't precede text
-    $examination = preg_replace('/<br>\s*$/', '', $examination);
-    
-    // Trim to remove leading and trailing whitespace
-    $examination = trim($examination);
+    $gross_note_rows = [];
+    while ($row = pg_fetch_assoc($gross_note_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $gross_note = $row['gross_note'];
+        $gross_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $gross_note);
 
-    // Add the formatted examination to the rows
-    $examination_rows[] = $examination;
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $gross_note = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $gross_note);
+
+        // Remove trailing <br> tags if they don't precede text
+        $gross_note = preg_replace('/<br>\s*$/', '', $gross_note);
+
+        // Trim to remove leading and trailing whitespace
+        $gross_note = trim($gross_note);
+
+        // Add the formatted gross_note to the rows
+        $gross_note_rows[] = $gross_note;
+    }
+
+    // Combine the rows with <br/> for output
+    $html .= implode('<br/>', $gross_note_rows);
+    $html .= '</td></tr>';
 }
 
-// Combine the rows with <br/> for output
-$html .= implode('<br/>', $examination_rows);
-$html .= '</td></tr>';
-
-
 // Add Aspiration Note
-$html .= '<tr>
+// Check if there are rows in the result
+if (pg_num_rows($aspiration_note_result) > 0) {
+    $html .= '<tr>
             <th style="width: 26%;"><b>Aspiration Note:</b></th>
             <td style="width: 74%;">';
 
 $aspiration_note_rows = [];
 while ($row = pg_fetch_assoc($aspiration_note_result)) {
     // Normalize <br> tags: collapse multiple <br> to a single <br>
-    $aspiration_note = $row['aspiration_note'];
+    $aspiration_note = $row['aspiration_notes'];
     $aspiration_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $aspiration_note);
     
     // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
@@ -598,6 +608,8 @@ while ($row = pg_fetch_assoc($aspiration_note_result)) {
 // Combine the rows with <br/> for output
 $html .= implode('<br/>', $aspiration_note_rows);
 $html .= '</td></tr>';
+}
+
 
 // Add Microscopic Description
 $html .= '<tr>
