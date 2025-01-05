@@ -118,6 +118,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- Import the JavaScript file -->
 	<link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="../../grossmodule/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
 
     <style>
         .form-group-slide {
@@ -174,6 +177,43 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         }
 
         .show {display: block;}
+
+        #dry-slides-description:focus {
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
+        }
+        #clinical-history:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
+        }
+        #site-of-aspiration-editor:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #fixation-comments:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #number-of-needle:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #number-of-syringe:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #location-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #slides-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #aspiration_materials-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
     </style>
 </head>
 <body>   
@@ -467,14 +507,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </table>
                         
                             <!-- Clinical Information -->
-                            <h3>Clinical Information</h3>
                             <!-- Reason for FNAC -->
                             <div class="form-group dropdown">
                                     <label for="chief-complain">Chief Complain:</label>
                                     <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
                                     <div id="myDropdown" class="dropdown-content" style="display: none;">
                                         <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
-                                        <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()">
+                                        <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()" required>
                                             <option value="Others">Others</option>
                                             <?php $chief_complain_list = get_cyto_chief_complain_list(); ?>
                                             <?php foreach ($chief_complain_list as $complain): ?>
@@ -490,14 +529,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <!-- Clinical History -->
                             <div class="form-group">
                                 <label for="clinical-history">Relevant Clinical History:</label>
-                                <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes"></textarea>
+                                <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes" required></textarea>
                             </div>
                             
                             <!-- Site of Aspiration -->
                             <div class="form-group">
-                                <label for="site-of-aspiration">OnExamination:</label><br>
                                 <select id="onExaminationSelector">
-                                    <option value="">Select Format</option>
+                                    <option value=""><spain><b>OnExamination</b>&nbsp;&nbsp;</spain> Select Format</option>
                                     <option value="format1">General Examination</option>
                                     <option value="format2">Default</option>
                                     <option value="thyroid">Thyroid Region</option>
@@ -511,19 +549,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <option value="miscellaneous">Miscellaneous</option>
                                     <option value="cytologySlides">Cytology Slides</option>
                                 </select>
-                                <textarea type="text" id="site-of-aspiration" name="site-of-aspiration" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
+                                <textarea type="text" id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
                             </div>
 
-                            <!-- Indication for Aspiration -->
-                            <div  class="form-group">
-                                <label for="indication-for-aspiration"></label><br>
-                                <select id="regionSelector">
-                                    <option value="">Select Region</option>
-                                    <option value="format1">General Examination</option>
-                                    <option value="format2">Default</option>
-                                </select>
-                                <textarea type="text" id="aspirationNoteEditor" name="indication_for_aspiration" class="form-control" rows="4" placeholder="Enter aspiration note"></textarea>
-                            </div>
+                            
 
                             <!-- FNAC Collection Details -->
                             <?php
@@ -534,18 +563,82 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <!-- Total Slides Prepared -->
                             <div class="form-group form-group-slide d-flex align-items-center">
                                 <label for="location-input" class="mr-2">Location:</label> &nbsp; 
-                                <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" required> &nbsp; &nbsp; &nbsp;
+                                <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" > &nbsp; &nbsp; &nbsp;
 
                                 <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
-                                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" required> &nbsp; &nbsp; &nbsp; 
+                                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" > &nbsp; &nbsp; &nbsp; 
 
                                 <label for="aspiration_materials-input" class="mr-2">Aspiration Materials:</label>&nbsp;
-                                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" required> &nbsp; &nbsp; &nbsp;
+                                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" > &nbsp; &nbsp; &nbsp;
 
                                 <label for="special_instruction-input" class="mr-2">Special Instruction:</label>
-                                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" required> &nbsp; &nbsp; &nbsp;
+                                <input type="text" id="special-instruction-input" name="special_instruction_input" class="form-control mr-3" placeholder="Enter Special Instruction"> &nbsp; &nbsp; &nbsp;
                                 
                                 <button type="button" class="btn btn-primary" id="populate-table">Generate slide</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="specialInstructionModal" tabindex="-1" role="dialog" aria-labelledby="specialInstructionModalLabel">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <h4 class="modal-title" id="specialInstructionModalLabel">Select Special Instructions</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="centrifuge-checkbox" value="Centrifuge" />&nbsp;&nbsp;<b>Centrifuge</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="zn-checkbox" value="Zn" />&nbsp;&nbsp;<b>Zn</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="Gram-stain-checkbox" value="Gram" />&nbsp;&nbsp;<b>Gram</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="Fite-Faraco-checkbox" value="Fite-Faraco" />&nbsp;&nbsp;<b>Fite-Faraco</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="leishmain-checkbox" value="Leishmain" />&nbsp;&nbsp;<b>Leishmain</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="pap-stain-checkbox" value="Pap Stain" />&nbsp;&nbsp;<b>Pap Stain</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="pas-stain-checkbox" value="PAS" />&nbsp;&nbsp;<b>PAS</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="Congo-Red-checkbox" value="Congo Red" />&nbsp;&nbsp;<b>Congo Red</b>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="Grocott-Methenamine-checkbox" value="GMS" />&nbsp;&nbsp;<b>GMS</b>
+                                                </div>
+                                                <!-- Other Option -->
+                                                <div class="col-md-3 mt-3">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="final-labInstructions-other-checkbox"
+                                                        value="Other"
+                                                    />&nbsp;&nbsp;<b>Other</b>
+                                                </div>
+                                            </div>
+                                            <div id="final-Instructions-other-history" style="display: none;" class="mt-3">
+                                                <label for="final-Instructions-other-history-text">Please specify:</label>
+                                                <textarea
+                                                    id="final-Instructions-other-history-text"
+                                                    class="form-control"
+                                                    rows="3"
+                                                    placeholder="Specify other instruction"
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Slide Fixation Details -->
@@ -559,6 +652,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                             <th>Location</th>
                                             <th>Fixation Method</th>
                                             <th>Dry</th>
+                                            <th>Aspiration Materials</th>
+                                            <th>Special Instruction</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -590,32 +685,53 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 </div>
                             </div>
 
-                            <!-- Special Instructions or Tests Required -->
-                            <div class="form-group">
-                                <label for="special-instructions">
-                                    Special Instructions or Tests Required:
-                                    <button type="button" class="btn btn-link toggle-btn" data-target="#special-instructions-section">+</button>
-                                </label>
-                                <div id="special-instructions-section" class="toggle-section" style="display: none;">
-                                    <textarea id="special-instructions" name="special_instructions" class="form-control" rows="3" placeholder="Enter tests like special stains, immunocytochemistry, etc."></textarea>
-                                </div>
-                            </div>
+                            
                         
                             <!-- Number of Passes Performed -->
                             <div class="form-group">
                                 <label for="number-of-needle">Number of Needle Used:</label>
-                                <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0">
+                                <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0" required>
                             </div>
                             <div class="form-group">
                                 <label for="number-of-syringe">Number of Syringe Used:</label>
-                                <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0">
+                                <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">Submit</button>
+
+                            <!-- Modal Popup -->
+                            <div id="exitModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exitModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                            </button>
+                                            <h4 class="modal-title" id="exitModalLabel">Are you sure you want to leave?</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>You have unsaved changes. If you exit, your changes will not be saved.</p>
+                                            <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" id="confirmExitCheckbox"> I confirm I want to exit
+                                            </label>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" id="stayButton" class="btn btn-default" data-dismiss="modal">Stay</button>
+                                            <button type="button" id="exitButton" class="btn btn-danger" disabled>Exit</button>
+                                        </div>
+                                        </div>
+                                    </div>
+                            </div>
+
+                            <button id="saveButton" type="submit" class="btn btn-primary">Submit</button>
                         </form>
             </div>
     
 </body>
 </html>
+
+
+
 
 <!-- Doctor , Assistant and Station information -->
 <script>
@@ -697,19 +813,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             row.querySelector('.slide-code').textContent = slideCode;
         }
 
-        function addRow(location, isDry) {
+        function addRow(location, isDry, aspirationMaterials, specialInstruction) {
             const tbody = document.getElementById('fixation-details-body');
             const newRow = document.createElement('tr');
 
             newRow.innerHTML = `
                 <td>${rowCounter}</td>
                 <td class="slide-code"></td>
-                <td>
-                    <select class="form-control location-select">
-                        ${locationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                    </select>
-                    <input type="text" class="form-control other-location-input" placeholder="Specify other location" style="display: none;">
-                </td>
+                <td>${location}</td>
                 <td>
                     <select class="form-control fixation-method-select">
                         <option value="Alcohol">Alcohol fixation</option>
@@ -722,76 +833,100 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <td>
                     <input type="checkbox" class="dry-checkbox" ${isDry ? 'checked' : ''}>
                 </td>
+                <td>${aspirationMaterials}</td>
+                <td> <textarea class="form-control special-instruction-input">${specialInstruction}</textarea></td>
                 <td>
                     <button type="button" class="btn btn-danger remove-row">Remove</button>
                 </td>
             `;
 
-            const locationDropdown = newRow.querySelector('.location-select');
             const fixationDropdown = newRow.querySelector('.fixation-method-select');
-            const dryCheckbox = newRow.querySelector('.dry-checkbox');
+            fixationDropdown.addEventListener('change', function () {
+                if (this.value === "Other") {
+                    newRow.querySelector('.other-fixation-input').style.display = 'block';
+                } else {
+                    newRow.querySelector('.other-fixation-input').style.display = 'none';
+                }
+            });
 
-            if (!locationOptions.includes(location)) {
-                locationOptions.push(location); // Add new location to options
-                const newOption = document.createElement('option');
-                newOption.value = location;
-                newOption.textContent = location;
-                locationDropdown.appendChild(newOption);
-            }
-
-            locationDropdown.value = location;
-            locationDropdown.addEventListener('change', () => updateSlideCode(newRow, locationDropdown.value));
-            dryCheckbox.addEventListener('change', () => handleLocationOrFixationChange(newRow, locationDropdown, fixationDropdown, dryCheckbox));
             newRow.querySelector('.remove-row').addEventListener('click', () => tbody.removeChild(newRow));
-
             tbody.appendChild(newRow);
+
             updateSlideCode(newRow, location);
             rowCounter++;
         }
 
         document.getElementById('populate-table').addEventListener('click', function () {
             const slidesInput = document.getElementById('slides-input').value.trim();
-            let locationInput = document.getElementById('location-input').value.trim();
+            const locationInput = document.getElementById('location-input').value.trim();
+            const aspirationMaterials = document.getElementById('aspiration_materials-input').value.trim();
+            const specialInstruction = document.getElementById('special-instruction-input').value.trim();
 
-            if (!slidesInput || !locationInput) {
-                alert('Please fill in all fields.');
+            // Validate required fields
+            if (!slidesInput || !locationInput || !aspirationMaterials) {
+                alert('Please fill in all required fields.');
                 return;
             }
 
+            // Parse slide input
             const [fixationSlides, drySlides] = slidesInput.split('+').map(Number);
             if (isNaN(fixationSlides) || isNaN(drySlides)) {
                 alert('Invalid slide input format. Use "2+1" format.');
                 return;
             }
 
-            for (let i = 0; i < fixationSlides; i++) addRow(locationInput, false);
-            for (let i = 0; i < drySlides; i++) addRow(locationInput, true);
-        });
-        
-        // When the form is submitted, collect the fixation details and add them to the form
-        document.getElementById("clinical-information-form").addEventListener("submit", function(event) {
-            // Prevent the default form submission for handling data collection
-            event.preventDefault();
-            const tbody = document.getElementById('fixation-details-body');
-            const fixationData = [];
-            // Loop through each row in the table to collect data
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach(row => {
-                const slideNumber = row.querySelector('.slide-code').textContent;
-                const location = row.querySelector('.location-select').value;
-                const fixationMethod = row.querySelector('.fixation-method-select').value;
-                const isDry = row.querySelector('.dry-checkbox').checked ? 'Yes' : 'No';
+            // Generate new rows
+            for (let i = 0; i < fixationSlides; i++) addRow(locationInput, false, aspirationMaterials, specialInstruction);
+            for (let i = 0; i < drySlides; i++) addRow(locationInput, true, aspirationMaterials, specialInstruction);
 
-                // Push this data into the fixationData array
-                fixationData.push({
-                    slideNumber,
-                    location,
-                    fixationMethod,
-                    isDry
-                });
+            // Clear form fields after generating the table
+            document.getElementById('location-input').value = '';
+            document.getElementById('slides-input').value = '';
+            document.getElementById('aspiration_materials-input').value = '';
+            document.getElementById('special-instruction-input').value = '';
+        });
+
+
+         // When the form is submitted, collect the fixation details and add them to the form
+         document.getElementById("clinical-information-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const tbody = document.getElementById('fixation-details-body');
+        const fixationData = [];
+        const rows = tbody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const slideNumber = row.querySelector('.slide-code').textContent;
+            const location = row.querySelector('td:nth-child(3)').textContent;
+            const fixationMethod = row.querySelector('.fixation-method-select').value;
+            const isDry = row.querySelector('.dry-checkbox').checked ? 'Yes' : 'No';
+            const aspirationMaterials = row.querySelector('td:nth-child(6)').textContent;
+            const specialInstruction = row.querySelector('.special-instruction-input').value;
+
+            fixationData.push({
+                slideNumber,
+                location,
+                fixationMethod,
+                isDry,
+                aspirationMaterials,
+                specialInstruction
             });
-            // Create hidden inputs for each piece of data and append them to the form
-            fixationData.forEach((data, index) => {
+        });
+
+        fixationData.forEach((data, index) => {
+            const form = document.getElementById('clinical-information-form');
+
+            for (let key in data) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = `fixation_data[${index}][${key}]`;
+                input.value = data[key];
+                form.appendChild(input);
+            }
+        });
+
+        // Create hidden inputs for each piece of data and append them to the form
+        fixationData.forEach((data, index) => {
                 // Create hidden input for Slide Number
                 let input = document.createElement('input');
                 input.type = 'hidden';
@@ -820,10 +955,12 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 input.value = data.isDry;
                 document.getElementById('clinical-information-form').appendChild(input);
             });
-            // Now submit the form
-            this.submit();
-        });
+
+        this.submit();
     });
+    
+    });
+
 </script>
 
 
@@ -870,32 +1007,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     });
 </script>
 
-<!-- Aspiration Note -->
-<script>
-    document.getElementById('regionSelector').addEventListener('change', function () {
-    const editor = document.getElementById('aspirationNoteEditor');
-    const region = this.value;
 
-    // Predefined templates
-    const templates = {
-        format1: `Amount:
-Color: 
-Consistency:`,
-
-            format2: `Amount: Very scanty / Scanty / Moderate / Plenty
-Color: 
-Consistency:`,
-        
-            // Add other regions with their respective templates
-        };
-
-        if (region && templates[region]) {
-            editor.value = templates[region];
-        } else {
-            editor.value = ''; // Clear editor if no region is selected
-        }
-    });
-</script>
 
 <!-- Search feature for dropdown Reason for FNAC -->
 <script>
@@ -987,13 +1099,91 @@ Consistency:`,
 
 
 <script>
-    document.getElementById('onExaminationSelector').addEventListener('change', function () {
-        const editor = document.getElementById('site-of-aspiration');
-        const format = this.value;
+    document.addEventListener('DOMContentLoaded', () => {
+        // Save button functionality
+        document.querySelectorAll('.save-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const row = this.closest('tr');
+                const rowid = row.getAttribute('data-rowid');
+                const formData = new FormData();
+                formData.append('rowid', rowid);
 
-        // Predefined templates
-        const templates = {
-            format1: `Location:
+                row.querySelectorAll('.edit-field').forEach(input => {
+                    formData.append(input.name, input.value);
+                });
+
+                fetch('../Cyto/update_patient.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    alert('Data updated successfully!');
+                    // Update the displayed values and reset visibility
+                    row.querySelectorAll('.text').forEach(el => {
+                        const name = el.nextElementSibling.name;
+                        el.textContent = formData.get(name);
+                        el.classList.remove('d-none');
+                    });
+                    row.querySelector('.save-btn').classList.add('d-none');
+                   
+                })
+                .catch(err => console.error('Error:', err));
+            });
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+            const $inputField = $("#special-instruction-input");
+            const $checkboxes = $("#specialInstructionModal input[type='checkbox']");
+            const $otherCheckbox = $("#final-labInstructions-other-checkbox");
+            const $otherTextarea = $("#final-Instructions-other-history");
+            const $otherTextInput = $("#final-Instructions-other-history-text");
+
+            const updateInputField = () => {
+                const selectedValues = $checkboxes
+                    .filter(":checked")
+                    .map(function () {
+                        return this.value !== "Other" ? this.value : null;
+                    })
+                    .get();
+
+                if ($otherCheckbox.is(":checked") && $otherTextInput.val().trim() !== "") {
+                    selectedValues.push($otherTextInput.val().trim());
+                }
+
+                $inputField.val(selectedValues.join(", "));
+            };
+
+            $checkboxes.on("change", function () {
+                if (this === $otherCheckbox[0]) {
+                    $otherTextarea.toggle($otherCheckbox.is(":checked"));
+                }
+                updateInputField();
+            });
+
+            $otherTextInput.on("input", updateInputField);
+
+            $inputField.on("click", function () {
+                $("#specialInstructionModal").modal("show");
+            });
+    });
+</script>
+
+
+
+<!-- On Examination -->
+<script>
+    document.getElementById('onExaminationSelector').addEventListener('change', function () {
+    const editor = document.getElementById('site-of-aspiration-editor'); // Corrected ID
+    const format = this.value;
+
+    // Predefined templates
+    const templates = {
+        format1: `Location:
 Side: 
 Level: 
 Appearance:
@@ -1004,7 +1194,7 @@ Appearance:
 Number of Swelling: 
 Size:`,
 
-            format2: `Location:
+        format2: `Location:
 Side: Right/Left
 Level: 
 
@@ -1016,34 +1206,36 @@ Appearance:
 
 Number of Swelling: 
 Size : [__cm to __cm]`,
-            thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
+        thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
 Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
-            cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
+        cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
 Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
 Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
-            parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
+        parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
 Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
-            lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
+        lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
 Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
 Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
-            tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
-            chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
-            preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
-            axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
-            miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
+        tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
+        chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
+        preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
+        axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
+        miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
 Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
-            cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
+        cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
 Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
-        };
+    };
 
-        if (format && templates[format]) {
-            editor.value = templates[format];
-        } else {
-            editor.value = ''; // Clear editor if no format is selected
-        }
-    });
+    if (format && templates[format]) {
+        editor.value = templates[format]; // Update textarea value
+    } else {
+        editor.value = ''; // Clear textarea if no format is selected
+    }
+});
+
 </script>
 
+<!-- update patient information -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Save button functionality
@@ -1080,6 +1272,8 @@ Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received 
     });
 
 </script>
+
+
 
 
 
