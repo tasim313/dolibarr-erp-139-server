@@ -357,7 +357,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <th>Chief Complain</th>
                                 <th>Relevant Clinical History</th>
                                 <th>On Examination</th>
-                                <th>Aspiration Note</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -368,22 +367,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <?php foreach ($clinicalInformation as $info): ?>
                                     <tr>
                                         <form id="cyto-clinical-information-update" method="post" action="../Cyto/patient_clinical_info_update.php">
+                                            <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
                                             <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
+                                                <textarea class="form-control" name="chief_complain" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
                                             </td>
                                             <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
+                                                <textarea class="form-control" name="relevant_clinical_history" data-rowid="<?= $info['rowid'] ?>" data-field="relevant_clinical_history"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
                                             </td>
                                             <td>
-                                                <textarea class="form-control" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
+                                                <textarea class="form-control" name="on_examination" data-rowid="<?= $info['rowid'] ?>" data-field="on_examination"><?= htmlspecialchars($info['on_examination']) ?></textarea>
                                             </td>
-                                            <td>
-                                                <div id="aspirationNoteEditor-<?= $info['rowid'] ?>" class="quill-editor">
-                                                    <?= htmlspecialchars_decode($info['aspiration_note'] ?? ''); ?>
-                                                </div>
-                                                <!-- Hidden input to store the content of the aspiration note -->
-                                                <input type="hidden" id="hiddenAspirationNote-<?= $info['rowid'] ?>" name="aspiration_note" />
-                                            </td>
+                                     
                                             <td>
                                                 <button id="clinicalInformationBtn-<?= $info['rowid'] ?>" class="btn btn-primary btn-sm">
                                                     <i class="fas fa-edit"></i> 
@@ -409,6 +403,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <th>Location</th>
                             <th>Fixation Method</th>
                             <th>Dry</th>
+                            <th>Aspiration Materials</th>
+                            <th>Special Instructions</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -433,6 +429,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                         value="<?= htmlspecialchars($info['dry']) ?>">
                                 </td>
                                 <td>
+                                    <input type="text" name="aspiration_materials" class="form-control" 
+                                        value="<?= htmlspecialchars($info['aspiration_materials']) ?>">
+                                </td>
+                                <td>
+                                    <input type="text" name="special_instructions" class="form-control" 
+                                        value="<?= htmlspecialchars($info['special_instructions']) ?>">
+                                </td>
+                                <td>
                                     <!-- Include the row ID as a hidden field -->
                                     <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
                                     <button type="submit" class="btn btn-primary btn-sm">
@@ -452,7 +456,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <tr>
                             <th>Dry Slide Description</th>
                             <th>Additional Notes on Fixation</th>
-                            <th>Special Instructions Or Test Required</th>
                             <th>Number of Needle Used</th>
                             <th>Number of Syringe</th>
                             <th>Action</th>
@@ -468,9 +471,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <td>
                                     <textarea class="form-control" name="additional_notes_on_fixation"><?= htmlspecialchars($info['additional_notes_on_fixation']) ?></textarea>
                                 </td>
-                                <td>
-                                    <textarea class="form-control" name="special_instructions_or_tests_required"><?= htmlspecialchars($info['special_instructions_or_tests_required']) ?></textarea>
-                                </td>
+                                
                                 <td>
                                     <input type="text" class="form-control" name="number_of_needle_used" value="<?= htmlspecialchars($info['number_of_needle_used']) ?>">
                                 </td>
@@ -494,19 +495,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </html>
 
 
-<script>
+<!-- <script>
     $(document).ready(function() {
 
-        <?php foreach ($clinicalInformation as $info): ?>
-            var quill<?= $info['rowid'] ?> = new Quill('#aspirationNoteEditor-<?= $info['rowid'] ?>', {
-                theme: 'snow',
-                placeholder: 'Type the Aspiration Note...',
-                modules: { toolbar: false }
-            });
-            quill<?= $info['rowid'] ?>.root.innerHTML = `<?= addslashes($info['aspiration_note']) ?>`;
-
-        <?php endforeach; ?>
-
+        
         // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
         <?php foreach ($clinicalInformation as $info): ?>
             $("#clinicalInformationBtn-<?= $info['rowid'] ?>").on("click", function(e) {
@@ -516,11 +508,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
                 var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
                 var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
-                var aspiration_note = quill<?= $info['rowid'] ?>.root.innerHTML;  // Get the content from the Quill editor
-
-                // Update hidden input with the aspiration_note content
-                $("#hiddenAspirationNote-" + rowid).val(aspiration_note);
-
+            
                 // Send the data via AJAX
                 $.ajax({
                     url: '../Cyto/patient_clinical_info_update.php',  // Change this path as per your directory structure
@@ -529,8 +517,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         rowid: rowid,
                         chief_complain: chief_complain,
                         relevant_clinical_history: relevant_clinical_history,
-                        on_examination: on_examination,
-                        aspiration_note: aspiration_note
+                        on_examination: on_examination
                     },
                     success: function(response) {
                         if (response.trim() === 'success') {
@@ -547,7 +534,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <?php endforeach; ?>
 
     });
-</script>
+</script> -->
 
 
 
