@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $microscopic = pg_escape_string($pg_con, $_POST['microscopic-description'] ?? '');
     $conclusion = pg_escape_string($pg_con, $_POST['conclusion-description'] ?? '');
     $comment = pg_escape_string($pg_con, $_POST['comment-description'] ?? '');
+    $aspiration_notes = pg_escape_string($pg_con, $_POST['aspiration-notes'] ?? '');
+    $gross_note = pg_escape_string($pg_con, $_POST['gross-note'] ?? '');
     $created_user = pg_escape_string($pg_con, $_POST['created_user'] ?? '');
 
     // Check if the record already exists
@@ -23,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 microscopic_description = '$microscopic',
                 conclusion = '$conclusion',
                 comment = '$comment',
+                aspiration_notes = '$aspiration_notes',
+                gross_note = '$gross_note',
                 updated_user = '$created_user',
                 updated_date = NOW()
             WHERE lab_number = '$LabNumber'
@@ -45,6 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 microscopic_description,
                 conclusion,
                 comment,
+                aspiration_notes,
+                gross_note,
                 created_user
             )
             VALUES (
@@ -52,6 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 '$microscopic',
                 '$conclusion',
                 '$comment',
+                '$aspiration_notes',
+                '$gross_note',
                 '$created_user'
             ) RETURNING rowid, lab_number
         ";
