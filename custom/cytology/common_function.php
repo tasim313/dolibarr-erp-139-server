@@ -46,7 +46,7 @@ function get_cyto_recall_list() {
     $sql = "select rowid, lab_number, patient_code, 
             recall_reason, created_date, recalled_doctor, notified_user,
             notified_method, follow_up_date, status, updated_date from 
-            llx_cyto_recall_management where status <> 'complete' OR  status <> 'Complete'";
+            llx_cyto_recall_management ";
     $result = pg_query($pg_con, $sql);
 
     $labnumbers = [];

@@ -65,30 +65,50 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<!-- Import the JavaScript file -->
 	<link href="../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body>
 	
 	<div class="container">
     	<h3>Cytopathology</h3>
         <ul class="nav nav-tabs">
-            <!-- <li><a href="patient/index.php">New</a></li>
-            <li><a href="patient/recall.php" class="tab">Recall</a></li> -->
-            <!-- <li><a href="patient/repeat.php" class="tab">Repeat</a></li> -->
+			<li class="active"><a data-toggle="tab" href="#regular">Regular</a></li>
+			<li><a data-toggle="tab" href="#recall">Recall</a></li>
+			
         </ul>
-		<div id="form-box">
-    			<h3>Please scan the FNA Lab Number to proceed</h3>
-    			<p>After scanning the Lab Number:</p>
-    		<ul>
-        		<li>If it is a new Lab Number, you will be directed to the <strong>Patient Registration</strong> page.</li>
-        		<li>If the Lab Number already exists, you will be directed to the <strong>Recall Patient</strong> page.</li>
-    		</ul>
-			<div id="input-group">
-				<input id="input-field" placeholder="Scan Lab number" type="text" onkeypress="handleLabNumberScan(event)" autofocus>
-				<label id="input-label">Enter or Scan the Lab Number</label>
-				<!-- Error message container -->
-				<div id="error-message" style="color: red; font-size: 14px; margin-top: 5px; display: none;"></div>
+
+		<div class="tab-content">
+			<div id="regular" class="tab-pane fade in active">
+				<div id="form-box">
+    				<h3>Please scan the FNA Lab Number to proceed</h3>
+    				<p>After scanning the Lab Number:</p>
+					<ul>
+						<li>If it is a new Lab Number, you will be directed to the <strong>Patient Registration</strong> page.</li>
+						<li>If the Lab Number already exists, you will be directed to the <strong>Patient Edit</strong> page.</li>
+					</ul>
+					<div id="input-group">
+						<input id="input-field" placeholder="Scan Lab number" type="text" onkeypress="handleLabNumberScan(event)" autofocus>
+						<label id="input-label">Enter or Scan the Lab Number</label>
+						<!-- Error message container -->
+						<div id="error-message" style="color: red; font-size: 14px; margin-top: 5px; display: none;"></div>
+					</div>
+				</div>
+			</div>
+			<div id="recall" class="tab-pane fade">
+					<div id="form-box-recall">
+						<h3>Please scan the <strong>Recall</strong> FNA Lab Number to proceed</h3>
+						<div id="input-group-recall">
+							<input id="input-field-recall" placeholder="Scan Lab number" type="text" onkeypress="handleRecallLabNumberScan(event)" autofocus>
+							<label id="input-label-recall">Enter or Scan the Lab Number</label>
+							<!-- Error message container -->
+							<div id="error-message-recall" style="color: red; font-size: 14px; margin-top: 5px; display: none;"></div>
+						</div>
+					</div>
 			</div>
 		</div>
+		
 
 	</div>
 
@@ -136,9 +156,7 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
 				// Check against lab lists (mocked here for demonstration)
 				if (labList.includes(formattedLabNumber)) {
 					window.location.href = `patient/index.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
-				} else if (recallList.includes(formattedLabNumber)) {
-					window.location.href = `patient/recall.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
-				} else if (completeCytoList.includes(formattedLabNumber)) {
+				}else if (completeCytoList.includes(formattedLabNumber)) {
 					window.location.href = `patient/patient_info_update.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
 				} 
 				else {
@@ -148,8 +166,36 @@ print load_fiche_titre($langs->trans("CytologyArea"), '', 'cytology.png@cytology
 			}
     	}
 
+		function handleRecallLabNumberScan(event) {
+			if (event.key === "Enter") {
+				const inputRecallField = document.getElementById("input-field-recall");
+				const labRecallNumber = inputRecallField.value.trim();
+				const errorRecallMessage = document.getElementById("error-message-recall");
+
+				// Clear previous error message
+				errorRecallMessage.style.display = "none";
+				errorRecallMessage.textContent = "";
+
+				if (!labRecallNumber) {
+					errorRecallMessage.style.display = "block";
+					errorRecallMessage.textContent = "Please scan or enter a valid Lab Number.";
+					return;
+				}
+
+				// Check against lab lists (mocked here for demonstration)
+				if (recallList.includes(labRecallNumber)) {
+					window.location.href = `patient/repeat.php?LabNumber=${encodeURIComponent(labRecallNumber)}`;
+				} 
+				else {
+					errorRecallMessage.style.display = "block";
+					errorRecallMessage.textContent = "Lab Number not found in the system. Please check and try again.";
+				}
+			}
+    	}
+
         // Add event listener to the input field
         document.getElementById("input-field").addEventListener("keypress", handleLabNumberScan);
+		document.getElementById("input-field-recall").addEventListener("keypress", handleLabNumberScan);
     </script>
 
 </body>
