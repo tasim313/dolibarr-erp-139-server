@@ -533,6 +533,18 @@ if (!$comment_details_result) {
 }
 
 
+// SQL operation for dynamic data
+$recall_details_info  = "select recall from llx_cyto_microscopic_description where lab_number ='$LabNumber' AND recall != '<p><br></p>' 
+AND recall != '<br>' 
+AND recall != '<p>&nbsp;</p>' 
+AND NOT recall ~ '^<p\s*[^>]*>\s*</p>$'";
+$recall_details_result = pg_query($pg_con, $recall_details_info);
+
+// Check if the query was successful
+if (!$recall_details_result) {
+    die("Query failed for recall_description: " . pg_last_error());
+}
+
 // Initialize content for the HTML table
 $html = '
 <table border="0" cellspacing="0" cellpadding="4" style="width:100%; table-layout: fixed;">';
@@ -607,6 +619,38 @@ while ($row = pg_fetch_assoc($aspiration_note_result)) {
 
 // Combine the rows with <br/> for output
 $html .= implode('<br/>', $aspiration_note_rows);
+$html .= '</td></tr>';
+}
+
+
+// Add recall_details
+// Check if there are rows in the result
+if (pg_num_rows($recall_details_result) > 0) {
+    $html .= '<tr>
+            <th style="width: 26%;"><b>Repeat Aspiration:</b></th>
+            <td style="width: 74%;">';
+
+$recall_details_rows = [];
+while ($row = pg_fetch_assoc($recall_details_result)) {
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $recall = $row['recall'];
+    $recall = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $recall);
+    
+    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+    $recall = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $recall);
+    
+    // Remove trailing <br> tags if they don't precede text
+    $recall = preg_replace('/<br>\s*$/', '', $recall);
+    
+    // Trim to remove leading and trailing whitespace
+    $recall = trim($recall);
+
+    // Add the formatted Aspiration Note to the rows
+    $recall_rows[] = $recall;
+}
+
+// Combine the rows with <br/> for output
+$html .= implode('<br/>', $recall_rows);
 $html .= '</td></tr>';
 }
 
