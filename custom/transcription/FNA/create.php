@@ -384,8 +384,109 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </tbody>
                         </table>
                     </div>
+            
+            <!-- Recall -->
+           <?php 
+             
+             echo("<h3>Recall Information</h3><br>");
+             $formatted_LabNumber = substr($LabNumber, 3);
+             $recall_status = cyto_recall_lab_number($formatted_LabNumber);
+             
+                if ($recall_status ) {
+                    $recall_cyto_id = $recall_status['rowid'];
+                    // recall clinical information
+                    $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
+                        // Check if we have valid data or an error message
+                        if (is_array($recall_clinical_information)) {
+                            // If data is found, create a table to display it
+                            echo '<table class="table table-bordered table-striped">';
+                            
+                            // List of fields to exclude
+                            $exclude_fields = ['rowid', 'cyto_id', 'aspiration_note'];
 
+                            // Create a row for the field names (headers)
+                            echo '<tr>';
+                            foreach ($recall_clinical_information as $field => $value) {
+                                // Skip the fields we want to exclude
+                                if (in_array($field, $exclude_fields)) {
+                                    continue;
+                                }
 
+                                // If the field exists and is not empty, display the field name
+                                if (!empty($value)) {
+                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
+                                }
+                            }
+                            echo '</tr>';
+
+                            // Create a row for the field values
+                            echo '<tr>';
+                            foreach ($recall_clinical_information as $field => $value) {
+                                // Skip the fields we want to exclude
+                                if (in_array($field, $exclude_fields)) {
+                                    continue;
+                                }
+
+                                // If the field exists and is not empty, display the value
+                                if (!empty($value)) {
+                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
+                                }
+                            }
+                            echo '</tr>';
+
+                            echo '</table>';
+                        } else {
+                            // If no data was found or there's an error
+                            echo '<p>' . $recall_clinical_information . '</p>';
+                        }
+                        
+                        // recall fixation details
+                        $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
+                        if (is_array($recall_fixation_details)) {
+                            // If data is found, create a table to display it
+                            echo '<table class="table table-bordered table-striped">';
+                            
+                            // List of fields to exclude
+                            $exclude_fields = ['rowid', 'cyto_id'];
+                        
+                            // Create a row for the field names (headers)
+                            echo '<tr>';
+                            foreach ($recall_fixation_details as $field => $value) {
+                                // Skip the fields we want to exclude
+                                if (in_array($field, $exclude_fields)) {
+                                    continue;
+                                }
+                        
+                                // If the field exists and is not empty, display the field name
+                                if (!empty($value)) {
+                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
+                                }
+                            }
+                            echo '</tr>';
+                        
+                            // Create a row for the field values
+                            echo '<tr>';
+                            foreach ($recall_fixation_details as $field => $value) {
+                                // Skip the fields we want to exclude
+                                if (in_array($field, $exclude_fields)) {
+                                    continue;
+                                }
+                        
+                                // If the field exists and is not empty, display the value
+                                if (!empty($value)) {
+                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
+                                }
+                            }
+                            echo '</tr>';
+                        
+                            echo '</table>';
+                        } else {
+                            // If no data was found or there's an error
+                            echo '<p>' . $recall_fixation_details . '</p>';
+                        }
+                    
+                } 
+           ?>
 
             <?php
                 // Fetch data using the function
@@ -403,7 +504,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <th>Microscopic Description</th>
                                 <th>Conclusion</th>
                                 <th>Comment</th>
-                                <th>Action</th>
+                                <th>Recall</th>
+                                <th>Edit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -440,6 +542,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <td>
                                     <div id="comment-description-container" class="quill-editor">
                                         <?= htmlspecialchars_decode($data['comment'] ?? ''); ?>
+                                    </div>
+                                </td>
+
+                                <!-- Recall (New Field) -->
+                                <td>
+                                    <div id="recall-description-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['recall'] ?? ''); ?>
                                     </div>
                                 </td>
 
@@ -649,6 +758,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         });
         commentDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['comment'] ?? ''); ?>`;
 
+        const recallDescriptionEditor = new Quill('#recall-description-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Recall',
+            modules: { toolbar: false }
+        });
+        recallDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['recall'] ?? ''); ?>`;
+
         // Edit button handler
         document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
             if (!isEditing) {
@@ -658,6 +775,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 microscopicDescriptionEditor.enable();
                 conclusionDescriptionEditor.enable();
                 commentDescriptionEditor.enable();
+                recallDescriptionEditor.enable();
 
                 // Show Save button
                 document.getElementById('editMicroscopicBtn').style.display = 'none';
@@ -676,6 +794,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 const microscopicDescription = microscopicDescriptionEditor.root.innerHTML.trim();
                 const conclusionDescription = conclusionDescriptionEditor.root.innerHTML.trim();
                 const commentDescription = commentDescriptionEditor.root.innerHTML.trim();
+                const recallDescription = recallDescriptionEditor.root.innerHTML.trim();
 
                 // Disable editing
                 aspirationNotesEditor.disable();
@@ -683,6 +802,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 microscopicDescriptionEditor.disable();
                 conclusionDescriptionEditor.disable();
                 commentDescriptionEditor.disable();
+                recallDescriptionEditor.disable();
 
                 // Prepare data for submission
                 const formData = new FormData();
@@ -691,6 +811,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 formData.append('microscopic-description', microscopicDescription);
                 formData.append('conclusion-description', conclusionDescription);
                 formData.append('comment-description', commentDescription);
+                formData.append('recall-description', recallDescription);
                 formData.append('LabNumber', '<?= htmlspecialchars($LabNumber); ?>');
                 formData.append('created_user', '<?= htmlspecialchars($loggedInUsername); ?>');
 
