@@ -42,7 +42,8 @@ try {
         "reason" => $recall_reasons,
         "timestamp" => $timestamp,
         "notified_method" => $notified_method, 
-        "follow_up_date" => $follow_up_date
+        "follow_up_date" => $follow_up_date,
+        "status" => "done"
     ];
 
     if ($row) {
@@ -51,13 +52,15 @@ try {
         $existingRecallReasons[$recalled_doctor][] = $newData;
 
         $updateQuery = "UPDATE llx_cyto_recall_management 
-                        SET recall_reason = $1, notified_method = $2, follow_up_date = $3, updated_date = NOW() 
-                        WHERE lab_number = $4";
+                        SET recall_reason = $1, notified_method = $2, follow_up_date = $3, status = $4, updated_date = NOW() 
+                        WHERE lab_number = $5";
+
         $updateResult = pg_query_params($pg_con, $updateQuery, [
-            json_encode($existingRecallReasons),
-            json_encode($notified_method),
-            $follow_up_date,
-            $lab_number
+                        json_encode($existingRecallReasons),
+                        json_encode($notified_method),
+                        $follow_up_date,
+                        'done',
+                        $lab_number
         ]);
 
         if ($updateResult === false) {
@@ -72,7 +75,8 @@ try {
             'recall_reason' => $existingRecallReasons,
             'notified_method' => $notified_method, // Return notified_method
             'follow_up_date' => $follow_up_date, // Return follow_up_date
-            'timestamp' => $timestamp
+            'timestamp' => $timestamp,
+            'status_value' => 'done'
         ];
     } else {
         // Insert new record
@@ -81,8 +85,8 @@ try {
         ];
 
         $insertQuery = "INSERT INTO llx_cyto_recall_management 
-                        (lab_number, recall_reason, recalled_doctor, notified_method, follow_up_date, notified_user, created_date) 
-                        VALUES ($1, $2, $3, $4, $5, $6, NOW())";
+                        (lab_number, recall_reason, recalled_doctor, notified_method, follow_up_date, notified_user, status, created_date) 
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())";
 
         $insertResult = pg_query_params($pg_con, $insertQuery, [
             $lab_number,
@@ -90,7 +94,8 @@ try {
             $recalled_doctor,
             json_encode($notified_method),
             $follow_up_date,
-            $recalled_doctor // Setting notified_user to recalled_doctor
+            $recalled_doctor, // Setting notified_user to recalled_doctor
+            'done'
         ]);
 
         if ($insertResult === false) {
@@ -103,9 +108,10 @@ try {
             'lab_number' => $lab_number,
             'recalled_doctor' => $recalled_doctor,
             'recall_reason' => $newRecallData,
-            'notified_method' => $notified_method, // Return notified_method
-            'follow_up_date' => $follow_up_date, // Return follow_up_date
-            'notified_user' => $recalled_doctor, // Return notified_user
+            'notified_method' => $notified_method, 
+            'follow_up_date' => $follow_up_date, 
+            'notified_user' => $recalled_doctor, 
+            'status_value' => 'done',
             'timestamp' => $timestamp
         ];
     }

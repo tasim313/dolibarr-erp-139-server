@@ -408,4 +408,217 @@ function get_cyto_recall_management($lab_number) {
 } 
 
 
+function cyto_recall_status_done_list() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data with the condition status = 'done'
+    $sql = "
+        SELECT rowid, lab_number, patient_code, 
+               recall_reason, created_date, recalled_doctor, notified_user,
+               notified_method, follow_up_date, status, updated_date 
+        FROM llx_cyto_recall_management
+        WHERE status = 'done'
+    ";
+
+    // Generate a unique statement name
+    $stmt_name = "get_recall_status_done_list_" . uniqid();
+
+    // Prepare the SQL query
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, array());
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or a message if no data found
+        return $rows ?: ['message' => 'No data found for the given status.'];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_recall_status_not_done_list() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data with the condition status = 'not done' or empty
+    $sql = "
+        SELECT rowid, lab_number, patient_code, 
+               recall_reason, created_date, recalled_doctor, notified_user,
+               notified_method, follow_up_date, status, updated_date 
+        FROM llx_cyto_recall_management
+        WHERE status IS NULL OR status = '' OR status= ' '
+    ";
+
+    // Generate a unique statement name
+    $stmt_name = "get_recall_status_not_done_list_" . uniqid();
+
+    // Prepare the SQL query
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, array());
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or a message if no data found
+        return $rows ?: ['message' => 'No data found for the given status.'];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_special_instructions_list() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data with the condition status = 'done'
+    $sql = "
+        SELECT 
+        f.rowid,
+        f.cyto_id,
+        f.slide_number,
+        f.location,
+        f.fixation_method,
+        f.dry,
+        f.aspiration_materials,
+        f.special_instructions
+        FROM llx_cyto_fixation_details f
+        LEFT JOIN llx_cyto_special_instructions_complete s
+            ON f.rowid = s.fixation_details
+        WHERE f.special_instructions IS NOT NULL 
+        AND f.special_instructions <> ''
+        AND s.fixation_details IS NULL
+    ";
+
+    // Generate a unique statement name
+    $stmt_name = "get_special_instructions_list_" . uniqid();
+
+    // Prepare the SQL query
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, array());
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_special_instructions_list_complete() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data where f.rowid matches s.fixation_details
+    $sql = "
+        SELECT 
+        f.rowid,
+        f.cyto_id,
+        f.slide_number,
+        f.location,
+        f.fixation_method,
+        f.dry,
+        f.aspiration_materials,
+        f.special_instructions
+        FROM llx_cyto_fixation_details f
+        INNER JOIN llx_cyto_special_instructions_complete s
+            ON f.rowid = s.fixation_details
+    ";
+
+    // Generate a unique statement name
+    $stmt_name = "get_special_instructions_list_complete_" . uniqid();
+
+    // Prepare the SQL query
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, array());
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
 ?>
