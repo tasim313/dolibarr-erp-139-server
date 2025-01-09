@@ -278,6 +278,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <div id="Complete" class="tabcontent">
             <h3>Complete</h3>
 
+            <!-- Search Input -->
+            <input type="text" id="recallSearch" onkeyup="searchRecall()" placeholder="Search for values..." style="margin-bottom: 20px; width: 100%; padding: 10px; font-size: 16px; font-weight: bold;">
+
             <?php
                 // Fetch data using the cyto_recall_status_done_list function
                 $recall_data = cyto_recall_status_done_list();
@@ -290,7 +293,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 } else {
                     // Display data in a table if available
                     if (count($recall_data) > 0) {
-                        echo '<table class="table table-bordered table-striped">';
+                        echo '<table id="recallTable" class="table table-bordered table-striped">';
                         echo '<thead>';
                         echo '<tr>';
                         echo '<th>Lab Number</th>';
@@ -393,6 +396,24 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 tabToClick.click();
             }
         };
+</script>
+
+
+<script>
+    function searchRecall() {
+        // Get the input field and filter value
+        let input = document.getElementById('recallSearch');
+        let filter = input.value.toLowerCase();
+        let table = document.getElementById('recallTable');
+        let rows = table.getElementsByTagName('tr');
+
+        // Loop through all table rows and hide those that don't match the search query
+        for (let i = 1; i < rows.length; i++) { // Start at 1 to skip the header row
+            let row = rows[i];
+            let textContent = row.textContent || row.innerText;
+            row.style.display = textContent.toLowerCase().includes(filter) ? '' : 'none';
+        }
+    }
 </script>
 
 </body>
