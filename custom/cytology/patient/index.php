@@ -214,6 +214,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
             border-color:rgb(223, 14, 77); 
         }
+        #clinical-impression:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
     </style>
 </head>
 <body>   
@@ -553,7 +557,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </div>
 
                             
-
                             <!-- FNAC Collection Details -->
                             <?php
                                 $slideBaseCode = preg_replace('/^[A-Za-z]{3}/', '', $LabNumber); 
@@ -614,6 +617,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                                 <div class="col-md-3">
                                                     <input type="checkbox" id="Grocott-Methenamine-checkbox" value="GMS" />&nbsp;&nbsp;<b>GMS</b>
                                                 </div>
+                                                <div class="col-md-3">
+                                                    <input type="checkbox" id="cell-block-checkbox" value="cell block" />&nbsp;&nbsp;<b>Cell Block</b>
+                                                </div>
                                                 <!-- Other Option -->
                                                 <div class="col-md-3 mt-3">
                                                     <input
@@ -662,6 +668,24 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     </tbody>
                                 </table>
                             </div>
+                           
+                            <!-- clinical-impression -->
+                            <div class="form-group row">
+                                    <label for="clinical-impression" class="col-sm-3 col-form-label">
+                                        Clinical Impression:
+                                    </label>
+                                    <div>
+                                    <textarea 
+                                        required
+                                        id="clinical-impression" 
+                                        name="clinical_impression" 
+                                        class="form-control" 
+                                        rows="5" 
+                                        placeholder="Enter clinical impression here..."
+                                        style="resize: none;"
+                                    ></textarea>
+                                    </div>
+                            </div>
 
                             <!-- Dry Slides Description -->
                             <div class="form-group">
@@ -697,31 +721,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0" required>
                             </div>
 
-                            <!-- Modal Popup -->
-                            <div id="exitModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exitModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                        <div class="modal-header">
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                            </button>
-                                            <h4 class="modal-title" id="exitModalLabel">Are you sure you want to leave?</h4>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>You have unsaved changes. If you exit, your changes will not be saved.</p>
-                                            <div class="checkbox">
-                                            <label>
-                                                <input type="checkbox" id="confirmExitCheckbox"> I confirm I want to exit
-                                            </label>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" id="stayButton" class="btn btn-default" data-dismiss="modal">Stay</button>
-                                            <button type="button" id="exitButton" class="btn btn-danger" disabled>Exit</button>
-                                        </div>
-                                        </div>
-                                    </div>
-                            </div>
+                           
 
                             <button id="saveButton" type="submit" class="btn btn-primary">Submit</button>
                         </form>
@@ -823,6 +823,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <td>${location}</td>
                 <td>
                     <select class="form-control fixation-method-select">
+                        <option value=""></option>
                         <option value="Alcohol">Alcohol fixation</option>
                         <option value="Formalin">Formalin fixation</option>
                         <option value="Air-dried">Air-dried</option>

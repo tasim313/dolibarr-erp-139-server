@@ -302,6 +302,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <th>Chief Complain</th>
                                     <th>Relevant Clinical History</th>
                                     <th>On Examination</th>
+                                    <th>Clinical Impression</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -319,6 +320,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                                 
                                                 <td>
                                                     <?= htmlspecialchars($info['on_examination']) ?>
+                                                </td>
+                                                <td>
+                                                    <?= htmlspecialchars($info['clinical_impression']) ?>
                                                 </td>
                                                
                                         </tr>

@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $clinical_history = $_POST['clinical_history'] ?? '';
     $site_of_aspiration = $_POST['site-of-aspiration-editor'] ?? '';
     $fixation_comments = $_POST['fixation_comments'] ?? '';
+    $clinical_impression = $_POST['clinical_impression'] ?? '';
     $dry_slides_description = $_POST['dry_slides_description'] ?? '';
     $special_instructions = $_POST['special_instruction_input'] ?? '';
     $aspiration_materials = $_POST['aspiration_materials_input'] ?? '';
@@ -67,13 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             cyto_id,
                             chief_complain,
                             relevant_clinical_history,
-                            on_examination
+                            on_examination,
+                            clinical_impression
                             
                         ) VALUES (
                             '$cyto_id',
                             '$chief_complain',
                             '$clinical_history',
-                            '$site_of_aspiration'
+                            '$site_of_aspiration',
+                            '$clinical_impression'
                         )";
 
         $result_summary = pg_query($pg_con, $sql_summary);

@@ -100,8 +100,8 @@ function cyto_recall_clinical_information($cyto_id) {
 
     // SQL query to fetch the required data
     $sql = "
-        SELECT rowid, cyto_id, chief_complain, relevant_clinical_history,
-               on_examination, aspiration_note 
+        SELECT rowid, cyto_id, chief_complain, additional_relevant_clinical_history,
+               additional_findings_on_examination, additional_clinical_impression
         FROM llx_cyto_recall_clinical_information 
         WHERE cyto_id = $1
     ";

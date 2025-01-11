@@ -146,6 +146,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         </div>
          <br>
         <div class="content">
+            <!-- cyto information -->
             <?php 
                     // Get the data
                     $cyto_status = get_cyto_list($LabNumber);
@@ -210,6 +211,65 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     }
             ?>
 
+            <!-- Clinical Information -->
+            <?php 
+                // Fetch the data
+                $cyto_clinical_information = get_cyto_clinical_information($cyto_id);
+
+                if (is_array($cyto_clinical_information) && count($cyto_clinical_information) > 0) {
+                    // If data is found, create a table to display it
+                    echo '<table class="table table-bordered table-striped">';
+                    
+                    // List of fields to exclude
+                    $exclude_fields = ['rowid', 'cyto_id'];
+
+                    // Create a flag to check if headers are already displayed
+                    $headers = false;
+
+                    // Loop through each row in the data
+                    foreach ($cyto_clinical_information as $row) {
+                        // Ensure the row is an array before continuing
+                        if (is_array($row)) {
+                            // Create a row for the field names (headers) - this will be done only once
+                            if (!$headers) {
+                                echo '<tr>';
+                                foreach ($row as $field => $value) {
+                                    // Skip the fields we want to exclude
+                                    if (in_array($field, $exclude_fields)) {
+                                        continue;
+                                    }
+
+                                    // Display the field name as a header if it exists
+                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
+                                }
+                                echo '</tr>';
+                                $headers = true; // Only display headers once
+                            }
+
+                            // Create a row for the field values (values row)
+                            echo '<tr>';
+                            foreach ($row as $field => $value) {
+                                // Skip the fields we want to exclude
+                                if (in_array($field, $exclude_fields)) {
+                                    continue;
+                                }
+
+                                // Check if the value is empty, if so, display an empty cell
+                                if (empty($value)) {
+                                    echo '<td></td>'; // Empty cell for missing value
+                                } else {
+                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Display value
+                                }
+                            }
+                            echo '</tr>';
+                        }
+                    }
+
+                    echo '</table>';
+                } 
+            ?>
+            
+            <!-- fixation details -->
             <?php 
                 // Fetch the data
                 $cyto_fixation_information = get_cyto_fixation_details($cyto_id);
@@ -267,6 +327,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 } 
             ?>
             
+            <!-- fixation additional details -->
             <?php 
                 // Fetch the data
                 $cyto_fixation_additional_information = get_cyto_fixation_additional_details($cyto_id);
@@ -342,7 +403,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             echo '<table class="table table-bordered table-striped">';
                             
                             // List of fields to exclude
-                            $exclude_fields = ['rowid', 'cyto_id', 'aspiration_note'];
+                            $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
 
                             // Create a row for the field names (headers)
                             echo '<tr>';
@@ -473,6 +534,83 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     
                 } 
            ?>
+
+           <!-- recall management -->
+            <?php 
+                // Fetch the data
+                $cyto_recall_information = cyto_recall_information_list_by_lab_number($formatted_LabNumber);
+
+                // Check for errors or empty data
+                if (isset($cyto_recall_information['error'])) {
+                    echo "<p>Error: " . $recall_data['error'] . "</p>";
+                } elseif (isset($cyto_recall_information['message'])) {
+                    echo "<p>" . $cyto_recall_information['message'] . "</p>";
+                } else {
+                    // Display data in a table if available
+                    if (count($cyto_recall_information) > 0) {
+                        echo '<table id="recallTable" class="table table-bordered table-striped">';
+                        echo '<thead>';
+                        echo '<tr>';
+                        echo '<th>Lab Number</th>';
+                        echo '<th>Recall Reason</th>';
+                        echo '<th>Created Date</th>';
+                        echo '<th>Doctor</th>';
+                        echo '<th>Notified User</th>';
+                        echo '<th>Notified Method</th>';
+                        echo '<th>Follow-Up Date</th>';
+                        echo '</tr>';
+                        echo '</thead>';
+                        echo '<tbody>';
+
+                        // Loop through each record and create a table row
+                        foreach ($cyto_recall_information as $row) {
+                            // Decode the JSON data for recall reasons (dynamic keys)
+                            $recall_data_json = json_decode($row['recall_reason'], true);
+
+                            // Prepare the output for each person dynamically
+                            $formatted_recall_reasons = '';
+                            foreach ($recall_data_json as $person => $records) {
+                                $formatted_recall_reasons .= '<strong style="font-size: 18px;">' . htmlspecialchars($person) . '</strong><br>';
+                                foreach ($records as $record) {
+                                    $reasons = isset($record['reason']) ? implode(", ", $record['reason']) : '';
+                                    $timestamp = new DateTime($record['timestamp']);
+                                    $timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                    $formatted_recall_reasons .= 'Reasons: ' . htmlspecialchars($reasons) . '<br>';
+                                    $formatted_recall_reasons .= 'Timestamp: ' . $timestamp->format('d F, Y h:i A') . '<br><br>';
+                                }
+                            }
+
+                            // Format the created date
+                            $created_date = new DateTime($row['created_date']);
+                            $created_date->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                            $formatted_date = $created_date->format('d F, Y h:i A');
+
+                            // Format notified methods
+                            $notified_methods = $row['notified_method'] ? implode(", ", explode(", ", $row['notified_method'])) : '';
+
+                            // Format follow-up date
+                            $follow_up_date = $row['follow_up_date'] ? (new DateTime($row['follow_up_date']))->setTimezone(new DateTimeZone('Asia/Dhaka'))->format('d F, Y h:i A') : '';
+
+                            // Display each row
+                            echo '<tr>';
+                            echo '<td>' . htmlspecialchars($row['lab_number']) . '</td>';
+                            echo '<td>' . $formatted_recall_reasons . '</td>';
+                            echo '<td>' . $formatted_date . '</td>';
+                            echo '<td>' . htmlspecialchars($row['recalled_doctor']) . '</td>';
+                            echo '<td>' . htmlspecialchars($row['notified_user']) . '</td>';
+                            echo '<td>' . $notified_methods . '</td>';
+                            echo '<td>' . $follow_up_date . '</td>';
+                            echo '</tr>';
+                        }
+
+                        echo '</tbody>';
+                        echo '</table>';
+                    } else {
+                        echo "<p>No data available for the specified status.</p>";
+                    }
+                }
+            ?>
+            
         </div>
 
 
