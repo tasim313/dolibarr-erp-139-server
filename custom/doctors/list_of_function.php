@@ -235,7 +235,7 @@ function get_histo_doctor_instruction_history_list($user_id) {
 }
 
 
-function get_cyto_labnumber_list() {
+function get_cyto_labnumber_list_doctor_module() {
     global $pg_con;
 
     $sql = "SELECT 
@@ -272,5 +272,178 @@ function get_cyto_labnumber_list() {
 
     return $labnumbers;
 }
+
+
+function cyto_special_instructions_list_for_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT 
+            f.rowid,
+            f.cyto_id,
+            f.slide_number,
+            f.location,
+            f.fixation_method,
+            f.dry,
+            f.aspiration_materials,
+            f.special_instructions,
+	        s.created_user,
+	        s.created_date
+                FROM llx_cyto_fixation_details f
+                LEFT JOIN llx_cyto_special_instructions_complete s
+                    ON f.rowid = s.fixation_details
+                INNER JOIN llx_cyto c
+                    ON f.cyto_id::INTEGER = c.rowid -- Cast f.cyto_id to INTEGER
+                WHERE f.special_instructions IS NOT NULL 
+                  AND f.special_instructions <> ''
+                  AND c.lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_special_instructions_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_doctor_case_info_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        select rowid,lab_number,screening,screening_datetime,screening_count,
+        screening_count_data, finalization, finalization_datetime, finalization_count_data,
+        screening_doctor_name, finalization_doctor_name from llx_cyto_doctor_case_info where lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_doctor_case_info_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_doctor_study_patient_info_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        select rowid, lab_number, screening_study, screening_patient_history, screening_study_count, screening_study_count_data,
+        finalization_study, finalization_patient_history, screening_doctor_name, finalization_doctor_name, finalization_study_count,
+        finalization_study_count_data from llx_cyto_doctor_study_patient_info where lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_doctor_study_patient_info_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 
 ?>

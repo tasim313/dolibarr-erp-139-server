@@ -239,7 +239,7 @@ function get_cyto_clinical_information($cyto_id) {
         chief_complain,
         relevant_clinical_history,
         on_examination,
-        aspiration_note 
+        clinical_impression 
         from llx_cyto_clinical_information where cyto_id = $1 order by rowid ASC";
 
     $result = pg_query_params($pg_con, $sql, [$cyto_id]);
@@ -253,7 +253,7 @@ function get_cyto_clinical_information($cyto_id) {
             'chief_complain' => $row['chief_complain'],
             'relevant_clinical_history' => $row['relevant_clinical_history'],
             'on_examination' => $row['on_examination'],
-            'aspiration_note' => $row['aspiration_note']
+            'clinical_impression' => $row['clinical_impression']
             ];
         }
 
@@ -720,5 +720,58 @@ function cyto_slide_centrifuge_list() {
         return ['error' => 'An error occurred while executing the query.'];
     }
 }
+
+function cyto_recall_information_list_by_lab_number($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT rowid, lab_number, recall_reason, created_date, recalled_doctor, 
+               notified_user, notified_method, follow_up_date 
+        FROM llx_cyto_recall_management 
+        WHERE lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_recall_info_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 
 ?>

@@ -3,6 +3,7 @@
 // database connection and function file
 include('connection.php');
 include('../transcription/common_function.php');
+include('../cytology/common_function.php');
 include('../grossmodule/gross_common_function.php');
 include('list_of_function.php');
 
@@ -2239,7 +2240,7 @@ switch (true) {
         <script>
             $(document).ready(function() {
                 // Retrieve the lab numbers from PHP
-                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list()); ?>;
+                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
 
                 function checkLabNumberAndRedirect(labno) {
                     if (labno) {
