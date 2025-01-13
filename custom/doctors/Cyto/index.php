@@ -231,6 +231,40 @@ switch (true) {
             opacity: 1;
         }
 
+        #reportTab {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-top: 20px;
+            position: fixed; /* Keep it fixed within the viewport */
+            top: 20%; /* Adjust as needed */
+            left: 10%; /* Adjust as needed */
+            width: 80%; /* Adjust size as needed */
+            z-index: 1000; /* Ensure it's above other content */
+            /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); */
+        }
+
+        #reportFrame {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button.custom-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.custom-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        button[onclick="closeReportTab()"] {
+            font-size: 18px;
+            line-height: 30px;
+            text-align: center;
+        }
+
 
     </style>
 </head>
@@ -240,7 +274,7 @@ switch (true) {
         <h3>Cytopathology</h3>
     </div>
 
-    <div class="container custom-flex-container">
+    <div class="custom-flex-container">
             <a href="../doctorsindex.php">
                 <button style="border:none; background-color: white; color: black;" class="custom-btn">
                     <i class="fas fa-home" aria-hidden="true"></i> Doctors
@@ -251,12 +285,15 @@ switch (true) {
                 <label for="labno" class="custom-label">LabNo:</label>
                 <input type="text" id="labno" name="labno" autofocus class="form-control">
             </form>
+           
+            <a href="../../transcription/FNA/fna_report.php?LabNumber=<?php echo 'FNA' . $LabNumber; ?>" target="_blank">
+                <button style="border:none; background-color: white; color: black;" class="custom-btn">
+                    <i class="fas fa-file-alt" aria-hidden="true"></i> Report
+                </button>
+            </a>
 
-            <button style="border:none; background-color: white; color: black;" class="custom-btn" onclick="loadReport()">
-                <i class="fas fa-file-alt" aria-hidden="true"></i> Report
-            </button>
-
-            <a href="../../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
+            
+            <a href="../../transcription/FNA/create.php?LabNumber=<?php echo 'FNA' . $LabNumber; ?>">
                 <button style="border:none; background-color: white; color: black;" class="custom-btn">
                     <i class="fas fa-edit" aria-hidden="true"></i> Edit
                 </button>
@@ -267,12 +304,12 @@ switch (true) {
             </button>
     </div>
      
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
         <div class="row">
             <!-- Left Side Section -->
             <div class="col-md-6">
                 
-                    <div class="col-md-6" id="screening-section">
+                    <div class="col-md-6" id="screening-section" style="width: fit-content;">
                         <div id="screening-section">
                             <h4 class="mt-3" style="cursor: pointer;" id="screening-header">
                                 <i class="fas fa-microscope text-primary mr-2"></i> Screening
@@ -306,7 +343,7 @@ switch (true) {
                         
                     </div>
 
-                    <div class="col-md-6" id="finalization-section" class="disabled-section">
+                    <div class="col-md-6" id="finalization-section" class="disabled-section"  style="width: fit-content;">
                         <div id="finalization-section">
                             <h4 class="mt-3" style="cursor: pointer;" id="finalization-header">
                                 <i class="fas fa-microscope text-success mr-2"></i> Finalization
@@ -336,10 +373,10 @@ switch (true) {
             </div>
 
             <!-- Right Side Section -->
-            <div class="col-md-6 " id="status-tab" style="display: none;">
-
+            <div class="col-md-6 " id="status-tab" style="display: none;" >
+                
                <div class="container" style="display: flex; justify-content: space-between; gap: 20px;">
-                        <div class="col-md-6" style="margin-right:20px;">
+                        <div class="col-md-6" style="margin-right:20px; margin-left:-800px;">
                                 <div class="content">
                                     <?php 
                                     $LabNumberWithFNA = "FNA" . $LabNumber;
@@ -775,7 +812,7 @@ switch (true) {
                                 </div>
                         </div>
 
-                        <div class="col-md-6" style="margin-left:20px;">
+                        <div class="col-md-6" style="margin-left:-400px;">
                             <div class="content">
                                     <!-- Recall -->
                                     <?php 
@@ -1428,21 +1465,16 @@ switch (true) {
                                     ?>
                             </div>
                         </div>
-
-                        
-
-
-
                         
                </div>
                 
-               
             </div>
+
         </div>
     </div>
     
     <!-- Screening study and history -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="study-history-tab" style="display: none;">
                 <div class="col-md-12">
@@ -1520,7 +1552,7 @@ switch (true) {
 
     
     <!-- Lab Instructions Section -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="Lab-instruction-tab" style="display: none;">
                 <div class="col-md-12">
@@ -1584,7 +1616,7 @@ switch (true) {
     </div>
     
     <!-- Recall instruction -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="cyto-instruction-tab" style="display: none;">
                 <div class="col-md-12">
@@ -1626,7 +1658,7 @@ switch (true) {
     </div>
 
     <!-- Finalization study and history -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="final-study-history-tab" style="display: none;">
                 <div class="col-md-12">
@@ -1708,7 +1740,7 @@ switch (true) {
     </div>
 
     <!-- Finalization Lab Instructions Section -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="final-Lab-instruction-tab" style="display: none;">
                 <div class="col-md-12">
@@ -1770,7 +1802,7 @@ switch (true) {
     </div>
 
     <!-- Finalization Recall instruction -->
-    <div class="container" style="margin-top: 20px;">
+    <div class="" style="margin-top: 20px;">
            <!-- Separate Tab that appears when clicked -->
             <div class="row" id="final-cyto-instruction-tab" style="display: none;">
                 <div class="col-md-12">

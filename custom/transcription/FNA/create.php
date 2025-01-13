@@ -124,8 +124,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
 </head>
 <body>
-    <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
-    <a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>
+    <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp;&nbsp;&nbsp;
+    <a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>&nbsp;&nbsp;&nbsp;
+    <button class="btn btn-info btn-md" onclick="history.back()">Back</button>
     <div class="container">
         <div class=" text-center mt-5 ">
             <h3>Microscopic Details</h3>

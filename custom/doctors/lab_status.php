@@ -4,6 +4,7 @@
 include('connection.php');
 include('../transcription/common_function.php');
 include('../grossmodule/gross_common_function.php');
+include('../cytology/common_function.php');
 include('../histolab/histo_common_function.php');
 include('list_of_function.php');
 
@@ -2390,6 +2391,7 @@ switch (true) {
                 });
             });
         </script> -->
+        
         <script>
             $(document).ready(function() {
                 // Retrieve the lab numbers from PHP
