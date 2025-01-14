@@ -229,6 +229,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         </div>
         <!-- Right-side button -->
         <div>
+            <a href="./postponed.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-warning btn-md">Postpone FNAC</a> &nbsp; &nbsp; &nbsp;
             <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a>
         </div>
     </div>
