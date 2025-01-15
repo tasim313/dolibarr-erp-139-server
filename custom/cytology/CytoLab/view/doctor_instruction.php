@@ -160,6 +160,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
                 <li><a href="../recall.php">Re-Call</a></li>
                 <li class="active"><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
+                <li><a href="./cancel_information.php">Cancel Information</a></li>
+                <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
         <br>
 
@@ -180,99 +182,111 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <div id="List" class="tabcontent active">
                     <h3>List</h3>
 
+                        
                         <?php
                             // Fetch the data
                             $doctor_lab_instruction = cyto_doctor_lab_instruction();
 
                             if (is_array($doctor_lab_instruction) && count($doctor_lab_instruction) > 0) {
-                                    echo("<h3 style='color:red;'>Lab Related Instruction</h3><br>");
-                                    echo '<table class="table table-bordered table-striped">';
+                                echo("<h3 style='color:red;'>Lab Related Instruction</h3><br>");
+                                echo '<table class="table table-bordered table-striped">';
 
-                                    // Fields to exclude
-                                    $exclude_fields = ['rowid', 'screening_stain_name', 'screening_doctor_name', 'finalization_stain_name', 'finalization_doctor_name'];
+                                // Fields to exclude
+                                $exclude_fields = ['rowid', 'screening_stain_name', 'screening_doctor_name', 'finalization_stain_name', 'finalization_doctor_name', 'status'];
 
-                                    // Fields to rename
-                                    $rename_fields = [
-                                        'screening_stain_again' => 'Screening Lab Instruction',
-                                        'finalization_stain_again' => 'Finalization Lab Instruction'
-                                    ];
+                                // Fields to rename
+                                $rename_fields = [
+                                    'screening_stain_again' => 'Screening Lab Instruction',
+                                    'finalization_stain_again' => 'Finalization Lab Instruction'
+                                ];
 
-                                    // Initialize headers flag
-                                    $headers = false;
+                                // Initialize headers flag
+                                $headers = false;
 
-                                    foreach ($doctor_lab_instruction as $row) {
-                                        if (is_array($row)) {
-                                            // Generate table headers once
-                                            if (!$headers) {
-                                                echo '<thead><tr>';
-                                                foreach ($row as $field => $value) {
-                                                    if (!in_array($field, $exclude_fields)) {
-                                                                $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                    }
+                                foreach ($doctor_lab_instruction as $row) {
+                                    if (is_array($row)) {
+                                        // Generate table headers once
+                                        if (!$headers) {
+                                            echo '<thead><tr>';
+                                            foreach ($row as $field => $value) {
+                                                if (!in_array($field, $exclude_fields)) {
+                                                    $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
+                                                    echo '<th>' . htmlspecialchars($column_name) . '</th>';
                                                 }
+                                            }
+                                            // Add "Status" column
+                                            echo '<th>Status</th>';
                                             echo '</tr></thead>';
                                             $headers = true;
+                                        }
+
+                                        // Display row values
+                                        echo '<tr>';
+                                        foreach ($row as $field => $value) {
+                                            if (in_array($field, $exclude_fields)) {
+                                                continue;
                                             }
 
-                                            // Display row values
-                                            echo '<tr>';
-                                            foreach ($row as $field => $value) {
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
+                                            if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
+                                                // Decode JSON and format the data
+                                                $formatted_data = '';
+                                                $decoded_data = json_decode($value, true);
 
-                                                if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
-                                                    // Decode JSON and format the data
-                                                    $formatted_data = '';
-                                                    $decoded_data = json_decode($value, true);
+                                                if (is_array($decoded_data)) {
+                                                    foreach ($decoded_data as $person => $entries) {
+                                                        $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
+                                                        foreach ($entries as $entry) {
+                                                            if (isset($entry['stains']) && isset($entry['timestamp'])) {
+                                                                try {
+                                                                    $utc_time = new DateTime($entry['timestamp'], new DateTimeZone('UTC'));
+                                                                    $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                                                    $datetime = $utc_time->format('j F, Y g:i A');
+                                                                    $formatted_data .= $datetime . '<br>';
 
-                                                    if (is_array($decoded_data)) {
-                                                        foreach ($decoded_data as $person => $entries) {
-                                                            $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
-                                                            foreach ($entries as $entry) {
-                                                                if (isset($entry['stains']) && isset($entry['timestamp'])) {
-                                                                    try {
-                                                                            $utc_time = new DateTime($entry['timestamp'], new DateTimeZone('UTC'));
-                                                                            $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                            $datetime = $utc_time->format('j F, Y g:i A');
-                                                                            $formatted_data .=  $datetime . '<br>';
-
-                                                                            // Handle stains
-                                                                            $formatted_data .= '';
-                                                                            if (is_array($entry['stains'])) {
-                                                                                foreach ($entry['stains'] as $stain) {
-                                                                                    if (is_array($stain) && isset($stain['other'])) {
-                                                                                        $formatted_data .= '' . htmlspecialchars($stain['other']) . ', ';
-                                                                                    } else {
-                                                                                        $formatted_data .= htmlspecialchars($stain) . ', ';
-                                                                                    }
-                                                                                }
-                                                                                // Remove trailing comma and space
-                                                                                $formatted_data = rtrim($formatted_data, ', ');
+                                                                    // Handle stains
+                                                                    $formatted_data .= '';
+                                                                    if (is_array($entry['stains'])) {
+                                                                        foreach ($entry['stains'] as $stain) {
+                                                                            if (is_array($stain) && isset($stain['other'])) {
+                                                                                $formatted_data .= '' . htmlspecialchars($stain['other']) . ', ';
+                                                                            } else {
+                                                                                $formatted_data .= htmlspecialchars($stain) . ', ';
                                                                             }
-                                                                            $formatted_data .= '<br>';
-                                                                    } catch (Exception $e) {
-                                                                        $formatted_data .= 'Invalid Date<br>';
-                                                                    }
                                                                         }
+                                                                        // Remove trailing comma and space
+                                                                        $formatted_data = rtrim($formatted_data, ', ');
                                                                     }
+                                                                    $formatted_data .= '<br>';
+                                                                } catch (Exception $e) {
+                                                                    $formatted_data .= 'Invalid Date<br>';
                                                                 }
                                                             }
-                                                            echo '<td>' . $formatted_data . '</td>';
-                                                        } else {
-                                                            // Escape and display other values
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>';
                                                         }
                                                     }
-                                                    echo '</tr>';
                                                 }
+                                                echo '<td>' . $formatted_data . '</td>';
+                                            } else {
+                                                echo '<td>' . htmlspecialchars($value) . '</td>';
                                             }
-                                            echo '</table>';
-                                        } else {
-                                            echo '';
                                         }
+
+                                        // Add the form for "Status" column
+                                        echo '<td>';
+                                        echo '<form method="POST" action="../insert/status_save.php">';
+                                        echo '<input type="hidden" name="lab_number" value="' . htmlspecialchars($row['lab_number']) . '">';
+                                        echo '<button type="submit" class="btn btn-primary btn-sm">Complete</button>';
+                                        echo '</form>';
+                                        echo '</td>';
+
+                                        echo '</tr>';
+                                    }
+                                }
+                                echo '</table>';
+                            } else {
+                                echo '<p>No lab instructions found.</p>';
+                            }
                         ?>
+
                 </div>
 
 
@@ -293,10 +307,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
                         <?php
                                 // Fetch data
-                                $special_instruction_complete = cyto_special_instructions_list_complete();
+                                $special_instruction_complete = cyto_lab_instruction_status();
 
                                 // Fields to exclude
-                                $excluded_fields = ['rowid', 'cyto_id'];
+                                $excluded_fields = ['rowid', 'screening_stain_name', 'screening_doctor_name', 'finalization_stain_name', 'finalization_doctor_name'];
 
                                 // Check for errors or empty data
                                 if (isset($special_instruction_complete['error'])) {
@@ -308,44 +322,100 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     echo '<thead>';
                                     echo '<tr>';
 
-                                    // Dynamically generate table headers based on field names
-                                    if (!empty($special_instruction_complete[0])) {
-                                        foreach (array_keys($special_instruction_complete[0]) as $field_name) {
-                                            if (!in_array($field_name, $excluded_fields)) {
-                                                echo '<th>' . htmlspecialchars(ucwords(str_replace('_', ' ', $field_name))) . '</th>';
+                                // Dynamically generate table headers based on field names
+                                if (!empty($special_instruction_complete[0])) {
+                                    foreach (array_keys($special_instruction_complete[0]) as $field_name) {
+                                        if (!in_array($field_name, $excluded_fields)) {
+                                            echo '<th>' . htmlspecialchars(ucwords(str_replace('_', ' ', $field_name))) . '</th>';
+                                        }
+                                    }
+                                }
+
+                                echo '</tr>';
+                                echo '</thead>';
+                                echo '<tbody>';
+
+                                // Loop through data and create rows dynamically
+                                foreach ($special_instruction_complete as $row) {
+                                    echo '<tr>';
+
+                                    foreach ($row as $field => $value) {
+                                        if (in_array($field, $excluded_fields)) {
+                                            continue;
+                                        }
+
+                                        // Handle 'screening_stain_again' and 'finalization_stain_again' fields
+                                        if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
+                                            // Decode JSON and format the data
+                                            $formatted_data = '';
+                                            $decoded_data = json_decode($value, true);
+
+                                            if (is_array($decoded_data)) {
+                                                foreach ($decoded_data as $person => $entries) {
+                                                    $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
+                                                    foreach ($entries as $entry) {
+                                                        if (isset($entry['stains']) && isset($entry['timestamp'])) {
+                                                            try {
+                                                                $formatted_data .= htmlspecialchars($entry['timestamp']) . '<br>';
+
+                                                                // Handle stains
+                                                                if (is_array($entry['stains'])) {
+                                                                    foreach ($entry['stains'] as $stain) {
+                                                                        if (is_array($stain) && isset($stain['other'])) {
+                                                                            $formatted_data .= htmlspecialchars($stain['other']) . ', ';
+                                                                        } else {
+                                                                            $formatted_data .= htmlspecialchars($stain) . ', ';
+                                                                        }
+                                                                    }
+                                                                    // Remove trailing comma and space
+                                                                    $formatted_data = rtrim($formatted_data, ', ');
+                                                                }
+                                                                $formatted_data .= '<br>';
+                                                            } catch (Exception $e) {
+                                                                $formatted_data .= 'Invalid Date<br>';
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
+                                            echo '<td>' . $formatted_data . '</td>';
+                                        } 
+
+                                        // Handle 'status_list' field
+                                        elseif ($field === 'status_list') {
+                                            // Check if the field contains valid JSON data
+                                            $status_data = json_decode($value, true);
+
+                                            // Check if json_decode was successful
+                                            if (json_last_error() === JSON_ERROR_NONE) {
+                                                $formatted_status_list = '';
+
+                                                // Loop through each status entry and format it
+                                                foreach ($status_data as $status_entry) {
+                                                    // Directly display the status and timestamp
+                                                    $formatted_status_list .= htmlspecialchars($status_entry['status']) . ' - ' . htmlspecialchars($status_entry['timestamp']) . '<br>';
+                                                }
+                                                echo '<td>' . $formatted_status_list . '</td>';
+                                            } else {
+                                                echo '<td></td>';
+                                            }
+                                        } 
+
+                                        // Default field handling
+                                        else {
+                                            echo '<td>' . htmlspecialchars($value) . '</td>';
                                         }
                                     }
 
                                     echo '</tr>';
-                                    echo '</thead>';
-                                    echo '<tbody>';
-
-                                    // Loop through data and create rows dynamically
-                                    foreach ($special_instruction_complete as $row) {
-                                        echo '<tr>';
-
-                                        // Generate cells dynamically for each field
-                                        foreach ($row as $field_name => $field_value) {
-                                            if (!in_array($field_name, $excluded_fields)) {
-                                                // Format the created_date field
-                                                if ($field_name === 'created_date') {
-                                                    // Assuming the database stores time in UTC
-                                                    $utc_time = new DateTime($field_value, new DateTimeZone('UTC')); // Specify UTC timezone
-                                                    $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka')); // Convert to Asia/Dhaka timezone
-                                                    $field_value = $utc_time->format('j F, Y g:i A'); // Format in 12-hour format with AM/PM
-                                                }
-                                                echo '<td>' . htmlspecialchars($field_value) . '</td>';
-                                            }
-                                        }
-
-                                        echo '</tr>';
-                                    }
-
-                                    echo '</tbody>';
-                                    echo '</table>';
                                 }
+
+                                echo '</tbody>';
+                                echo '</table>';
+                            }
                         ?>
+
+
                 </div>
         </div>
 

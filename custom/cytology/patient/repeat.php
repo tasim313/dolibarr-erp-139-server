@@ -226,6 +226,7 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
         </div>
         <!-- Right-side button -->
         <div>
+            <a href="./postponed.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-warning btn-md">Postpone FNAC</a> &nbsp; &nbsp; &nbsp;
             <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a>
         </div>
     </div>
@@ -679,7 +680,7 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                         
                             <!-- Clinical Information -->
                             <!-- Reason for FNAC -->
-                            <div class="form-group dropdown">
+                            <!-- <div class="form-group dropdown">
                                     <label for="chief-complain">Chief Complain:</label>
                                     <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
                                     <div id="myDropdown" class="dropdown-content" style="display: none;">
@@ -695,18 +696,18 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                         </select>
                                     </div>
                                     <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify" style="display: none;">
-                            </div>
+                            </div> -->
 
                             <!-- Clinical History -->
                             <div class="form-group">
-                                <label for="clinical-history">Relevant Clinical History:</label>
+                                <label for="clinical-history">Additional Relevant Clinical History:</label>
                                 <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes" required></textarea>
                             </div>
                             
                             <!-- Site of Aspiration -->
                             <div class="form-group">
                                 <select id="onExaminationSelector">
-                                    <option value=""><spain><b>OnExamination</b>&nbsp;&nbsp;</spain> Select Format</option>
+                                    <option value=""><spain><b>Additional OnExamination</b>&nbsp;&nbsp;</spain> Select Format</option>
                                     <option value="format1">General Examination</option>
                                     <option value="format2">Default</option>
                                     <option value="thyroid">Thyroid Region</option>
@@ -830,6 +831,24 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                         <!-- Dynamic Rows -->
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <!-- clinical-impression -->
+                            <div class="form-group row">
+                                    <label for="clinical-impression" class="col-sm-3 col-form-label">
+                                        Additional Clinical Impression:
+                                    </label>
+                                    <div>
+                                    <textarea 
+                                        required
+                                        id="clinical-impression" 
+                                        name="additional_clinical_impression" 
+                                        class="form-control" 
+                                        rows="5" 
+                                        placeholder="Enter clinical impression here..."
+                                        style="resize: none;"
+                                    ></textarea>
+                                    </div>
                             </div>
 
                             <!-- Dry Slides Description -->
@@ -970,7 +989,7 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 
 
 <!-- Clinical Information -->
-<script>
+<!-- <script>
     // Show/hide "Others" text input based on the selection of dropdown options
     document.getElementById('reason-for-fnac').addEventListener('change', function() {
         var otherReasonField = document.getElementById('other-reason');
@@ -985,7 +1004,7 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 
     // Trigger change event on page load to hide the "Others" inputs initially
     document.getElementById('reason-for-fnac').dispatchEvent(new Event('change'));
-</script>
+</script> -->
 
 <!-- FNAC Fixation Details -->
 <script>

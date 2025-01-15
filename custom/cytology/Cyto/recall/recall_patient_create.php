@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $reason_for_fnac = $_POST['reason_for_fnac'] ?? '';
     $other_reason = $_POST['other_reason'] ?? '';
     $clinical_history = $_POST['clinical_history'] ?? '';
+    $additional_clinical_impression = $_POST['additional_clinical_impression'] ?? '';
     $site_of_aspiration = $_POST['site-of-aspiration-editor'] ?? '';
     $fixation_comments = $_POST['fixation_comments'] ?? '';
     $dry_slides_description = $_POST['dry_slides_description'] ?? '';
@@ -55,25 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $row = pg_fetch_assoc($result);
         $cyto_id = $row['rowid']; // Get the generated rowid
 
-        // Check if $reason_for_fnac is 'Others'
-        if ($reason_for_fnac == 'Others') {
-            $chief_complain = $other_reason;  // If 'Others', use $other_reason
-        } else {
-            $chief_complain = $reason_for_fnac;  // Otherwise, use $reason_for_fnac
-        }
-        
-        var_dump($cyto_id, $chief_complain, $clinical_history, $site_of_aspiration);
         $sql_summary = "INSERT INTO llx_cyto_recall_clinical_information (
                             cyto_id,
-                            chief_complain,
-                            relevant_clinical_history,
-                            on_examination
-                            
+                            additional_relevant_clinical_history,
+                            additional_findings_on_examination,
+                            additional_clinical_impression
                         ) VALUES (
-                            '$cyto_id',
-                            '$chief_complain',
-                            '$clinical_history',
-                            '$site_of_aspiration'
+                             custom/cytology/CytoLab/index.php
                         )";
 
         $result_summary = pg_query($pg_con, $sql_summary);

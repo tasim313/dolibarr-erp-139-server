@@ -785,20 +785,26 @@ function cyto_doctor_lab_instruction() {
 
     // SQL query to fetch the required data
     $sql = "
-        SELECT 
-            rowid, 
-            lab_number, 
-            screening_stain_name, 
-            screening_doctor_name, 
-            screening_stain_again, 
-            finalization_stain_name, 
-            finalization_doctor_name, 
-            finalization_stain_again 
-        FROM 
-            llx_cyto_doctor_lab_instruction  
-        ORDER BY 
-            rowid DESC 
-        LIMIT 100;
+    SELECT 
+        d.rowid, 
+        d.lab_number, 
+        d.screening_stain_name, 
+        d.screening_doctor_name, 
+        d.screening_stain_again, 
+        d.finalization_stain_name, 
+        d.finalization_doctor_name, 
+        d.finalization_stain_again,
+        s.status
+    FROM 
+        llx_cyto_doctor_lab_instruction d
+    LEFT JOIN 
+        llx_cyto_lab_instruction_status s
+    ON 
+        d.lab_number = s.lab_number
+    WHERE 
+        s.status IS NULL OR s.status = '' OR s.status = 'incomplete'
+    ORDER BY 
+        d.rowid DESC 
     ";
 
     // Statement name (unique within the connection session)
@@ -832,5 +838,171 @@ function cyto_doctor_lab_instruction() {
     }
 }
 
+
+function cyto_lab_instruction_status() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+    SELECT 
+        d.rowid, 
+        d.lab_number, 
+        d.screening_stain_name, 
+        d.screening_doctor_name, 
+        d.screening_stain_again, 
+        d.finalization_stain_name, 
+        d.finalization_doctor_name, 
+        d.finalization_stain_again,
+        s.status_list
+    FROM 
+        llx_cyto_doctor_lab_instruction d
+    LEFT JOIN 
+        llx_cyto_lab_instruction_status s
+    ON 
+        d.lab_number = s.lab_number
+    WHERE 
+        s.status = 'complete'
+    ORDER BY 
+        d.rowid DESC 
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_cyto_lab_instruction_status";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, []);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_cancel_status() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT c.ref, c.note_public
+            FROM llx_commande c
+            JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+            WHERE c.fk_statut = '-1'
+            AND c.date_commande BETWEEN '2025-01-01' AND CURRENT_DATE
+            AND e.test_type = 'FNA' 
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_cancel_status";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, []);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function cyto_postpone_status() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT c.ref, c.note_public
+            FROM llx_commande c
+            JOIN llx_commande_extrafields AS e ON e.fk_object = c.rowid
+            WHERE c.fk_statut = '1'
+            AND c.date_commande BETWEEN '2025-01-01' AND CURRENT_DATE
+            AND e.test_type = 'FNA'
+            AND c.note_public IS NOT NULL
+            AND c.note_public != ''
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_postpone_status";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, []);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
 
 ?>
