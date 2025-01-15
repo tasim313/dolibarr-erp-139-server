@@ -159,7 +159,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
                 <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
                 <li><a href="../recall.php">Re-Call</a></li>
-                <li class="active"><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
+                <li><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
+                <li><a href="./cancel_information.php">Cancel Information</a></li>
+                <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
         <br>
 

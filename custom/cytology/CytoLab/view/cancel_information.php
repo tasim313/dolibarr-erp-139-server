@@ -1,9 +1,10 @@
 <?php
-include('../connection.php');
-include('../../grossmodule/gross_common_function.php');
-include('../../transcription/common_function.php');
-include('../../transcription/FNA/function.php');
-include('../common_function.php');
+include("../connection.php");
+include('../../../grossmodule/gross_common_function.php');
+include('../../../transcription/common_function.php');
+include('../../../transcription/FNA/function.php');
+include('../../common_function.php');
+
 
 $res = 0;
 // Try main.inc.php into web root known defined into CONTEXT_DOCUMENT_ROOT (not always defined)
@@ -68,7 +69,7 @@ $isDoctor = false;
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
-$LabNumber = $_GET['LabNumber'];
+$LabNumber = $_GET['labNumber'];
 
 
 $assistants = get_cyto_tech_list();
@@ -115,54 +116,63 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="bootstrap-3.4.1-dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="bootstrap-3.4.1-dist/js/bootstrap.min.js">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../bootstrap-3.4.1-dist/js/bootstrap.min.js">
 </head>
 <body>
-
 <div class="container">
-    <h3>Cyto Lab WorkFlow</h3>
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="./index.php">Home</a></li>
-            <li><a href="view/special_instruction.php" class="tab">Special Instructions</a></li>
-            <li><a href="view/slide_prepared.php" class="tab">Slide Prepared</a></li>
-            <li><a href="view/new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
-            <li><a href="view/sbo.php">SBO(Slide Block Order)</a></li>
-            <li><a href="./recall.php">Re-Call</a></li>
-            <li><a href="view/doctor_instruction.php">Doctor's Instructions</a></li>
-            <li><a href="view/cancel_information.php">Cancel Information</a></li>
-            <li><a href="view/postpone_information.php">Postpone</a></li>
+        <h3>Cyto Lab WorkFlow</h3>
+            <ul class="nav nav-tabs">
+                <li><a href="../index.php">Home</a></li>
+                <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
+                <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
+                <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
+                <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
+                <li><a href="../recall.php">Re-Call</a></li>
+                <li><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
+                <li class="active"><a href="./cancel_information.php">Cancel Information</a></li>
+                <li><a href="./postpone_information.php">Postpone</a></li>
+            </ul>
+        <br>
 
-        </ul>
-    <br>
-    <div class="content">
-        <h1>Status</h1>
+        <br>
+    <h4>Cancel Information</h4>
 
-        <div id="form-box">
-            <div id="input-group">
-                <input id="input-field" placeholder="Scan Lab number" type="text" autofocus>
-                <label id="input-label">Enter or Scan the Lab Number</label>
-            </div>
-        </div>
-    </div>
+    <?php
 
-</div>
+        // Fetch data using the function
+        $data = cyto_cancel_status();
 
+        // Check for errors or empty data
+        if (isset($data['error'])) {
+            echo '<div class="alert alert-danger">' . htmlspecialchars($data['error']) . '</div>';
+        } elseif (empty($data)) {
+            echo '<div class="alert alert-info">No cancel information available.</div>';
+        } else {
+            // Display data in a table
+            echo '<table class="table table-bordered table-striped">';
+            echo '<thead>';
+            echo '<tr>';
+            echo '<th>Reference</th>';
+            echo '<th>Note</th>';
+            echo '</tr>';
+            echo '</thead>';
+            echo '<tbody>';
 
-<script>
-    document.getElementById('input-field').addEventListener('keypress', function (e) {
-        const labNumber = document.getElementById('input-field').value; // Capture the value
+            foreach ($data as $row) {
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['ref']) . '</td>';
+                echo '<td>' . htmlspecialchars($row['note_public']) . '</td>';
+                echo '</tr>';
+            }
 
-        if (e.key === 'Enter' && labNumber) {  // Redirect only if 'Enter' is pressed and the input field is not empty
-            // Redirect to view/search.php with the lab number as a query parameter
-            const labNumberWithPrefix = 'FNA' + labNumber;
-            window.location.href = `view/search.php?labNumber=${encodeURIComponent(labNumberWithPrefix)}`;
+            echo '</tbody>';
+            echo '</table>';
         }
-    });
-</script>
 
+    ?>
+</div>
 </body>
 </html>

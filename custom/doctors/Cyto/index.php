@@ -285,6 +285,10 @@ switch (true) {
                 <label for="labno" class="custom-label">LabNo:</label>
                 <input type="text" id="labno" name="labno" autofocus class="form-control">
             </form>
+
+            <button style="border:none; font-size: 20px;" id="tab-diagnosis" class="inactive custom-btn" onclick="toggleTab('diagnosis-tab')">
+                <i class="fas fa-file-medical" aria-hidden="true"></i> Diagnosis
+            </button>
            
             <a href="../../transcription/FNA/fna_report.php?LabNumber=<?php echo 'FNA' . $LabNumber; ?>" target="_blank">
                 <button style="border:none; background-color: white; color: black;" class="custom-btn">
@@ -1468,6 +1472,10 @@ switch (true) {
                         
                </div>
                 
+            </div>
+
+            <div class="col-md-6" id="diagnosis-tab" style="display: none;">
+                <h1>Hi This is new</h1>
             </div>
 
         </div>
@@ -2902,7 +2910,7 @@ switch (true) {
         const selectedTab = document.getElementById(tabId);
 
         // Get all tabs
-        const allTabs = document.querySelectorAll("#status-tab, #study-history-tab, #Lab-instruction-tab, #cyto-instruction-tab, #final-study-history-tab, #final-Lab-instruction-tab, #final-cyto-instruction-tab");
+        const allTabs = document.querySelectorAll("#diagnosis-tab, #status-tab, #study-history-tab, #Lab-instruction-tab, #cyto-instruction-tab, #final-study-history-tab, #final-Lab-instruction-tab, #final-cyto-instruction-tab");
 
         // Loop through all tabs
         allTabs.forEach(tab => {
