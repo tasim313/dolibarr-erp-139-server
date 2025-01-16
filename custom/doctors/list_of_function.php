@@ -647,4 +647,54 @@ function cyto_slide_centrifuge_doctor_module($lab_number) {
     }
 }
 
+function cyto_diagnosis_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        select rowid,lab_number,diagnosis,previous_diagnosis,created_user,
+        created_date, updated_user, updated_date from llx_cyto_doctor_diagnosis where lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_diagnosis_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
