@@ -1473,10 +1473,80 @@ switch (true) {
                </div>
                 
             </div>
+            
+            <?php
+
+                // Fetch data using the function
+                $diagnosis_data = cyto_diagnosis_doctor_module($LabNumber);
+
+                // Check for errors
+                if (isset($diagnosis_data['error'])) {
+                    $error_message = $diagnosis_data['error'];
+                } else {
+                    $diagnosis_entry = $diagnosis_data[0] ?? null; // Fetch the first row or null if empty
+                }
+            ?>
+
 
             <div class="col-md-6" id="diagnosis-tab" style="display: none;">
-                <h1>Hi This is new</h1>
+                <h1>Diagnosis Details</h1>
+                <?php if (isset($error_message)): ?>
+                    <div class="alert alert-danger">
+                        <?php echo htmlspecialchars($error_message); ?>
+                    </div>
+                <?php else: ?>
+                <form id="diagnosis-form" method="post" action="insert/update_diagnosis.php">
+                    <!-- Hidden input for lab number -->
+                    <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                    <input type="hidden" name="user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+
+                    <!-- Display previous diagnosis (Read-only) -->
+                    <div class="form-group">
+                        <label for="previous-diagnosis">Previous Diagnosis:</label>
+                        <textarea id="previous-diagnosis" name="previous_diagnosis" class="form-control" rows="6" readonly>
+                            <?php
+                            if (!empty($diagnosis_entry['previous_diagnosis'])) {
+                                $previousDiagnosisData = json_decode($diagnosis_entry['previous_diagnosis'], true);
+                                foreach ($previousDiagnosisData as $entry) {
+                                    echo "\n";
+                                    echo "Previous: " . $entry['previous'] . "\n";
+                                    echo "Date: " . $entry['Date'] . "\n";
+                                    echo "Created by: " . $entry['created_user'] . "\n";
+                                    echo "Updated by: " . $entry['updated_user'] . "\n\n";
+                                }
+                            } else {
+                                echo "No previous diagnosis available.";
+                            }
+                            ?>
+                        </textarea>
+                    </div>
+
+                    <!-- Display current diagnosis (Read-only) -->
+                    <div class="form-group">
+                        <label for="current-diagnosis">Current Diagnosis:</label>
+                        <textarea id="current-diagnosis" name="current_diagnosis" class="form-control" rows="4" readonly>
+                            <?php
+                            if (!empty($diagnosis_entry['diagnosis'])) {
+                                echo htmlspecialchars($diagnosis_entry['diagnosis']);
+                            } else {
+                                echo "No current diagnosis available.";
+                            }
+                            ?>
+                        </textarea>
+                    </div>
+
+                    <!-- Diagnosis input field (for new diagnosis) -->
+                    <div class="form-group">
+                        <label for="diagnosis">New Diagnosis:</label>
+                        <textarea id="diagnosis" name="diagnosis" class="form-control" rows="4" required></textarea>
+                    </div>
+
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+                <?php endif; ?>
             </div>
+
 
         </div>
     </div>
