@@ -377,1101 +377,98 @@ switch (true) {
             </div>
 
             <!-- Right Side Section -->
-            <div class="col-md-6 " id="status-tab" style="display: none;" >
-                
-               <div class="container" style="display: flex; justify-content: space-between; gap: 20px;">
-                        <div class="col-md-6" style="margin-right:20px; margin-left:-800px;">
-                                <div class="content">
-                                    <?php 
-                                    $LabNumberWithFNA = "FNA" . $LabNumber;
-                                    ?>
-                                            <!-- cyto information -->
-                                            <?php 
-                                                // Get the data
-                                                $cyto_status = get_cyto_list($LabNumberWithFNA);
-                                    
-                                                if (is_array($cyto_status) && count($cyto_status) > 0) {
-                                                        $cyto_id = $cyto_status[0]['rowid'];
-                                                        // If data is found, create a table to display it
-                                                        echo '<table class="table table-bordered table-striped">';
-                                        
-                                                        // List of fields to exclude
-                                                        $exclude_fields = ['rowid', 'status', 'created_user', 'updated_user', 'updated_date'];
-                                    
-                                                        // Loop through the rows of the cyto_status
-                                                        foreach ($cyto_status as $row) {
-                                                                // Check if row is an array
-                                                                if (is_array($row)) {
-                                                                // Create a row for the field names (headers) - this will be done only once
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    // Skip the fields we want to exclude
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                    
-                                                                    // If the field exists and is not empty, display the field name as header
-                                                                    if (!empty($value)) {
-                                                                        // If the field is 'created_date', format it as '1 December, 2024'
-                                                                        if ($field === 'created_date' && !empty($value)) {
-                                                                            $formatted_date = date('j F, Y', strtotime($value)); // Format date
-                                                                            echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                                                        } else {
-                                                                            echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                                                        }
-                                                                    }
-                                                                }
-                                                                echo '</tr>';
-                                    
-                                                                // Create a row for the field values (values row)
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    // Skip the fields we want to exclude
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                                                
-                                                                    // If the field exists and is not empty, display the value
-                                                                    if (!empty($value)) {
-                                                                        // If the field is 'created_date', display the formatted date
-                                                                        if ($field === 'created_date' && !empty($value)) {
-                                                                            $formatted_date = date('j F, Y', strtotime($value)); // Format date
-                                                                            echo '<td>' . htmlspecialchars($formatted_date) . '</td>'; // Value
-                                                                        } else {
-                                                                            echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                                                        }
-                                                                    }
-                                                                }
-                                                                echo '</tr>';
-                                                            }
-                                                        }
-                                    
-                                                        echo '</table>';
-                                                    }
-                                            ?>
+            <div class="col-md-6 " id="status-tab" style="display: none;"> 
+                <div style="margin-right:20px; margin-left:-400px;">
+                <?php
+// Ensure the lab number is prefixed with "FNA"
+$statusLabNumberWithFNA = "FNA" . $LabNumber;
+$status_list = cyto_status_list_doctor_module($statusLabNumberWithFNA);
 
-                                            <!-- Clinical Information -->
-                                            <?php 
-                                                // Fetch the data
-                                                $cyto_clinical_information = get_cyto_clinical_information($cyto_id);
+// Define a mapping for field names to display names
+$field_name_mapping = [
+    'doctor' => 'Aspirate By',
+    'screening_done_count_data' => 'Screening Complete',
+    'finalization_done_count_data' => 'Finalization Complete',
+];
 
-                                                if (is_array($cyto_clinical_information) && count($cyto_clinical_information) > 0) {
-                                                    // If data is found, create a table to display it
-                                                    echo '<table class="table table-bordered table-striped">';
-                                    
-                                                    // List of fields to exclude
-                                                    $exclude_fields = ['rowid', 'cyto_id'];
+// Define fields to exclude
+$excluded_fields = [
+    'chief_complain',
+    'clinical.chief_complain',
+    'relevant_clinical_history',
+    'on_examination',
+    'clinical_impression',
+    'aspiration_materials',
+];
 
-                                                    // Create a flag to check if headers are already displayed
-                                                    $headers = false;
-
-                                                    // Loop through each row in the data
-                                                    foreach ($cyto_clinical_information as $row) {
-                                                        // Ensure the row is an array before continuing
-                                                        if (is_array($row)) {
-                                                        // Create a row for the field names (headers) - this will be done only once
-                                                        if (!$headers) {
-                                                            echo '<tr>';
-                                                            foreach ($row as $field => $value) {
-                                                                // Skip the fields we want to exclude
-                                                                if (in_array($field, $exclude_fields)) {
-                                                                    continue;
-                                                                }
-                                                            
-                                                                // Display the field name as a header if it exists
-                                                                echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
-                                                            }
-                                                            echo '</tr>';
-                                                            $headers = true; // Only display headers once
-                                                    }
-
-                                                    // Create a row for the field values (values row)
-                                                    echo '<tr>';
-                                                    foreach ($row as $field => $value) {
-                                                        // Skip the fields we want to exclude
-                                                        if (in_array($field, $exclude_fields)) {
-                                                            continue;
-                                                        }
-                                                    
-                                                        // Check if the value is empty, if so, display an empty cell
-                                                        if (empty($value)) {
-                                                            echo '<td></td>'; // Empty cell for missing value
-                                                        } else {
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>'; // Display value
-                                                        }
-                                                    }
-                                                        echo '</tr>';
-                                                    }       
-                                                }
-
-                                                echo '</table>';
-                                                } 
-                                            ?>
-                                            
-
-                                            <!-- fixation details -->
-                                            <?php 
-                                                // Fetch the data
-                                                $cyto_fixation_information = get_cyto_fixation_details($cyto_id);
-
-                                                if (is_array($cyto_fixation_information) && count($cyto_fixation_information) > 0) {
-                                                    // If data is found, create a table to display it
-                                                    echo '<table class="table table-bordered table-striped">';
-
-                                                    // List of fields to exclude
-                                                    $exclude_fields = ['rowid', 'cyto_id'];
-                                                
-                                                    // Create a flag to check if headers are already displayed
-                                                    $headers = false;
-                                                
-                                                    // Loop through each row in the data
-                                                    foreach ($cyto_fixation_information as $row) {
-                                                        // Ensure the row is an array before continuing
-                                                        if (is_array($row)) {
-                                                            // Create a row for the field names (headers) - this will be done only once
-                                                            if (!$headers) {
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    // Skip the fields we want to exclude
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                                                
-                                                                    // Display the field name as a header if it exists
-                                                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
-                                                                }
-                                                                echo '</tr>';
-                                                                $headers = true; // Only display headers once
-                                                            }
-                                                        
-                                                            // Create a row for the field values (values row)
-                                                            echo '<tr>';
-                                                            foreach ($row as $field => $value) {
-                                                                // Skip the fields we want to exclude
-                                                                if (in_array($field, $exclude_fields)) {
-                                                                    continue;
-                                                                }
-                                                            
-                                                                // Check if the value is empty, if so, display an empty cell
-                                                                if (empty($value)) {
-                                                                    echo '<td></td>'; // Empty cell for missing value
-                                                                } else {
-                                                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Display value
-                                                                }
-                                                            }
-                                                            echo '</tr>';
-                                                        }
-                                                    }
-                                                
-                                                    echo '</table>';
-                                                } 
-                                            ?>
-                            
-                                            <!-- fixation additional details -->
-                                            <?php 
-                                                // Fetch the data
-                                                $cyto_fixation_additional_information = get_cyto_fixation_additional_details($cyto_id);
-
-                                                if (is_array($cyto_fixation_additional_information) && count($cyto_fixation_additional_information) > 0) {
-                                                    // If data is found, create a table to display it
-                                                    echo '<table class="table table-bordered table-striped">';
-
-                                                    // List of fields to exclude
-                                                    $exclude_fields = ['rowid', 'cyto_id'];
-                                                
-                                                    // Create a flag to check if headers are already displayed
-                                                    $headers = false;
-                                                
-                                                    // Loop through each row in the data
-                                                    foreach ($cyto_fixation_additional_information as $row) {
-                                                        // Ensure the row is an array before continuing
-                                                        if (is_array($row)) {
-                                                            // Create a row for the field names (headers) - this will be done only once
-                                                            if (!$headers) {
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    // Skip the fields we want to exclude
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                                                
-                                                                    // Display the field name as a header if it exists
-                                                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
-                                                                }
-                                                                echo '</tr>';
-                                                                $headers = true; // Only display headers once
-                                                            }
-                                                        
-                                                            // Create a row for the field values (values row)
-                                                            echo '<tr>';
-                                                            foreach ($row as $field => $value) {
-                                                                // Skip the fields we want to exclude
-                                                                if (in_array($field, $exclude_fields)) {
-                                                                    continue;
-                                                                }
-                                                            
-                                                                // Check if the value is empty, if so, display an empty cell
-                                                                if (empty($value)) {
-                                                                    echo '<td></td>'; // Empty cell for missing value
-                                                                } else {
-                                                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Display value
-                                                                }
-                                                            }
-                                                            echo '</tr>';
-                                                        }
-                                                    }
-                                                
-                                                    echo '</table>';
-                                                } 
-                                            ?>
-
-                                            <!-- Doctor Case Information -->
-                                            <?php
-                                                // Fetch the data
-                                                $doctor_case_info = cyto_doctor_case_info_doctor_module($LabNumber);
-
-                                                if (is_array($doctor_case_info) && count($doctor_case_info) > 0) {
-                                                    echo '<table class="table table-bordered table-striped">';
-
-                                                    // List of fields to exclude
-                                                    $exclude_fields = ['rowid', 'screening', 'screening_count', 'finalization', 'lab_number'];
-
-                                                    // Rename columns
-                                                    $rename_fields = [
-                                                        'screening_count_data' => 'Screening',
-                                                        'finalization_count_data' => 'Finalization',
-                                                        'screening_datetime' => 'Screening Date & Time',
-                                                        'finalization_datetime' => 'Finalization Date & Time'
-                                                    ];
-
-                                                    // Flag for table headers
-                                                    $headers = false;
-
-                                                    foreach ($doctor_case_info as $row) {
-                                                        if (is_array($row)) {
-                                                            // Generate table headers once
-                                                            if (!$headers) {
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                                                    $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                    echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                                }
-                                                                echo '</tr>';
-                                                                $headers = true;
-                                                            }
-
-                                                            // Display row values
-                                                            echo '<tr>';
-                                                            foreach ($row as $field => $value) {
-                                                                if (in_array($field, $exclude_fields)) {
-                                                                    continue;
-                                                                }
-
-                                                                if (in_array($field, ['screening_datetime', 'finalization_datetime'])) {
-                                                                    // Format the date and time
-                                                                    if (!empty($value)) {
-                                                                        try {
-                                                                            $utc_time = new DateTime($value, new DateTimeZone('UTC')); // Specify UTC timezone
-                                                                            $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka')); // Convert to Asia/Dhaka timezone
-                                                                            $formatted_datetime = $utc_time->format('j F, Y g:i A'); // Format in 12-hour format with AM/PM
-                                                                        } catch (Exception $e) {
-                                                                            $formatted_datetime = ''; // Fallback for invalid dates
-                                                                        }
-                                                                    } else {
-                                                                        $formatted_datetime = ''; // Handle empty values
-                                                                    }
-                                                                    echo '<td>' . htmlspecialchars($formatted_datetime) . '</td>';
-                                                                } elseif (in_array($field, ['screening_count_data', 'finalization_count_data'])) {
-                                                                    // Decode JSON and format the data
-                                                                    $formatted_data = '';
-                                                                    $decoded_data = json_decode($value, true);
-
-                                                                    if (is_array($decoded_data)) {
-                                                                        foreach ($decoded_data as $person => $timestamps) {
-                                                                            $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
-                                                                            foreach ($timestamps as $timestamp) {
-                                                                                try {
-                                                                                    $utc_time = new DateTime($timestamp, new DateTimeZone('UTC'));
-                                                                                    $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                                    $datetime = $utc_time->format('j F, Y g:i A');
-                                                                                    $formatted_data .= $datetime . '<br>';
-                                                                                } catch (Exception $e) {
-                                                                                    $formatted_data .= 'Invalid Date<br>';
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                    echo '<td>' . $formatted_data . '</td>';
-                                                                } else {
-                                                                    // Escape and display other values
-                                                                    echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                                }
-                                                            }
-                                                            echo '</tr>';
-                                                        }
-                                                    }
-                                                    echo '</table>';
-                                                } else {
-                                                    echo '';
-                                                }
-                                            ?>
-
-                                            <!-- Doctor Case Complete -->
-                                            <?php
-                                                // Fetch the data
-                                                $doctor_complete_info = cyto_doctor_complete_case_doctor_module($LabNumber);
-
-                                                if (is_array($doctor_complete_info) && count($doctor_complete_info) > 0) {
-                                                    echo '<table class="table table-bordered table-striped">';
-
-                                                    // List of fields to exclude
-                                                    $exclude_fields = ['rowid', 'screening_done', 'screening_done_count', 'finalization_done', 'finalization_done_count', 'lab_number'];
-
-                                                    // Rename columns
-                                                    $rename_fields = [
-                                                        'screening_done_count_data' => 'Screening Done',
-                                                        'finalization_done_count_data ' => 'Finalization Done',
-                                                        'screening_done_date_time' => 'Screening Done Date & Time',
-                                                        'finalization_done_date_time' => 'Finalization Done Date & Time'
-                                                    ];
-
-                                                    // Flag for table headers
-                                                    $headers = false;
-
-                                                    foreach ($doctor_complete_info as $row) {
-                                                        if (is_array($row)) {
-                                                            // Generate table headers once
-                                                            if (!$headers) {
-                                                                echo '<tr>';
-                                                                foreach ($row as $field => $value) {
-                                                                    if (in_array($field, $exclude_fields)) {
-                                                                        continue;
-                                                                    }
-                                                                    $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                    echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                                }
-                                                                echo '</tr>';
-                                                                $headers = true;
-                                                            }
-
-                                                            // Display row values
-                                                            echo '<tr>';
-                                                            foreach ($row as $field => $value) {
-                                                                if (in_array($field, $exclude_fields)) {
-                                                                    continue;
-                                                                }
-
-                                                                if (in_array($field, ['screening_done_date_time', 'finalization_done_date_time'])) {
-                                                                    // Format the date and time
-                                                                    if (!empty($value)) {
-                                                                        try {
-                                                                            $utc_time = new DateTime($value, new DateTimeZone('UTC')); // Specify UTC timezone
-                                                                            $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka')); // Convert to Asia/Dhaka timezone
-                                                                            $formatted_datetime = $utc_time->format('j F, Y g:i A'); // Format in 12-hour format with AM/PM
-                                                                        } catch (Exception $e) {
-                                                                            $formatted_datetime = ''; // Fallback for invalid dates
-                                                                        }
-                                                                    } else {
-                                                                        $formatted_datetime = ''; // Handle empty values
-                                                                    }
-                                                                    echo '<td>' . htmlspecialchars($formatted_datetime) . '</td>';
-                                                                } elseif (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
-                                                                    // Decode JSON and format the data
-                                                                    $formatted_data = '';
-                                                                    $decoded_data = json_decode($value, true);
-
-                                                                    if (is_array($decoded_data)) {
-                                                                        foreach ($decoded_data as $person => $timestamps) {
-                                                                            $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
-                                                                            foreach ($timestamps as $timestamp) {
-                                                                                try {
-                                                                                    $utc_time = new DateTime($timestamp, new DateTimeZone('UTC'));
-                                                                                    $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                                    $datetime = $utc_time->format('j F, Y g:i A');
-                                                                                    $formatted_data .= $datetime . '<br>';
-                                                                                } catch (Exception $e) {
-                                                                                    $formatted_data .= 'Invalid Date<br>';
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                    echo '<td>' . $formatted_data . '</td>';
-                                                                } else {
-                                                                    // Escape and display other values
-                                                                    echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                                }
-                                                            }
-                                                            echo '</tr>';
-                                                        }
-                                                    }
-                                                    echo '</table>';
-                                                } else {
-                                                    echo '';
-                                                }
-                                            ?>
-                                            
-                                </div>
-                        </div>
-
-                        <div class="col-md-6" style="margin-left:-400px;">
-                            <div class="content">
-                                    <!-- Recall -->
-                                    <?php 
-                            
-                                        $recall_status = cyto_recall_lab_number($LabNumber);
+// Check if the function returned an error
+if (isset($status_list['error'])) {
+    echo "<div style='color: red;'>Error: " . htmlspecialchars($status_list['error']) . "</div>";
+} else {
+    // Check if data is available
+    if (empty($status_list)) {
+        echo "<div>No data available for lab number: " . htmlspecialchars($statusLabNumberWithFNA) . "</div>";
+    } else {
+        // Display the data in a vertical table
+        echo "<table class='table table-bordered table-striped'>";
         
-                                        if ($recall_status ) {
-                                            echo("<h3 style='color:red;'>Recall Data</h3><br>");
-                                            $recall_cyto_id = $recall_status['rowid'];
-                                            // recall clinical information
-                                            $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
-                                            // Check if we have valid data or an error message
-                                            if (is_array($recall_clinical_information)) {
-                                            // If data is found, create a table to display it
-                                            echo '<table class="table table-bordered table-striped">';
-                                    
-                                            // List of fields to exclude
-                                            $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
+        // Iterate over the first row of data (assuming the keys are consistent)
+        foreach ($status_list[0] as $field => $value) {
+            // Skip excluded fields
+            if (in_array($field, $excluded_fields)) {
+                continue;
+            }
 
-                                            // Create a row for the field names (headers)
-                                            echo '<tr>';
-                                            foreach ($recall_clinical_information as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
+            // Skip empty or null values
+            if (empty($value)) {
+                continue;
+            }
 
-                                                // If the field exists and is not empty, display the field name
-                                                if (!empty($value)) {
-                                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                                }
-                                            }
-                                            echo '</tr>';
+            echo "<tr>";
+            
+            // Use the mapped display name if available, otherwise default to the original field name
+            $display_name = $field_name_mapping[$field] ?? ucwords(str_replace('_', ' ', $field));
+            echo "<td style='padding: 8px;'>" . htmlspecialchars($display_name) . "</td>";
 
-                                            // Create a row for the field values
-                                            echo '<tr>';
-                                            foreach ($recall_clinical_information as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
-                                            
-                                                // If the field exists and is not empty, display the value
-                                                if (!empty($value)) {
-                                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                                }
-                                            }
-                                            echo '</tr>';
+            // Check if the field is one of the JSON data fields
+            if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
+                // Decode JSON and format the data
+                $formatted_data = '';
+                $decoded_data = json_decode($value, true);
 
-                                            echo '</table>';
-                                        } else {
-                                            // If no data was found or there's an error
-                                            echo '';
-                                        }
-                                
-                                        // recall fixation details
-                                        $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
-                                        if (is_array($recall_fixation_details)) {
-                                            // If data is found, create a table to display it
-                                            echo '<table class="table table-bordered table-striped">';
+                if (is_array($decoded_data)) {
+                    foreach ($decoded_data as $person => $timestamps) {
+                        $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
+                        foreach ($timestamps as $timestamp) {
+                            try {
+                                $utc_time = new DateTime($timestamp, new DateTimeZone('UTC'));
+                                $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                $datetime = $utc_time->format('j F, Y g:i A');
+                                $formatted_data .= $datetime . '<br>';
+                            } catch (Exception $e) {
+                                $formatted_data .= 'Invalid Date<br>';
+                            }
+                        }
+                    }
+                }
+                echo "<td style='padding: 8px;'>" . $formatted_data . "</td>";
+            } else {
+                // Render non-JSON fields as-is
+                echo "<td style='padding: 8px;'>" . htmlspecialchars($value) . "</td>";
+            }
 
-                                            // List of fields to exclude
-                                            $exclude_fields = ['rowid', 'cyto_id'];
-                                        
-                                            // Create a row for the field names (headers)
-                                            echo '<tr>';
-                                            foreach ($recall_fixation_details as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
-                                            
-                                                // If the field exists and is not empty, display the field name
-                                                if (!empty($value)) {
-                                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                                }
-                                            }
-                                            echo '</tr>';
-                                        
-                                            // Create a row for the field values
-                                            echo '<tr>';
-                                            foreach ($recall_fixation_details as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
-                                            
-                                                // If the field exists and is not empty, display the value
-                                                if (!empty($value)) {
-                                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                                }
-                                            }
-                                            echo '</tr>';
-                                        
-                                            echo '</table>';
-                                        } else {
-                                            // If no data was found or there's an error
-                                            echo '<p>' . $recall_fixation_details . '</p>';
-                                        }
+            echo "</tr>";
+        }
+
+        echo "</table>";
+    }
+}
+?>
 
 
-                                        // recall fixation additional details
-                                        $recall_fixation_additional_details = cyto_recall_fixation_additional_details($recall_cyto_id);
-                                        if (is_array($recall_fixation_additional_details)) {
-                                            // If data is found, create a table to display it
-                                            echo '<table class="table table-bordered table-striped">';
-                                    
-                                            // List of fields to exclude
-                                            $exclude_fields = ['rowid', 'cyto_id'];
-                                
-                                            // Create a row for the field names (headers)
-                                            echo '<tr>';
-                                            foreach ($recall_fixation_additional_details as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
-                                            
-                                                // If the field exists and is not empty, display the field name
-                                                if (!empty($value)) {
-                                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                                }
-                                            }
-                                            echo '</tr>';
-                                
-                                            // Create a row for the field values
-                                            echo '<tr>';
-                                            foreach ($recall_fixation_additional_details as $field => $value) {
-                                                // Skip the fields we want to exclude
-                                                if (in_array($field, $exclude_fields)) {
-                                                    continue;
-                                                }
-                                            
-                                                // If the field exists and is not empty, display the value
-                                                if (!empty($value)) {
-                                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                                }
-                                            }
-                                            echo '</tr>';
-                                
-                                        echo '</table>';
-                                        } else {
-                                            // If no data was found or there's an error
-                                            echo '';
-                                        }
-                            
-                                        } 
-                                    ?>
-
-                                    <!-- recall management -->
-                                    <?php 
-                                        // Fetch the data
-                                        $cyto_recall_information = cyto_recall_information_list_by_lab_number($LabNumber);
-
-                                        // Check for errors or empty data
-                                        if (isset($cyto_recall_information['error'])) {
-                                            echo "<p>Error: " . $recall_data['error'] . "</p>";
-                                        } elseif (isset($cyto_recall_information['message'])) {
-                                            echo "<p>" . $cyto_recall_information['message'] . "</p>";
-                                        } else {
-                                            // Display data in a table if available
-                                            if (count($cyto_recall_information) > 0) {
-                                                echo("<h3 style='color:red;'>Recall Information</h3><br>");
-                                                echo '<table class="table table-bordered table-striped">';
-                                                echo '<thead>';
-                                                echo '<tr>';
-                                                echo '<th>Lab Number</th>';
-                                                echo '<th>Recall Reason</th>';
-                                                echo '<th>Created Date</th>';
-                                                echo '<th>Doctor</th>';
-                                                echo '<th>Notified User</th>';
-                                                echo '<th>Notified Method</th>';
-                                                echo '<th>Follow-Up Date</th>';
-                                                echo '</tr>';
-                                                echo '</thead>';
-                                                echo '<tbody>';
-                                            
-                                                // Loop through each record and create a table row
-                                                foreach ($cyto_recall_information as $row) {
-                                                    // Decode the JSON data for recall reasons (dynamic keys)
-                                                    $recall_data_json = json_decode($row['recall_reason'], true);
-                                                
-                                                    // Prepare the output for each person dynamically
-                                                    $formatted_recall_reasons = '';
-                                                    foreach ($recall_data_json as $person => $records) {
-                                                        $formatted_recall_reasons .= '<strong style="font-size: 18px;">' . htmlspecialchars($person) . '</strong><br>';
-                                                        foreach ($records as $record) {
-                                                            $reasons = isset($record['reason']) ? implode(", ", $record['reason']) : '';
-                                                            $timestamp = new DateTime($record['timestamp']);
-                                                            $timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                            $formatted_recall_reasons .= 'Reasons: ' . htmlspecialchars($reasons) . '<br>';
-                                                            $formatted_recall_reasons .= 'Timestamp: ' . $timestamp->format('d F, Y h:i A') . '<br><br>';
-                                                        }
-                                                    }
-                                                
-                                                    // Format the created date
-                                                    $created_date = new DateTime($row['created_date']);
-                                                    $created_date->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                    $formatted_date = $created_date->format('d F, Y h:i A');
-                                                
-                                                    // Format notified methods
-                                                    $notified_methods = $row['notified_method'] ? implode(", ", explode(", ", $row['notified_method'])) : '';
-                                                
-                                                    // Format follow-up date
-                                                    $follow_up_date = $row['follow_up_date'] ? (new DateTime($row['follow_up_date']))->setTimezone(new DateTimeZone('Asia/Dhaka'))->format('d F, Y h:i A') : '';
-                                                
-                                                    // Display each row
-                                                    echo '<tr>';
-                                                    echo '<td>' . htmlspecialchars($row['lab_number']) . '</td>';
-                                                    echo '<td>' . $formatted_recall_reasons . '</td>';
-                                                    echo '<td>' . $formatted_date . '</td>';
-                                                    echo '<td>' . htmlspecialchars($row['recalled_doctor']) . '</td>';
-                                                    echo '<td>' . htmlspecialchars($row['notified_user']) . '</td>';
-                                                    echo '<td>' . $notified_methods . '</td>';
-                                                    echo '<td>' . $follow_up_date . '</td>';
-                                                    echo '</tr>';
-                                                }
-                                            
-                                                echo '</tbody>';
-                                                echo '</table>';
-                                            } else {
-                                                echo "";
-                                            }
-                                        }
-                                    ?>
-
-                                    <!-- Doctor Study Information -->
-                                    <?php 
-                                            // Fetch the data
-                                            $doctor_study_info = cyto_doctor_study_patient_info_doctor_module($LabNumber);
-
-                                            // Check for errors or empty data
-                                            if (isset($doctor_study_info['error'])) {
-                                                echo "<p>Error: " . $doctor_study_info['error'] . "</p>";
-                                            } elseif (isset($doctor_study_info['message'])) {
-                                                echo "<p>" . $doctor_study_info['message'] . "</p>";
-                                            } else {
-                                                if (count($doctor_study_info) > 0) {
-                                                    echo("<h3 style='color:red;'>Study / Patient History</h3><br>");
-                                                    echo '<table class="table table-bordered table-striped">';
-                                                    echo '<thead>';
-                                                    echo '<tr>';
-                                                    echo '<th>Screening Study</th>';
-                                                    echo '<th>Screening Patient History</th>';
-                                                    echo '<th>Finalization Study</th>';
-                                                    echo '<th>Finalization Patient History</th>';
-                                                    echo '</tr>';
-                                                    echo '</thead>';
-                                                    echo '<tbody>';
-
-                                                    foreach ($doctor_study_info as $row) {
-                                                        // Decode JSON fields
-                                                        $screening_study_data = json_decode($row['screening_study_count_data'], true);
-                                                        $screening_patient_history_data = json_decode($row['screening_patient_history'], true);
-                                                        $finalization_study_data = json_decode($row['finalization_study_count_data'], true);
-                                                        $finalization_patient_history_data = json_decode($row['finalization_patient_history'], true);
-
-                                                        // Format the data
-                                                        $formatted_screening_study = formatSimpleData($screening_study_data);
-                                                        $formatted_screening_history = formatNestedArrayData($screening_patient_history_data);
-                                                        $formatted_finalization_study = formatSimpleData($finalization_study_data);
-                                                        $formatted_finalization_history = formatComplexData($finalization_patient_history_data);
-
-                                                        // Display the formatted data in the table
-                                                        echo '<tr>';
-                                                        echo '<td>' . $formatted_screening_study . '</td>';
-                                                        echo '<td>' . $formatted_screening_history . '</td>';
-                                                        echo '<td>' . $formatted_finalization_study . '</td>';
-                                                        echo '<td>' . $formatted_finalization_history . '</td>';
-                                                        echo '</tr>';
-                                                    }
-
-                                                    echo '</tbody>';
-                                                    echo '</table>';
-                                                } else {
-                                                    echo "";
-                                                }
-                                            }
-
-                                            // Function to format simple timestamp arrays
-                                            function formatSimpleData($data) {
-                                                if (!is_array($data)) return '';
-
-                                                $output = '';
-                                                foreach ($data as $person => $timestamps) {
-                                                    $output .= '<strong>' . htmlspecialchars($person) . '</strong><br>';
-                                                    foreach ($timestamps as $timestamp) {
-                                                        $output .= 'Timestamp: ' . formatTimestamp($timestamp) . '<br>';
-                                                    }
-                                                }
-                                                return $output;
-                                            }
-
-                                            // Function to format nested array data (e.g., screening patient history)
-                                            function formatNestedArrayData($data) {
-                                                if (!is_array($data)) return '';
-
-                                                $output = '';
-                                                foreach ($data as $person => $entries) {
-                                                    $output .= '<strong>' . htmlspecialchars($person) . '</strong><br>';
-                                                    foreach ($entries as $entry) {
-                                                        if (is_array($entry)) {
-                                                            $history = implode(", ", array_slice($entry, 0, -1));
-                                                            $timestamp = formatTimestamp(end($entry));
-                                                            $output .= 'History: ' . htmlspecialchars($history) . '<br>';
-                                                            $output .= 'Timestamp: ' . $timestamp . '<br>';
-                                                        }
-                                                    }
-                                                }
-                                                return $output;
-                                            }
-
-                                            // Function to format complex objects (e.g., finalization patient history)
-                                            function formatComplexData($data) {
-                                                if (!is_array($data)) return '';
-
-                                                $output = '';
-                                                foreach ($data as $person => $records) {
-                                                    $output .= '<strong>' . htmlspecialchars($person) . '</strong><br>';
-                                                    foreach ($records as $record) {
-                                                        $history = isset($record['history']) ? implode(", ", $record['history']) : 'No history available';
-                                                        $timestamp = isset($record['timestamp']) ? formatTimestamp($record['timestamp']) : 'No timestamp available';
-                                                        $output .= 'History: ' . htmlspecialchars($history) . '<br>';
-                                                        $output .= 'Timestamp: ' . htmlspecialchars($timestamp) . '<br>';
-                                                    }
-                                                }
-                                                return $output;
-                                            }
-
-                                            // Function to format timestamps to Asia/Dhaka timezone
-                                            function formatTimestamp($timestamp) {
-                                                try {
-                                                    $date = new DateTime($timestamp, new DateTimeZone('UTC'));
-                                                    $date->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                    return $date->format('d F, Y h:i A');
-                                                } catch (Exception $e) {
-                                                    return 'Invalid timestamp';
-                                                }
-                                            }
-                                    ?>
-
-                                    <!-- Doctor Lab Instruction -->
-                                    <?php
-                                        // Fetch the data
-                                        $doctor_lab_instruction = cyto_doctor_lab_instruction_doctor_module($LabNumber);
-
-                                        if (is_array($doctor_lab_instruction) && count($doctor_lab_instruction) > 0) {
-                                            echo("<h3 style='color:red;'>Lab Related Instruction</h3><br>");
-                                            echo '<table class="table table-bordered table-striped">';
-
-                                            // Fields to exclude
-                                            $exclude_fields = ['rowid', 'screening_stain_name', 'screening_doctor_name', 'finalization_stain_name', 'finalization_doctor_name', 'lab_number'];
-
-                                            // Fields to rename
-                                            $rename_fields = [
-                                                'screening_stain_again' => 'Screening Lab Instruction',
-                                                'finalization_stain_again' => 'Finalization Lab Instruction'
-                                            ];
-
-                                            // Initialize headers flag
-                                            $headers = false;
-
-                                            foreach ($doctor_lab_instruction as $row) {
-                                                if (is_array($row)) {
-                                                    // Generate table headers once
-                                                    if (!$headers) {
-                                                        echo '<thead><tr>';
-                                                        foreach ($row as $field => $value) {
-                                                            if (!in_array($field, $exclude_fields)) {
-                                                                $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                            }
-                                                        }
-                                                        echo '</tr></thead>';
-                                                        $headers = true;
-                                                    }
-
-                                                    // Display row values
-                                                    echo '<tr>';
-                                                    foreach ($row as $field => $value) {
-                                                        if (in_array($field, $exclude_fields)) {
-                                                            continue;
-                                                        }
-
-                                                        if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
-                                                            // Decode JSON and format the data
-                                                            $formatted_data = '';
-                                                            $decoded_data = json_decode($value, true);
-
-                                                            if (is_array($decoded_data)) {
-                                                                foreach ($decoded_data as $person => $entries) {
-                                                                    $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
-                                                                    foreach ($entries as $entry) {
-                                                                        if (isset($entry['stains']) && isset($entry['timestamp'])) {
-                                                                            try {
-                                                                                $utc_time = new DateTime($entry['timestamp'], new DateTimeZone('UTC'));
-                                                                                $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                                $datetime = $utc_time->format('j F, Y g:i A');
-                                                                                $formatted_data .=  $datetime . '<br>';
-
-                                                                                // Handle stains
-                                                                                $formatted_data .= '';
-                                                                                if (is_array($entry['stains'])) {
-                                                                                    foreach ($entry['stains'] as $stain) {
-                                                                                        if (is_array($stain) && isset($stain['other'])) {
-                                                                                            $formatted_data .= '' . htmlspecialchars($stain['other']) . ', ';
-                                                                                        } else {
-                                                                                            $formatted_data .= htmlspecialchars($stain) . ', ';
-                                                                                        }
-                                                                                    }
-                                                                                    // Remove trailing comma and space
-                                                                                    $formatted_data = rtrim($formatted_data, ', ');
-                                                                                }
-                                                                                $formatted_data .= '<br>';
-                                                                            } catch (Exception $e) {
-                                                                                $formatted_data .= 'Invalid Date<br>';
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                            echo '<td>' . $formatted_data . '</td>';
-                                                        } else {
-                                                            // Escape and display other values
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                        }
-                                                    }
-                                                    echo '</tr>';
-                                                }
-                                            }
-                                            echo '</table>';
-                                        } else {
-                                            echo '';
-                                        }
-                                    ?>
-
-                                    <!-- Doctor Special Instruction FNAC Room-->
-                                    <?php
-                                        // Fetch the data
-                                        $doctor_special_instruction_fna_room = cyto_special_instructions_list_for_doctor_module($LabNumberWithFNA);
-
-                                        if (is_array($doctor_special_instruction_fna_room) && count($doctor_special_instruction_fna_room) > 0) {
-                                            echo("<h3 style='color:red;'>Special Instruction</h3><br>");
-                                            echo '<table class="table table-bordered table-striped">';
-
-                                            // Fields to exclude
-                                            $exclude_fields = [
-                                                'rowid', 'cyto_id', 'slide_number', 'location', 'fixation_method', 'dry', 
-                                                'aspiration_materials', 'screening_stain_name', 'screening_doctor_name', 
-                                                'finalization_stain_name', 'finalization_doctor_name', 'lab_number'
-                                            ];
-
-                                            // Fields to display and rename
-                                            $rename_fields = [
-                                                'special_instructions' => 'Special Instruction',
-                                                'created_user' => 'Complete User',
-                                                'created_date' => 'Complete Date'
-                                            ];
-
-                                            // Initialize headers flag
-                                            $headers = false;
-
-                                            foreach ($doctor_special_instruction_fna_room as $row) {
-                                                if (is_array($row)) {
-                                                    // Generate table headers once
-                                                    if (!$headers) {
-                                                        echo '<thead><tr>';
-                                                        foreach ($row as $field => $value) {
-                                                            // Only include fields that are not in exclude_fields
-                                                            if (!in_array($field, $exclude_fields)) {
-                                                                $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                            }
-                                                        }
-                                                        echo '</tr></thead>';
-                                                        $headers = true;
-                                                    }
-
-                                                    // Display row values
-                                                    echo '<tr>';
-                                                    foreach ($row as $field => $value) {
-                                                        // Skip excluded fields
-                                                        if (in_array($field, $exclude_fields)) {
-                                                            continue;
-                                                        }
-
-                                                        // For 'created_date' field, format it
-                                                        if ($field == 'created_date' && isset($value)) {
-                                                            try {
-                                                                $utc_time = new DateTime($value, new DateTimeZone('UTC'));
-                                                                $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                $datetime = $utc_time->format('j F, Y g:i A');
-                                                                echo '<td>' . $datetime . '</td>';
-                                                            } catch (Exception $e) {
-                                                                echo '<td>Invalid Date</td>';
-                                                            }
-                                                        } else {
-                                                            // Handle and display other fields
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                        }
-                                                    }
-                                                    echo '</tr>';
-                                                }
-                                            }
-                                            echo '</table>';
-                                        } else {
-                                            echo '';
-                                        }
-                                    ?>
-                                    <!-- Slide Prepared -->
-                                    <?php
-                                        // Fetch the data
-                                        $slide_prepared = cyto_slide_prepared_doctor_module($LabNumber);
-
-                                        if (is_array($slide_prepared ) && count($slide_prepared) > 0) {
-                                            echo("<h3 style='color:red;'>Slide Prepared</h3><br>");
-                                            echo '<table class="table table-bordered table-striped">';
-
-                                            // Fields to exclude
-                                            $exclude_fields = [
-                                                'rowid', 'lab_number'
-                                            ];
-
-                                            // Fields to display and rename
-                                            $rename_fields = [
-                                                'created_user' => 'Prepared User',
-                                                'created_date' => 'Prepared Date'
-                                            ];
-
-                                            // Initialize headers flag
-                                            $headers = false;
-
-                                            foreach ($slide_prepared as $row) {
-                                                if (is_array($row)) {
-                                                    // Generate table headers once
-                                                    if (!$headers) {
-                                                        echo '<thead><tr>';
-                                                        foreach ($row as $field => $value) {
-                                                            // Only include fields that are not in exclude_fields
-                                                            if (!in_array($field, $exclude_fields)) {
-                                                                $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                            }
-                                                        }
-                                                        echo '</tr></thead>';
-                                                        $headers = true;
-                                                    }
-
-                                                    // Display row values
-                                                    echo '<tr>';
-                                                    foreach ($row as $field => $value) {
-                                                        // Skip excluded fields
-                                                        if (in_array($field, $exclude_fields)) {
-                                                            continue;
-                                                        }
-
-                                                        // For 'created_date' field, format it
-                                                        if ($field == 'created_date' && isset($value)) {
-                                                            try {
-                                                                $utc_time = new DateTime($value, new DateTimeZone('UTC'));
-                                                                $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                $datetime = $utc_time->format('j F, Y g:i A');
-                                                                echo '<td>' . $datetime . '</td>';
-                                                            } catch (Exception $e) {
-                                                                echo '<td>Invalid Date</td>';
-                                                            }
-                                                        } else {
-                                                            // Handle and display other fields
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                        }
-                                                    }
-                                                    echo '</tr>';
-                                                }
-                                            }
-                                            echo '</table>';
-                                        } else {
-                                            echo '';
-                                        }
-                                    ?>
-
-                                    <!--slide centrifuge  -->
-                                    <?php
-                                        // Fetch the data
-                                        $slide_centrifuge = cyto_slide_centrifuge_doctor_module($LabNumber);
-
-                                        if (is_array($slide_centrifuge ) && count($slide_centrifuge) > 0) {
-                                            echo("<h3 style='color:red;'>Centrifuge New Slide Prepared</h3><br>");
-                                            echo '<table class="table table-bordered table-striped">';
-
-                                            // Fields to exclude
-                                            $exclude_fields = [
-                                                'rowid', 'lab_number', 'pipette_tips', 'filter_paper'
-                                            ];
-
-                                            // Fields to display and rename
-                                            $rename_fields = [
-                                                'created_user' => 'Prepared User',
-                                                'created_date' => 'Prepared Date'
-                                            ];
-
-                                            // Initialize headers flag
-                                            $headers = false;
-
-                                            foreach ($slide_centrifuge as $row) {
-                                                if (is_array($row)) {
-                                                    // Generate table headers once
-                                                    if (!$headers) {
-                                                        echo '<thead><tr>';
-                                                        foreach ($row as $field => $value) {
-                                                            // Only include fields that are not in exclude_fields
-                                                            if (!in_array($field, $exclude_fields)) {
-                                                                $column_name = $rename_fields[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                                                                echo '<th>' . htmlspecialchars($column_name) . '</th>';
-                                                            }
-                                                        }
-                                                        echo '</tr></thead>';
-                                                        $headers = true;
-                                                    }
-
-                                                    // Display row values
-                                                    echo '<tr>';
-                                                    foreach ($row as $field => $value) {
-                                                        // Skip excluded fields
-                                                        if (in_array($field, $exclude_fields)) {
-                                                            continue;
-                                                        }
-
-                                                        // For 'created_date' field, format it
-                                                        if ($field == 'created_date' && isset($value)) {
-                                                            try {
-                                                                $utc_time = new DateTime($value, new DateTimeZone('UTC'));
-                                                                $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                                $datetime = $utc_time->format('j F, Y g:i A');
-                                                                echo '<td>' . $datetime . '</td>';
-                                                            } catch (Exception $e) {
-                                                                echo '<td>Invalid Date</td>';
-                                                            }
-                                                        } else {
-                                                            // Handle and display other fields
-                                                            echo '<td>' . htmlspecialchars($value) . '</td>';
-                                                        }
-                                                    }
-                                                    echo '</tr>';
-                                                }
-                                            }
-                                            echo '</table>';
-                                        } else {
-                                            echo '';
-                                        }
-                                    ?>
-                            </div>
-                        </div>
-                        
-               </div>
+                </div> 
                 
+
             </div>
             
             <?php
@@ -1641,7 +638,7 @@ switch (true) {
                                 <h3>Lab Instructions</h3>
                                 <br>
                                 <div>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="save_lab_instructions" id="screening_lab_instruction_save">&nbsp;&nbsp;<b>Save</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;<button type="button" id="screening_lab_instruction_save"><b>Save</b></button>
                                 </div>
                                 <br>
                                 <div class="col-md-3">
@@ -1744,14 +741,10 @@ switch (true) {
                         <div class="card-body">
                             <h3>Finalization Study/History</h3>
                             <br>
-                            <!-- <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <button id="finalization-study-history" class="btn btn-primary">Submit</button>
-                                </div>
-                            </div> -->
-                            <br>
                             <!-- Study Choice (Checkbox) -->
-                            <div id="final-study-choice">
+                            <button id="final-study-save" class="btn btn-primary">Save</button><br><br>
+
+                            <div id="study-choice">
                                 <input type="checkbox" id="final-study-checkbox" value="study"/>&nbsp;&nbsp;<b>Study</b>
                             </div>
 
@@ -1828,9 +821,9 @@ switch (true) {
                             <div id="final-stain-choice" class="row">
                                 <h3>Finalization Lab Instructions</h3>
                                 <br>
-                                <div>
-                                    &nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" name="save_finalization_lab_instructions" id="finalization_lab_instruction_save">&nbsp;&nbsp;<b>Save</b>
-                                </div>
+                                    <div>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<button type="button" id="finalization_lab_instruction_save"><b>Save</b></button>
+                                    </div>
                                 <br>
                                 <div class="col-md-3">
                                     <input type="checkbox" id="centrifuge-checkbox" />&nbsp;&nbsp;<b>Centrifuge</b>
@@ -2353,8 +1346,7 @@ switch (true) {
                 submitStudyData();
             });
 
-            
-
+        
             function submitStudyData() {
                 // Collect patient history checkbox values
                 let historyOptions = [];
@@ -2374,39 +1366,39 @@ switch (true) {
                     }
                 });
 
-            // Prepare data to send
-            const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
-            const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
-            const timestamp = new Date().toISOString(); // Current timestamp
-            const data = {
-                lab_number: labNumber,
-                username: username,
-                timestamp: timestamp,
-                screening_study: true,
-                screening_patient_history: historyOptions
-            };
+                // Prepare data to send
+                const labNumber = "<?php echo $LabNumber; ?>"; // PHP echo
+                const username = "<?php echo $loggedInUsername; ?>"; // PHP echo
+                const timestamp = new Date().toISOString(); // Current timestamp
+                const data = {
+                    lab_number: labNumber,
+                    username: username,
+                    timestamp: timestamp,
+                    screening_study: true,
+                    screening_patient_history: historyOptions
+                };
 
-            // Send data to server via Fetch API
-            fetch('insert/screening_study_handler.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.status === 'success') {
-                    showMessage('This case has been moved to the Study/History section.', 'success');
-                } else {
-                    showMessage('An error occurred: ' + result.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                showMessage('An error occurred. Please try again.', 'error');
-            });
-        }
+                // Send data to server via Fetch API
+                fetch('insert/screening_study_handler.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === 'success') {
+                        showMessage('This case has been moved to the Study/History section.', 'success');
+                    } else {
+                        showMessage('An error occurred: ' + result.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch Error:', error);
+                    showMessage('An error occurred. Please try again.', 'error');
+                });
+            }
 
         // Show/Hide Other History Textbox
         document.getElementById('other-checkbox').addEventListener('change', function () {
@@ -2440,16 +1432,21 @@ switch (true) {
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Submit the screening study
-        document.getElementById('final-study-checkbox').addEventListener('change', function () {
-            if (this.checked) {
-                submitStudyData();
-            }
+        document.getElementById('final-study-save').addEventListener('click', function () {
+            submitFinalStudyData();
         });
 
         // Function to handle form submission and send data to the server
-        function submitStudyData() {
+        function submitFinalStudyData() {
             // Collect patient history checkbox values
             let historyOptions = [];
+
+            // Add the value of the study-checkbox to the historyOptions array
+            const studyChecked = document.getElementById('final-study-checkbox').checked;
+            if (studyChecked) {
+                historyOptions.push("study");
+            }
+
             document.querySelectorAll('.final-history-option:checked').forEach(el => {
                 if (el.value === 'other') {
                     const otherInput = document.getElementById('final-other-history-text').value;
@@ -2492,7 +1489,7 @@ switch (true) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data) // Properly send data as JSON
             })
             .then(response => response.json())
             .then(result => {
@@ -2535,16 +1532,15 @@ switch (true) {
         }
 
     });
+
 </script>
 
 <!-- Screening Lab Instruction data store -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
-        document.getElementById('screening_lab_instruction_save').addEventListener('change', function () {
-            if (this.checked) {
-                submitLabInstructions();
-            }
+        document.getElementById('screening_lab_instruction_save').addEventListener('click', function () {
+            submitLabInstructions();
         });
 
         // Function to Submit Lab Instructions
@@ -2635,10 +1631,8 @@ switch (true) {
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Event Listener for the Checkbox Submission
-        document.getElementById('finalization_lab_instruction_save').addEventListener('change', function () {
-            if (this.checked) {
-                submitLabInstructions();
-            }
+        document.getElementById('finalization_lab_instruction_save').addEventListener('click', function () {
+            submitLabInstructions();
         });
 
         // Function to Submit Lab Instructions

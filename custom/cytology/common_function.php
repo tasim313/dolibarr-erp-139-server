@@ -1005,4 +1005,92 @@ function cyto_postpone_status() {
     }
 }
 
+
+function cyto_status_list_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT 
+            cyto.lab_number,
+            cyto.doctor,
+            clinical.chief_complain,
+            clinical.relevant_clinical_history,
+            clinical.on_examination,
+            clinical.clinical_impression,
+            fixation.aspiration_materials,
+            doctor_case.screening_doctor_name,
+            doctor_case.finalization_doctor_name,
+            complete_case.screening_done_count_data,
+            complete_case.finalization_done_count_data,
+            CONCAT(slide_prepared.created_user, '  ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM')) AS slide_prepared_by
+        FROM 
+            llx_cyto AS cyto
+        LEFT JOIN 
+            llx_cyto_clinical_information AS clinical 
+            ON cyto.rowid = clinical.cyto_id::INTEGER 
+        LEFT JOIN 
+            (
+                SELECT DISTINCT ON (cyto_id) 
+                    cyto_id, aspiration_materials
+                FROM 
+                    llx_cyto_fixation_details
+                ORDER BY 
+                    cyto_id, rowid ASC 
+            ) AS fixation 
+        ON cyto.rowid = fixation.cyto_id::INTEGER 
+        LEFT JOIN 
+            llx_cyto_doctor_case_info AS doctor_case 
+            ON cyto.lab_number = CONCAT('FNA', doctor_case.lab_number) 
+        LEFT JOIN 
+            llx_cyto_doctor_complete_case AS complete_case 
+            ON cyto.lab_number = CONCAT('FNA', complete_case.lab_number)
+        LEFT JOIN 
+            llx_cyto_slide_prepared AS slide_prepared 
+            ON cyto.lab_number = CONCAT('FNA', slide_prepared.lab_number) 
+        WHERE 
+            cyto.lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_status_list_by_lab_number";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
