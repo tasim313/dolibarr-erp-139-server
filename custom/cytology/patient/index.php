@@ -224,19 +224,15 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <!-- Left-side buttons -->
         <div style="display: flex; gap: 10px;">
-            <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Back</a>
-            <a href="./recall.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-info btn-md">Recall</a>
+            <!-- <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Back</a> -->
+            <!-- <a href="./recall.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-info btn-md">Recall</a> -->
+            <button id="togglePatientHistory" class="btn btn-secondary mb-3">Patient Previous History</button>
         </div>
         <!-- Right-side button -->
-        <div>
-            <a href="./postponed.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-warning btn-md">Postpone FNAC</a> &nbsp; &nbsp; &nbsp;
-            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a>
-        </div>
+        
     </div>
             <div class="container"> 
-                    <div class=" text-center mt-5 ">
-                        <h3>New Patient</h3>
-                    </div>
+                    
                     <!-- Patient Information -->
                         <?php
                             // Function to trim "FNA" from the LabNumber
@@ -330,7 +326,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php 
                             $patient_history = get_cyto_patient_history_list($trimmedLabNumber);
                         ?>
-                        <div class="container">
+                        <div id="patientHistoryContainer" style="display: none;">
                             <?php if (!empty($patient_history)): ?>
                                 <form action="../Cyto/save_patient_history.php" method="POST">
                                     <div class="table-responsive">
@@ -435,9 +431,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <?php else: ?>
                                 <p class="text-center text-danger">No patient history available for the provided lab number.</p>
                             <?php endif; ?>
+                            <br><br>
                         </div>
 
-                        <br><br>
                         <form id="clinical-information-form" action="../Cyto/new_patient_create.php" method="post">
                             <table class="table table-bordered table-striped">
                                 <tbody>
@@ -1275,9 +1271,16 @@ Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received 
 
 </script>
 
-
-
-
+<script>
+    document.getElementById('togglePatientHistory').addEventListener('click', function () {
+        const container = document.getElementById('patientHistoryContainer');
+        if (container.style.display === 'none' || container.style.display === '') {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+        }
+    });
+</script>
 
 <?php 
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;

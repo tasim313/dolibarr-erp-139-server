@@ -83,60 +83,32 @@ print load_fiche_titre($langs->trans(""), '', '');
 	</div>
 
 	<script>
-        // Embed the lab numbers from PHP as JavaScript variables
-        const labList = <?php
-            $labNumbers = get_cyto_labnumber_list();
-            echo json_encode(array_column($labNumbers, 'lab_number'));
-        ?>;
+        function handleLabNumberScan(event) {
+            // Check if the Enter key is pressed
+            if (event.key === 'Enter') {
+                const inputField = document.getElementById('input-field');
+                let labNumber = inputField.value.trim(); // Get the scanned lab number
+                
+                // Validate input
+                if (labNumber === '') {
+                    const errorMessage = document.getElementById('error-message');
+                    errorMessage.textContent = 'Lab number cannot be empty!';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
 
-       
-		const completeCytoList = <?php
-            $completeLabNumbers = get_cyto_complete_labnumber_list();
-            echo json_encode(array_column($completeLabNumbers, 'lab_number'));
-        ?>;
+                // Add prefix 'FNA' if it's not already present
+                if (!labNumber.startsWith('FNA')) {
+                    labNumber = 'FNA' + labNumber;
+                }
 
-        // Function to handle scanning of Lab Number
-		function handleLabNumberScan(event) {
-			if (event.key === "Enter") {
-				const inputField = document.getElementById("input-field");
-				const labNumber = inputField.value.trim();
-				const errorMessage = document.getElementById("error-message");
+                // Clear error message if input is valid
+                document.getElementById('error-message').style.display = 'none';
 
-				// Clear previous error message
-				errorMessage.style.display = "none";
-				errorMessage.textContent = "";
-
-				if (!labNumber) {
-					errorMessage.style.display = "block";
-					errorMessage.textContent = "Please scan or enter a valid Lab Number.";
-					return;
-				}
-
-				// Prepend "FNA" if not already included
-				let formattedLabNumber = labNumber;
-				if (!labNumber.startsWith("FNA")) {
-					formattedLabNumber = `FNA${labNumber}`;
-					inputField.value = formattedLabNumber; // Update the input field
-				}
-
-				// Check against lab lists (mocked here for demonstration)
-				if (labList.includes(formattedLabNumber)) {
-					window.location.href = `patient/index.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
-				}else if (completeCytoList.includes(formattedLabNumber)) {
-					window.location.href = `patient/patient_info_update.php?LabNumber=${encodeURIComponent(formattedLabNumber)}`;
-				} 
-				else {
-					errorMessage.style.display = "block";
-					errorMessage.textContent = "Lab Number not found in the system. Please check and try again.";
-				}
-			}
-    	}
-
-		
-
-        // Add event listener to the input field
-        document.getElementById("input-field").addEventListener("keypress", handleLabNumberScan);
-		
+                // Redirect to the postponed.php page with the LabNumber as a query parameter
+                window.location.href = `./postponed.php?LabNumber=${encodeURIComponent(labNumber)}`;
+            }
+        }
     </script>
 
 </body>
