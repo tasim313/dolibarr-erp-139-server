@@ -68,6 +68,8 @@ $isDoctor = false;
 $isAdmin = isUserAdmin($loggedInUserId);
 
 $LabNumber = $_GET['LabNumber'];
+$chief_complain_list = get_cyto_chief_complain_list();
+$on_examination_list = get_cyto_on_examination_list();  
 
 
 $assistants = get_cyto_tech_list();
@@ -121,6 +123,12 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="../../grossmodule/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
+    <!-- Include Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 
     <style>
         .form-group-slide {
@@ -219,6 +227,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             border-color:rgb(223, 14, 77); 
         }
     </style>
+
 </head>
 <body>   
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -509,22 +518,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         
                             <!-- Clinical Information -->
                             <!-- Reason for FNAC -->
-                            <div class="form-group dropdown">
-                                    <label for="chief-complain">Chief Complain:</label>
-                                    <button onclick="toggleDropdown()"class="form-control" style="width: 1145px;" id="selected-value">Enter Complain</button>
-                                    <div id="myDropdown" class="dropdown-content" style="display: none;">
-                                        <input type="text" placeholder="Search.." id="search-reason" class="form-control mb-2" onkeyup="filterFunction()">
-                                        <select id="reason-for-fnac" name="reason_for_fnac" class="form-control" size="4" onchange="selectOption()" required>
-                                            <option value="Others">Others</option>
-                                            <?php $chief_complain_list = get_cyto_chief_complain_list(); ?>
-                                            <?php foreach ($chief_complain_list as $complain): ?>
-                                                <option value="<?= htmlspecialchars($complain['chief_complain']); ?>">
-                                                    <?= htmlspecialchars($complain['chief_complain']); ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <input type="text" id="other-reason" name="other_reason" class="form-control mt-2" placeholder="If Other, specify" style="display: none;">
+                            <div class="form-group">
+                                <label for="reason-for-fnac">Enter Chief Complain:</label>
+                                <textarea id="reason-for-fnac" name="reason_for_fnac" class="form-control" 
+                                    placeholder="Type to search..." rows="3" autocomplete="off" onkeyup="showSuggestions(this.value)" 
+                                    style="width: 100%; height: 55px; line-height: 20px;"></textarea>
+                                <ul id="suggestions-list" style="position: absolute; background: white; border: 1px solid #ccc; 
+                                max-height: 150px; overflow-y: auto; display: none;"></ul>
                             </div>
 
                             <!-- Clinical History -->
@@ -535,22 +535,12 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             
                             <!-- Site of Aspiration -->
                             <div class="form-group">
-                                <select id="onExaminationSelector">
-                                    <option value=""><spain><b>OnExamination</b>&nbsp;&nbsp;</spain> Select Format</option>
-                                    <option value="format1">General Examination</option>
-                                    <option value="format2">Default</option>
-                                    <option value="thyroid">Thyroid Region</option>
-                                    <option value="cervical">Cervical Region</option>
-                                    <option value="parotid">Parotid Region</option>
-                                    <option value="lymphNode">Lymph Node</option>
-                                    <option value="tongueAndOral">Tongue and Oral Region</option>
-                                    <option value="chestWall">Chest Wall</option>
-                                    <option value="preauricularAndPostauricularRegions">Preauricular and Postauricular Regions</option>
-                                    <option value="axillaryRegion">Axillary Region</option>
-                                    <option value="miscellaneous">Miscellaneous</option>
-                                    <option value="cytologySlides">Cytology Slides</option>
-                                </select>
-                                <textarea type="text" id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
+                                <label for="site-of-aspiration-editor">Enter On Examination Note:</label>
+                                <textarea id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" 
+                                        rows="10" placeholder="Enter on examination note" 
+                                        onkeyup="showExaminationSuggestions(this.value)"></textarea>
+                                <ul id="examination-suggestions-list" style="position: absolute; background: white; border: 1px solid #ccc; 
+                                    max-height: 150px; overflow-y: auto; display: none; list-style: none; padding: 0; margin: 0;"></ul>
                             </div>
 
                             
@@ -707,7 +697,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </div>
 
                             
-                        
                             <!-- Number of Passes Performed -->
                             <div class="form-group">
                                 <label for="number-of-needle">Number of Needle Used:</label>
@@ -762,21 +751,88 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 <!-- Clinical Information -->
 <script>
-    // Show/hide "Others" text input based on the selection of dropdown options
-    document.getElementById('reason-for-fnac').addEventListener('change', function() {
-        var otherReasonField = document.getElementById('other-reason');
-        if (this.value === 'Others') {
-            otherReasonField.style.display = 'block';
-            otherReasonField.style.border = '2px solid red';  // Red border when visible
+    const chiefComplainList = <?= json_encode($chief_complain_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+    let currentIndex = -1;
+
+    function showSuggestions(term) {
+        const suggestionsList = document.getElementById('suggestions-list');
+        const textarea = document.getElementById('reason-for-fnac');
+        suggestionsList.innerHTML = ''; // Clear previous suggestions
+        currentIndex = -1; // Reset the index
+
+        if (term.length < 2) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
+
+        // Filter matching values from JSON data
+        const filteredList = chiefComplainList.filter(item =>
+            item.chief_complain.toLowerCase().includes(term.toLowerCase())
+        );
+
+        if (filteredList.length > 0) {
+            filteredList.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.chief_complain;
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.setAttribute('data-index', index);
+
+                // On click, populate the textarea and hide suggestions
+                li.onclick = () => {
+                    textarea.value = item.chief_complain;
+                    suggestionsList.style.display = 'none';
+                };
+
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
         } else {
-            otherReasonField.style.display = 'none';
-            otherReasonField.style.border = '';  // Remove border when hidden
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
+        const suggestionsList = document.getElementById('suggestions-list');
+        const suggestions = suggestionsList.getElementsByTagName('li');
+
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'Tab') {
+            // Prevent default behavior and move to the next suggestion
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % suggestions.length;
+            highlightSuggestion(suggestions, currentIndex);
+        } else if (e.key === 'ArrowUp') {
+            // Prevent default behavior and move to the previous suggestion
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
+            highlightSuggestion(suggestions, currentIndex);
+        } else if (e.key === 'Enter') {
+            // Select the current suggestion
+            e.preventDefault();
+            if (currentIndex >= 0) {
+                suggestions[currentIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            // Close suggestions on Escape key
+            suggestionsList.style.display = 'none';
+            currentIndex = -1;
         }
     });
 
-    // Trigger change event on page load to hide the "Others" inputs initially
-    document.getElementById('reason-for-fnac').dispatchEvent(new Event('change'));
+    function highlightSuggestion(suggestions, index) {
+        for (let i = 0; i < suggestions.length; i++) {
+            if (i === index) {
+                suggestions[i].style.backgroundColor = '#d3d3d3';
+                suggestions[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                suggestions[i].style.backgroundColor = 'white';
+            }
+        }
+    }
 </script>
+
 
 <!-- FNAC Fixation Details -->
 <script>
@@ -1005,97 +1061,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     });
 </script>
 
-
-
-<!-- Search feature for dropdown Reason for FNAC -->
-<script>
-    // Toggle dropdown visibility
-    function toggleDropdown() {
-        const dropdown = document.getElementById("myDropdown");
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    }
-
-    // Function to filter dropdown options
-    function filterFunction() {
-        const input = document.getElementById("search-reason");
-        const filter = input.value.toUpperCase();
-        const select = document.getElementById("reason-for-fnac");
-        const options = select.options;
-
-        for (let i = 0; i < options.length; i++) {
-            const txtValue = options[i].textContent || options[i].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                options[i].style.display = ""; // Show matching options
-            } else {
-                options[i].style.display = "none"; // Hide non-matching options
-            }
-        }
-    }
-
-    // Update the selected value when an option is chosen
-    function selectOption() {
-        const select = document.getElementById("reason-for-fnac");
-        const selectedValue = select.options[select.selectedIndex].text;
-        document.getElementById("selected-value").innerText = selectedValue;
-
-        // Show "Other" input if "Others" is selected
-        const otherReasonInput = document.getElementById("other-reason");
-        if (select.value === "Others") {
-            otherReasonInput.style.display = "block";
-        } else {
-            otherReasonInput.style.display = "none";
-        }
-
-        // Hide dropdown after selection
-        document.getElementById("myDropdown").style.display = "none";
-    }
-</script>
-
-<!-- Aspiration Note -->
-<script>
-    // Function to toggle the dropdown visibility
-    function toggleAspirationNoteDropdown() {
-        const dropdown = document.getElementById("myDropdown");
-        dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-    }
-
-    // Function to filter regions in the dropdown
-    function filterRegions() {
-        const input = document.getElementById("search-region");
-        const filter = input.value.toUpperCase();
-        const select = document.getElementById("regionSelector");
-        const options = select.options;
-
-        for (let i = 0; i < options.length; i++) {
-            const txtValue = options[i].textContent || options[i].innerText;
-            options[i].style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
-        }
-    }
-
-    // Function to handle region selection
-    function selectRegionOption() {
-        const select = document.getElementById("regionSelector");
-        const selectedValue = select.options[select.selectedIndex].text;
-        const button = document.getElementById("selected-value");
-        const otherRegionInput = document.getElementById("other-region");
-
-        // Update button text with the selected value
-        button.textContent = selectedValue;
-
-        // Show or hide the "Other" input field based on the selection
-        if (select.value === "Others") {
-            otherRegionInput.style.display = "block";
-        } else {
-            otherRegionInput.style.display = "none";
-            otherRegionInput.value = ""; // Clear the "Other" input field
-        }
-
-        // Hide the dropdown after selection
-        document.getElementById("myDropdown").style.display = "none";
-    }
-</script>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // Save button functionality
@@ -1172,66 +1137,90 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </script>
 
 
-
 <!-- On Examination -->
 <script>
-    document.getElementById('onExaminationSelector').addEventListener('change', function () {
-    const editor = document.getElementById('site-of-aspiration-editor'); // Corrected ID
-    const format = this.value;
+    const onExaminationList = <?php echo json_encode($on_examination_list); ?>;
+    let currentExamIndex = -1;
 
-    // Predefined templates
-    const templates = {
-        format1: `Location:
-Side: 
-Level: 
-Appearance:
-     - Consistency: 
-     - Surface: 
-     - Mobility: 
-     - Tenderness: 
-Number of Swelling: 
-Size:`,
+    function showExaminationSuggestions(term) {
+        const suggestionsList = document.getElementById('examination-suggestions-list');
+        const textarea = document.getElementById('site-of-aspiration-editor');
+        suggestionsList.innerHTML = ''; // Clear previous suggestions
+        currentExamIndex = -1; // Reset the index
 
-        format2: `Location:
-Side: Right/Left
-Level: 
+        if (term.length < 2) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
 
-Appearance:
-     - Consistency: Hard/Soft/Firm/Rubbery/Matted
-     - Surface: Regular/ Smooth/Irregular/Ulcerated/Nodular
-     - Mobility: Mobile/ Nonmobile/ Moves With Deglutition
-     - Tenderness: Tender/ Nontender
+        // Filter matching values from the onExaminationList array
+        const filteredList = onExaminationList.filter(item =>
+            item.on_examination.toLowerCase().includes(term.toLowerCase()) // Use 'on_examination'
+        );
 
-Number of Swelling: 
-Size : [__cm to __cm]`,
-        thyroid: `Firm and mobile nodule in the [right/left] lobe of thyroid, moved with deglutition, measuring: [__x__  cm] and yielded [__cc straw-colored fluid].
-Swelling in the isthmus of thyroid, moved with deglutition, measuring: [__x__ cm] and yielded [blood mixed materials].`,
-        cervical: `Soft to firm, less mobile, non-tender swelling at left cervical level IIA, measuring: __x__ cm and yielded __cc blood.
-Firm, non-tender and mobile swelling at right cervical region, measuring: __x__  cm and yielded blood mixed materials.
-Firm and mobile swelling at left level II region, measuring: __x__ cm and yielded pus.`,
-        parotid:`Firm, non-tender and mobile swelling in right/left parotid region, measuring: __x__ cm and yielded blood mixed materials.
-Soft to firm, less mobile, and mildly tender swelling in left parotid region, measuring: __x__ cm and yielded blood mixed materials.`,
-        lymphNode: `Firm, mobile, and non-tender swelling in [right/left] cervical lymph node at level-[V], measuring: [__x__ cm] and yielded [blood mixed material].
-Multiple mobile and non-tender lymph nodes at [right/left] supraclavicular region, the largest one measuring: [__x__ cm] and yielded [grayish brown materials].
-Firm, matted, mobile lymph nodes in [right/left] cervical region at levels [IIA/III], largest measuring: [__x__ cm] and yielded [grayish brown material].`,
-        tongueAndOral:`Mobile swelling in the [right/left lateral border of tongue], measuring: [__x__ cm] and yielded [blood mixed fluid].`,
-        chestWall: `Two firm, non-tender, mobile swellings at the [right/left] chest wall, larger one measuring: [__x__ cm] and smaller one measuring: [__x__ cm], yielded [grayish brown materials].`,
-        preauricularAndPostauricularRegions:`Firm, mobile, and non-tender swelling in [preauricular/postauricular] region, measuring: [__x__  cm] and yielded [whitish materials].`,
-        axillaryRegion:`Soft to firm, diffuse, and tender swelling in [left/right] axilla, measuring: [__x__ cm] and yielded [blood mixed materials]`,
-        miscellaneous:`One ill-defined, soft, non-tender, non-mobile, subcutaneous swelling in [suprasternal region], measuring: [__x__  cm] and yielded [scant pus].
-Aspiration yielded [whitish materials] from a mobile, non-tender, firm swelling in the [left preauricular region]`,
-        cytologySlides: `[Ten/Two/Three] unstained cytology slides received without labels, collected outside the laboratory.
-Stained cytology slides labeled [ALC: D6014/24 (The Alpha Laboratory)] received for review.`,
-    };
+        if (filteredList.length > 0) {
+            filteredList.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.on_examination; // Use 'on_examination'
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.setAttribute('data-index', index);
 
-    if (format && templates[format]) {
-        editor.value = templates[format]; // Update textarea value
-    } else {
-        editor.value = ''; // Clear textarea if no format is selected
+                // On click, populate the textarea and hide suggestions
+                li.onclick = () => {
+                    textarea.value = item.on_examination; // Use 'on_examination'
+                    suggestionsList.style.display = 'none';
+                };
+
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
+        } else {
+            suggestionsList.style.display = 'none';
+        }
     }
-});
 
+    document.getElementById('site-of-aspiration-editor').addEventListener('keydown', function (e) {
+        const suggestionsList = document.getElementById('examination-suggestions-list');
+        const suggestions = suggestionsList.getElementsByTagName('li');
+
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'Tab') {
+            // Prevent default behavior and move to the next suggestion
+            e.preventDefault();
+            currentExamIndex = (currentExamIndex + 1) % suggestions.length;  // This will ensure that the index loops back to the start
+            highlightExaminationSuggestion(suggestions, currentExamIndex);
+        } else if (e.key === 'ArrowUp') {
+            // Prevent default behavior and move to the previous suggestion
+            e.preventDefault();
+            currentExamIndex = (currentExamIndex - 1 + suggestions.length) % suggestions.length; // Loops back to the last item when going up
+            highlightExaminationSuggestion(suggestions, currentExamIndex);
+        } else if (e.key === 'Enter') {
+            // Select the current suggestion
+            e.preventDefault();
+            if (currentExamIndex >= 0) {
+                suggestions[currentExamIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            // Close suggestions on Escape key
+            suggestionsList.style.display = 'none';
+            currentExamIndex = -1;
+        }
+    });
+
+    function highlightExaminationSuggestion(suggestions, index) {
+        for (let i = 0; i < suggestions.length; i++) {
+            if (i === index) {
+                suggestions[i].style.backgroundColor = '#d3d3d3';
+                suggestions[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                suggestions[i].style.backgroundColor = 'white';
+            }
+        }
+    }
 </script>
+
 
 <!-- update patient information -->
 <script>
