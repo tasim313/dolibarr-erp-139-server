@@ -354,8 +354,7 @@ function get_cyto_chief_complain_list() {
 
     $sql = "SELECT DISTINCT ON (LOWER(chief_complain)) chief_complain
             FROM llx_cyto_clinical_information
-            ORDER BY LOWER(chief_complain) ASC
-            LIMIT 100";
+            ORDER BY LOWER(chief_complain) ASC";
 
     $result = pg_query($pg_con, $sql);
     $chief_complains = [];
@@ -1091,6 +1090,37 @@ function cyto_status_list_doctor_module($lab_number) {
         error_log('Query execution error: ' . pg_last_error($pg_con));
         return ['error' => 'An error occurred while executing the query.'];
     }
+}
+
+
+function get_cyto_on_examination_list() {
+    global $pg_con;
+
+    // Validate the database connection
+    if (!$pg_con) {
+        error_log('Database connection is not established.');
+        return [];
+    }
+
+    $sql = "SELECT DISTINCT ON (LOWER(on_examination)) on_examination
+            FROM llx_cyto_clinical_information
+            ORDER BY LOWER(on_examination) ASC";
+
+    $result = pg_query($pg_con, $sql);
+    $on_examinations = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $on_examinations[] = ['on_examination' => $row['on_examination']];
+        }
+
+        pg_free_result($result);
+    } else {
+        // Log the error instead of echoing it
+        error_log('SQL Error: ' . pg_last_error($pg_con));
+    }
+
+    return $on_examinations;
 }
 
 ?>
