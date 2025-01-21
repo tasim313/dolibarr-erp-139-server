@@ -297,7 +297,7 @@ switch (true) {
             </a>
 
             
-            <a href="../../transcription/FNA/create.php?LabNumber=<?php echo 'FNA' . $LabNumber; ?>">
+            <a href="../../doctors/Cyto/edit.php?labno=<?php echo 'FNA' . $LabNumber; ?>">
                 <button style="border:none; background-color: white; color: black;" class="custom-btn">
                     <i class="fas fa-edit" aria-hidden="true"></i> Edit
                 </button>

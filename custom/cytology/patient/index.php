@@ -226,6 +226,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
             border-color:rgb(223, 14, 77); 
         }
+        /* Change to success style on hover */
+        #populate-table:hover, 
+        #populate-table:focus {
+            background-color: #28a745; /* Bootstrap's success color */
+            color: white; /* Ensure text is visible */
+            outline: none; /* Optional: Remove default focus outline */
+        }
     </style>
 
 </head>
@@ -635,7 +642,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </div>
 
                             <!-- Slide Fixation Details -->
-                            <div class="form-group">
+                            <div class="form-group" style='display:none'>
                                 <label>Slide Fixation Details:</label>
                                 <table class="table table-bordered" id="fixation-details-table">
                                     <thead>
@@ -655,6 +662,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     </tbody>
                                 </table>
                             </div>
+
+                            <div id="result-display" class="mt-3"></div>
                            
                             <!-- clinical-impression -->
                             <div class="form-group row">
@@ -672,6 +681,16 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                         style="resize: none;"
                                     ></textarea>
                                     </div>
+                            </div>
+
+                            <!-- Number of Passes Performed -->
+                            <div class="form-group">
+                                <label for="number-of-needle">Number of Needle Used:</label>
+                                <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="number-of-syringe">Number of Syringe Used:</label>
+                                <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0" required>
                             </div>
 
                             <!-- Dry Slides Description -->
@@ -695,19 +714,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <textarea id="fixation-comments" name="fixation_comments" class="form-control" rows="3" placeholder="Enter Additional Notes on Fixation"></textarea>
                                 </div>
                             </div>
-
-                            
-                            <!-- Number of Passes Performed -->
-                            <div class="form-group">
-                                <label for="number-of-needle">Number of Needle Used:</label>
-                                <input type="number" id="number-of-needle" name="number_of_needle" class="form-control" min="0" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="number-of-syringe">Number of Syringe Used:</label>
-                                <input type="number" id="number-of-syringe" name="number_of_syringe" class="form-control" min="0" required>
-                            </div>
-
-                           
 
                             <button id="saveButton" type="submit" class="btn btn-primary">Submit</button>
                         </form>
@@ -917,7 +923,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             const specialInstruction = document.getElementById('special-instruction-input').value.trim();
 
             // Validate required fields
-            if (!slidesInput || !locationInput || !aspirationMaterials) {
+            if (!slidesInput  || !aspirationMaterials) {
                 alert('Please fill in all required fields.');
                 return;
             }
@@ -1098,44 +1104,6 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 </script>
 
-<script>
-    $(document).ready(function () {
-            const $inputField = $("#special-instruction-input");
-            const $checkboxes = $("#specialInstructionModal input[type='checkbox']");
-            const $otherCheckbox = $("#final-labInstructions-other-checkbox");
-            const $otherTextarea = $("#final-Instructions-other-history");
-            const $otherTextInput = $("#final-Instructions-other-history-text");
-
-            const updateInputField = () => {
-                const selectedValues = $checkboxes
-                    .filter(":checked")
-                    .map(function () {
-                        return this.value !== "Other" ? this.value : null;
-                    })
-                    .get();
-
-                if ($otherCheckbox.is(":checked") && $otherTextInput.val().trim() !== "") {
-                    selectedValues.push($otherTextInput.val().trim());
-                }
-
-                $inputField.val(selectedValues.join(", "));
-            };
-
-            $checkboxes.on("change", function () {
-                if (this === $otherCheckbox[0]) {
-                    $otherTextarea.toggle($otherCheckbox.is(":checked"));
-                }
-                updateInputField();
-            });
-
-            $otherTextInput.on("input", updateInputField);
-
-            $inputField.on("click", function () {
-                $("#specialInstructionModal").modal("show");
-            });
-    });
-</script>
-
 
 <!-- On Examination -->
 <script>
@@ -1270,6 +1238,40 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         }
     });
 </script>
+
+<script>
+    document.getElementById("populate-table").addEventListener("click", function () {
+        // Get input values
+        const location = document.getElementById("location-input").value.trim();
+        const slides = document.getElementById("slides-input").value.trim();
+        const aspirationMaterials = document.getElementById("aspiration_materials-input").value.trim();
+        const specialInstruction = document.getElementById("special-instruction-input").value.trim();
+
+        // Initialize an array to collect non-empty values
+        const result = [];
+
+        // Check and add non-empty values
+        if (location) result.push(`<strong>Location:</strong> ${location}`);
+        if (slides) result.push(`<strong>Slide:</strong> ${slides}`);
+        if (aspirationMaterials) result.push(`<strong>Aspiration Materials:</strong> ${aspirationMaterials}`);
+        if (specialInstruction) result.push(`<strong>Special Instruction:</strong> ${specialInstruction}`);
+
+        // Append the result to the display area
+        const resultDisplay = document.getElementById("result-display");
+        if (result.length > 0) {
+            const newEntry = document.createElement("div");
+            newEntry.classList.add("alert", "alert-success", "mt-2");
+            newEntry.innerHTML = result.join("<br>");
+            resultDisplay.appendChild(newEntry); // Append the new entry to the display
+        } else {
+            const warningMessage = document.createElement("div");
+            warningMessage.classList.add("alert", "alert-warning", "mt-2");
+            warningMessage.innerText = "No values entered. Please fill in the fields.";
+            resultDisplay.appendChild(warningMessage);
+        }
+    });
+</script>
+
 
 <?php 
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
