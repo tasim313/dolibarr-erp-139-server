@@ -1123,4 +1123,63 @@ function get_cyto_on_examination_list() {
     return $on_examinations;
 }
 
+
+function get_cyto_clinical_history_list() {
+    global $pg_con;
+
+    // Validate the database connection
+    if (!$pg_con) {
+        error_log('Database connection is not established.');
+        return [];
+    }
+
+    $sql = "SELECT DISTINCT ON (LOWER(relevant_clinical_history)) relevant_clinical_history
+            FROM llx_cyto_clinical_information
+            ORDER BY LOWER(relevant_clinical_history) ASC";
+
+    $result = pg_query($pg_con, $sql);
+    $clinical_histories = []; // Corrected variable name
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $clinical_histories[] = ['relevant_clinical_history' => $row['relevant_clinical_history']];
+        }
+        pg_free_result($result);
+    } else {
+        // Log the error instead of echoing it
+        error_log('SQL Error: ' . pg_last_error($pg_con));
+    }
+
+    return $clinical_histories;
+}
+
+function get_cyto_clinical_impression_list() {
+    global $pg_con;
+
+    // Validate the database connection
+    if (!$pg_con) {
+        error_log('Database connection is not established.');
+        return [];
+    }
+
+    $sql = "SELECT DISTINCT ON (LOWER(clinical_impression)) clinical_impression
+            FROM llx_cyto_clinical_information
+            ORDER BY LOWER(clinical_impression) ASC";
+
+    $result = pg_query($pg_con, $sql);
+    $clinical_impressions = []; // Corrected variable name
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $clinical_impressions[] = ['clinical_impression' => $row['clinical_impression']];
+        }
+        pg_free_result($result);
+    } else {
+        // Log the error instead of echoing it
+        error_log('SQL Error: ' . pg_last_error($pg_con));
+    }
+
+    return $clinical_impressions;
+}
+
 ?>
