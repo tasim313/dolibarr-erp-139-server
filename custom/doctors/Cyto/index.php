@@ -286,10 +286,7 @@ switch (true) {
                 <input type="text" id="labno" name="labno" autofocus class="form-control">
             </form>
 
-            <button style="border:none; font-size: 20px;" id="tab-diagnosis" class="inactive custom-btn" onclick="toggleTab('diagnosis-tab')">
-                <i class="fas fa-file-medical" aria-hidden="true"></i> Diagnosis
-            </button>
-           
+            
             <a href="../../transcription/FNA/fna_report.php?LabNumber=<?php echo 'FNA' . $LabNumber; ?>" target="_blank">
                 <button style="border:none; background-color: white; color: black;" class="custom-btn">
                     <i class="fas fa-file-alt" aria-hidden="true"></i> Report
@@ -307,9 +304,6 @@ switch (true) {
                 <i class="fa fa-search" aria-hidden="true"></i> Status
             </button>
 
-            <button style="border:none; font-size: 20px;" id="tab-status" class="inactive custom-btn" onclick="toggleTab('patient-tab')">
-                <i class="fa fa-stethoscope" aria-hidden="true"></i> Patient History
-            </button>
 
             <button style="border:none; font-size: 20px;" id="tab-history" class="inactive custom-btn" onclick="toggleTab('history-tab')">
                 <i class="fa fa-history" aria-hidden="true"></i> Details
@@ -454,149 +448,7 @@ switch (true) {
 
             </div>
             
-            <!-- patient tab -->
-            <div class="col-md-6" id="patient-tab" style="display: none;">
-                   <div style="margin-right:20px; margin-left:-400px;">
-                        <?php
-                            
-                            $field_name_mapping = [
-                                // 'doctor' => 'Aspirate By',
-                                // 'screening_done_count_data' => 'Screening Complete',
-                                // 'finalization_done_count_data' => 'Finalization Complete',
-                            ];
-
-                            $excluded_fields = [
-                                'lab_number',
-                                'doctor',
-                                'screening_done_count_data',
-                                'finalization_done_count_data',
-                                'screening_doctor_name',
-                                'finalization_doctor_name',
-                                'slide_prepared_by',
-                            ];
-
-                            if (isset($status_list['error'])) {
-                                echo "<div style='color: red;'>Error: " . htmlspecialchars($status_list['error']) . "</div>";
-                            } else {
-                                if (empty($status_list)) {
-                                    echo "<div>No data available for lab number: " . htmlspecialchars($statusLabNumberWithFNA) . "</div>";
-                                } else {
-                                    echo "<table class='table table-bordered table-striped'>";
-                                    foreach ($status_list[0] as $field => $value) {
-                                        if (in_array($field, $excluded_fields)) continue;
-                                        if (is_null($value) || $value === '' || $value === [] || trim($value) === '') continue;
-
-                                        echo "<tr>";
-                                        $display_name = $field_name_mapping[$field] ?? ucwords(str_replace('_', ' ', $field));
-                                        echo "<td style='padding: 8px;'>" . htmlspecialchars($display_name) . "</td>";
-
-                                        if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
-                                            $formatted_data = '';
-                                            $decoded_data = json_decode($value, true);
-                                            if (is_array($decoded_data)) {
-                                                foreach ($decoded_data as $person => $timestamps) {
-                                                    $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
-                                                    foreach ($timestamps as $timestamp) {
-                                                        try {
-                                                            $utc_time = new DateTime($timestamp, new DateTimeZone('UTC'));
-                                                            $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                                            $datetime = $utc_time->format('j F, Y g:i A');
-                                                            $formatted_data .= $datetime . '<br>';
-                                                        } catch (Exception $e) {
-                                                            $formatted_data .= 'Invalid Date<br>';
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            echo "<td style='padding: 8px;'>" . $formatted_data . "</td>";
-                                        } else {
-                                            echo "<td style='padding: 8px;'>" . htmlspecialchars($value) . "</td>";
-                                        }
-                                        echo "</tr>";
-                                    }
-                                    echo "</table>";
-                                }
-                            }
-                        ?> 
-                   </div>
-            </div>
             
-
-            <!-- Diagnosis Tab -->
-            <?php
-
-                // Fetch data using the function
-                $diagnosis_data = cyto_diagnosis_doctor_module($LabNumber);
-
-                // Check for errors
-                if (isset($diagnosis_data['error'])) {
-                    $error_message = $diagnosis_data['error'];
-                } else {
-                    $diagnosis_entry = $diagnosis_data[0] ?? null; // Fetch the first row or null if empty
-                }
-            ?>
-
-            <div class="col-md-6" id="diagnosis-tab" style="display: none;">
-                <div style="margin-right:20px; margin-left:-400px;">
-                        <h1>Diagnosis Details</h1>
-                        <?php if (isset($error_message)): ?>
-                            <div class="alert alert-danger">
-                                <?php echo htmlspecialchars($error_message); ?>
-                            </div>
-                        <?php else: ?>
-                        <form id="diagnosis-form" method="post" action="insert/update_diagnosis.php">
-                            <!-- Hidden input for lab number -->
-                            <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
-                            <input type="hidden" name="user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
-
-                            <!-- Display previous diagnosis (Read-only) -->
-                            <div class="form-group">
-                                <label for="previous-diagnosis">Previous Diagnosis:</label>
-                                <textarea id="previous-diagnosis" name="previous_diagnosis" class="form-control" rows="6" readonly>
-                                    <?php
-                                    if (!empty($diagnosis_entry['previous_diagnosis'])) {
-                                        $previousDiagnosisData = json_decode($diagnosis_entry['previous_diagnosis'], true);
-                                        foreach ($previousDiagnosisData as $entry) {
-                                            echo "\n";
-                                            echo "Previous: " . $entry['previous'] . "\n";
-                                            echo "Date: " . $entry['Date'] . "\n";
-                                            echo "Created by: " . $entry['created_user'] . "\n";
-                                            echo "Updated by: " . $entry['updated_user'] . "\n\n";
-                                        }
-                                    } else {
-                                        echo "No previous diagnosis available.";
-                                    }
-                                    ?>
-                                </textarea>
-                            </div>
-
-                            <!-- Display current diagnosis (Read-only) -->
-                            <div class="form-group">
-                                <label for="current-diagnosis">Current Diagnosis:</label>
-                                <textarea id="current-diagnosis" name="current_diagnosis" class="form-control" rows="4" readonly>
-                                    <?php
-                                    if (!empty($diagnosis_entry['diagnosis'])) {
-                                        echo htmlspecialchars($diagnosis_entry['diagnosis']);
-                                    } else {
-                                        echo "No current diagnosis available.";
-                                    }
-                                    ?>
-                                </textarea>
-                            </div>
-
-                            <!-- Diagnosis input field (for new diagnosis) -->
-                            <div class="form-group">
-                                <label for="diagnosis">New Diagnosis:</label>
-                                <textarea id="diagnosis" name="diagnosis" class="form-control" rows="4" required></textarea>
-                            </div>
-
-                            <!-- Submit button -->
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </form>
-                        <?php endif; ?>
-                </div>
-            </div>
-
             <!-- Details Tab -->
             <div class="col-md-6" id="history-tab" style="display: none;">
                     <div class="container" style="display: flex; justify-content: space-between; gap: 20px;">
@@ -2691,7 +2543,7 @@ switch (true) {
         const selectedTab = document.getElementById(tabId);
 
         // Get all tabs
-        const allTabs = document.querySelectorAll("#diagnosis-tab, #status-tab, #study-history-tab, #Lab-instruction-tab, #cyto-instruction-tab, #final-study-history-tab, #final-Lab-instruction-tab, #final-cyto-instruction-tab, #history-tab, #patient-tab");
+        const allTabs = document.querySelectorAll("#status-tab, #study-history-tab, #Lab-instruction-tab, #cyto-instruction-tab, #final-study-history-tab, #final-Lab-instruction-tab, #final-cyto-instruction-tab, #history-tab");
 
         // Loop through all tabs
         allTabs.forEach(tab => {

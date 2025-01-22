@@ -205,9 +205,10 @@ function cyto_recall_fixation_details($cyto_id) {
 
     // SQL query to fetch the required data
     $sql = "
-        select rowid, cyto_id, 
+        SELECT rowid, cyto_id, 
         slide_number, location, fixation_method, dry, aspiration_materials, 
-        special_instructions from llx_cyto_recall_fixation_details 
+        special_instructions 
+        FROM llx_cyto_recall_fixation_details 
         WHERE cyto_id = $1
     ";
 
@@ -228,19 +229,21 @@ function cyto_recall_fixation_details($cyto_id) {
 
     // Check if the query execution was successful
     if ($result) {
-        // Fetch the first row of the result
-        $row = pg_fetch_assoc($result);
+        // Fetch all rows as an associative array
+        $rows = pg_fetch_all($result);
 
         // Free the result resource
         pg_free_result($result);
 
-        // Return the fetched row or a message if no data found
-        return $row ?: ['message' => 'No data found for the given cyto_id.'];
+        // Return all rows or a message if no data found
+        return $rows ?: ['message' => 'No data found for the given cyto_id.'];
     } else {
         error_log('Query execution error: ' . pg_last_error($pg_con));
         return ['error' => 'An error occurred while executing the query.'];
     }
 }
+
+
 
 function cyto_diagnosis_by_lab_number($lab_number) {
     global $pg_con;

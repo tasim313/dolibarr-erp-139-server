@@ -1259,6 +1259,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     });
 </script>
 
+<!-- show values for aspiration note this value is not go in database just show in html-->
 <script>
     document.getElementById("populate-table").addEventListener("click", function () {
         // Get input values
@@ -1271,17 +1272,31 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         const result = [];
 
         // Check and add non-empty values
-        if (location) result.push(`<strong>Location:</strong> ${location}`);
-        if (slides) result.push(`<strong>Slide:</strong> ${slides}`);
-        if (aspirationMaterials) result.push(`<strong>Aspiration Materials:</strong> ${aspirationMaterials}`);
-        if (specialInstruction) result.push(`<strong>Special Instruction:</strong> ${specialInstruction}`);
+        if (location) result.push(`<div><strong>Location:</strong> ${location}</div>`);
+        if (slides) result.push(`<div><strong>Slide:</strong> ${slides}</div>`);
+        if (aspirationMaterials) result.push(`<div><strong>Aspiration Materials:</strong> ${aspirationMaterials}</div>`);
+        if (specialInstruction) result.push(`<div><strong>Special Instruction:</strong> ${specialInstruction}</div>`);
 
         // Append the result to the display area
         const resultDisplay = document.getElementById("result-display");
+
         if (result.length > 0) {
             const newEntry = document.createElement("div");
             newEntry.classList.add("alert", "alert-success", "mt-2");
-            newEntry.innerHTML = result.join("<br>");
+
+            // Add a container for the result values to align them horizontally
+            const horizontalContainer = document.createElement("div");
+            horizontalContainer.style.display = 'flex';
+            horizontalContainer.style.flexWrap = 'wrap'; // Allow wrapping if there are too many items
+
+            result.forEach(item => {
+                const itemDiv = document.createElement("div");
+                itemDiv.style.marginRight = '20px'; // Add some space between each item
+                itemDiv.innerHTML = item;
+                horizontalContainer.appendChild(itemDiv);
+            });
+
+            newEntry.appendChild(horizontalContainer); // Append the container to the alert box
             resultDisplay.appendChild(newEntry); // Append the new entry to the display
         } else {
             const warningMessage = document.createElement("div");
