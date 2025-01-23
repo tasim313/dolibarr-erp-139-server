@@ -389,6 +389,8 @@ switch (true) {
                             'doctor' => 'Aspirate By',
                             'screening_done_count_data' => 'Screening Complete',
                             'finalization_done_count_data' => 'Finalization Complete',
+                            'screening_stain_again' => 'Lab Instruction',
+                            'finalization_stain_again' => 'Lab Instruction',
                         ];
 
                         $excluded_fields = [
@@ -414,8 +416,19 @@ switch (true) {
                                     echo "<tr>";
                                     $display_name = $field_name_mapping[$field] ?? ucwords(str_replace('_', ' ', $field));
                                     echo "<td style='padding: 8px;'>" . htmlspecialchars($display_name) . "</td>";
-
-                                    if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
+                                    
+                                    if ($field == 'follow_up_date') {
+                                        // Handle follow_up_date field formatting
+                                        try {
+                                            $follow_up_timestamp = new DateTime($value, new DateTimeZone('UTC'));
+                                            $follow_up_timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                            $formatted_follow_up_date = $follow_up_timestamp->format('j F, Y g:i A');
+                                            echo "<td style='padding: 8px;'>" . htmlspecialchars($formatted_follow_up_date) . "</td>";
+                                        } catch (Exception $e) {
+                                            echo "<td style='padding: 8px;'>Invalid Date</td>";
+                                        }
+                                    }
+                                    else if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
                                         $formatted_data = '';
                                         $decoded_data = json_decode($value, true);
                                         if (is_array($decoded_data)) {
@@ -434,7 +447,63 @@ switch (true) {
                                             }
                                         }
                                         echo "<td style='padding: 8px;'>" . $formatted_data . "</td>";
-                                    } else {
+                                    } else if (in_array($field, ['recall_reason'])) {
+                                        $formatted_recall_reasons = '';
+                                        if ($field == 'recall_reason') {
+                                            $recall_data_json = json_decode($value, true);
+                                            foreach ($recall_data_json as $person => $records) {
+                                                $formatted_recall_reasons .= '<strong style="font-size: 18px;">' . htmlspecialchars($person) . '</strong><br>';
+                                                foreach ($records as $record) {
+                                                    $reasons = isset($record['reason']) ? implode(", ", $record['reason']) : '';
+                                                    $timestamp = new DateTime($record['timestamp']);
+                                                    $timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                                    $formatted_recall_reasons .= 'Reasons: ' . htmlspecialchars($reasons) . '<br>';
+                                                    $formatted_recall_reasons .= 'Timestamp: ' . $timestamp->format('d F, Y h:i A') . '<br><br>';
+                                                }
+                                            }
+                                        }
+                                        echo "<td style='padding: 8px;'>" . $formatted_recall_reasons . "</td>";
+                                    } 
+                                    else if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
+                                        // Decode JSON and format the data
+                                        $formatted_data = '';
+                                        $decoded_data = json_decode($value, true);
+
+                                        if (is_array($decoded_data)) {
+                                            foreach ($decoded_data as $person => $entries) {
+                                                $formatted_data .= '<strong>' . ucfirst($person) . ':</strong><br>';
+                                                foreach ($entries as $entry) {
+                                                    if (isset($entry['stains']) && isset($entry['timestamp'])) {
+                                                        try {
+                                                            $utc_time = new DateTime($entry['timestamp'], new DateTimeZone('UTC'));
+                                                            $utc_time->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                                                            $datetime = $utc_time->format('j F, Y g:i A');
+                                                            $formatted_data .=  $datetime . '<br>';
+
+                                                            // Handle stains
+                                                            $formatted_data .= '';
+                                                            if (is_array($entry['stains'])) {
+                                                                foreach ($entry['stains'] as $stain) {
+                                                                    if (is_array($stain) && isset($stain['other'])) {
+                                                                        $formatted_data .= '' . htmlspecialchars($stain['other']) . ', ';
+                                                                    } else {
+                                                                        $formatted_data .= htmlspecialchars($stain) . ', ';
+                                                                    }
+                                                                }
+                                                                // Remove trailing comma and space
+                                                                $formatted_data = rtrim($formatted_data, ', ');
+                                                            }
+                                                            $formatted_data .= '<br>';
+                                                        } catch (Exception $e) {
+                                                            $formatted_data .= 'Invalid Date<br>';
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        echo '<td>' . $formatted_data . '</td>';
+                                    } 
+                                    else {
                                         echo "<td style='padding: 8px;'>" . htmlspecialchars($value) . "</td>";
                                     }
                                     echo "</tr>";

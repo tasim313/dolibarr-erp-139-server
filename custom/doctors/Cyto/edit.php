@@ -134,57 +134,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <div class=" text-center mt-5 ">
             <h3>Microscopic Details</h3>
         </div>
-        <form id="cyto-information-update" method="post" action="../../cytology/Cyto/patient_update.php">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>Lab Number</th>
-                        <th>Doctor</th>
-                        <th>Assistant</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                        session_start();
-                        $records = get_cyto_list($LabNumber);
-                        if (!empty($records)) {
-                            // Assuming all rowid values are the same, take the first one
-                            $_SESSION['rowid'] = $records[0]['rowid'];
-                        }
-                        if (isset($_SESSION['rowid'])) {
-                            $cyto_id = $_SESSION['rowid']; // Access the unique rowid
-                        } else {
-                            echo "No rowid found in the session.";
-                        }
-                        foreach ($records as $record) {
-                            echo "<tr>
-                                
-                                <td>{$record['lab_number']}</td>
-                                
-                                <td>
-                                    <select name='doctor[{$record['rowid']}]' class='form-control' readonly>";
-                                    foreach ($doctors as $doctor) {
-                                        $selected = $doctor['doctor_username'] === $record['doctor'] ? 'selected' : '';
-                                        echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                                    }
-                                    echo "</select>
-                                </td>
-                                <td>
-                                    <select name='assistant[{$record['rowid']}]' class='form-control' readonly>";
-                                    foreach ($assistants as $assistant) {
-                                        $selected = $assistant['username'] === $record['assistant'] ? 'selected' : '';
-                                        echo "<option value='{$assistant['username']}' $selected>{$assistant['username']}</option>";
-                                    }
-                                echo "</select>
-                                </td>
-                                
-                                </tr>";
-                        }
-                    ?>
-                </tbody>
-            </table>
-        </form>
-
+        
             <!-- Patient Information -->
             <?php
                 // Function to trim "FNA" from the LabNumber
@@ -200,9 +150,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             ?>
             
             <!-- Patient Information -->
-            <div class="mt-4">
+            <div >
                     <?php 
-                        print('<form id="patientForm" method="post" action="../patient_info_update.php">'); 
+                       
                         foreach ($patient_information as $list) {
                             $genderOptions = [
                                 '1' => 'Male',
@@ -212,100 +162,103 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             $currentGender = $list['Gender'];
                             
                             print('
-                            <table class="table table-bordered table-striped">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Name</th> 
-                                    <th>Address</th>
-                                    <th>Phone</th>
-                                    <th>Attendant Number</th>
-                                    <th>Age</th>
-                                    <th>Gender</th>			
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <input type="text" name="name[]" class="form-control" value="' . $list['name'] . '" placeholder="Patient Name">
-                                        <input type="hidden" name="rowid[]" value="' . $list['rowid'] . '">
-                                    </td> 
-                                   
-                                    <td>
-                                        <input type="text" name="address[]" class="form-control" value="' . $list['address'] . '" placeholder="Patient Address">
-                                    </td>
-                                    <td>
-                                        <input type="text" name="phone[]" class="form-control" value="' . $list['phone'] . '" placeholder="Mobile Number">
-                                    </td> 
-                                    <td>
-                                        <input type="text" name="fax[]" class="form-control" value="' . $list['fax'] . '" placeholder="Attendant Number">
-                                    </td> 
+                            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 8px; border: none;">Lab Number:  '. $LabNumber .'</td>
+                                        <td style="padding: 8px; border: none;">
+                                            Name: ' . $list['name'] . '
+                                        </td> 
                                     
-                                    <td>
-                                        <input type="number" name="age[]" class="form-control" value="' . $list['Age'] . '" placeholder="Age">
-                                    </td> 
-                                    
-                                    <td>
-                                        <select name="gender[]" class="form-select">');
-                                        foreach ($genderOptions as $value => $label) {
-                                            echo '<option value="' . $value . '" ' . ($currentGender == $value ? 'selected' : '') . '>' . $label . '</option>';
-                                        }
-                                        print('</select>
-                                    </td>
-                                    
-                                </tr>
-                            </tbody>
+                                        <td style="padding: 8px; border: none;">
+                                            Address: ' . $list['address'] . '
+                                        </td>
+                                        <td style="padding: 8px; border: none;">
+                                            Phone: ' . $list['phone'] . '
+                                        </td> 
+                                        <td style="padding: 8px; border: none;">
+                                            Attendant Number: ' . $list['fax'] . '
+                                        </td> 
+                                        
+                                        <td style="padding: 8px; border: none;">
+                                            Age: ' . $list['Age'] . '
+                                        </td> 
+                                        
+                                        <td style="padding: 8px; border: none;">
+                                            Gender: ' . htmlspecialchars($genderOptions[$currentGender]) . '
+                                        </td>
+                                        
+                                    </tr>
+                                </tbody>
                             </table>
                             ');
                         }
-                        print('</form>');
+                      
                     ?>
             </div>
 
+            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+                <tbody>
+                    <?php
+                    session_start();
+                    $records = get_cyto_list($LabNumber);
+                    if (!empty($records)) {
+                        // Assuming all rowid values are the same, take the first one
+                        $_SESSION['rowid'] = $records[0]['rowid'];
+                    }
+                    if (isset($_SESSION['rowid'])) {
+                        $cyto_id = $_SESSION['rowid']; // Access the unique rowid
+                    } else {
+                        echo "No rowid found in the session.";
+                    }
+                    foreach ($records as $record) {
+                        echo "<tr>
+                            
+                            <td style='padding: 8px; border: none;'><b>Aspirate By</b>: {$record['doctor']}&nbsp;&nbsp;&nbsp;&nbsp;<b>Assistant</b>:   {$record['assistant']}</td>
+                           
+                        </tr>";
+                    }
+                    ?>
+                </tbody>
+            </table>
+
+
             <!-- Clinical Information -->
-            <div class="mt-4"> 
+            <div style="margin-top:-20px;"> 
                     <?php 
                         $clinicalInformation = get_cyto_clinical_information($cyto_id);    
                     ?>
-                    <table class="table table-bordered table-striped">
-                            <thead>
+                    <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
+                        <?php if (empty($clinicalInformation)): ?>
+                            <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
+                        <?php else: ?>
+                            <?php foreach ($clinicalInformation as $info): ?>
                                 <tr>
-                                    <th>Chief Complain</th>
-                                    <th>Clinical History</th>
-                                    <th>On Examination</th>
-                                    <th>Clinical Impression</th>
+                                    <th style="text-align: left; padding: 8px; border: none;">Chief Complain</th>
+                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['chief_complain']) ?></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($clinicalInformation)): ?>
-                                    <tr><td colspan="5">No data found.</td></tr>
-                                <?php else: ?>
-                                    <?php foreach ($clinicalInformation as $info): ?>
-                                        <tr>
-                                                <td>
-                                                    <?= htmlspecialchars($info['chief_complain']) ?>
-                                                </td>
-                                                <td>
-                                                   <?= htmlspecialchars($info['relevant_clinical_history']) ?>
-                                                </td>
-                                                
-                                                <td>
-                                                    <?= htmlspecialchars($info['on_examination']) ?>
-                                                </td>
-                                                <td>
-                                                    <?= htmlspecialchars($info['clinical_impression']) ?>
-                                                </td>
-                                               
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; border: none;">Clinical History</th>
+                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
+                                </tr>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; border: none;">On Examination</th>
+                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['on_examination']) ?></td>
+                                </tr>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; border: none;">Clinical Impression</th>
+                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </table>
+            </div>
 
-            </diV>
+
 
             <!-- Fixation Details -->
             
-            <div class="mt-4">
+            <div >
                 <?php 
                     $fixationInformation = get_cyto_fixation_details($cyto_id);
 
@@ -341,24 +294,25 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     }
                 ?>
 
-                <table class="table table-bordered table-striped">
+                <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
                     <tbody>
                         <?php if (empty($fixationInformation)): ?>
-                            <tr><td colspan="6">No data found.</td></tr>
+                            <tr><td colspan="6"></td></tr>
                         <?php else: ?>
                             <tr>
+                                <td style="padding: 8px; border: none;">
+                                    <b>Aspiration Materials</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
+                                </td>
                                 <!-- Location: Show all unique locations as a comma-separated list -->
-                                <td colspan="2">
-                                    Location: <?= implode(', ', $locations) ?>
+                                <td colspan="2" style="padding: 8px; border: none;">
+                                   <b>Location</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $locations) ?>
                                 </td>
-                                <td colspan="2">
-                                    Slide: <?= $dryNoCount ?>+<?= $dryYesCount ?>
+                                <td colspan="2" style="padding: 8px; border: none;">
+                                    <b>Slide</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $dryNoCount ?>+<?= $dryYesCount ?>
                                 </td>
-                                <td>
-                                    Aspiration Materials: <?= implode(', ', $aspirationMaterials) ?>
-                                </td>
-                                <td>
-                                    Special Instructions: <?= implode(', ', $specialInstructions) ?>
+                                
+                                <td style="padding: 8px; border: none;">
+                                    <b>Special Instructions</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $specialInstructions) ?>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -369,128 +323,100 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
           
             <!-- Recall -->
+           
             <?php 
-             
                 $formatted_LabNumber = substr($LabNumber, 3);
                 $recall_status = cyto_recall_lab_number($formatted_LabNumber);
-             
-                if ($recall_status ) {
+
+                if ($recall_status) {
                     $recall_cyto_id = $recall_status['rowid'];
-                    // recall clinical information
+                    
+                    // Recall clinical information
                     $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
-                        // Check if we have valid data or an error message
-                        if (is_array($recall_clinical_information)) {
-                            // If data is found, create a table to display it
-                            echo '<table class="table table-bordered table-striped">';
-                            
-                            // List of fields to exclude
-                            $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
 
-                            // Create a row for the field names (headers)
-                            echo '<tr>';
-                            foreach ($recall_clinical_information as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
+                    if (is_array($recall_clinical_information)) {
+                        // Exclude specific fields
+                        $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
 
-                                // If the field exists and is not empty, display the field name
-                                if (!empty($value)) {
-                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                }
-                            }
-                            echo '</tr>';
-
-                            // Create a row for the field values
-                            echo '<tr>';
-                            foreach ($recall_clinical_information as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-
-                                // If the field exists and is not empty, display the value
-                                if (!empty($value)) {
-                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                }
-                            }
-                            echo '</tr>';
-
-                            echo '</table>';
-                        } else {
-                            // If no data was found or there's an error
-                            echo '';
-                        }
+                        // Create a vertical table for clinical information
+                        echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">';
                         
-                        // Recall fixation details
-                        $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
+                        foreach ($recall_clinical_information as $field => $value) {
+                            if (in_array($field, $exclude_fields) || empty($value)) {
+                                continue;
+                            }
 
-                        if (is_array($recall_fixation_details) && !empty($recall_fixation_details)) {
-                            $dry_no_count = 0;
-                            $dry_yes_count = 0;
-                            $exclude_fields = ['rowid', 'cyto_id', 'fixation_method', 'dry'];
+                            // Create a row for each field and its value
+                            echo '<tr>';
+                            echo '<th style="text-align: left; padding: 8px; border: none;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
+                            echo '<td style="padding: 8px; border: none;">' . htmlspecialchars($value) . '</td>';
+                            echo '</tr>';
+                        }
 
-                            // Initialize arrays to aggregate data
-                            $aggregated_data = [
-                                'location' => [],
-                                'aspiration_materials' => [],
-                                'special_instructions' => [],
-                            ];
+                        echo '</table>';
+                    } else {
+                        echo '<div class="alert alert-warning"></div>';
+                    }
 
-                            // Iterate through all records to count "dry" values and aggregate data
-                            foreach ($recall_fixation_details as $record) {
-                                if (isset($record['dry'])) {
-                                    $dry_value = strtolower($record['dry']);
-                                    if ($dry_value === 'no') {
-                                        $dry_no_count++;
-                                    } elseif ($dry_value === 'yes') {
-                                        $dry_yes_count++;
-                                    }
-                                }
+                    // Recall fixation details
+                    $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
 
-                                // Aggregate specific fields
-                                if (!empty($record['location']) && !in_array($record['location'], $aggregated_data['location'])) {
-                                    $aggregated_data['location'][] = $record['location'];
-                                }
-                                if (!empty($record['aspiration_materials']) && !in_array($record['aspiration_materials'], $aggregated_data['aspiration_materials'])) {
-                                    $aggregated_data['aspiration_materials'][] = $record['aspiration_materials'];
-                                }
-                                if (!empty($record['special_instructions']) && !in_array($record['special_instructions'], $aggregated_data['special_instructions'])) {
-                                    $aggregated_data['special_instructions'][] = $record['special_instructions'];
+                    if (is_array($recall_fixation_details) && !empty($recall_fixation_details)) {
+                        $dry_no_count = 0;
+                        $dry_yes_count = 0;
+                        $exclude_fields = ['rowid', 'cyto_id', 'fixation_method', 'dry'];
+
+                        // Initialize arrays to aggregate data
+                        $aggregated_data = [
+                            'location' => [],
+                            'aspiration_materials' => [],
+                            'special_instructions' => [],
+                        ];
+
+                        // Iterate through records to count "dry" values and aggregate data
+                        foreach ($recall_fixation_details as $record) {
+                            if (isset($record['dry'])) {
+                                $dry_value = strtolower($record['dry']);
+                                if ($dry_value === 'no') {
+                                    $dry_no_count++;
+                                } elseif ($dry_value === 'yes') {
+                                    $dry_yes_count++;
                                 }
                             }
 
-                            // Display table
-                            echo '<table class="table table-bordered table-striped">';
-                            echo '<thead><tr>';
-                            echo '<th>Location</th>';
-                            echo '<th>Slide</th>';
-                            echo '<th>Aspiration Materials</th>';
-                            echo '<th>Special Instructions</th>';
-                            echo '</tr></thead><tbody>';
-
-                            // Combine aggregated data for display
-                            echo '<tr>';
-                            echo '<td>' . htmlspecialchars(implode(', ', $aggregated_data['location'])) . '</td>';
-                            echo '<td>' . $dry_no_count . ' + ' . $dry_yes_count . '</td>'; // Show No count + Yes count
-                            echo '<td>' . htmlspecialchars(implode(', ', $aggregated_data['aspiration_materials'])) . '</td>';
-                            echo '<td>' . htmlspecialchars(implode(', ', $aggregated_data['special_instructions'])) . '</td>';
-                            echo '</tr>';
-
-                            echo '</tbody></table>';
-                        } else {
-                            // If no data was found or there's an error
-                            echo '<div class="alert alert-warning">No fixation details found.</div>';
-                            error_log('No data or invalid response from cyto_recall_fixation_details.');
+                            // Aggregate specific fields
+                            if (!empty($record['location']) && !in_array($record['location'], $aggregated_data['location'])) {
+                                $aggregated_data['location'][] = $record['location'];
+                            }
+                            if (!empty($record['aspiration_materials']) && !in_array($record['aspiration_materials'], $aggregated_data['aspiration_materials'])) {
+                                $aggregated_data['aspiration_materials'][] = $record['aspiration_materials'];
+                            }
+                            if (!empty($record['special_instructions']) && !in_array($record['special_instructions'], $aggregated_data['special_instructions'])) {
+                                $aggregated_data['special_instructions'][] = $record['special_instructions'];
+                            }
                         }
- 
-                } 
+
+                        // Create a vertical table for fixation details
+                        echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none;" margin-top:400px;>';
+
+                        echo '<tr>';
+                        echo '<th style="text-align: left; padding: 8px; border: none;">Location</th>';
+                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['location'])) . '</td>';
+                        echo '<th style="text-align: left; padding: 8px; border: none;">Slide</th>';
+                        echo '<td style="padding: 8px; border: none;">' . $dry_no_count . ' + ' . $dry_yes_count . '</td>'; // No count + Yes count
+                        echo '<th style="text-align: left; padding: 8px; border: none;">Aspiration Materials</th>';
+                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['aspiration_materials'])) . '</td>';
+                        echo '<th style="text-align: left; padding: 8px; border: none;">Special Instructions</th>';
+                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['special_instructions'])) . '</td>';
+                        echo '</tr>';
+                        echo '</table>';
+                    } else {
+                        echo '<div class="alert alert-warning"></div>';
+                    }
+                }
             ?>
+
            
-            
-
-            
-
 
             <!-- Diagnosis Tab -->
             <?php
@@ -542,24 +468,20 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </textarea>
                         </div>
 
-                        <!-- Current Diagnosis -->
+                       
+                        
+                        <!--  Diagnosis -->
                         <div class="form-group" style="flex: 1;">
-                            <label for="current-diagnosis">Current Diagnosis:</label>
-                            <textarea id="current-diagnosis" name="current_diagnosis" class="form-control" rows="3" readonly>
+                            <label for="diagnosis">Diagnosis:</label>
+                            <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" required>
                                 <?php
-                                if (!empty($diagnosis_entry['diagnosis'])) {
-                                    echo htmlspecialchars($diagnosis_entry['diagnosis']);
-                                } else {
-                                    echo "No current diagnosis available.";
-                                }
+                                    if (!empty($diagnosis_entry['diagnosis'])) {
+                                        echo htmlspecialchars($diagnosis_entry['diagnosis']);
+                                    } else {
+                                        echo "No current diagnosis available.";
+                                    }
                                 ?>
                             </textarea>
-                        </div>
-
-                        <!-- New Diagnosis -->
-                        <div class="form-group" style="flex: 1;">
-                            <label for="diagnosis">New Diagnosis:</label>
-                            <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" required></textarea>
                         </div>
 
                         <!-- Save Button -->
