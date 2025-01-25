@@ -2703,47 +2703,93 @@ if ($action == 'create' && $usercancreate) {
 	}
 }
 
+		// // Allow select2 closeOnSelect: false
+		// $addScript =  "\n";
+		// $addScript .=	'<script>' . "\n";
+		// $addScript .=		'$(document).ready(function () {' . "\n";
+		// $addScript .=			'$(".multiselect").select2({closeOnSelect: false});' . "\n";
+		// // $addScript .=			'$("#trlinefordates").hide();' . "\n";
+
+		// // Hide FNAC extra fields, show on Yes
+		// $addScript .=			'$("tr.commande_extras_prev_fnac_date").hide();' . "\n";
+		// $addScript .=			'$("tr.commande_extras_prev_fnac_op").hide();' . "\n";
+		// // $addScript .=			'$("tr.commande_extras_prev_fnac_date").style.transition = "all 0.7s";' . "\n";
+		// // $addScript .=			'$("tr.commande_extras_prev_fnac_op").style.transition = "all 0.7s";' . "\n";
+		// $addScript .=			'$("#select2-options_prev_fnac-container").on("DOMSubtreeModified",function(){' . "\n";
+		// $addScript .=				'if ($("#select2-options_prev_fnac-container").text() == "Yes") { '."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_fnac_date").fadeIn("slow");' ."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_fnac_op").fadeIn("slow");' ."\n";
+		// $addScript .=				'} else {'."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_fnac_date").fadeOut();' ."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_fnac_op").fadeOut();' ."\n";
+		// $addScript .=				'};'."\n";
+		// $addScript .=			'});'. "\n";
+
+
+		// // Hide Biopsy extra fields, show on Yes
+		// $addScript .=			'$("tr.commande_extras_prev_biopsy_date").hide();' . "\n";
+		// $addScript .=			'$("tr.commande_extras_prev_biopsy_op").hide();' . "\n";
+		// $addScript .=			'$("#select2-options_prev_biopsy-container").on("DOMSubtreeModified",function(){' . "\n";
+		// $addScript .=				'if ($("#select2-options_prev_biopsy-container").text() == "Yes") { '."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_biopsy_date").fadeIn("slow");' ."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_biopsy_op").fadeIn("slow");' ."\n";
+		// $addScript .=				'} else {'."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_biopsy_date").fadeOut();' ."\n";
+		// $addScript .=					'$("tr.commande_extras_prev_biopsy_op").fadeOut();' ."\n";
+		// $addScript .=				'};'."\n";
+		// $addScript .=			'});'. "\n";
+	
+		// // $addScript .=				'alert($("#select2-options_prev_fnac-container").text());' .  "\n";
+		// $addScript .=		'});' . "\n";	//end of $(document).ready(function () {		
+		// $addScript .=	'</script>'; "\n";						
+		// print $addScript;
+
 		// Allow select2 closeOnSelect: false
-		$addScript =  "\n";
-		$addScript .=	'<script>' . "\n";
-		$addScript .=		'$(document).ready(function () {' . "\n";
-		$addScript .=			'$(".multiselect").select2({closeOnSelect: false});' . "\n";
-		// $addScript .=			'$("#trlinefordates").hide();' . "\n";
+		$addScript = "\n";
+		$addScript .= '<script>' . "\n";
+		$addScript .= '$(document).ready(function () {' . "\n";
+
+		// Apply select2 with closeOnSelect: false
+		$addScript .= '$(".multiselect").select2({closeOnSelect: false});' . "\n";
 
 		// Hide FNAC extra fields, show on Yes
-		$addScript .=			'$("tr.commande_extras_prev_fnac_date").hide();' . "\n";
-		$addScript .=			'$("tr.commande_extras_prev_fnac_op").hide();' . "\n";
-		// $addScript .=			'$("tr.commande_extras_prev_fnac_date").style.transition = "all 0.7s";' . "\n";
-		// $addScript .=			'$("tr.commande_extras_prev_fnac_op").style.transition = "all 0.7s";' . "\n";
-		$addScript .=			'$("#select2-options_prev_fnac-container").on("DOMSubtreeModified",function(){' . "\n";
-		$addScript .=				'if ($("#select2-options_prev_fnac-container").text() == "Yes") { '."\n";
-		$addScript .=					'$("tr.commande_extras_prev_fnac_date").fadeIn("slow");' ."\n";
-		$addScript .=					'$("tr.commande_extras_prev_fnac_op").fadeIn("slow");' ."\n";
-		$addScript .=				'} else {'."\n";
-		$addScript .=					'$("tr.commande_extras_prev_fnac_date").fadeOut();' ."\n";
-		$addScript .=					'$("tr.commande_extras_prev_fnac_op").fadeOut();' ."\n";
-		$addScript .=				'};'."\n";
-		$addScript .=			'});'. "\n";
+		$addScript .= '$("tr.commande_extras_prev_fnac_date").hide();' . "\n";
+		$addScript .= '$("tr.commande_extras_prev_fnac_op").hide();' . "\n";
 
+		$addScript .= 'const fnacObserver = new MutationObserver(function(mutations) {' . "\n";
+		$addScript .= '    if ($("#select2-options_prev_fnac-container").text() === "Yes") {' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_fnac_date").fadeIn("slow");' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_fnac_op").fadeIn("slow");' . "\n";
+		$addScript .= '    } else {' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_fnac_date").fadeOut();' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_fnac_op").fadeOut();' . "\n";
+		$addScript .= '    }' . "\n";
+		$addScript .= '});' . "\n";
+		$addScript .= 'fnacObserver.observe(document.querySelector("#select2-options_prev_fnac-container"), {childList: true, subtree: true});' . "\n";
 
 		// Hide Biopsy extra fields, show on Yes
-		$addScript .=			'$("tr.commande_extras_prev_biopsy_date").hide();' . "\n";
-		$addScript .=			'$("tr.commande_extras_prev_biopsy_op").hide();' . "\n";
-		$addScript .=			'$("#select2-options_prev_biopsy-container").on("DOMSubtreeModified",function(){' . "\n";
-		$addScript .=				'if ($("#select2-options_prev_biopsy-container").text() == "Yes") { '."\n";
-		$addScript .=					'$("tr.commande_extras_prev_biopsy_date").fadeIn("slow");' ."\n";
-		$addScript .=					'$("tr.commande_extras_prev_biopsy_op").fadeIn("slow");' ."\n";
-		$addScript .=				'} else {'."\n";
-		$addScript .=					'$("tr.commande_extras_prev_biopsy_date").fadeOut();' ."\n";
-		$addScript .=					'$("tr.commande_extras_prev_biopsy_op").fadeOut();' ."\n";
-		$addScript .=				'};'."\n";
-		$addScript .=			'});'. "\n";
-	
-		// $addScript .=				'alert($("#select2-options_prev_fnac-container").text());' .  "\n";
-		$addScript .=		'});' . "\n";	//end of $(document).ready(function () {		
-		$addScript .=	'</script>'; "\n";						
+		$addScript .= '$("tr.commande_extras_prev_biopsy_date").hide();' . "\n";
+		$addScript .= '$("tr.commande_extras_prev_biopsy_op").hide();' . "\n";
+
+		$addScript .= 'const biopsyObserver = new MutationObserver(function(mutations) {' . "\n";
+		$addScript .= '    if ($("#select2-options_prev_biopsy-container").text() === "Yes") {' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_biopsy_date").fadeIn("slow");' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_biopsy_op").fadeIn("slow");' . "\n";
+		$addScript .= '    } else {' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_biopsy_date").fadeOut();' . "\n";
+		$addScript .= '        $("tr.commande_extras_prev_biopsy_op").fadeOut();' . "\n";
+		$addScript .= '    }' . "\n";
+		$addScript .= '});' . "\n";
+		$addScript .= 'biopsyObserver.observe(document.querySelector("#select2-options_prev_biopsy-container"), {childList: true, subtree: true});' . "\n";
+
+		// End of document.ready
+		$addScript .= '});' . "\n";
+		$addScript .= '</script>' . "\n";
+
 		print $addScript;
 
+
+		
 // End of page
 llxFooter();
 $db->close();
