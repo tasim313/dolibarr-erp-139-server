@@ -219,10 +219,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
             border-color:rgb(223, 14, 77); 
         }
-        #location-input:focus{
+        /* #location-input:focus{
             box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
             border-color:rgb(223, 14, 77); 
-        }
+        } */
         #slides-input:focus{
             box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
             border-color:rgb(223, 14, 77); 
@@ -241,6 +241,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             background-color: #28a745; /* Bootstrap's success color */
             color: white; /* Ensure text is visible */
             outline: none; /* Optional: Remove default focus outline */
+        }
+        #reason-for-fnac:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
         }
     </style>
 
@@ -535,23 +539,23 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <!-- Clinical Information -->
                             <!-- Reason for FNAC -->
                             <div class="form-group">
-                                    <label for="reason-for-fnac">Chief Complain:</label>
+                                    <label for="reason-for-fnac">C/C:</label>
                                     <textarea id="reason-for-fnac" name="reason_for_fnac" class="form-control" 
-                                        placeholder="Type to search..." rows="3" required autocomplete="off"></textarea>
+                                        placeholder="Enter Chief complain" rows="3" required autocomplete="off"></textarea>
                                     <ul id="suggestions-list" style="position: absolute; background: white; border: 1px solid #ccc; 
                                         max-height: 150px; overflow-y: auto; display: none; list-style: none; padding: 0; margin: 0; z-index: 10;"></ul>
                             </div>
 
                             <!-- Clinical History -->
                             <div class="form-group">
-                                <label for="clinical-history">Clinical History:</label>
+                                <label for="clinical-history">H/O:</label>
                                 <textarea id="clinical-history" name="clinical_history" class="form-control" rows="3" placeholder="Enter detailed clinical notes" required></textarea>
                                 <ul id="clinical-history-suggestions" class="suggestions-list" style="display: none; position: absolute; z-index: 1000; background: white; border: 1px solid #ccc; padding: 5px; list-style: none; max-height: 150px; overflow-y: auto;"></ul>
                             </div>
                             
                             <!-- Site of Aspiration -->
                             <div class="form-group">
-                                <label for="site-of-aspiration-editor">On Examination:</label>
+                                <label for="site-of-aspiration-editor">O/E:</label>
                                 <textarea id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
                                 <ul id="examination-suggestions-list" style="position: absolute; background: white; border: 1px solid #ccc; 
                                  max-height: 150px; overflow-y: auto; display: none; list-style: none; padding: 0; margin: 0; z-index: 10;"></ul>
@@ -566,7 +570,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <h3>Aspiration Note:</h3>
                             <!-- Total Slides Prepared -->
                             <div class="form-group form-group-slide d-flex align-items-center">
-                                <label for="location-input" class="mr-2">Location:</label> &nbsp; 
+                                <label for="location-input" class="mr-2">Aspiration:</label> &nbsp; 
                                 <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" > &nbsp; &nbsp; &nbsp;
 
                                 <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
@@ -675,7 +679,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <!-- clinical-impression -->
                             <div class="form-group row">
                                     <label for="clinical-impression" class="col-sm-3 col-form-label">
-                                        Clinical Impression:
+                                        C/I:
                                     </label>
                                     <div>
                                     <textarea 
@@ -1272,7 +1276,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         const result = [];
 
         // Check and add non-empty values
-        if (location) result.push(`<div><strong>Location:</strong> ${location}</div>`);
+        if (location) result.push(`<div><strong>Aspiration:</strong> ${location}</div>`);
         if (slides) result.push(`<div><strong>Slide:</strong> ${slides}</div>`);
         if (aspirationMaterials) result.push(`<div><strong>Aspiration Materials:</strong> ${aspirationMaterials}</div>`);
         if (specialInstruction) result.push(`<div><strong>Special Instruction:</strong> ${specialInstruction}</div>`);
