@@ -234,19 +234,19 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php else: ?>
                             <?php foreach ($clinicalInformation as $info): ?>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">Chief Complain</th>
+                                    <th style="text-align: left; padding: 8px; border: none;">C/C</th>
                                     <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['chief_complain']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">Clinical History</th>
+                                    <th style="text-align: left; padding: 8px; border: none;">H/O</th>
                                     <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">On Examination</th>
+                                    <th style="text-align: left; padding: 8px; border: none;">O/E</th>
                                     <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['on_examination']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">Clinical Impression</th>
+                                    <th style="text-align: left; padding: 8px; border: none;">C/I</th>
                                     <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -301,7 +301,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php else: ?>
                             <tr>
                                 <td style="padding: 8px; border: none;">
-                                    <b>Aspiration Materials</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
+                                    <b>A/M</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
                                 </td>
                                 <!-- Location: Show all unique locations as a comma-separated list -->
                                 <td colspan="2" style="padding: 8px; border: none;">
@@ -449,7 +449,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     <div class="diagnosis-container" style="display: flex; gap: 20px; align-items: flex-start;">
                         <!-- Previous Diagnosis -->
                         <div class="form-group" style="flex: 1;">
-                            <label for="previous-diagnosis">Previous Diagnosis:</label>
+                            <label for="previous-diagnosis">Previous A/N:</label>
                             <textarea id="previous-diagnosis" name="previous_diagnosis" class="form-control" rows="3" readonly>
                                 <?php
                                 if (!empty($diagnosis_entry['previous_diagnosis'])) {
@@ -472,7 +472,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         
                         <!--  Diagnosis -->
                         <div class="form-group" style="flex: 1;">
-                            <label for="diagnosis">Diagnosis:</label>
+                            <label for="diagnosis">A/N:</label>
                             <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" required>
                                 <?php
                                     if (!empty($diagnosis_entry['diagnosis'])) {

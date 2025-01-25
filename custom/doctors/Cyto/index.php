@@ -408,14 +408,14 @@ switch (true) {
                             if (empty($status_list)) {
                                 echo "<div>No data available for lab number: " . htmlspecialchars($statusLabNumberWithFNA) . "</div>";
                             } else {
-                                echo "<table class='table table-bordered table-striped'>";
+                                echo "<table class='table' style=\"border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;\">";
                                 foreach ($status_list[0] as $field => $value) {
                                     if (in_array($field, $excluded_fields)) continue;
                                     if (is_null($value) || $value === '' || $value === [] || trim($value) === '') continue;
 
                                     echo "<tr>";
                                     $display_name = $field_name_mapping[$field] ?? ucwords(str_replace('_', ' ', $field));
-                                    echo "<td style='padding: 8px;'>" . htmlspecialchars($display_name) . "</td>";
+                                    echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($display_name) . "</td>";
                                     
                                     if ($field == 'follow_up_date') {
                                         // Handle follow_up_date field formatting
@@ -423,9 +423,9 @@ switch (true) {
                                             $follow_up_timestamp = new DateTime($value, new DateTimeZone('UTC'));
                                             $follow_up_timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
                                             $formatted_follow_up_date = $follow_up_timestamp->format('j F, Y g:i A');
-                                            echo "<td style='padding: 8px;'>" . htmlspecialchars($formatted_follow_up_date) . "</td>";
+                                            echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($formatted_follow_up_date) . "</td>";
                                         } catch (Exception $e) {
-                                            echo "<td style='padding: 8px;'>Invalid Date</td>";
+                                            echo "<td style='padding: 4px; border: none;'>Invalid Date</td>";
                                         }
                                     }
                                     else if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
@@ -446,7 +446,7 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo "<td style='padding: 8px;'>" . $formatted_data . "</td>";
+                                        echo "<td style='padding: 8px; border: none;'>" . $formatted_data . "</td>";
                                     } else if (in_array($field, ['recall_reason'])) {
                                         $formatted_recall_reasons = '';
                                         if ($field == 'recall_reason') {
@@ -462,7 +462,7 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo "<td style='padding: 8px;'>" . $formatted_recall_reasons . "</td>";
+                                        echo "<td style='padding: 4px; border: none;'>" . $formatted_recall_reasons . "</td>";
                                     } 
                                     else if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
                                         // Decode JSON and format the data
@@ -501,10 +501,10 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo '<td>' . $formatted_data . '</td>';
+                                        echo '<td style=\'padding: 4px; border: none;\'>' . $formatted_data . '</td>';
                                     } 
                                     else {
-                                        echo "<td style='padding: 8px;'>" . htmlspecialchars($value) . "</td>";
+                                        echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($value) . "</td>";
                                     }
                                     echo "</tr>";
                                 }
