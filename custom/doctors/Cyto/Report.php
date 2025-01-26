@@ -165,7 +165,7 @@ class CustomPDF extends TCPDF {
         
             // Set X position for 'CYTOLOGY REPORT' and center-align the text
             $this->SetX($this->getPageWidth() - 120); 
-            $this->Cell(40, 8, 'CYTOLOGY REPORT', 0, 1, 'C', false);
+            $this->Cell(40, 8, '', 0, 1, 'C', false);
             $this->Ln(-3.5); // Adjust line spacing as needed
         
             // Move the cursor to the right side of the page for the invoice number barcode
@@ -615,7 +615,48 @@ if (!$additional_on_examination_result) {
     die("Error in SQL query for on examination : " . pg_last_error());
 }
 
+// SQL operation for recall on examination
+$additional_clinical_impression_query = "select additional_clinical_impression from llx_cyto_recall_clinical_information where cyto_id = '$recall_fk_cyto_id' AND additional_clinical_impression != '<p><br></p>' 
+AND additional_clinical_impression != '<br>' 
+AND additional_clinical_impression != '<p>&nbsp;</p>' 
+AND NOT additional_clinical_impression ~ '^<p\s*[^>]*>\s*</p>$'";
+$additional_clinical_impression_result = pg_query($pg_con, $additional_clinical_impression_query);
 
+if (!$additional_clinical_impression_result) {
+    die("Error in SQL query for on additional clinical impression : " . pg_last_error());
+}
+
+$additional_aspiration_materials_query = "select aspiration_materials from llx_cyto_recall_fixation_details where cyto_id = '$recall_fk_cyto_id' AND aspiration_materials != '<p><br></p>' 
+AND aspiration_materials != '<br>' 
+AND aspiration_materials != '<p>&nbsp;</p>' 
+AND NOT aspiration_materials ~ '^<p\s*[^>]*>\s*</p>$'";
+$additional_aspiration_materials_result = pg_query($pg_con, $additional_aspiration_materials_query);
+
+if (!$additional_aspiration_materials_result) {
+    die("Error in SQL query for additional aspiration materials : " . pg_last_error());
+}
+
+
+$additional_location_query = "select location from llx_cyto_recall_fixation_details where cyto_id = '$recall_fk_cyto_id' AND location != '<p><br></p>' 
+AND location != '<br>' 
+AND location != '<p>&nbsp;</p>' 
+AND NOT location ~ '^<p\s*[^>]*>\s*</p>$'";
+$additional_location_result = pg_query($pg_con, $additional_location_query);
+
+if (!$additional_location_result) {
+    die("Error in SQL query for additional location : " . pg_last_error());
+}
+
+$additional_slide_number_query = "select slide_number, dry from llx_cyto_recall_fixation_details where cyto_id = '$recall_fk_cyto_id' AND slide_number != '<p><br></p>' 
+AND slide_number != '<br>' 
+AND slide_number != '<p>&nbsp;</p>' 
+AND NOT slide_number ~ '^<p\s*[^>]*>\s*</p>$'";
+
+$additional_slide_number_result = pg_query($pg_con, $additional_slide_number_query);
+
+if (!$additional_slide_number_query){
+    die("Error in SQL query for slide number : " . preg_last_error());
+}
 
 // Initialize content for the HTML table
 $html = '
@@ -928,6 +969,190 @@ $html .= implode('<br/>', $additional_on_examination_rows);
 $html .= '</td></tr>';
 }
 
+// Add additional findings additional aspiration materials
+// Check if there are rows in the result
+if (pg_num_rows($additional_clinical_impression_result) > 0) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>A/O/E:</b></th>
+            <td style="width: 88%;">';
+
+$additional_clinical_impression_rows = [];
+while ($row = pg_fetch_assoc($additional_clinical_impression_result)) {
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $additional_clinical_impression = $row['additional_clinical_impression'];
+    $additional_clinical_impression = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $additional_clinical_impression);
+    
+    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+    $additional_clinical_impression = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $additional_clinical_impression);
+    
+    // Remove trailing <br> tags if they don't precede text
+    $additional_clinical_impression = preg_replace('/<br>\s*$/', '', $additional_clinical_impression);
+    
+    // Trim to remove leading and trailing whitespace
+    $additional_clinical_impression = trim($additional_clinical_impression);
+
+    // Add the formatted Aspiration Note to the rows
+    $additional_clinical_impression_rows[] = $additional_clinical_impression;
+}
+
+// Combine the rows with <br/> for output
+$html .= implode('<br/>', $additional_clinical_impression_rows);
+$html .= '</td></tr>';
+}
+
+
+// Add additional aspiration materials
+// Check if there are rows in the result
+if (pg_num_rows($additional_aspiration_materials_result) > 0) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>A/A/M:</b></th>
+            <td style="width: 88%;">';
+
+    $additional_aspiration_materials_rows = [];
+    while ($row = pg_fetch_assoc($additional_aspiration_materials_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $additional_aspiration_materials = $row['aspiration_materials'];
+        $additional_aspiration_materials = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $additional_aspiration_materials);
+
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $additional_aspiration_materials = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $additional_aspiration_materials);
+
+        // Remove trailing <br> tags if they don't precede text
+        $additional_aspiration_materials = preg_replace('/<br>\s*$/', '', $additional_aspiration_materials);
+
+        // Trim to remove leading and trailing whitespace
+        $additional_aspiration_materials= trim($additional_aspiration_materials);
+
+        // Add the formatted Aspiration Note to the rows
+        $additional_aspiration_materials_rows[] = $additional_aspiration_materials;
+    }
+
+    // Remove duplicate special_instructions
+    $unique_additional_aspiration_materials = array_unique($additional_aspiration_materials_rows);
+
+    // Combine the unique rows with <br/> for output
+    $html .= implode('<br/>', $unique_additional_aspiration_materials);
+    $html .= '</td></tr>';
+}
+
+
+// Add location
+// Check if there are rows in the result
+if (pg_num_rows($additional_location_result) > 0) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>Aspiration:</b></th>
+            <td style="width: 88%;">';
+
+    $additional_location_rows = [];
+    while ($row = pg_fetch_assoc($additional_location_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $additional_location = $row['location'];
+        $additional_location = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $additional_location);
+
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $additional_location = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $additional_location);
+
+        // Remove trailing <br> tags if they don't precede text
+        $additional_location = preg_replace('/<br>\s*$/', '', $additional_location);
+
+        // Trim to remove leading and trailing whitespace
+        $additional_location = trim($additional_location);
+
+        // Add the formatted Aspiration Note to the rows
+        $additional_location_rows[] = $additional_location;
+    }
+
+    // Remove duplicate additional location
+    $unique_additional_location = array_unique($additional_location_rows);
+
+    // Combine the unique rows with <br/> for output
+    $html .= implode('<br/>', $unique_additional_location);
+    $html .= '</td></tr>';
+}
+
+
+// Add additional slide
+// Initialize counters
+$additional_no_dry_count = 0;
+$additional_yes_dry_count = 0;
+
+// Check if there are rows in the result
+if (pg_num_rows($additional_slide_number_result) > 0) {
+    while ($row = pg_fetch_assoc($additional_slide_number_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $additional_slide = $row['slide_number'];
+        $additional_slide = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $additional_slide);
+
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $additional_slide = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $additional_slide);
+
+        // Remove trailing <br> tags if they don't precede text
+        $additional_slide = preg_replace('/<br>\s*$/', '', $additional_slide);
+
+        // Trim to remove leading and trailing whitespace
+        $additional_slide = trim($additional_slide);
+
+        // Count based on dry value
+        if (strtolower($row['dry']) === 'no') {
+            $additional_no_dry_count++;
+        } elseif (strtolower($row['dry']) === 'yes') {
+            $additional_yes_dry_count++;
+        }
+    }
+
+    // Add slide data to HTML
+    $html .= '<tr>
+                <th style="width: 12%;"><b>Slide:</b></th>
+                <td style="width: 88%;">' . $additional_no_dry_count . '+' . $additional_yes_dry_count . '</td>
+              </tr>';
+}
+
+
+$additional_special_instructions_query = "select special_instructions from llx_cyto_recall_fixation_details where cyto_id = '$recall_fk_cyto_id' AND special_instructions != '<p><br></p>' 
+AND special_instructions != '<br>' 
+AND special_instructions != '<p>&nbsp;</p>' 
+AND NOT special_instructions ~ '^<p\s*[^>]*>\s*</p>$'";
+
+$additional_special_instructions_result = pg_query($pg_con, $additional_special_instructions_query);
+
+if (!$additional_special_instructions_query){
+    die("Error in SQL query for additional special instructions : " . preg_last_error());
+}
+
+// Add special_instructions
+// Check if there are rows in the result
+if (pg_num_rows($additional_special_instructions_result) > 0) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>A/S/I:</b></th>
+            <td style="width: 88%;">';
+
+    $additional_special_instructions_rows = [];
+    while ($row = pg_fetch_assoc($additional_special_instructions_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $additional_special_instructions = $row['special_instructions'];
+        $additional_special_instructions = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $additional_special_instructions);
+
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $additional_special_instructions = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $additional_special_instructions);
+
+        // Remove trailing <br> tags if they don't precede text
+        $additional_special_instructions = preg_replace('/<br>\s*$/', '', $additional_special_instructions);
+
+        // Trim to remove leading and trailing whitespace
+        $additional_special_instructions = trim($additional_special_instructions);
+
+        // Add the formatted Aspiration Note to the rows
+        $additional_special_instructions_rows[] = $additional_special_instructions;
+    }
+
+    // Remove duplicate special_instructions
+    $unique_additional_special_instructions = array_unique($additional_special_instructions_rows);
+
+    // Combine the unique rows with <br/> for output
+    $html .= implode('<br/>', $unique_additional_special_instructions);
+    $html .= '</td></tr>';
+}
+
 // Write the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
 
@@ -969,380 +1194,9 @@ if ($remainingPercentage > 50) {
 
 
 
-// sql opertaion for dynamic data 
 
-$assisted_by  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-dd.designation as designation
-FROM llx_doctor_degination AS dd
-INNER JOIN llx_doctor_assisted_by_signature AS ds ON dd.username = ds.doctor_username
-WHERE ds.lab_number  = '$LabNumber'";
 
-$assisted_by_result = pg_query($pg_con, $assisted_by);
-// Check if the query was successful
-if ($assisted_by_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($assisted_by_result)) {
-        // Process each row as needed
-        $assisted_doctor_name = $row['doctor_name'];
-        $assisted_education = $row['education'];
-        $assisted_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $assisted_doctor_name;
-        $_SESSION['education'] = $assisted_education;
-        $_SESSION['designation '] = $assisted_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for assisted_by: " . pg_last_error());
-}
 
-$finalized_by_info  = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
-                            dd.designation as designation
-                            FROM llx_doctor_degination AS dd
-                            INNER JOIN llx_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
-                            WHERE ds.lab_number = '$LabNumber'";
-
-$finalized_by_info_result = pg_query($pg_con, $finalized_by_info);
-// Check if the query was successful
-if ($finalized_by_info_result) {
-    // Fetch the results (if any)
-    while ($row = pg_fetch_assoc($finalized_by_info_result)) {
-        // Process each row as needed
-        $finalized_by_doctor_name = $row['doctor_name'];
-        $finalized_by_education = $row['education'];
-        $finalized_by_designation = $row['designation'];
-        // Store the assisted in a session variable for later use
-        $_SESSION['doctor_name'] = $finalized_by_doctor_name;
-        $_SESSION['education'] = $finalized_by_education;
-        $_SESSION['designation '] = $finalized_by_designation;
-    }
-} else {
-    // Handle query error
-    die("Query failed for finalized_by: " . pg_last_error());
-}
-
-$finalized_by_doctor_name = trim($finalized_by_doctor_name);
-$signaturesTableHTML = '';
-
-switch ($finalized_by_doctor_name) {
-    case 'Dr. Md. Shafikul Alam Tanim':
-        switch (trim($assisted_doctor_name)) {
-            case 'Dr. Syeeda Shiraj-Um-Mahmuda':
-                $signaturesTableHTML = '<style>
-                            .custom-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 11px;
-                            }
-                            .custom-table th, .custom-table td {
-                            padding: 8px;
-                            text-align: left;
-                            }
-                            .custom-table th {
-                            font-weight: bold;
-                            }
-                            </style>
-                            <table class="custom-table">
-                            <tr>
-                            <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                            </tr>
-                            <tr>
-                            <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                           <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                            </tr>
-                            <tr>
-                            <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                            </tr>
-                            </table>';
-                break;
-            
-            case 'Dr. Farhana Yusuf':
-                $signaturesTableHTML = '<style>
-                                .custom-table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                font-size: 11px;
-                                }
-                                .custom-table th, .custom-table td {
-                                padding: 8px;
-                                text-align: left;
-                                }
-                                .custom-table th {
-                                font-weight: bold;
-                                }
-                                </style>
-                                <table class="custom-table">
-                                <tr>
-                                <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                                </tr>
-                                <tr>
-                                <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                               <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                                </tr>
-                                <tr>
-                                <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                                </tr>
-                                </table>';
-                break;
-
-            case 'Dr. Julekha Khatun':
-                $signaturesTableHTML = '<style>
-                        .custom-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 11px;
-                        }
-                        .custom-table th, .custom-table td {
-                            padding: 8px;
-                            text-align: left;
-                        }
-                        .custom-table th {
-                            font-weight: bold;
-                        }
-                        </style>
-                        <table class="custom-table">
-                        <tr>
-                            <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                            </tr>
-                            <tr>
-                            <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                            <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                        </tr>
-                        <tr>
-                            <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                        </tr>
-                        </table>';
-                break;
-            
-            case 'Dr. Md. Shahrior Nahid':
-                $signaturesTableHTML = '<style>
-                    .custom-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 11px;
-                    }
-                    .custom-table th, .custom-table td {
-                         padding: 8px;
-                         text-align: left;
-                     }
-                    .custom-table th {
-                         font-weight: bold;
-                     }
-                    </style>
-                    <table class="custom-table">
-                    <tr>
-                        <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                        <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                        </tr>
-                        <tr>
-                            <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                            <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                        </tr>
-                    <tr>
-                        <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                        <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                    </tr>
-                    </table>';
-                break;
-            case 'Dr. Tasmia Islam':
-                    $signaturesTableHTML = '<style>
-                        .custom-table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            font-size: 11px;
-                        }
-                        .custom-table th, .custom-table td {
-                             padding: 8px;
-                             text-align: left;
-                         }
-                        .custom-table th {
-                             font-weight: bold;
-                         }
-                        </style>
-                        <table class="custom-table">
-                        <tr>
-                            <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                            </tr>
-                            <tr>
-                                <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                                <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                            </tr>
-                        <tr>
-                            <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                        </tr>
-                        </table>';
-                    break;
-
-            case 'Dr Jenifer Rahman':
-                        $signaturesTableHTML = '<style>
-                            .custom-table {
-                                width: 100%;
-                                border-collapse: collapse;
-                                font-size: 11px;
-                            }
-                            .custom-table th, .custom-table td {
-                                 padding: 8px;
-                                 text-align: left;
-                             }
-                            .custom-table th {
-                                 font-weight: bold;
-                             }
-                            </style>
-                            <table class="custom-table">
-                            <tr>
-                                <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                                </tr>
-                                <tr>
-                                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                                    <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                                </tr>
-                            <tr>
-                                <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                            </tr>
-                            </table>';
-                        break;
-
-            default:
-                // HTML for other assisted doctors with Dr. Md. Shafikul Alam Tanim
-                $signaturesTableHTML = '<style>
-                .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px;
-                }
-                .custom-table th, .custom-table td {
-                padding: 8px;
-                text-align: left;
-                }
-                .custom-table th {
-                font-weight: bold;
-                }
-                </style>
-                <table class="custom-table">
-                <tr>
-                <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                </tr>
-                <tr>
-                <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                <th colspan="2" style="text-align:left-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                </tr>
-                <tr>
-                <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                </tr>
-                </table>';
-                break;
-        }
-        break;
-
-    case 'Prof. Dr. Md. Aminul Islam Khan':
-        $signaturesTableHTML = '<style>
-            .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                font-size: 11px;
-            }
-            .custom-table th, .custom-table td {
-                padding: 8px;
-                text-align: left;
-            }
-            .custom-table th {
-                font-weight: bold;
-            }
-            </style>
-            <table class="custom-table">
-                <tr>
-                    <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                </tr>
-                <tr>
-                    <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                    <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                </tr>
-            </table>';
-        break;
-
-        case 'Dr. Syeeda Shiraj-Um-Mahmuda':
-            $signaturesTableHTML = '<style>
-                .custom-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 11px;
-                }
-                .custom-table th, .custom-table td {
-                    padding: 8px;
-                    text-align: left;
-                }
-                .custom-table th {
-                    font-weight: bold;
-                }
-                </style>
-                <table class="custom-table">
-                    <tr>
-                        <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                        <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                    </tr>
-                    <tr>
-                        <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                        <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                    </tr>
-                    <tr>
-                        <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                        <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                    </tr>
-                </table>';
-            break;
-
-        case 'Dr. Farhana Yusuf':
-            $signaturesTableHTML = '<style>
-                    .custom-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        font-size: 11px;
-                    }
-                    .custom-table th, .custom-table td {
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    .custom-table th {
-                        font-weight: bold;
-                    }
-                    </style>
-                    <table class="custom-table">
-                        <tr>
-                            <th colspan="2"><b>'.$assisted_doctor_name.'</b></th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>'.$finalized_by_doctor_name.'</b></th>
-                        </tr>
-                        <tr>
-                            <th colspan="2">&nbsp;'.$assisted_education.'</th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_education.'</th>
-                        </tr>
-                        <tr>
-                            <th colspan="2">&nbsp;'.$assisted_designation.'</th>
-                            <th colspan="2" style="text-align:center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$finalized_by_designation.'</th>
-                        </tr>
-                    </table>';
-            break;
-
-    default:
-        // Handle default case if needed
-        break;
-}
 
 // Check if there's enough space for the signatures table
 $spaceNeeded = $pdf->getStringHeight($signaturesTableHTML, '', $pdf->getPageWidth());

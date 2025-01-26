@@ -1020,79 +1020,103 @@ function cyto_status_list_doctor_module($lab_number) {
 
     // SQL query to fetch the required data
     $sql = "
-        SELECT 
-    cyto.lab_number,
-    cyto.doctor,
-    clinical.chief_complain,
-    clinical.relevant_clinical_history,
-    clinical.on_examination,
-    clinical.clinical_impression,
-    fixation.aspiration_materials,
-    doctor_case.screening_doctor_name,
-    doctor_case.finalization_doctor_name,
-    complete_case.screening_done_count_data,
-    complete_case.finalization_done_count_data,
-    STRING_AGG(CONCAT(slide_prepared.created_user, '  ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM')), '; ') AS slide_prepared_by,
-    recall.recall_reason,
-    recall.recalled_doctor,
-    recall.notified_user,
-    recall.notified_method,
-    recall.follow_up_date,
-    lab_instruction.screening_stain_again,
-    lab_instruction.finalization_stain_again
+            SELECT 
+                cyto.lab_number,
+                cyto.doctor,
+                clinical.chief_complain,
+                clinical.relevant_clinical_history,
+                clinical.on_examination,
+                clinical.clinical_impression,
+                fixation.aspiration_materials,
+                doctor_case.screening_doctor_name,
+                doctor_case.finalization_doctor_name,
+                complete_case.screening_done_count_data,
+                complete_case.finalization_done_count_data,
+                STRING_AGG(CONCAT(slide_prepared.created_user, ' ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM')), '; ') AS slide_prepared_by,
+                recall.recall_reason,
+                recall.recalled_doctor,
+                recall.notified_user,
+                recall.notified_method,
+                recall.follow_up_date,
+                lab_instruction.screening_stain_again,
+                lab_instruction.finalization_stain_again,
+                STRING_AGG(
+                    CASE 
+                        WHEN f.special_instructions IS NULL OR f.special_instructions = '' THEN NULL
+                        WHEN s.created_user IS NULL THEN CONCAT(f.special_instructions, ' (Not Completed)')
+                        ELSE CONCAT(f.special_instructions, ' (Completed by ', s.created_user, ' ', TO_CHAR(s.created_date, 'FMDD \"January\", YYYY HH12:MI AM'), ')')
+                    END,
+                    '; '
+                ) AS special_instructions_data,
+                STRING_AGG(
+                    DISTINCT CONCAT(
+                        'Slide Number: ', centrifuge.slide_number, 
+                        ', Created By: ', centrifuge.created_user, 
+                        ', Created Date: ', TO_CHAR(centrifuge.created_date, 'FMDD \"January\", YYYY HH12:MI AM')
+                    ),
+                    '; '
+                ) AS centrifuge_new_slide_prepared
 
-FROM 
-    llx_cyto AS cyto
-LEFT JOIN 
-    llx_cyto_clinical_information AS clinical 
-    ON cyto.rowid = clinical.cyto_id::INTEGER 
-LEFT JOIN 
-    (
-        SELECT DISTINCT ON (cyto_id) 
-            cyto_id, aspiration_materials
-        FROM 
-            llx_cyto_fixation_details
-        ORDER BY 
-            cyto_id, rowid ASC 
-    ) AS fixation 
-ON cyto.rowid = fixation.cyto_id::INTEGER 
-LEFT JOIN 
-    llx_cyto_doctor_case_info AS doctor_case 
-    ON cyto.lab_number = CONCAT('FNA', doctor_case.lab_number) 
-LEFT JOIN 
-    llx_cyto_doctor_complete_case AS complete_case 
-    ON cyto.lab_number = CONCAT('FNA', complete_case.lab_number)
-LEFT JOIN 
-    llx_cyto_slide_prepared AS slide_prepared 
-    ON cyto.lab_number = CONCAT('FNA', slide_prepared.lab_number)
-LEFT JOIN 
-    llx_cyto_recall_management AS recall 
-    ON TRIM(LEADING 'FNA' FROM cyto.lab_number) = recall.lab_number
-LEFT JOIN 
-    llx_cyto_doctor_lab_instruction AS lab_instruction
-    ON cyto.lab_number = CONCAT('FNA', lab_instruction.lab_number)
+            FROM 
+                llx_cyto AS cyto
+            LEFT JOIN 
+                llx_cyto_clinical_information AS clinical 
+                ON cyto.rowid = clinical.cyto_id::INTEGER 
+            LEFT JOIN 
+                (
+                    SELECT DISTINCT ON (cyto_id) 
+                    cyto_id, aspiration_materials
+                    FROM llx_cyto_fixation_details
+                    ORDER BY cyto_id, rowid ASC 
+                ) AS fixation 
+                ON cyto.rowid = fixation.cyto_id::INTEGER 
+            LEFT JOIN 
+                llx_cyto_doctor_case_info AS doctor_case 
+                ON cyto.lab_number = CONCAT('FNA', doctor_case.lab_number) 
+            LEFT JOIN 
+                llx_cyto_doctor_complete_case AS complete_case 
+                ON cyto.lab_number = CONCAT('FNA', complete_case.lab_number)
+            LEFT JOIN 
+                llx_cyto_slide_prepared AS slide_prepared 
+                ON cyto.lab_number = CONCAT('FNA', slide_prepared.lab_number)
+            LEFT JOIN 
+                llx_cyto_recall_management AS recall 
+                ON TRIM(LEADING 'FNA' FROM cyto.lab_number) = recall.lab_number
+            LEFT JOIN 
+                llx_cyto_doctor_lab_instruction AS lab_instruction
+                ON cyto.lab_number = CONCAT('FNA', lab_instruction.lab_number)
+            LEFT JOIN 
+                llx_cyto_fixation_details AS f
+                ON cyto.rowid = f.cyto_id::INTEGER
+            LEFT JOIN 
+                llx_cyto_special_instructions_complete AS s
+                ON f.rowid = s.fixation_details
+            LEFT JOIN 
+                llx_cyto_slide_centrifuge AS centrifuge
+                ON cyto.lab_number = CONCAT('FNA', centrifuge.lab_number)
 
-WHERE 
-    cyto.lab_number = $1
-GROUP BY 
-    cyto.lab_number, 
-    cyto.doctor, 
-    clinical.chief_complain, 
-    clinical.relevant_clinical_history, 
-    clinical.on_examination, 
-    clinical.clinical_impression, 
-    fixation.aspiration_materials, 
-    doctor_case.screening_doctor_name, 
-    doctor_case.finalization_doctor_name, 
-    complete_case.screening_done_count_data, 
-    complete_case.finalization_done_count_data,
-    recall.recall_reason,
-    recall.recalled_doctor,
-    recall.notified_user,
-    recall.notified_method,
-    recall.follow_up_date,
-    lab_instruction.screening_stain_again,
-    lab_instruction.finalization_stain_again;
+            WHERE 
+                cyto.lab_number = $1
+            GROUP BY 
+                cyto.lab_number, 
+                cyto.doctor, 
+                clinical.chief_complain, 
+                clinical.relevant_clinical_history, 
+                clinical.on_examination, 
+                clinical.clinical_impression, 
+                fixation.aspiration_materials, 
+                doctor_case.screening_doctor_name, 
+                doctor_case.finalization_doctor_name, 
+                complete_case.screening_done_count_data, 
+                complete_case.finalization_done_count_data,
+                recall.recall_reason,
+                recall.recalled_doctor,
+                recall.notified_user,
+                recall.notified_method,
+                recall.follow_up_date,
+                lab_instruction.screening_stain_again,
+                lab_instruction.finalization_stain_again;
+
     ";
 
     // Statement name (unique within the connection session)

@@ -134,70 +134,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <div class=" text-center mt-5 ">
             <h3>Microscopic Details</h3>
         </div>
-        
-            <!-- Patient Information -->
-            <?php
-                // Function to trim "FNA" from the LabNumber
-                function remove_prefix($lab_number) {
-                    return substr($lab_number, 3); // Removes the first three characters
-                }
 
-                $trimmedLabNumber = remove_prefix($LabNumber); // Remove the "FNA" prefix
-
-                // Fetch patient information using the trimmed LabNumber
-                $patient_information = get_patient_details_information($trimmedLabNumber);
-                
-            ?>
-            
-            <!-- Patient Information -->
-            <div >
-                    <?php 
-                       
-                        foreach ($patient_information as $list) {
-                            $genderOptions = [
-                                '1' => 'Male',
-                                '2' => 'Female',
-                                '3' => 'Other'
-                            ];
-                            $currentGender = $list['Gender'];
-                            
-                            print('
-                            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
-                                <tbody>
-                                    <tr>
-                                        <td style="padding: 8px; border: none;">Lab Number:  '. $LabNumber .'</td>
-                                        <td style="padding: 8px; border: none;">
-                                            Name: ' . $list['name'] . '
-                                        </td> 
-                                    
-                                        <td style="padding: 8px; border: none;">
-                                            Address: ' . $list['address'] . '
-                                        </td>
-                                        <td style="padding: 8px; border: none;">
-                                            Phone: ' . $list['phone'] . '
-                                        </td> 
-                                        <td style="padding: 8px; border: none;">
-                                            Attendant Number: ' . $list['fax'] . '
-                                        </td> 
-                                        
-                                        <td style="padding: 8px; border: none;">
-                                            Age: ' . $list['Age'] . '
-                                        </td> 
-                                        
-                                        <td style="padding: 8px; border: none;">
-                                            Gender: ' . htmlspecialchars($genderOptions[$currentGender]) . '
-                                        </td>
-                                        
-                                    </tr>
-                                </tbody>
-                            </table>
-                            ');
-                        }
-                      
-                    ?>
-            </div>
-
-            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+        <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
                 <tbody>
                     <?php
                     session_start();
@@ -214,13 +152,75 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     foreach ($records as $record) {
                         echo "<tr>
                             
-                            <td style='padding: 8px; border: none;'><b>Aspirate By</b>: {$record['doctor']}&nbsp;&nbsp;&nbsp;&nbsp;<b>Assistant</b>:   {$record['assistant']}</td>
+                            <td style='padding: 8px; border: none; font-size:20px;'><b>Aspirate By</b>: {$record['doctor']}&nbsp;&nbsp;&nbsp;&nbsp;<b>Assistant</b>:   {$record['assistant']}</td>
                            
                         </tr>";
                     }
                     ?>
                 </tbody>
-            </table>
+        </table>
+        
+            <!-- Patient Information -->
+            <?php
+                // Function to trim "FNA" from the LabNumber
+                function remove_prefix($lab_number) {
+                    return substr($lab_number, 3); // Removes the first three characters
+                }
+
+                $trimmedLabNumber = remove_prefix($LabNumber); // Remove the "FNA" prefix
+
+                // Fetch patient information using the trimmed LabNumber
+                $patient_information = get_patient_details_information($trimmedLabNumber);
+                
+            ?>
+            
+            <!-- Patient Information -->
+            <div style="margin-top:-20px;">
+                    <?php 
+                       
+                        foreach ($patient_information as $list) {
+                            $genderOptions = [
+                                '1' => 'Male',
+                                '2' => 'Female',
+                                '3' => 'Other'
+                            ];
+                            $currentGender = $list['Gender'];
+                            
+                            print('
+                            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 8px; border: none; font-size:20px;"><b>Lab Number:</b>&nbsp;'. $trimmedLabNumber .'</td>
+                                        <td style="padding: 8px; border: none; font-size:20px;">
+                                           <b> Name: '.$list['name'].'</b>
+                                        </td> 
+                                        <td style="padding: 8px; border: none; font-size:20px;">
+                                           <b>Age: ' . $list['Age'] . '</b>
+                                        </td>
+                                        <td style="padding: 8px; border: none; font-size:20px;">
+                                           <b> Gender: '.htmlspecialchars($genderOptions[$currentGender]).' </b>
+                                        </td>
+                                    
+                                        
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                            ');
+                        }
+                      
+                    ?>
+            </div>
+
+            <!-- <td style="padding: 8px; border: none;">
+                                            Address: ' . $list['address'] . '
+                                        </td>
+                                        <td style="padding: 8px; border: none;">
+                                            Phone: ' . $list['phone'] . '
+                                        </td> 
+                                        <td style="padding: 8px; border: none;">
+                                            Attendant Number: ' . $list['fax'] . '
+                                        </td>  -->
 
 
             <!-- Clinical Information -->
@@ -234,20 +234,20 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php else: ?>
                             <?php foreach ($clinicalInformation as $info): ?>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">C/C</th>
-                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['chief_complain']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">C/C:</th>
+                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['chief_complain']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">H/O</th>
-                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">H/O:</th>
+                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">O/E</th>
-                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['on_examination']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">O/E:</th>
+                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['on_examination']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none;">C/I</th>
-                                    <td style="padding: 8px; border: none;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">C/I:</th>
+                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -300,19 +300,19 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <tr><td colspan="6"></td></tr>
                         <?php else: ?>
                             <tr>
-                                <td style="padding: 8px; border: none;">
-                                    <b>A/M</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
+                                <td style="padding: 8px; border: none; font-size:20px;">
+                                    <b>A/M:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
                                 </td>
                                 <!-- Location: Show all unique locations as a comma-separated list -->
-                                <td colspan="2" style="padding: 8px; border: none;">
-                                   <b>Location</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $locations) ?>
+                                <td colspan="2" style="padding: 8px; border: none; font-size:20px;">
+                                   <b>Location:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $locations) ?>
                                 </td>
-                                <td colspan="2" style="padding: 8px; border: none;">
-                                    <b>Slide</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $dryNoCount ?>+<?= $dryYesCount ?>
+                                <td colspan="2" style="padding: 8px; border: none; font-size:20px;">
+                                    <b>Slide:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $dryNoCount ?>+<?= $dryYesCount ?>
                                 </td>
                                 
-                                <td style="padding: 8px; border: none;">
-                                    <b>Special Instructions</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $specialInstructions) ?>
+                                <td style="padding: 8px; border: none; font-size:20px;">
+                                    <b>Special Instructions:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $specialInstructions) ?>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -348,8 +348,8 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
                             // Create a row for each field and its value
                             echo '<tr>';
-                            echo '<th style="text-align: left; padding: 8px; border: none;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
-                            echo '<td style="padding: 8px; border: none;">' . htmlspecialchars($value) . '</td>';
+                            echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
+                            echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars($value) . '</td>';
                             echo '</tr>';
                         }
 
@@ -400,14 +400,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none;" margin-top:400px;>';
 
                         echo '<tr>';
-                        echo '<th style="text-align: left; padding: 8px; border: none;">Location</th>';
-                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['location'])) . '</td>';
-                        echo '<th style="text-align: left; padding: 8px; border: none;">Slide</th>';
-                        echo '<td style="padding: 8px; border: none;">' . $dry_no_count . ' + ' . $dry_yes_count . '</td>'; // No count + Yes count
-                        echo '<th style="text-align: left; padding: 8px; border: none;">Aspiration Materials</th>';
-                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['aspiration_materials'])) . '</td>';
-                        echo '<th style="text-align: left; padding: 8px; border: none;">Special Instructions</th>';
-                        echo '<td style="padding: 8px; border: none;">' . htmlspecialchars(implode(', ', $aggregated_data['special_instructions'])) . '</td>';
+                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Location:</th>';
+                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['location'])) . '</td>';
+                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Slide:</th>';
+                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . $dry_no_count . ' + ' . $dry_yes_count . '</td>'; // No count + Yes count
+                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Aspiration Materials:</th>';
+                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['aspiration_materials'])) . '</td>';
+                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Special Instructions:</th>';
+                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['special_instructions'])) . '</td>';
                         echo '</tr>';
                         echo '</table>';
                     } else {
@@ -449,7 +449,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     <div class="diagnosis-container" style="display: flex; gap: 20px; align-items: flex-start;">
                         <!-- Previous Diagnosis -->
                         <div class="form-group" style="flex: 1;">
-                            <label for="previous-diagnosis">Previous A/N:</label>
+                            <label for="previous-diagnosis">Previous Microscopic Description and Diagnosis:</label>
                             <textarea id="previous-diagnosis" name="previous_diagnosis" class="form-control" rows="3" readonly>
                                 <?php
                                 if (!empty($diagnosis_entry['previous_diagnosis'])) {
@@ -462,7 +462,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                         echo "Updated by: " . $entry['updated_user'] . "\n\n";
                                     }
                                 } else {
-                                    echo "No previous diagnosis available.";
+                                    echo "No previous  microscopic description and diagnosis available.";
                                 }
                                 ?>
                             </textarea>
@@ -472,13 +472,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         
                         <!--  Diagnosis -->
                         <div class="form-group" style="flex: 1;">
-                            <label for="diagnosis">A/N:</label>
+                            <label for="diagnosis">Edit Microscopic Description and Diagnosis:</label>
                             <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" required>
                                 <?php
                                     if (!empty($diagnosis_entry['diagnosis'])) {
                                         echo htmlspecialchars($diagnosis_entry['diagnosis']);
                                     } else {
-                                        echo "No current diagnosis available.";
+                                        echo "No current microscopic description and diagnosis available.";
                                     }
                                 ?>
                             </textarea>
