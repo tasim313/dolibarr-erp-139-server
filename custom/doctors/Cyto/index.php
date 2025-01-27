@@ -264,9 +264,86 @@ switch (true) {
             line-height: 30px;
             text-align: center;
         }
-
-
     </style>
+    <style>
+        .status-table-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 auto;
+            padding: 10px;
+            width: 100%;
+            box-sizing: border-box; /* Ensure padding does not affect width */
+        }
+
+        .status-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 1200px; /* Limit the maximum width of the table */
+            margin: 0 auto;
+        }
+
+        .status-table td {
+            padding: 8px 12px;
+            text-align: left;
+            vertical-align: top;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .field-name {
+            font-weight: bold;
+            width: 10%; /* Default width for field name */
+            word-wrap: break-word; /* Prevent text overflow */
+        }
+
+        .field-value {
+            width: 90%; /* Default width for field value */
+            word-wrap: break-word; /* Prevent text overflow */
+        }
+
+        .status-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Media Queries for Small Screens */
+        @media screen and (max-width: 768px) {
+            .status-table-container {
+                padding: 10px 5px;
+            }
+
+            .status-table {
+                font-size: 14px; /* Smaller text for smaller screens */
+            }
+
+            .field-name {
+                width: 40%; /* Adjust column width for small screens */
+            }
+
+            .field-value {
+                width: 60%; /* Adjust column width for small screens */
+            }
+        }
+
+        /* Media Queries for Extra Small Screens */
+        @media screen and (max-width: 480px) {
+            .status-table {
+                font-size: 12px; /* Even smaller text for extra-small screens */
+            }
+
+            .status-table td {
+                padding: 6px; /* Reduce padding */
+            }
+
+            .field-name {
+                width: 50%; /* Increase field name width for better alignment */
+            }
+
+            .field-value {
+                width: 50%; /* Match the field value width */
+            }
+        }
+    </style>
+
 </head>
 <body>
     
@@ -381,7 +458,7 @@ switch (true) {
 
             <!-- Right Side Section -->
             <div class="col-md-6 " id="status-tab" style="display: none;"> 
-                <div style="margin-right:20px; margin-left:-400px;">
+                <div class="container" style="margin-right:20px; margin-left:-400px;">
                     <?php
                         $statusLabNumberWithFNA = "FNA" . $LabNumber;
                         $status_list = cyto_status_list_doctor_module($statusLabNumberWithFNA);
@@ -409,14 +486,14 @@ switch (true) {
                             if (empty($status_list)) {
                                 echo "<div>No data available for lab number: " . htmlspecialchars($statusLabNumberWithFNA) . "</div>";
                             } else {
-                                echo "<table class='container table' style=\"border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;\">";
+                                echo "<table class='container table' style=\"border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px; border-spacing: 10px;\">";
                                 foreach ($status_list[0] as $field => $value) {
                                     if (in_array($field, $excluded_fields)) continue;
                                     if (is_null($value) || $value === '' || $value === [] || trim($value) === '') continue;
 
                                     echo "<tr>";
                                     $display_name = $field_name_mapping[$field] ?? ucwords(str_replace('_', ' ', $field));
-                                    echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($display_name) . "</td>";
+                                    echo "<td class='field-name' style='padding: 4px; border: none;'>" . htmlspecialchars($display_name) . "</td>";
                                     
                                     if ($field == 'follow_up_date') {
                                         // Handle follow_up_date field formatting
@@ -424,9 +501,9 @@ switch (true) {
                                             $follow_up_timestamp = new DateTime($value, new DateTimeZone('UTC'));
                                             $follow_up_timestamp->setTimezone(new DateTimeZone('Asia/Dhaka'));
                                             $formatted_follow_up_date = $follow_up_timestamp->format('j F, Y g:i A');
-                                            echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($formatted_follow_up_date) . "</td>";
+                                            echo "<td class='field-value' style='padding: 4px; border: none;'>" . htmlspecialchars($formatted_follow_up_date) . "</td>";
                                         } catch (Exception $e) {
-                                            echo "<td style='padding: 4px; border: none;'>Invalid Date</td>";
+                                            echo "<td class='field-value' style='padding: 4px; border: none;'>Invalid Date</td>";
                                         }
                                     }
                                     else if (in_array($field, ['screening_done_count_data', 'finalization_done_count_data'])) {
@@ -447,7 +524,7 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo "<td style='padding: 8px; border: none;'>" . $formatted_data . "</td>";
+                                        echo "<td class='field-value' style='padding: 4px; border: none;'>" . $formatted_data . "</td>";
                                     } else if (in_array($field, ['recall_reason'])) {
                                         $formatted_recall_reasons = '';
                                         if ($field == 'recall_reason') {
@@ -463,7 +540,7 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo "<td style='padding: 4px; border: none;'>" . $formatted_recall_reasons . "</td>";
+                                        echo "<td class='field-value' style='padding: 4px; border: none;'>" . $formatted_recall_reasons . "</td>";
                                     } 
                                     else if (in_array($field, ['screening_stain_again', 'finalization_stain_again'])) {
                                         // Decode JSON and format the data
@@ -502,10 +579,10 @@ switch (true) {
                                                 }
                                             }
                                         }
-                                        echo '<td style=\'padding: 4px; border: none;\'>' . $formatted_data . '</td>';
+                                        echo '<td class="field-value" style=\'padding: 4px; border: none;\'>' . $formatted_data . '</td>';
                                     } 
                                     else {
-                                        echo "<td style='padding: 4px; border: none;'>" . htmlspecialchars($value) . "</td>";
+                                        echo "<td class='field-value' style='padding: 4px; border: none;'>" . htmlspecialchars($value) . "</td>";
                                     }
                                     echo "</tr>";
                                 }
@@ -515,7 +592,6 @@ switch (true) {
                     ?>
                 </div> 
                 
-
             </div>
             
             
@@ -527,7 +603,7 @@ switch (true) {
                                             <?php 
                                                 $LabNumberWithFNA = "FNA" . $LabNumber;
                                                 $host = $_SERVER['HTTP_HOST'];
-                                                $report_url = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=$LabNumberWithFNA";
+                                                $report_url = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=$LabNumberWithFNA&username=$loggedInUsername";
                                             ?>             
                                         </div>
                                 </div>
@@ -2013,6 +2089,7 @@ switch (true) {
     });
 
 </script>
+
 
 
 <?php 
