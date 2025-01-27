@@ -1156,6 +1156,7 @@ if (pg_num_rows($additional_special_instructions_result) > 0) {
 // Write the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
 
+
 // Calculate space for Diagnosis Description
 $diagnosisDescriptionHeight = $pdf->getStringHeight($html, '', $pdf->getPageWidth());
 

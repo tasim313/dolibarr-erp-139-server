@@ -1032,7 +1032,13 @@ function cyto_status_list_doctor_module($lab_number) {
                 doctor_case.finalization_doctor_name,
                 complete_case.screening_done_count_data,
                 complete_case.finalization_done_count_data,
-                STRING_AGG(CONCAT(slide_prepared.created_user, ' ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM')), '; ') AS slide_prepared_by,
+                STRING_AGG(
+                    DISTINCT CASE 
+                        WHEN slide_prepared.created_user IS NULL OR slide_prepared.created_user = '' THEN NULL
+                        ELSE CONCAT(slide_prepared.created_user, ' ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM'))
+                    END, 
+                    '; '
+                ) AS slide_prepared_by,
                 recall.recall_reason,
                 recall.recalled_doctor,
                 recall.notified_user,
@@ -1049,11 +1055,16 @@ function cyto_status_list_doctor_module($lab_number) {
                     '; '
                 ) AS special_instructions_data,
                 STRING_AGG(
-                    DISTINCT CONCAT(
-                        'Slide Number: ', centrifuge.slide_number, 
-                        ', Created By: ', centrifuge.created_user, 
-                        ', Created Date: ', TO_CHAR(centrifuge.created_date, 'FMDD \"January\", YYYY HH12:MI AM')
-                    ),
+                    CASE 
+                        WHEN centrifuge.slide_number IS NULL OR centrifuge.created_user IS NULL 
+                            OR centrifuge.slide_number = '' OR centrifuge.created_user = '' 
+                        THEN NULL
+                        ELSE CONCAT(
+                            'Slide Number: ', centrifuge.slide_number, 
+                            ', Created By: ', centrifuge.created_user, 
+                            ', Created Date: ', TO_CHAR(centrifuge.created_date, 'FMDD \"January\", YYYY HH12:MI AM')
+                        )
+                    END, 
                     '; '
                 ) AS centrifuge_new_slide_prepared
 
