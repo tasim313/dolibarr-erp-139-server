@@ -338,7 +338,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             <!-- Fixation Details -->
             
         
-                    <div class="mt-4">
+                    <!-- <div class="mt-4">
                         <?php 
                             $fixationInformation = get_cyto_fixation_details($cyto_id);
                             
@@ -388,12 +388,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <?php endif; ?>
                             </tbody>
                         </table>
-                    </div>
+                    </div> -->
             
             <!-- Recall -->
             <?php 
-             
-             echo("<h3>Recall Information</h3><br>");
+        
              $formatted_LabNumber = substr($LabNumber, 3);
              $recall_status = cyto_recall_lab_number($formatted_LabNumber);
              
@@ -404,6 +403,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         // Check if we have valid data or an error message
                         if (is_array($recall_clinical_information)) {
                             // If data is found, create a table to display it
+                            echo("<h3>Recall Information</h3><br>");
                             echo '<table class="table table-bordered table-striped">';
                             
                             // List of fields to exclude
@@ -503,7 +503,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 if (!empty($diagnosis_by_doctor) && isset($diagnosis_by_doctor[0])) {
                     // Display the data in a table
                     echo '<table class="table table-bordered table-striped">';
-                    echo '<tr><th>Diagnosis</th><th>Previous Diagnosis</th></tr>';
+                    echo '<tr><th>Microscopic Description And Diagnosis</th></tr>';
 
                     // Loop through the diagnosis data and display in the table
                     foreach ($diagnosis_by_doctor as $diagnosis) {
@@ -524,9 +524,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             }
 
                             // Display the formatted previous diagnosis data
-                            echo '<td>' . $previousDiagnosisText . '</td>';
+                            // echo '<td>' . $previousDiagnosisText . '</td>';
                         } else {
-                            echo '<td>No previous diagnosis available.</td>';
+                            echo '<td></td>';
                         }
 
                         echo '</tr>';
@@ -535,7 +535,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     echo '</table>';
                 } else {
                     // If no data is found, do not display the table
-                    echo '<p>No diagnosis information found for this lab number.</p>';
+                    echo '<p></p>';
                 }
             ?>
 
