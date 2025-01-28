@@ -85,34 +85,40 @@ function get_cyto_patient_history_list($labnumber) {
             e.other_labno, 
             e.referred_by_dr_text, 
             e.referredfrom_text, 
-            -- Subquery for e.referred_by_dr
-            (SELECT lastname 
-            FROM llx_socpeople sp1
-            WHERE sp1.rowid IN (
-                SELECT fk_socpeople 
-                FROM llx_categorie_contact 
-                WHERE fk_categorie = 3
-            ) 
-            AND sp1.rowid = e.referred_by_dr::integer
-            ) AS referred_by_dr_lastname,
-            -- Subquery for e.referred_from
-            (SELECT lastname 
-            FROM llx_socpeople sp2
-            WHERE sp2.rowid IN (
-                SELECT fk_socpeople 
-                FROM llx_categorie_contact 
-                WHERE fk_categorie = 4
-            ) 
-            AND sp2.rowid = e.referred_from::integer
-            ) AS referred_from_lastname
-            FROM 
-                llx_commande_extrafields e
-            JOIN 
-                llx_commande c
-            ON 
-                c.rowid = e.fk_object
-            WHERE 
-                c.ref = $1
+            -- Subquery for e.referred_by_dr with CASE to handle invalid values
+            (CASE 
+                WHEN e.referred_by_dr ~ '^\d+$' 
+                THEN (SELECT lastname 
+                    FROM llx_socpeople sp1
+                    WHERE sp1.rowid IN (
+                        SELECT fk_socpeople 
+                        FROM llx_categorie_contact 
+                        WHERE fk_categorie = 3
+                    ) 
+                    AND sp1.rowid = e.referred_by_dr::integer)
+                ELSE NULL
+            END) AS referred_by_dr_lastname,
+            -- Subquery for e.referred_from with CASE to handle invalid values
+            (CASE 
+                WHEN e.referred_from ~ '^\d+$' 
+                THEN (SELECT lastname 
+                    FROM llx_socpeople sp2
+                    WHERE sp2.rowid IN (
+                        SELECT fk_socpeople 
+                        FROM llx_categorie_contact 
+                        WHERE fk_categorie = 4
+                    ) 
+                    AND sp2.rowid = e.referred_from::integer)
+                ELSE NULL
+            END) AS referred_from_lastname
+        FROM 
+            llx_commande_extrafields e
+        JOIN 
+            llx_commande c
+        ON 
+            c.rowid = e.fk_object
+        WHERE 
+            c.ref = $1
     ";
 
     // Execute the query with parameterized values
