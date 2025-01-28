@@ -245,7 +245,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <th style="text-align: left; padding: 8px; border: none; font-size:20px;">O/E:</th>
                                     <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['on_examination']) ?></td>
                                 </tr>
-                                <tr>
+                                <tr id="clinical_impression">
                                     <th style="text-align: left; padding: 8px; border: none; font-size:20px;">C/I:</th>
                                     <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
                                 </tr>
@@ -294,12 +294,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     }
                 ?>
 
-                <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+                <table class="table" id="fixation-details-table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
                     <tbody>
                         <?php if (empty($fixationInformation)): ?>
                             <tr><td colspan="6"></td></tr>
                         <?php else: ?>
                             <tr>
+                                <h4>Aspiration Notes</h4><br>
                                 <td style="padding: 8px; border: none; font-size:20px;">
                                     <b>A/M:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
                                 </td>
@@ -500,9 +501,31 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </body>
 </html>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Select the C/I row using its ID
+        const ciRow = document.querySelector("tr#clinical_impression");
 
+        // Select the second table and its tbody
+        const secondTable = document.querySelector("#fixation-details-table");
+        const secondTableBody = secondTable ? secondTable.querySelector("tbody") : null;
 
+        if (ciRow && secondTableBody) {
+            // Clone the C/I row to preserve the original
+            const clonedCiRow = ciRow.cloneNode(true);
 
+            // Append the cloned row to the second table's body
+            secondTableBody.appendChild(clonedCiRow);
+
+            // Remove the original C/I row from the first table
+            ciRow.remove();
+
+            console.log("C/I row moved successfully.");
+        } else {
+            console.error("C/I row or second table tbody not found.");
+        }
+    });
+</script>
 
 
 <?php 

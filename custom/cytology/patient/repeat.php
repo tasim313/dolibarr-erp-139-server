@@ -222,12 +222,12 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
         <!-- Left-side buttons -->
         <div style="display: flex; gap: 10px;">
             <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Back</a>
-            <a href="./recall.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-info btn-md">Recall</a>
+            <!-- <a href="./recall.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-info btn-md">Recall</a> -->
         </div>
         <!-- Right-side button -->
         <div>
-            <a href="./postponed.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-warning btn-md">Postpone FNAC</a> &nbsp; &nbsp; &nbsp;
-            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a>
+            <!-- <a href="./postponed.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-warning btn-md">Postpone FNAC</a> &nbsp; &nbsp; &nbsp;
+            <a href="./cancel.php?LabNumber=<?php echo urlencode($LabNumber); ?>" class="btn btn-danger btn-md">Cancel FNAC</a> -->
         </div>
     </div>
 
