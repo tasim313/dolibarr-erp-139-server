@@ -109,8 +109,8 @@ switch (true) {
 }
 
 $host = $_SERVER['HTTP_HOST'];
-$homeUrl = "http://" . $host . "/custom/transcription/FNA/index.php";
-$reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNumber=" . urlencode($LabNumber) . "&username=" . urlencode($loggedInUsername);
+$homeUrl = "http://" . $host . "/custom/doctors/doctorsindex.php";
+$reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . urlencode($LabNumber) . "&username=" . urlencode($loggedInUsername);
 
 ?>
 
@@ -234,20 +234,16 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php else: ?>
                             <?php foreach ($clinicalInformation as $info): ?>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">C/C:</th>
-                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['chief_complain']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:18px;">C/C:</th>
+                                    <td style="padding: 8px; border: none; font-size:16px;"><?= htmlspecialchars($info['chief_complain']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">H/O:</th>
-                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:16px;">H/O:</th>
+                                    <td style="padding: 8px; border: none; font-size:16px;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></td>
                                 </tr>
                                 <tr>
-                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">O/E:</th>
-                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['on_examination']) ?></td>
-                                </tr>
-                                <tr id="clinical_impression">
-                                    <th style="text-align: left; padding: 8px; border: none; font-size:20px;">C/I:</th>
-                                    <td style="padding: 8px; border: none; font-size:20px;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
+                                    <th style="text-align: left; padding: 8px; border: none; font-size:16px;">O/E:</th>
+                                    <td style="padding: 8px; border: none; font-size:16px;"><?= htmlspecialchars($info['on_examination']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -294,31 +290,73 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     }
                 ?>
 
-                <table class="table" id="fixation-details-table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+                <table class="table" id="fixation-details-table" style="border-collapse: collapse; width: 100%; border-top: none;  margin-top:-15px;">
                     <tbody>
                         <?php if (empty($fixationInformation)): ?>
-                            <tr><td colspan="6"></td></tr>
+                            <tr><td colspan="2"></td></tr>
                         <?php else: ?>
                             <tr>
-                                <h4>Aspiration Notes</h4><br>
-                                <td style="padding: 8px; border: none; font-size:20px;">
+                                
+                                <td  style="padding: 8px; border: none; font-size:16px;">
                                     <b>A/M:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
                                 </td>
-                                <!-- Location: Show all unique locations as a comma-separated list -->
-                                <td colspan="2" style="padding: 8px; border: none; font-size:20px;">
-                                   <b>Location:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $locations) ?>
-                                </td>
-                                <td colspan="2" style="padding: 8px; border: none; font-size:20px;">
-                                    <b>Slide:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $dryNoCount ?>+<?= $dryYesCount ?>
-                                </td>
-                                
-                                <td style="padding: 8px; border: none; font-size:20px;">
-                                    <b>Special Instructions:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $specialInstructions) ?>
-                                </td>
+                              
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
+
+                <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-15px;">
+                        <?php if (empty($clinicalInformation)): ?>
+                            <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
+                        <?php else: ?>
+                            <?php foreach ($clinicalInformation as $info): ?>
+                                <tr id="clinical_impression">
+                                    <th style="text-align: left; padding: 2px; font-size:16px; white-space: nowrap; width: 5%; border: none;">C/I:</th>
+                                    <td style="padding: 2px; font-size:16px; border: none;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                </table><br>
+
+                <?php
+                    // Remove empty values from the array
+                    $cleanedLocations = array_filter(array_map('trim', $locations));
+                    $cleanedSpecialInstructions = array_filter(array_map('trim', $specialInstructions));
+
+                    // Ensure values are properly checked
+                    $showLocation = !empty($cleanedLocations);
+                    $showSlide = !empty($dryNoCount) || !empty($dryYesCount);
+                    $showSpecialInstructions = !empty($cleanedSpecialInstructions);
+
+                    // If at least one section has data, display the table
+                    if ($showLocation || $showSlide || $showSpecialInstructions): ?>
+                        <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+                            <tbody>
+                                <tr>
+                                    <?php if ($showLocation): ?>
+                                        <td style="padding: 8px; border: none; font-size:18px;">
+                                            <b>Location:</b> <?= htmlspecialchars(implode(', ', $cleanedLocations)) ?>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <?php if ($showSlide): ?>
+                                        <td style="padding: 8px; border: none; font-size:18px;">
+                                            <b>Slide:</b> <?= htmlspecialchars($dryNoCount) ?>+<?= htmlspecialchars($dryYesCount) ?>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <?php if ($showSpecialInstructions): ?>
+                                        <td style="padding: 8px; border: none; font-size:18px;">
+                                            <b>Special Instructions:</b> <?= htmlspecialchars(implode(', ', $cleanedSpecialInstructions)) ?>
+                                        </td>
+                                    <?php endif; ?>
+                                </tr>
+                            </tbody>
+                        </table>
+                <?php endif; ?>
+
+
        
             </div>
 
@@ -501,31 +539,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </body>
 </html>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Select the C/I row using its ID
-        const ciRow = document.querySelector("tr#clinical_impression");
 
-        // Select the second table and its tbody
-        const secondTable = document.querySelector("#fixation-details-table");
-        const secondTableBody = secondTable ? secondTable.querySelector("tbody") : null;
-
-        if (ciRow && secondTableBody) {
-            // Clone the C/I row to preserve the original
-            const clonedCiRow = ciRow.cloneNode(true);
-
-            // Append the cloned row to the second table's body
-            secondTableBody.appendChild(clonedCiRow);
-
-            // Remove the original C/I row from the first table
-            ciRow.remove();
-
-            console.log("C/I row moved successfully.");
-        } else {
-            console.error("C/I row or second table tbody not found.");
-        }
-    });
-</script>
 
 
 <?php 

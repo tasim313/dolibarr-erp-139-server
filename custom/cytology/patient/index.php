@@ -556,7 +556,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <!-- Site of Aspiration -->
                             <div class="form-group">
                                 <label for="site-of-aspiration-editor">O/E:</label>
-                                <textarea id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" rows="10" placeholder="Enter on examination note"></textarea>
+                                <textarea id="site-of-aspiration-editor" name="site-of-aspiration-editor" class="form-control" rows="5" placeholder="Enter on examination note"></textarea>
                                 <ul id="examination-suggestions-list" style="position: absolute; background: white; border: 1px solid #ccc; 
                                  max-height: 150px; overflow-y: auto; display: none; list-style: none; padding: 0; margin: 0; z-index: 10;"></ul>
                             </div>
@@ -687,11 +687,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                         id="clinical-impression" 
                                         name="clinical_impression" 
                                         class="form-control" 
-                                        rows="5" 
+                                        rows="2" 
                                         placeholder="Enter clinical impression here..."
-                                        style="resize: none;"
                                     ></textarea>
-                                    <ul id="clinical-impression-suggestions" style="list-style-type: none; padding: 0; margin: 0; position: absolute; width: 100%; background: white; border: 1px solid #ccc; display: none;"></ul>
+                                    <ul id="clinical-impression-suggestions" style="position: absolute; background: white; border: 1px solid #ccc; 
+                                 max-height: 150px; overflow-y: auto; display: none; list-style: none; padding: 0; margin: 0; z-index: 10;"></ul>
                                     </div>
                             </div>
 
@@ -1493,6 +1493,28 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 }
             }
         }
+    });
+</script>
+
+<!-- Local Storage allows you to store user input in the browser  -->
+<script>
+     document.addEventListener("DOMContentLoaded", function () {
+            const inputFields = document.querySelectorAll("input, textarea, select"); // Select all input, textarea, and select elements
+
+            // Load saved data from localStorage
+            inputFields.forEach(field => {
+                const savedValue = localStorage.getItem(field.id); // Use the input's ID as the key
+                if (savedValue !== null) {
+                    field.value = savedValue;
+                }
+
+                // Save data to localStorage on input change
+                field.addEventListener("input", () => {
+                    localStorage.setItem(field.id, field.value);
+                });
+            });
+
+            console.log("Inputs restored from localStorage.");
     });
 </script>
 
