@@ -369,6 +369,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     <tr>
                                         <form id="cyto-clinical-information-update" method="post" action="../Cyto/patient_clinical_info_update.php">
                                             <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
+                                            <input type="hidden" name="username" value="<?= $loggedInUsername ?>">
                                             <td>
                                                 <textarea class="form-control" name="chief_complain" data-rowid="<?= $info['rowid'] ?>" data-field="chief_complain"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
                                             </td>
