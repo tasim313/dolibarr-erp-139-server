@@ -1498,25 +1498,46 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 <!-- Local Storage allows you to store user input in the browser  -->
 <script>
-     document.addEventListener("DOMContentLoaded", function () {
-            const inputFields = document.querySelectorAll("input, textarea, select"); // Select all input, textarea, and select elements
+    document.addEventListener("DOMContentLoaded", function () {
+        const labNumber = "<?php echo $_GET['LabNumber'] ?? ''; ?>"; // Get LabNumber from PHP
+        const storageKey = `formData_${labNumber}`; // Unique key for each LabNumber
+        const inputFields = document.querySelectorAll("input, textarea, select"); // Select all form fields
 
-            // Load saved data from localStorage
+        // Load saved data for this LabNumber
+        if (localStorage.getItem(storageKey)) {
+            const savedData = JSON.parse(localStorage.getItem(storageKey));
             inputFields.forEach(field => {
-                const savedValue = localStorage.getItem(field.id); // Use the input's ID as the key
-                if (savedValue !== null) {
-                    field.value = savedValue;
+                if (savedData[field.id]) {
+                    field.value = savedData[field.id];
                 }
-
-                // Save data to localStorage on input change
-                field.addEventListener("input", () => {
-                    localStorage.setItem(field.id, field.value);
-                });
             });
+            console.log(`Data restored for LabNumber: ${labNumber}`);
+        } else {
+            console.log(`No stored data for LabNumber: ${labNumber}, showing empty form.`);
+        }
 
-            console.log("Inputs restored from localStorage.");
+        // Save data on input change
+        inputFields.forEach(field => {
+            field.addEventListener("input", () => {
+                const formData = {};
+                inputFields.forEach(f => {
+                    formData[f.id] = f.value;
+                });
+                localStorage.setItem(storageKey, JSON.stringify(formData));
+            });
+        });
+
+        // Clear stored data when the form is submitted
+        const form = document.querySelector("form");
+        if (form) {
+            form.addEventListener("submit", function () {
+                localStorage.removeItem(storageKey);
+                console.log(`LocalStorage cleared for LabNumber: ${labNumber}`);
+            });
+        }
     });
 </script>
+
 
 
 
