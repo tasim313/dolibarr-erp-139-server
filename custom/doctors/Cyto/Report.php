@@ -799,14 +799,11 @@ $html .= implode('<br/>', $aspiration_materials_rows);
 $html .= '</td></tr>';
 }
 
-// Add location
+/// Add location
+$location_rows = [];
+
 // Check if there are rows in the result
 if (pg_num_rows($location_result) > 0) {
-    $html .= '<tr>
-            <th style="width: 12%;"><b>Aspiration:</b></th>
-            <td style="width: 88%;">';
-
-    $location_rows = [];
     while ($row = pg_fetch_assoc($location_result)) {
         // Normalize <br> tags: collapse multiple <br> to a single <br>
         $location = $row['location'];
@@ -821,16 +818,22 @@ if (pg_num_rows($location_result) > 0) {
         // Trim to remove leading and trailing whitespace
         $location = trim($location);
 
-        // Add the formatted Aspiration Note to the rows
-        $location_rows[] = $location;
+        // Add to the list if not empty
+        if (!empty($location)) {
+            $location_rows[] = $location;
+        }
     }
+}
 
-    // Remove duplicate locations
-    $unique_locations = array_unique($location_rows);
+// Remove duplicate locations
+$unique_locations = array_unique($location_rows);
 
-    // Combine the unique rows with <br/> for output
-    $html .= implode('<br/>', $unique_locations);
-    $html .= '</td></tr>';
+// **Only display the row if there are non-empty locations**
+if (!empty($unique_locations)) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>Aspiration:</b></th>
+            <td style="width: 88%;">' . implode('<br/>', $unique_locations) . '</td>
+        </tr>';
 }
 
 
@@ -872,13 +875,10 @@ if (pg_num_rows($slide_number_result) > 0) {
 
 
 // Add special_instructions
+$special_instructions_rows = [];
+
 // Check if there are rows in the result
 if (pg_num_rows($special_instructions_result) > 0) {
-    $html .= '<tr>
-            <th style="width: 12%;"><b>S/I:</b></th>
-            <td style="width: 88%;">';
-
-    $special_instructions_rows = [];
     while ($row = pg_fetch_assoc($special_instructions_result)) {
         // Normalize <br> tags: collapse multiple <br> to a single <br>
         $special_instructions = $row['special_instructions'];
@@ -893,16 +893,22 @@ if (pg_num_rows($special_instructions_result) > 0) {
         // Trim to remove leading and trailing whitespace
         $special_instructions = trim($special_instructions);
 
-        // Add the formatted Aspiration Note to the rows
-        $special_instructions_rows[] = $special_instructions;
+        // Add to the list if not empty
+        if (!empty($special_instructions)) {
+            $special_instructions_rows[] = $special_instructions;
+        }
     }
+}
 
-    // Remove duplicate special_instructions
-    $unique_special_instructions = array_unique($special_instructions_rows);
+// Remove duplicate special_instructions
+$unique_special_instructions = array_unique($special_instructions_rows);
 
-    // Combine the unique rows with <br/> for output
-    $html .= implode('<br/>', $unique_special_instructions);
-    $html .= '</td></tr>';
+// **Only display the row if there are non-empty special_instructions**
+if (!empty($unique_special_instructions)) {
+    $html .= '<tr>
+            <th style="width: 12%;"><b>S/I:</b></th>
+            <td style="width: 88%;">' . implode('<br/>', $unique_special_instructions) . '</td>
+        </tr>';
 }
 
 

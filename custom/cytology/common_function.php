@@ -1041,7 +1041,14 @@ function cyto_status_list_doctor_module($lab_number) {
                 STRING_AGG(
                     DISTINCT CASE 
                         WHEN slide_prepared.created_user IS NULL OR slide_prepared.created_user = '' THEN NULL
-                        ELSE CONCAT(slide_prepared.created_user, ' ', TO_CHAR(slide_prepared.created_date, 'FMDD \"January\", YYYY HH12:MI AM'))
+                        ELSE CONCAT(
+                            slide_prepared.created_user, 
+                            ' ', 
+                            TO_CHAR(
+                                (slide_prepared.created_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Dhaka'), 
+                                'FMDD \"January\", YYYY HH12:MI AM'
+                            )
+                        )
                     END, 
                     '; '
                 ) AS slide_prepared_by,
@@ -1056,22 +1063,27 @@ function cyto_status_list_doctor_module($lab_number) {
                     CASE 
                         WHEN f.special_instructions IS NULL OR f.special_instructions = '' THEN NULL
                         WHEN s.created_user IS NULL THEN CONCAT(f.special_instructions, ' (Not Completed)')
-                        ELSE CONCAT(f.special_instructions, ' (Completed by ', s.created_user, ' ', TO_CHAR(s.created_date, 'FMDD \"January\", YYYY HH12:MI AM'), ')')
+                        ELSE CONCAT(f.special_instructions, ' (Completed by ', s.created_user, ' ', TO_CHAR(
+                            (s.created_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Dhaka'), 
+                            'FMDD \"January\", YYYY HH12:MI AM'), ')')
                     END,
                     '; '
                 ) AS special_instructions_data,
                 STRING_AGG(
-                    CASE 
-                        WHEN centrifuge.slide_number IS NULL OR centrifuge.created_user IS NULL 
-                            OR centrifuge.slide_number = '' OR centrifuge.created_user = '' 
-                        THEN NULL
-                        ELSE CONCAT(
-                            'Slide Number: ', centrifuge.slide_number, 
-                            ', Created By: ', centrifuge.created_user, 
-                            ', Created Date: ', TO_CHAR(centrifuge.created_date, 'FMDD \"January\", YYYY HH12:MI AM')
-                        )
-                    END, 
-                    '; '
+                        CASE 
+                            WHEN centrifuge.slide_number IS NULL OR centrifuge.created_user IS NULL 
+                                OR centrifuge.slide_number = '' OR centrifuge.created_user = '' 
+                            THEN NULL
+                            ELSE CONCAT(
+                                'Slide Number: ', centrifuge.slide_number, 
+                                ', Created By: ', centrifuge.created_user, 
+                                ', Created Date: ', TO_CHAR(
+                                    (centrifuge.created_date AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Dhaka'), 
+                                    'FMDD \"January\", YYYY HH12:MI AM'
+                                )
+                            )
+                        END, 
+                        '; '
                 ) AS centrifuge_new_slide_prepared
 
             FROM 
