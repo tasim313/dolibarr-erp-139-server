@@ -1538,6 +1538,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     });
 </script>
 
+<!-- auto slide generate -->
+<script>
+    document.getElementById("clinical-impression").addEventListener("focus", function() {
+        let aspirationInput = document.getElementById("slides-input").value.trim();
+        
+        if (aspirationInput !== "") {
+            document.getElementById("populate-table").click(); // Automatically trigger the button click
+        }
+    });
+</script>
+
 
 
 

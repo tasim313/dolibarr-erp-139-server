@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $gross_note = pg_escape_string($pg_con, $_POST['gross-note'] ?? '');
     $recall = pg_escape_string($pg_con, $_POST['recall-description'] ?? '');
     $created_user = pg_escape_string($pg_con, $_POST['created_user'] ?? '');
+    $chief_complain = pg_escape_string($pg_con, $_POST['chief-complain'] ?? ''); // Sanitize chief complain input
 
     // Check if the record already exists
     $checkSql = "SELECT rowid FROM llx_cyto_microscopic_description WHERE lab_number = '$LabNumber'";
@@ -29,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 aspiration_notes = '$aspiration_notes',
                 gross_note = '$gross_note',
                 recall = '$recall',
+                chief_complain = '$chief_complain',  -- Update the chief_complain field
                 updated_user = '$created_user',
                 updated_date = NOW()
             WHERE lab_number = '$LabNumber'
@@ -54,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 aspiration_notes,
                 gross_note,
                 recall,
+                chief_complain,   -- Insert the chief_complain field
                 created_user
             )
             VALUES (
@@ -64,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 '$aspiration_notes',
                 '$gross_note',
                 '$recall',
+                '$chief_complain',  -- Insert chief_complain value
                 '$created_user'
             ) RETURNING rowid, lab_number
         ";
