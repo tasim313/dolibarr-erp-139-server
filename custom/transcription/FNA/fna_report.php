@@ -471,7 +471,7 @@ if ($fk_cyto_id_result) {
 }
 
 // Prepare clinical details
-$clinical_details_info = "SELECT chief_complain AS clinical_details FROM llx_cyto_clinical_information WHERE cyto_id = '$fk_cyto_id'";
+$clinical_details_info = "SELECT chief_complain AS clinical_details FROM llx_cyto_microscopic_description WHERE lab_number ='$LabNumber'";
 $clinical_details_result = pg_query($pg_con, $clinical_details_info);
 
 if (!$clinical_details_result) {
@@ -553,12 +553,37 @@ $html = '
 $html .= '<tr>
             <th style="width: 26%;"><b>Clinical Details:</b></th>
             <td style="width: 74%;">';
-$clinical_details_rows = [];
-while ($row = pg_fetch_assoc($clinical_details_result)) {
-    $clinical_details_rows[] = htmlspecialchars($row['clinical_details']);
+
+// Add clinical_details
+// Check if there are rows in the result
+if (pg_num_rows($clinical_details_result) > 0) {
+    $clinical_details_rows = [];
+    while ($row = pg_fetch_assoc($clinical_details_result)) {
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $clinical_details = $row['clinical_details'];
+        $clinical_details = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $clinical_details);
+
+        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        $clinical_details = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $clinical_details);
+
+        // Remove trailing <br> tags if they don't precede text
+        $clinical_details = preg_replace('/<br>\s*$/', '', $clinical_details);
+
+        // Trim to remove leading and trailing whitespace
+        $clinical_details = trim($clinical_details);
+
+        // Add the formatted clinical_details to the rows
+        $clinical_details_rows[] = $clinical_details;
+    }
+
+    // Combine the rows with <br/> for output
+    $html .= implode('<br/>', $clinical_details_rows);
+} else {
+    $html .= 'No clinical details available.';
 }
-$html .= implode('<br/>', $clinical_details_rows);
+
 $html .= '</td></tr>';
+
 
 // Add gross_note
 // Check if there are rows in the result

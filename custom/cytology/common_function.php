@@ -245,7 +245,11 @@ function get_cyto_clinical_information($cyto_id) {
         chief_complain,
         relevant_clinical_history,
         on_examination,
-        clinical_impression 
+        clinical_impression,
+        previous_chief_complain,
+        previous_history,
+        previous_on_examination,
+        previous_clinical_impression
         from llx_cyto_clinical_information where cyto_id = $1 order by rowid ASC";
 
     $result = pg_query_params($pg_con, $sql, [$cyto_id]);
@@ -259,7 +263,11 @@ function get_cyto_clinical_information($cyto_id) {
             'chief_complain' => $row['chief_complain'],
             'relevant_clinical_history' => $row['relevant_clinical_history'],
             'on_examination' => $row['on_examination'],
-            'clinical_impression' => $row['clinical_impression']
+            'clinical_impression' => $row['clinical_impression'],
+            'previous_chief_complain' => $row['previous_chief_complain'],
+            'previous_history' => $row['previous_history'],
+            'previous_on_examination' => $row['previous_on_examination'],
+            'previous_clinical_impression' => $row['previous_clinical_impression']
             ];
         }
 

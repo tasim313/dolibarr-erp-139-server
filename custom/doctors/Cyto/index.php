@@ -465,7 +465,7 @@ switch (true) {
 
             <!-- Right Side Section -->
             <div class="col-md-6 " id="status-tab" style="display: none;"> 
-                <div class="container" style="margin-right:20px; margin-left:-400px;">
+                <div class="container" style="margin-right:20px; margin-left:-100px;">
                     <?php
                         $statusLabNumberWithFNA = "FNA" . $LabNumber;
                         $status_list = cyto_status_list_doctor_module($statusLabNumberWithFNA);

@@ -14,7 +14,8 @@ function cyto_microscopic_description_lab($lab_number) {
                comment,
                aspiration_notes,
                gross_note, 
-               recall
+               recall,
+               chief_complain
         FROM llx_cyto_microscopic_description 
         WHERE lab_number = $1 
         ORDER BY rowid DESC";

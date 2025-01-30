@@ -389,6 +389,70 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             </tbody>
                         </table>
                     </div> -->
+                <?php 
+                        $fixationInformation = get_cyto_fixation_details($cyto_id);
+
+                        // Initialize variables for counting and concatenating
+                        $dryYesCount = 0;
+                        $dryNoCount = 0;
+                        $aspirationMaterials = [];
+                        $specialInstructions = [];
+                        $locations = [];
+
+                        if (!empty($fixationInformation)) {
+                            foreach ($fixationInformation as $info_fixation) {
+                                // Count the dry values
+                                if ($info_fixation['dry'] === 'Yes') {
+                                    $dryYesCount++;
+                                } elseif ($info_fixation['dry'] === 'No') {
+                                    $dryNoCount++;
+                                }
+
+                                // Collect aspiration materials and special instructions for later display
+                                if (!in_array($info_fixation['aspiration_materials'], $aspirationMaterials)) {
+                                    $aspirationMaterials[] = $info_fixation['aspiration_materials'];
+                                }
+                                if (!in_array($info_fixation['special_instructions'], $specialInstructions)) {
+                                    $specialInstructions[] = $info_fixation['special_instructions'];
+                                }
+
+                                // Collect unique locations
+                                if (!in_array($info_fixation['location'], $locations)) {
+                                    $locations[] = $info_fixation['location'];
+                                }
+                            }
+                        }
+                ?>
+                <?php
+                    // Remove empty values from the array
+                    $cleanedLocations = array_filter(array_map('trim', $locations));
+                    $cleanedSpecialInstructions = array_filter(array_map('trim', $specialInstructions));
+
+                    // Ensure values are properly checked
+                    $showLocation = !empty($cleanedLocations);
+                    $showSlide = !empty($dryNoCount) || !empty($dryYesCount);
+                    $showSpecialInstructions = !empty($cleanedSpecialInstructions);
+
+                    // If at least one section has data, display the table
+                    if ($showLocation || $showSlide || $showSpecialInstructions): ?>
+                        <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
+                            <tbody>
+                                <tr>
+                                    <td  style="padding: 8px; border: none; font-size:16px;">
+                                        <b>A/M:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
+                                    </td>
+
+                                    <?php if ($showSlide): ?>
+                                        <td style="padding: 8px; border: none; font-size:18px;">
+                                            <b>Slide:</b> <?= htmlspecialchars($dryNoCount) ?>+<?= htmlspecialchars($dryYesCount) ?>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    
+                                </tr>
+                            </tbody>
+                        </table>
+                <?php endif; ?>
             
             <!-- Recall -->
             <?php 
@@ -552,6 +616,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
+                                <th>Chief Complain</th>
                                 <th>Aspiration Notes</th>
                                 <th>Gross Note</th>
                                 <th>Microscopic Description</th>
@@ -563,6 +628,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         </thead>
                         <tbody>
                             <tr>
+                                <!-- Chief Complain (New Field) -->
+                                <td>
+                                    <div id="chief-complain-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['chief_complain'] ?? ''); ?>
+                                    </div>
+                                </td>
+
                                 <!-- Aspiration Notes -->
                                 <td>
                                     <div id="aspiration-notes-container" class="quill-editor">
@@ -819,6 +891,15 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         });
         recallDescriptionEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['recall'] ?? ''); ?>`;
 
+        // Initialize Quill editor for Chief Complain (New Field)
+        const chiefComplainEditor = new Quill('#chief-complain-container', {
+            theme: 'snow',
+            readOnly: true,
+            placeholder: 'Chief Complain',
+            modules: { toolbar: false }
+        });
+        chiefComplainEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['chief_complain'] ?? ''); ?>`;
+
         // Edit button handler
         document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
             if (!isEditing) {
@@ -829,6 +910,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 conclusionDescriptionEditor.enable();
                 commentDescriptionEditor.enable();
                 recallDescriptionEditor.enable();
+                chiefComplainEditor.enable();
 
                 // Show Save button
                 document.getElementById('editMicroscopicBtn').style.display = 'none';
@@ -848,6 +930,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 const conclusionDescription = conclusionDescriptionEditor.root.innerHTML.trim();
                 const commentDescription = commentDescriptionEditor.root.innerHTML.trim();
                 const recallDescription = recallDescriptionEditor.root.innerHTML.trim();
+                const chiefComplainDescription = chiefComplainEditor.root.innerHTML.trim(); // Get data from Chief Complain
 
                 // Disable editing
                 aspirationNotesEditor.disable();
@@ -856,6 +939,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 conclusionDescriptionEditor.disable();
                 commentDescriptionEditor.disable();
                 recallDescriptionEditor.disable();
+                chiefComplainEditor.disable();
 
                 // Prepare data for submission
                 const formData = new FormData();
@@ -864,6 +948,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 formData.append('microscopic-description', microscopicDescription);
                 formData.append('conclusion-description', conclusionDescription);
                 formData.append('comment-description', commentDescription);
+                formData.append('chief-complain', chiefComplainDescription);
                 formData.append('recall-description', recallDescription);
                 formData.append('LabNumber', '<?= htmlspecialchars($LabNumber); ?>');
                 formData.append('created_user', '<?= htmlspecialchars($loggedInUsername); ?>');
