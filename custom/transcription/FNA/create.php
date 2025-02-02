@@ -631,7 +631,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                 <!-- Chief Complain (New Field) -->
                                 <td>
                                     <div id="chief-complain-container" class="quill-editor">
-                                        <?= htmlspecialchars_decode($data['chief_complain'] ?? ''); ?>
+                                        <?= htmlspecialchars_decode(!empty($data['chief_complain']) ? $data['chief_complain'] : ($info['chief_complain'] ?? '')); ?>
                                     </div>
                                 </td>
 
@@ -898,7 +898,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             placeholder: 'Chief Complain',
             modules: { toolbar: false }
         });
-        chiefComplainEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['chief_complain'] ?? ''); ?>`;
+        chiefComplainEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['chief_complain'] ?? htmlspecialchars($info['chief_complain'] ?? '')); ?>`;
 
         // Edit button handler
         document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
