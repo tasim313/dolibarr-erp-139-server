@@ -232,165 +232,132 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
                                             <?php 
                                                 $clinicalInformation = get_cyto_clinical_information($cyto_id);    
                                             ?>
-                                            <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
-                                                <?php if (empty($clinicalInformation)): ?>
-                                                    <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
-                                                <?php else: ?>
-                                                    <?php foreach ($clinicalInformation as $info): ?>
-                                                        <!-- Chief Complain (Editable) & Previous Chief Complain (Readonly) -->
-                                                        <tr>
-                                                            <th style="text-align: left; padding: 8px; border: none; font-size:18px;">C/C:</th>
-                                                            <td style="padding: 8px; border: none; font-size:16px;">
-                                                                <input type="text" name="chief_complain" value="<?= htmlspecialchars($info['chief_complain']) ?>" class="form-control" style="width: 45%; display: inline-block;">
-                                                                <?php if (!empty($info['previous_chief_complain'])): ?>
-                                                                    <?php 
-                                                                        $prevDataArray = json_decode($info['previous_chief_complain'], true); // Decode JSON
-                                                                        
-                                                                        if (!empty($prevDataArray) && is_array($prevDataArray)) {
-                                                                            date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                            <form method="POST" action="insert/update_clinical_information.php">
+                                                <table class="table" style="border-collapse: collapse; width: 100%; border-top: none;">
+                                                    <?php if (empty($clinicalInformation)): ?>
+                                                        <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
+                                                    <?php else: ?>
+                                                        <?php foreach ($clinicalInformation as $info): ?>
+                                                            <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
+                                                            <input type="hidden" name="username" value="<?= $loggedInUsername ?>">
+                                                            <!-- Chief Complain (Editable) & Previous Chief Complain (Readonly) -->
+                                                            <tr>
+                                                                <th style="text-align: left; padding: 8px; border: none; font-size:18px; width: 5%;">C/C:</th>
+                                                                <td style="padding: 8px; border: none; font-size:16px;">
+                                                                    <textarea name="chief_complain" class="form-control" style="width: 45%; display: inline-block;"><?= htmlspecialchars($info['chief_complain']) ?></textarea>
+                                                                    <?php if (!empty($info['previous_chief_complain'])): ?>
+                                                                        <?php 
+                                                                            $prevDataArray = json_decode($info['previous_chief_complain'], true); // Decode JSON
                                                                             
-                                                                            // Reverse the array to show the last element first
-                                                                            $prevDataArray = array_reverse($prevDataArray);
-                                                                            
-                                                                            // Open a single div to hold all data
-                                                                            echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
-                                                                            
-                                                                            // Loop through all elements and display them
-                                                                            foreach ($prevDataArray as $prevData) {
-                                                                                if (!empty($prevData['update_date'])) {
-                                                                                    $formattedDate = date('j F, Y h:i A', strtotime($prevData['update_date']));
-                                                                                    
-                                                                                    // Display each entry's data within the single div
-                                                                                    echo htmlspecialchars($prevData['value']) . '<br>';
-                                                                                    echo '<small style="color: gray;">' . $formattedDate . '<br>';
-                                                                                    echo htmlspecialchars($prevData['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
+                                                                            if (!empty($prevDataArray) && is_array($prevDataArray)) {
+                                                                                date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                                                
+                                                                                // Reverse the array to show the last element first
+                                                                                $prevDataArray = array_reverse($prevDataArray);
+                                                                                
+                                                                                // Open a single div to hold all data
+                                                                                echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
+                                                                                
+                                                                                // Loop through all elements and display them
+                                                                                foreach ($prevDataArray as $prevData) {
+                                                                                    if (!empty($prevData['update_date'])) {
+                                                                                        $formattedDate = date('j F, Y h:i A', strtotime($prevData['update_date']));
+                                                                                        
+                                                                                        // Display each entry's data within the single div
+                                                                                        echo htmlspecialchars($prevData['value']) . '<br>';
+                                                                                        echo '<small style="color: gray;">' . $formattedDate . '<br>';
+                                                                                        echo htmlspecialchars($prevData['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
+                                                                                    }
                                                                                 }
+                                                                                
+                                                                                // Close the div
+                                                                                echo '</div>';
                                                                             }
-                                                                            
-                                                                            // Close the div
-                                                                            echo '</div>';
-                                                                        }
-                                                                    ?>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                        </tr>
+                                                                        ?>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                            </tr>
 
-                                                        <!-- Relevant Clinical History (Editable) & Previous History (Readonly) -->
-                                                        <tr>
-                                                            <th style="text-align: left; padding: 8px; border: none; font-size:16px;">H/O:</th>
-                                                            <td style="padding: 8px; border: none; font-size:16px;">
-                                                                <input type="text" name="relevant_clinical_history" value="<?= htmlspecialchars($info['relevant_clinical_history']) ?>" class="form-control" style="width: 45%; display: inline-block;">
-                                                                <?php if (!empty($info['previous_history'])): ?>
-                                                                    <?php 
-                                                                        $prevHistoryArray = json_decode($info['previous_history'], true); // Decode JSON
-                                                                        
-                                                                        if (!empty($prevHistoryArray) && is_array($prevHistoryArray)) {
-                                                                            date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                            <!-- Relevant Clinical History (Editable) & Previous History (Readonly) -->
+                                                            <tr>
+                                                                <th style="text-align: left; padding: 8px; border: none; font-size:16px; width: 5%;">H/O:</th>
+                                                                <td style="padding: 8px; border: none; font-size:16px;">
+                                                                    <textarea name="relevant_clinical_history" class="form-control" style="width: 45%; display: inline-block;"><?= htmlspecialchars($info['relevant_clinical_history']) ?></textarea>
+                                                                    <?php if (!empty($info['previous_history'])): ?>
+                                                                        <?php 
+                                                                            $prevHistoryArray = json_decode($info['previous_history'], true); // Decode JSON
                                                                             
-                                                                            // Reverse the array to display the last element first
-                                                                            $prevHistoryArray = array_reverse($prevHistoryArray);
-                                                                            
-                                                                            // Open a single div to hold all data
-                                                                            echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
-                                                                            
-                                                                            // Loop through all elements and display them
-                                                                            foreach ($prevHistoryArray as $prevHistory) {
-                                                                                if (!empty($prevHistory['update_date'])) {
-                                                                                    $formattedDate = date('j F, Y h:i A', strtotime($prevHistory['update_date']));
-                                                                                    
-                                                                                    echo htmlspecialchars($prevHistory['value']) . '<br>';
-                                                                                    echo '<small style="color: gray;">' . $formattedDate . '<br>';
-                                                                                    echo htmlspecialchars($prevHistory['updated_user']) . '</small><br><br>';  // Add <br> to separate each item
+                                                                            if (!empty($prevHistoryArray) && is_array($prevHistoryArray)) {
+                                                                                date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                                                
+                                                                                // Reverse the array to display the last element first
+                                                                                $prevHistoryArray = array_reverse($prevHistoryArray);
+                                                                                
+                                                                                // Open a single div to hold all data
+                                                                                echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
+                                                                                
+                                                                                // Loop through all elements and display them
+                                                                                foreach ($prevHistoryArray as $prevHistory) {
+                                                                                    if (!empty($prevHistory['update_date'])) {
+                                                                                        $formattedDate = date('j F, Y h:i A', strtotime($prevHistory['update_date']));
+                                                                                        
+                                                                                        echo htmlspecialchars($prevHistory['value']) . '<br>';
+                                                                                        echo '<small style="color: gray;">' . $formattedDate . '<br>';
+                                                                                        echo htmlspecialchars($prevHistory['updated_user']) . '</small><br><br>';  // Add <br> to separate each item
+                                                                                    }
                                                                                 }
+                                                                                
+                                                                                // Close the div
+                                                                                echo '</div>';
                                                                             }
-                                                                            
-                                                                            // Close the div
-                                                                            echo '</div>';
-                                                                        }
-                                                                    ?>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                        </tr>
+                                                                        ?>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                            </tr>
 
-                                                        <!-- On Examination (Editable) & Previous On Examination (Readonly) -->
-                                                        <tr>
-                                                            <th style="text-align: left; padding: 8px; border: none; font-size:16px;">O/E:</th>
-                                                            <td style="padding: 8px; border: none; font-size:16px;">
-                                                                <input type="text" name="on_examination" value="<?= htmlspecialchars($info['on_examination']) ?>" class="form-control" style="width: 45%; display: inline-block;">
-                                                                <?php if (!empty($info['previous_on_examination'])): ?>
-                                                                    <?php 
-                                                                        $prevExaminationArray = json_decode($info['previous_on_examination'], true); // Decode JSON
-                                                                        
-                                                                        if (!empty($prevExaminationArray) && is_array($prevExaminationArray)) {
-                                                                            date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                            <!-- On Examination (Editable) & Previous On Examination (Readonly) -->
+                                                            <tr>
+                                                                <th style="text-align: left; padding: 8px; border: none; font-size:16px; width: 5%;">O/E:</th>
+                                                                <td style="padding: 8px; border: none; font-size:16px;">
+                                                                    <textarea name="on_examination" class="form-control" style="width: 45%; display: inline-block;"><?= htmlspecialchars($info['on_examination']) ?></textarea>
+                                                                    <?php if (!empty($info['previous_on_examination'])): ?>
+                                                                        <?php 
+                                                                            $prevExaminationArray = json_decode($info['previous_on_examination'], true); // Decode JSON
                                                                             
-                                                                            // Reverse the array to show the last element first
-                                                                            $prevExaminationArray = array_reverse($prevExaminationArray);
-                                                                            
-                                                                            // Open a single div to hold all data
-                                                                            echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
-                                                                            
-                                                                            // Loop through all elements and display them
-                                                                            foreach ($prevExaminationArray as $prevExamination) {
-                                                                                if (!empty($prevExamination['update_date'])) {
-                                                                                    $formattedDate = date('j F, Y h:i A', strtotime($prevExamination['update_date']));
-                                                                                    
-                                                                                    // Display each entry's data within the single div
-                                                                                    echo htmlspecialchars($prevExamination['value']) . '<br>';
-                                                                                    echo '<small style="color: gray;">' . $formattedDate . '<br>';
-                                                                                    echo htmlspecialchars($prevExamination['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
+                                                                            if (!empty($prevExaminationArray) && is_array($prevExaminationArray)) {
+                                                                                date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                                                
+                                                                                // Reverse the array to show the last element first
+                                                                                $prevExaminationArray = array_reverse($prevExaminationArray);
+                                                                                
+                                                                                // Open a single div to hold all data
+                                                                                echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
+                                                                                
+                                                                                // Loop through all elements and display them
+                                                                                foreach ($prevExaminationArray as $prevExamination) {
+                                                                                    if (!empty($prevExamination['update_date'])) {
+                                                                                        $formattedDate = date('j F, Y h:i A', strtotime($prevExamination['update_date']));
+                                                                                        
+                                                                                        // Display each entry's data within the single div
+                                                                                        echo htmlspecialchars($prevExamination['value']) . '<br>';
+                                                                                        echo '<small style="color: gray;">' . $formattedDate . '<br>';
+                                                                                        echo htmlspecialchars($prevExamination['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
+                                                                                    }
                                                                                 }
+                                                                                
+                                                                                // Close the div
+                                                                                echo '</div>';
                                                                             }
-                                                                            
-                                                                            // Close the div
-                                                                            echo '</div>';
-                                                                        }
-                                                                    ?>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                        </tr>
+                                                                        ?>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                            </tr>
 
-                                                        <!-- Clinical Impression (Editable) & Previous Clinical Impression (Readonly) -->
-                                                        <tr>
-                                                            <th style="text-align: left; padding: 8px; border: none; font-size:16px;">C/I:</th>
-                                                            <td style="padding: 8px; border: none; font-size:16px;">
-                                                                <input type="text" name="clinical_impression" value="<?= htmlspecialchars($info['clinical_impression']) ?>" class="form-control" style="width: 45%; display: inline-block;">
-                                                                <?php if (!empty($info['previous_clinical_impression'])): ?>
-                                                                    <?php 
-                                                                        $prevClinicalImpressionArray = json_decode($info['previous_clinical_impression'], true); // Decode JSON
-                                                                        
-                                                                        if (!empty($prevClinicalImpressionArray) && is_array($prevClinicalImpressionArray)) {
-                                                                            date_default_timezone_set('Asia/Dhaka'); // Set timezone
-                                                                            
-                                                                            // Reverse the array to show the last element first
-                                                                            $prevClinicalImpressionArray = array_reverse($prevClinicalImpressionArray);
-                                                                            
-                                                                            // Open a single div to hold all data
-                                                                            echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
-                                                                            
-                                                                            // Loop through all elements and display them
-                                                                            foreach ($prevClinicalImpressionArray as $prevClinicalImpression) {
-                                                                                if (!empty($prevClinicalImpression['update_date'])) {
-                                                                                    $formattedDate = date('j F, Y h:i A', strtotime($prevClinicalImpression['update_date']));
-                                                                                    
-                                                                                    // Display each entry's data within the single div
-                                                                                    echo htmlspecialchars($prevClinicalImpression['value']) . '<br>';
-                                                                                    echo '<small style="color: gray;">' . $formattedDate . '<br>';
-                                                                                    echo htmlspecialchars($prevClinicalImpression['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
-                                                                                }
-                                                                            }
-                                                                            
-                                                                            // Close the div
-                                                                            echo '</div>';
-                                                                        }
-                                                                    ?>
-                                                                <?php endif; ?>
-                                                            </td>
-                                                        </tr>
-
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                            </table>
+                                                        <?php endforeach; ?>
+                                                    <?php endif; ?>
+                                                </table>
+                                                <button type="submit" class="btn btn-primary" style="margin-bottom:30px;">Save</button>
+                                            </form>
                                         </div>
 
 
@@ -447,19 +414,56 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
                         <?php endif; ?>
                     </tbody>
                 </table>
-
-                <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-15px;">
-                        <?php if (empty($clinicalInformation)): ?>
-                            <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
-                        <?php else: ?>
-                            <?php foreach ($clinicalInformation as $info): ?>
-                                <tr id="clinical_impression">
-                                    <th style="text-align: left; padding: 2px; font-size:16px; white-space: nowrap; width: 5%; border: none;">C/I:</th>
-                                    <td style="padding: 2px; font-size:16px; border: none;"><?= htmlspecialchars($info['clinical_impression']) ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                </table><br>
+                <form method="POST" action="insert/update_clinical_information.php">
+                    <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-15px;">
+                            <?php if (empty($clinicalInformation)): ?>
+                                <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
+                            <?php else: ?>
+                                <?php foreach ($clinicalInformation as $info): ?>
+                                    <input type="hidden" name="rowid" value="<?= $info['rowid'] ?>">
+                                    <input type="hidden" name="username" value="<?= $loggedInUsername ?>">
+                                    <!-- Clinical Impression (Editable) & Previous Clinical Impression (Readonly) -->
+                                    <tr>
+                                        <th style="text-align: left; padding: 8px; border: none; font-size:16px; width: 5%;">C/I:</th>
+                                            <td style="padding: 8px; border: none; font-size:16px;">
+                                                <input type="text" name="clinical_impression" value="<?= htmlspecialchars($info['clinical_impression']) ?>" class="form-control" style="width: 45%; display: inline-block;">
+                                                <?php if (!empty($info['previous_clinical_impression'])): ?>
+                                                    <?php 
+                                                        $prevClinicalImpressionArray = json_decode($info['previous_clinical_impression'], true); // Decode JSON
+                                                        
+                                                        if (!empty($prevClinicalImpressionArray) && is_array($prevClinicalImpressionArray)) {
+                                                            date_default_timezone_set('Asia/Dhaka'); // Set timezone
+                                                            
+                                                            // Reverse the array to show the last element first
+                                                            $prevClinicalImpressionArray = array_reverse($prevClinicalImpressionArray);
+                                                            
+                                                            // Open a single div to hold all data
+                                                            echo '<div style="width: 45%; display: inline-block; background-color: #f5f5f5; padding: 8px; border-radius: 5px;">';
+                                                            
+                                                            // Loop through all elements and display them
+                                                            foreach ($prevClinicalImpressionArray as $prevClinicalImpression) {
+                                                                if (!empty($prevClinicalImpression['update_date'])) {
+                                                                    $formattedDate = date('j F, Y h:i A', strtotime($prevClinicalImpression['update_date']));
+                                                                    
+                                                                    // Display each entry's data within the single div
+                                                                    echo htmlspecialchars($prevClinicalImpression['value']) . '<br>';
+                                                                    echo '<small style="color: gray;">' . $formattedDate . '<br>';
+                                                                    echo htmlspecialchars($prevClinicalImpression['updated_user']) . '</small><br><br>'; // Add <br> to separate each item
+                                                                }
+                                                            }
+                                                            
+                                                            // Close the div
+                                                            echo '</div>';
+                                                        }
+                                                    ?>
+                                                <?php endif; ?>
+                                            </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                    </table><br>
+                    <button type="submit" class="btn btn-primary" style="margin-bottom:30px;">Save</button>
+                </form>
 
                 <?php
                     // Remove empty values from the array
