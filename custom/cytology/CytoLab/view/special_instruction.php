@@ -205,6 +205,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                         }
                                     }
                                     echo '<th>Status</th>'; // Additional column for actions
+                                    echo '<th>Not Need</th>';
                                 }
 
                                 echo '</tr>';
@@ -228,6 +229,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                                     echo '<input type="hidden" name="fixation_details" value="' . htmlspecialchars($row['rowid']) . '">';
                                     echo '<input type="hidden" name="created_user" value="' . $loggedInUsername . '">';
                                     echo '<button class="btn btn-primary" type="submit">Complete</button>';
+                                    echo '</form>';
+                                    echo '</td>';
+
+                                    echo '<td>';
+                                    echo '<form method="POST" action="../insert/special_instruction_not_complete.php">';
+                                    echo '<input type="hidden" name="fixation_details" value="' . htmlspecialchars($row['rowid']) . '">';
+                                    echo '<input type="hidden" name="created_user" value="' . $loggedInUsername . '">';
+                                    echo '<button class="btn btn-danger" type="submit">Remove</button>';
                                     echo '</form>';
                                     echo '</td>';
 
