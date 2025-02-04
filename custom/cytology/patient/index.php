@@ -1550,6 +1550,25 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </script>
 
 
+<script>
+  // Wait until the DOM is fully loaded
+  document.addEventListener("DOMContentLoaded", function() {
+        // Get references to the form and the submit button
+        const form = document.getElementById('clinical-information-form');
+        const saveButton = document.getElementById('saveButton');
+
+        // Prevent form submission if the active element is not the submit button.
+        form.addEventListener('submit', function(event) {
+        
+        if (document.activeElement !== saveButton) {
+            event.preventDefault();
+            console.log("Form submission prevented: Please use the Submit button to save data.");
+            alert("Please click the Submit button to save the form data.");
+        }
+        });
+  });
+</script>
+
 
 
 <?php 
