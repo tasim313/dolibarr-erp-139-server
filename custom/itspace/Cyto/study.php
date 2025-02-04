@@ -169,9 +169,10 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                         echo '<td>' . $formatted_finalization_study . '</td>';
                                         echo '<td>' . $formatted_finalization_history . '</td>';
                                         echo '<td>';
-                                        echo '<form action="process_comment.php" method="POST" style="display:inline;">';
+                                        echo '<form action="insert/comment.php" method="POST" style="display:inline;">';
                                         echo '<input type="hidden" name="lab_number" value="' . htmlspecialchars($row['lab_number']) . '">';
                                         echo '<input type="hidden" name="username" value="' . htmlspecialchars($loggedInUsername) . '">';
+                                        echo '<input type="hidden" name="rowid" value="' . htmlspecialchars($row['id']) . '">';
                                         echo '<textarea name="comment" placeholder="Add comment" rows="3"></textarea><br>';
                                         echo '</td>';
                                         echo '<td>';
@@ -244,6 +245,99 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                                 }
                             }
                     ?>
+                </div>
+
+                <div id="Complete" class="tabcontent active">
+                    <?php
+
+                        // Fetch the data
+                        $studyData = cyto_study_patient_info_complete();
+                        function format_patient_history($jsonData) {
+                            $decodedData = json_decode($jsonData, true);
+
+                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedData)) {
+                                return "N/A"; // Invalid JSON or empty data
+                            }
+
+                            $output = "";
+                            foreach ($decodedData as $key => $entries) {
+                                $output .= "<strong>" . htmlspecialchars($key) . ":</strong><br>"; // Display key (e.g., "tasim")
+
+                                foreach ($entries as $entry) {
+                                    if (is_array($entry)) {
+                                        foreach ($entry as $item) {
+                                            if (is_array($item)) {
+                                                // Handle objects inside array (e.g., {"other": "test"})
+                                                foreach ($item as $subKey => $subValue) {
+                                                    $output .= "<em>" . htmlspecialchars($subKey) . ":</em> " . htmlspecialchars($subValue) . "<br>";
+                                                }
+                                            } else {
+                                                $output .= htmlspecialchars($item) . "<br>";
+                                            }
+                                        }
+                                    } else {
+                                        $output .= htmlspecialchars($entry) . "<br>";
+                                    }
+                                }
+                                $output .= "<hr>"; // Separate different keys if multiple exist
+                            }
+
+                            return $output;
+                        }
+
+                        if (isset($studyData['error'])) {
+                            echo "<p>Error: " . htmlspecialchars($studyData['error']) . "</p>";
+                        } elseif (empty($studyData)) {
+                            echo "<p>No data available.</p>";
+                        } else {
+                            echo "<table class=\"table table-bordered table-striped\" width='100%'>";
+                            echo "<thead>
+                                    <tr>
+                                        <th>Lab Number</th>
+                                        <th>Screening Patient History</th>
+                                        
+                                        <th>Finalization Patient History</th>
+                                        
+                                    
+                                        <th>Status</th>
+                                        <th>Comments</th>
+                                        <th>Status List</th>
+                                    </tr>
+                                </thead>
+                                <tbody>";
+
+                            foreach ($studyData as $row) {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($row['lab_number']) . "</td>";
+                            
+                                echo "<td>" . format_patient_history($row['screening_patient_history']) . "</td>";
+                            
+                            
+                                
+                                echo "<td>" . format_patient_history($row['finalization_patient_history']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['status']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['comment']) . "</td>";
+
+                                // Decode JSON columns safely
+                                $statusList = json_decode($row['status_list'], true);
+                                if (json_last_error() === JSON_ERROR_NONE && is_array($statusList)) {
+                                    echo "<td>";
+                                    foreach ($statusList as $status) {
+                                        echo "<strong>" . htmlspecialchars($status['status']) . "</strong> - ";
+                                        echo "<em>" . htmlspecialchars($status['timestamp']) . "</em> (by " . htmlspecialchars($status['user']) . ")<br>";
+                                    }
+                                    echo "</td>";
+                                } else {
+                                    echo "<td>N/A</td>";
+                                }
+
+                                echo "</tr>";
+                            }
+
+                            echo "</tbody></table>";
+                        }
+                    ?>
+
                 </div>
 
           </div>

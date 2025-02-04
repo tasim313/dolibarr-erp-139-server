@@ -77,6 +77,9 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
                <li><a href="recall.php">Recall Instructions</a></li>
                <li><a href="patient_report.php">Patient Report</a></li>
                <li><a href="report_ready.php">Report Ready</a></li>
+               <li><a href="view/doctor_instruction.php">Doctor's Instructions</a></li>
+               <li><a href="view/cancel_information.php">Cancel Information</a></li>
+               <li><a href="view/postpone_information.php">Postpone</a></li>
                
           </ul>
     </div>
