@@ -102,6 +102,10 @@ $invoiceIds = array_column($invoice, 'invoice_rowid');
 
 $payment = payment_list($invoiceIds, null, null, 'today');
 
+$cyto_doctor_complete_case = cyto_doctor_complete_case(null, null, 'today');
+$cyto_doctor_complete_json = json_encode($cyto_doctor_complete_case);
+// var_dump($cyto_doctor_complete_case)
+
 ?>
 
 <!DOCTYPE html>
@@ -278,6 +282,7 @@ $payment = payment_list($invoiceIds, null, null, 'today');
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
+        const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
         
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
@@ -302,6 +307,21 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                 const userWorksheetInformation = worksheetdata.filter(worksheet => worksheet.user_login?.trim().toLowerCase() === normalizedUsername);
                 const userTranscriptionInformation = transcriptiondata.filter(transcription => transcription.created_user?.trim().toLowerCase() === normalizedUsername);
 
+                // Filter cytoDoctorCompletedata based on username
+                const userCytoDoctorData = cytoDoctorCompletedata.filter(entry => {
+                    try {
+                        // Parse JSON data from strings
+                        const screeningData = entry.screening_done_count_data ? JSON.parse(entry.screening_done_count_data) : {};
+                        const finalizationData = entry.finalization_done_count_data ? JSON.parse(entry.finalization_done_count_data) : {};
+
+                        // Check if the username exists in either screening or finalization data
+                        return screeningData.hasOwnProperty(username) || finalizationData.hasOwnProperty(username);
+                    } catch (error) {
+                        console.error("Error parsing JSON data:", error);
+                        return false;
+                    }
+                });
+
                 // Check if there are any matches
                 if (userReceptions.length > 0) {
                     // Process and display the data for the matched user
@@ -317,6 +337,9 @@ $payment = payment_list($invoiceIds, null, null, 'today');
                 }
                 if(userTranscriptionInformation.length >0){
                     displayTranscriptionDetails(userTranscriptionInformation);
+                }
+                if (userCytoDoctorData.length > 0) {
+                    displayCytoDoctorDetails(userCytoDoctorData, username);
                 }
                 else {
                     console.log('No reception data found for ' + username);
@@ -740,6 +763,77 @@ $payment = payment_list($invoiceIds, null, null, 'today');
             // Append the tab to the userTabs container
             userTabs.appendChild(tab);
         }
+
+        function displayCytoDoctorDetails(userCytoDoctorData, username) {
+    const userTabs = document.getElementById('userTabs');
+    if (!userTabs) {
+        console.error('User tabs container not found in the DOM.');
+        return;
+    }
+
+    // Create a new tab dynamically
+    const tab = document.createElement('div');
+    tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+    tab.style.borderRadius = '5px';
+
+    // Objects to store categorized lab numbers
+    const screeningLabs = new Set();
+    const finalizationLabs = new Set();
+
+    // Iterate over user data and categorize lab numbers
+    userCytoDoctorData.forEach(entry => {
+        try {
+            const screeningData = entry.screening_done_count_data ? JSON.parse(entry.screening_done_count_data) : {};
+            const finalizationData = entry.finalization_done_count_data ? JSON.parse(entry.finalization_done_count_data) : {};
+
+            const labNumber = entry.lab_number;
+
+            if (screeningData.hasOwnProperty(username)) {
+                screeningLabs.add(labNumber);
+            }
+            if (finalizationData.hasOwnProperty(username)) {
+                finalizationLabs.add(labNumber);
+            }
+        } catch (error) {
+            console.error("Error parsing JSON data:", error);
+        }
+    });
+
+    // Extract username properly
+    const user = username || 'Unknown User';
+
+    // Start building the content for the tab
+    let content = `<h6>User: ${user}</h6>`;
+    content += `<h5>Total Lab Numbers: ${screeningLabs.size + finalizationLabs.size}</h5>`;
+
+    if (screeningLabs.size > 0) {
+        content += `<h5>Screening Done</h5><ul>`;
+        screeningLabs.forEach(lab => {
+            content += `<li>${lab}</li>`;
+        });
+        content += `</ul>`;
+    }
+
+    if (finalizationLabs.size > 0) {
+        content += `<h5>Finalization Done</h5><ul>`;
+        finalizationLabs.forEach(lab => {
+            content += `<li>${lab}</li>`;
+        });
+        content += `</ul>`;
+    }
+
+    tab.innerHTML = `
+        <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+            <i class="bi bi-trash"></i>
+        </span>
+        <h1>Cyto Doctor Details</h1>
+        ${content}
+    `;
+
+    userTabs.appendChild(tab);
+}
+
+
 
         // Function to close a tab
         function closeTab() {
