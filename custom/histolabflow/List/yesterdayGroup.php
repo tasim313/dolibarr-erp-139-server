@@ -103,6 +103,10 @@ $invoiceIds = array_column($invoice, 'invoice_rowid');
 
 $payment = payment_list($invoiceIds, null, null, 'yesterday');
 
+$cyto_doctor_complete_case = cyto_doctor_complete_case(null, null, 'yesterday');
+// $cyto_doctor_complete_json = json_encode($cyto_doctor_complete_case);
+var_dump($cyto_doctor_complete_case)
+
 ?>
 
 <!DOCTYPE html>
