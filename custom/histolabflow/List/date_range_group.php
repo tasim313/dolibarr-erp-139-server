@@ -102,6 +102,11 @@ $invoice = invoice_list($start_date, $end_date);
 $invoiceIds = array_column($invoice, 'invoice_rowid');
 
 $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
+$cyto_doctor_complete_case = cyto_doctor_complete_case($start_date, $end_date);
+$cyto_doctor_complete_json = json_encode($cyto_doctor_complete_case);
+
+$cyto_aspiration_list = cyto_doctor_aspiration_history($start_date, $end_date);
+$cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
 
 // echo('<pre>');
 // var_dump($payment);
@@ -290,7 +295,8 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
-       
+        const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
+        const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
 
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
@@ -314,6 +320,32 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
                 // Find all objects where user_login matches the username
                 const userWorksheetInformation = worksheetdata.filter(worksheet => worksheet.user_login?.trim().toLowerCase() === normalizedUsername);
                 const userTranscriptionInformation = transcriptiondata.filter(transcription => transcription.created_user?.trim().toLowerCase() === normalizedUsername);
+
+                // Filter cytoDoctorCompletedata based on username
+                const userCytoDoctorData = cytoDoctorCompletedata.filter(entry => {
+                    try {
+                        // Parse JSON data from strings
+                        const screeningData = entry.screening_done_count_data ? JSON.parse(entry.screening_done_count_data) : {};
+                        const finalizationData = entry.finalization_done_count_data ? JSON.parse(entry.finalization_done_count_data) : {};
+
+                        // Check if the username exists in either screening or finalization data
+                        return screeningData.hasOwnProperty(username) || finalizationData.hasOwnProperty(username);
+                    } catch (error) {
+                        console.error("Error parsing JSON data:", error);
+                        return false;
+                    }
+                });
+
+                // Ensure JSON data exists before filtering
+                if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
+                    console.error("cytoAspirationCompletedata is empty or not an array.");
+                    return;
+                }
+
+                // Filter data based on doctor, assistant, or created_user field
+                const userCytoAspirationData = cytoAspirationCompletedata.filter(entry => {
+                    return entry.doctor === username || entry.created_user === username || entry.assistant === username;
+                });
                 
                 // Check if there are any matches
                 if (userReceptions.length > 0) {
@@ -330,6 +362,12 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
                 }
                 if(userTranscriptionInformation.length >0){
                     displayTranscriptionDetails(userTranscriptionInformation);
+                }
+                if (userCytoDoctorData.length > 0) {
+                    displayCytoDoctorDetails(userCytoDoctorData, username);
+                }
+                if (userCytoAspirationData.length > 0) {
+                    displayCytoAspirationDetails(userCytoAspirationData, username);
                 }
                 else {
                     console.log('No reception data found for ' + username);
@@ -759,6 +797,154 @@ $payment = payment_list($invoiceIds, $start_date, $end_date, 'range');
 
             // Append the tab to the userTabs container
             userTabs.appendChild(tab);
+        }
+
+        function displayCytoDoctorDetails(userCytoDoctorData, username) {
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Objects to store categorized lab numbers
+            const screeningLabs = new Set();
+            const finalizationLabs = new Set();
+            const uniqueLabNumbers = new Set(); // Track all unique lab numbers
+
+            // Iterate over user data and categorize lab numbers
+            userCytoDoctorData.forEach(entry => {
+                try {
+                    const screeningData = entry.screening_done_count_data ? JSON.parse(entry.screening_done_count_data) : {};
+                    const finalizationData = entry.finalization_done_count_data ? JSON.parse(entry.finalization_done_count_data) : {};
+
+                    const labNumber = entry.lab_number;
+
+                    if (screeningData.hasOwnProperty(username)) {
+                        screeningLabs.add(labNumber);
+                        uniqueLabNumbers.add(labNumber); // Add to unique count
+                    }
+                    if (finalizationData.hasOwnProperty(username)) {
+                        finalizationLabs.add(labNumber);
+                        uniqueLabNumbers.add(labNumber); // Add to unique count
+                    }
+                } catch (error) {
+                    console.error("Error parsing JSON data:", error);
+                }
+            });
+
+            // Extract username properly
+            const user = username || 'Unknown User';
+
+            // Start building the content for the tab
+            let content = `<h2>${user}</h2>`;
+            content += `<h5>Total Lab Numbers: ${uniqueLabNumbers.size}</h5>`; // Use unique count
+            content += `<h5>Screening Done: ${screeningLabs.size}</h5>`; // Screening count
+            content += `<h5>Finalization Done: ${finalizationLabs.size}</h5>`; // Finalization count
+
+            if (screeningLabs.size > 0) {
+                content += `<h5>Screening Done</h5><ul>`;
+                screeningLabs.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            if (finalizationLabs.size > 0) {
+                content += `<h5>Finalization Done</h5><ul>`;
+                finalizationLabs.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Cyto</h1>
+                ${content}
+            `;
+
+            userTabs.appendChild(tab);
+        }
+
+        function displayCytoAspirationDetails(userCytoAspirationData, username) {
+                const userTabs = document.getElementById('userTabs');
+                if (!userTabs) {
+                    console.error('User tabs container not found in the DOM.');
+                    return;
+                }
+
+                // Create a new tab dynamically
+                const tab = document.createElement('div');
+                tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+                tab.style.borderRadius = '5px';
+
+                // Objects to store categorized data
+                const labNumbers = new Set();
+                const doctorCounts = {};
+                const assistantCounts = {};
+
+                // Iterate over user data and categorize values
+                userCytoAspirationData.forEach(entry => {
+                    labNumbers.add(entry.lab_number); // Track unique lab numbers
+
+                    // Count doctor occurrences
+                    if (entry.doctor) {
+                        doctorCounts[entry.doctor] = (doctorCounts[entry.doctor] || 0) + 1;
+                    }
+
+                    // Count assistant occurrences
+                    if (entry.assistant) {
+                        assistantCounts[entry.assistant] = (assistantCounts[entry.assistant] || 0) + 1;
+                    }
+                });
+
+                // Extract username properly
+                const user = username || 'Unknown User';
+
+                // Start building the content for the tab
+                let content = `<h2>${user}</h2>`;
+                content += `<h5>Total Lab Numbers: ${labNumbers.size}</h5>`; 
+
+                if (labNumbers.size > 0) {
+                    content += `<h5>Lab Numbers</h5><ul>`;
+                    labNumbers.forEach(lab => {
+                        content += `<li>${lab}</li>`;
+                    });
+                    content += `</ul>`;
+                }
+
+                if (Object.keys(doctorCounts).length > 0) {
+                    content += `<h5>Doctors Involved</h5><ul>`;
+                    for (const [doctor, count] of Object.entries(doctorCounts)) {
+                        content += `<li>${doctor} (Count: ${count})</li>`;
+                    }
+                    content += `</ul>`;
+                }
+
+                if (Object.keys(assistantCounts).length > 0) {
+                    content += `<h5>Assistants Involved</h5><ul>`;
+                    for (const [assistant, count] of Object.entries(assistantCounts)) {
+                        content += `<li>${assistant} (Count: ${count})</li>`;
+                    }
+                    content += `</ul>`;
+                }
+
+                tab.innerHTML = `
+                    <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                        <i class="bi bi-trash"></i>
+                    </span>
+                    <h1>Cyto Aspiration</h1>
+                    ${content}
+                `;
+
+                userTabs.appendChild(tab);
         }
 
         // Function to close a tab
