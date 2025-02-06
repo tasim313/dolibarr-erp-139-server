@@ -2035,6 +2035,7 @@ switch (true) {
             .then(result => {
                 if (result.status === 'success') {
                     alert('Finalization Done successfully!');
+                    location.reload();
                 } else {
                     alert('Error: ' + result.message);
                 }

@@ -107,7 +107,10 @@ $cyto_doctor_complete_json = json_encode($cyto_doctor_complete_case);
 
 $cyto_aspiration_list = cyto_doctor_aspiration_history(null, null, 'today');
 $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
-var_dump($cyto_aspiration_list_json)
+
+$cyto_study_list = cyto_doctor_study_patient_history(null, null, 'today');
+$cyto_study_list_json = json_encode($cyto_study_list);
+
 
 ?>
 
@@ -287,6 +290,9 @@ var_dump($cyto_aspiration_list_json)
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
         const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
         const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
+        const cytoStudyCompletedata = JSON.parse('<?php echo addslashes($cyto_study_list_json); ?>');
+
+        console.log("Cyto Study Complete", cytoStudyCompletedata);
         
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
@@ -337,6 +343,7 @@ var_dump($cyto_aspiration_list_json)
                     return entry.doctor === username || entry.created_user === username || entry.assistant === username;
                 });
 
+                
                 // Check if there are any matches
                 if (userReceptions.length > 0) {
                     // Process and display the data for the matched user
