@@ -1193,4 +1193,141 @@ function cyto_doctor_aspiration_history($startDate = null, $endDate = null, $dat
     return $existingData;
 }
 
+
+function cyto_doctor_study_patient_history($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // Base SQL Query
+    $baseSQL = "
+        SELECT rowid, 
+               lab_number, 
+               screening_study, 
+               screening_patient_history, 
+               screening_study_count, 
+               screening_study_count_data, 
+               finalization_study,
+               finalization_patient_history, 
+               screening_doctor_name, 
+               finalization_doctor_name, 
+               finalization_study_count, 
+               finalization_study_count_data
+        FROM llx_cyto_doctor_study_patient_info
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // If both startDate and endDate are provided
+    if ($startDate && $endDate) {
+        $sql = $baseSQL . "
+            WHERE 
+                EXISTS (
+                    SELECT 1 
+                    FROM jsonb_each_text(screening_study_count_data::jsonb) AS e(username, timestamps)
+                    CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                    WHERE DATE(elem::timestamp) BETWEEN $1 AND $2
+                )
+                OR 
+                EXISTS (
+                    SELECT 1 
+                    FROM jsonb_each_text(finalization_study_count_data::jsonb) AS e(username, timestamps)
+                    CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                    WHERE DATE(elem::timestamp) BETWEEN $1 AND $2
+                )
+        ";
+        $params = [$startDate, $endDate];
+
+    } else {
+        // Handling specific date options
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(screening_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) = CURRENT_DATE - INTERVAL '1 day'
+                        )
+                        OR 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(finalization_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) = CURRENT_DATE - INTERVAL '1 day'
+                        )
+                ";
+                break;
+
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(screening_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                        )
+                        OR 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(finalization_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                        )
+                ";
+                break;
+
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(screening_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) = CURRENT_DATE
+                        )
+                        OR 
+                        EXISTS (
+                            SELECT 1 
+                            FROM jsonb_each_text(finalization_study_count_data::jsonb) AS e(username, timestamps)
+                            CROSS JOIN LATERAL jsonb_array_elements_text(timestamps::jsonb) AS elem
+                            WHERE DATE(elem::timestamp) = CURRENT_DATE
+                        )
+                ";
+                break;
+        }
+    }
+
+    // Log SQL Query
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute query
+    if (!empty($params)) {
+        $result = pg_query_params($pg_con, $sql, $params);
+    } else {
+        $result = pg_query($pg_con, $sql);
+    }
+
+    // Check for query execution errors
+    if (!$result) {
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch and return the results
+    $existingData = pg_fetch_all($result) ?: [];
+    error_log("Fetched Data: " . json_encode($existingData));
+    pg_free_result($result);
+
+    return $existingData;
+}
+
+
 ?>
