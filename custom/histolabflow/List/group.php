@@ -114,6 +114,13 @@ $cyto_study_list_json = json_encode($cyto_study_list);
 $cyto_transcription_list = cyto_transcription_entery_list(null, null, 'today');
 $cyto_transcription_list_json = json_encode($cyto_transcription_list);
 
+$cyto_slide_prepare_list = cyto_slide_prepared_list(null, null, 'today');
+$cyto_slide_prepare_list_json = json_encode($cyto_slide_prepare_list);
+
+$cyto_special_instruction_list = cyto_special_list(null, null, 'today');
+$cyto_special_instruction_json = json_encode($cyto_special_instruction_list);
+
+
 ?>
 
 <!DOCTYPE html>
@@ -285,17 +292,18 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
          var hostname = window.location.hostname;
     </script>
    <!-- Reception Data visualization -->
-    <script>  
+    <script>
+        
         const receptionData = <?php echo $receptionJson; ?>;
         const grossdata = <?php echo $grossJson; ?>;
         const worksheetdata = <?php echo $worksheetTrackingJson; ?>;
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
         const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
         const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
-        const cytoStudyCompletedata = JSON.parse('<?php echo addslashes($cyto_study_list_json); ?>');
         const cytoTranscriptiondata = <?php echo $cyto_transcription_list_json ?>;
+        const cytoSlidePreparedata = <?php echo $cyto_slide_prepare_list_json ?>;
+        const cytoSpecialInstructiondata = <?php echo $cyto_special_instruction_json ?>;
 
-       
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
             link.addEventListener('click', function (event) {
@@ -318,7 +326,7 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
                 // Find all objects where user_login matches the username
                 const userWorksheetInformation = worksheetdata.filter(worksheet => worksheet.user_login?.trim().toLowerCase() === normalizedUsername);
                 const userTranscriptionInformation = transcriptiondata.filter(transcription => transcription.created_user?.trim().toLowerCase() === normalizedUsername);
-
+                
                 // Filter cytoDoctorCompletedata based on username
                 const userCytoDoctorData = cytoDoctorCompletedata.filter(entry => {
                     try {
@@ -334,7 +342,7 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
                     }
                 });
 
-                // Ensure JSON data exists before filtering
+               // Ensure JSON data exists before filtering
                 // if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
                 //     console.error("cytoAspirationCompletedata is empty or not an array.");
                 //     return;
@@ -349,7 +357,14 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
                     return entry.created_user === username;
                 });
 
-                
+                const userCytoSlidePrepareData = cytoSlidePreparedata.filter(entry =>{
+                    return entry.created_user === username;
+                });
+
+                const userCytoSpecialInstructionData = cytoSpecialInstructiondata.filter(entry =>{
+                    return entry.created_user === username;
+                });
+
                 // Check if there are any matches
                 if (userReceptions.length > 0) {
                     // Process and display the data for the matched user
@@ -371,6 +386,15 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
                 }
                 if (userCytoAspirationData.length > 0) {
                     displayCytoAspirationDetails(userCytoAspirationData, username);
+                }
+                if(userCytoTranscriptionData.length > 0){
+                    displayCytoTranscriptionDetails(userCytoTranscriptionData, username)
+                }
+                if(userCytoSlidePrepareData.length >0){
+                    displayCytoSlidePrepareDetails(userCytoSlidePrepareData, username)
+                }
+                if(userCytoSpecialInstructionData.length >0){
+                    displayCytoSpecialInstructionDetails(userCytoSpecialInstructionData, username)
                 }
                 else {
                     console.log('No reception data found for ' + username);
@@ -941,6 +965,144 @@ $cyto_transcription_list_json = json_encode($cyto_transcription_list);
                 `;
 
                 userTabs.appendChild(tab);
+        }
+
+        function displayCytoTranscriptionDetails(userCytoTranscriptionData, username) {
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Object to store unique lab numbers
+            const labNumbers = new Set();
+
+            // Iterate over user data and collect lab numbers
+            userCytoTranscriptionData.forEach(entry => {
+                labNumbers.add(entry.lab_number); // Track unique lab numbers
+            });
+
+            // Extract username properly
+            const user = username || 'Unknown User';
+
+            // Start building the content for the tab
+            let content = `<h2>${user}</h2>`;
+            content += `<h5>Total Lab Numbers: ${labNumbers.size}</h5>`;
+
+            if (labNumbers.size > 0) {
+                content += `<h5>Lab Numbers</h5><ul>`;
+                labNumbers.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Cyto Transcription</h1>
+                ${content}
+            `;
+
+            userTabs.appendChild(tab);
+        }
+
+        function displayCytoSlidePrepareDetails(userCytoSlidePrepareData, username) {
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Object to store unique lab numbers
+            const labNumbers = new Set();
+
+            // Iterate over user data and collect lab numbers
+            userCytoSlidePrepareData.forEach(entry => {
+                labNumbers.add(entry.lab_number); // Track unique lab numbers
+            });
+
+            // Extract username properly
+            const user = username || 'Unknown User';
+
+            // Start building the content for the tab
+            let content = `<h2>${user}</h2>`;
+            content += `<h5>Total Lab Numbers: ${labNumbers.size}</h5>`;
+
+            if (labNumbers.size > 0) {
+                content += `<h5>Lab Numbers</h5><ul>`;
+                labNumbers.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Cyto Slide Prepare</h1>
+                ${content}
+            `;
+
+            userTabs.appendChild(tab);
+        }
+
+        function displayCytoSpecialInstructionDetails(userCytoSpecialInstructionData, username){
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Object to store unique lab numbers
+            const labNumbers = new Set();
+
+            // Iterate over user data and collect lab numbers
+            userCytoSpecialInstructionData.forEach(entry => {
+                labNumbers.add(entry.lab_number); // Track unique lab numbers
+            });
+
+            // Extract username properly
+            const user = username || 'Unknown User';
+
+            // Start building the content for the tab
+            let content = `<h2>${user}</h2>`;
+            content += `<h5>Total Lab Numbers: ${labNumbers.size}</h5>`;
+
+            if (labNumbers.size > 0) {
+                content += `<h5>Lab Numbers</h5><ul>`;
+                labNumbers.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Cyto Special Instruction Complete</h1>
+                ${content}
+            `;
+
+            userTabs.appendChild(tab);
         }
 
 
