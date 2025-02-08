@@ -1329,5 +1329,80 @@ function cyto_doctor_study_patient_history($startDate = null, $endDate = null, $
     return $existingData;
 }
 
+function cyto_transcription_entery_list($startDate = null, $endDate = null, $dateOption = 'today') {
+    global $pg_con;
+
+    // SQL Base Query
+    $baseSQL = "
+        select lab_number, created_user from llx_cyto_microscopic_description 
+    ";
+
+    // SQL Query and Parameters Initialization
+    $sql = '';
+    $params = [];
+
+    // Build the query based on date options
+    if ($startDate && $endDate) {
+        // Case when both start and end dates are provided
+        $sql = $baseSQL . "
+            WHERE DATE(created_date) BETWEEN $1 AND $2
+        ";
+        $params = [$startDate, $endDate];
+    } else {
+        // Handling date options (today, yesterday, or both)
+        switch ($dateOption) {
+            case 'yesterday':
+                $sql = $baseSQL . "
+                    WHERE DATE(created_date) = CURRENT_DATE - INTERVAL '1 day'
+                ";
+                break;
+
+            case 'both':
+                $sql = $baseSQL . "
+                    WHERE DATE(created_date) IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')
+                ";
+                break;
+
+            case 'today':
+            default:
+                $sql = $baseSQL . "
+                    WHERE DATE(created_date) = CURRENT_DATE
+                ";
+                break;
+        }
+    }
+
+    // Log SQL Query
+    error_log("SQL Query: " . $sql);
+    error_log("Parameters: " . json_encode($params));
+
+    // Execute the query using pg_query_params when parameters exist, otherwise use pg_query
+    if (!empty($params)) {
+        $result = pg_query_params($pg_con, $sql, $params);
+    } else {
+        $result = pg_query($pg_con, $sql);
+    }
+
+    // Check for errors in query execution
+    if (!$result) {
+        error_log("Error executing SQL: " . pg_last_error($pg_con));
+        return [
+            'error' => true,
+            'message' => 'An error occurred while loading the data. Please try again later.'
+        ];
+    }
+
+    // Fetch the result as an associative array
+    $existingData = pg_fetch_all($result) ?: [];
+
+    // Log the data for debugging
+    error_log("Fetched Data: " . json_encode($existingData));
+
+    // Free the result
+    pg_free_result($result);
+
+    // Return the data or an empty array if no data found
+    return $existingData;
+}
 
 ?>

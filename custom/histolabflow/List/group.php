@@ -111,6 +111,8 @@ $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
 $cyto_study_list = cyto_doctor_study_patient_history(null, null, 'today');
 $cyto_study_list_json = json_encode($cyto_study_list);
 
+$cyto_transcription_list = cyto_transcription_entery_list(null, null, 'today');
+$cyto_transcription_list_json = json_encode($cyto_transcription_list);
 
 ?>
 
@@ -291,9 +293,9 @@ $cyto_study_list_json = json_encode($cyto_study_list);
         const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
         const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
         const cytoStudyCompletedata = JSON.parse('<?php echo addslashes($cyto_study_list_json); ?>');
+        const cytoTranscriptiondata = <?php echo $cyto_transcription_list_json ?>;
 
-        console.log("Cyto Study Complete", cytoStudyCompletedata);
-        
+       
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
             link.addEventListener('click', function (event) {
@@ -333,14 +335,18 @@ $cyto_study_list_json = json_encode($cyto_study_list);
                 });
 
                 // Ensure JSON data exists before filtering
-                if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
-                    console.error("cytoAspirationCompletedata is empty or not an array.");
-                    return;
-                }
+                // if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
+                //     console.error("cytoAspirationCompletedata is empty or not an array.");
+                //     return;
+                // }
 
                 // Filter data based on doctor, assistant, or created_user field
                 const userCytoAspirationData = cytoAspirationCompletedata.filter(entry => {
                     return entry.doctor === username || entry.created_user === username || entry.assistant === username;
+                });
+
+                const userCytoTranscriptionData = cytoTranscriptiondata.filter(entry =>{
+                    return entry.created_user === username;
                 });
 
                 
