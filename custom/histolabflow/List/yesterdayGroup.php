@@ -108,6 +108,9 @@ $cyto_doctor_complete_json = json_encode($cyto_doctor_complete_case);
 $cyto_aspiration_list = cyto_doctor_aspiration_history(null, null, 'yesterday');
 $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
 
+$cyto_transcription_list = cyto_transcription_entery_list(null, null, 'yesterday');
+$cyto_transcription_list_json = json_encode($cyto_transcription_list);
+
 ?>
 
 <!DOCTYPE html>
@@ -289,6 +292,8 @@ $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
         const transcriptiondata = <?php echo $transcriptionJson; ?>;
         const cytoDoctorCompletedata = <?php echo $cyto_doctor_complete_json; ?>;
         const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
+        const cytoTranscriptiondata = <?php echo $cyto_transcription_list_json ?>;
+        const cytoAspirationCompletedata = <?php echo $cyto_aspiration_list_json ?>;
 
         // Handle the click event on username links
         document.querySelectorAll('.username-link').forEach(link => {
@@ -329,14 +334,18 @@ $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
                 });
 
                 // Ensure JSON data exists before filtering
-                if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
-                    console.error("cytoAspirationCompletedata is empty or not an array.");
-                    return;
-                }
+                // if (!Array.isArray(cytoAspirationCompletedata) || cytoAspirationCompletedata.length === 0) {
+                //     console.error("cytoAspirationCompletedata is empty or not an array.");
+                //     return;
+                // }
 
                 // Filter data based on doctor, assistant, or created_user field
                 const userCytoAspirationData = cytoAspirationCompletedata.filter(entry => {
                     return entry.doctor === username || entry.created_user === username || entry.assistant === username;
+                });
+
+                const userCytoTranscriptionData = cytoTranscriptiondata.filter(entry =>{
+                    return entry.created_user === username;
                 });
 
                 // Check if there are any matches
@@ -360,6 +369,9 @@ $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
                 }
                 if (userCytoAspirationData.length > 0) {
                     displayCytoAspirationDetails(userCytoAspirationData, username);
+                }
+                if(userCytoTranscriptionData.length >0){
+                    displayCytoTranscriptionDetails(userCytoTranscriptionData, username)
                 }
                 else {
                     console.log('No reception data found for ' + username);
@@ -930,6 +942,52 @@ $cyto_aspiration_list_json = json_encode($cyto_aspiration_list);
                 `;
 
                 userTabs.appendChild(tab);
+        }
+
+        function displayCytoTranscriptionDetails(userCytoTranscriptionData, username) {
+            const userTabs = document.getElementById('userTabs');
+            if (!userTabs) {
+                console.error('User tabs container not found in the DOM.');
+                return;
+            }
+
+            // Create a new tab dynamically
+            const tab = document.createElement('div');
+            tab.classList.add('user-tab', 'p-3', 'mb-3', 'border', 'position-relative');
+            tab.style.borderRadius = '5px';
+
+            // Object to store unique lab numbers
+            const labNumbers = new Set();
+
+            // Iterate over user data and collect lab numbers
+            userCytoTranscriptionData.forEach(entry => {
+                labNumbers.add(entry.lab_number); // Track unique lab numbers
+            });
+
+            // Extract username properly
+            const user = username || 'Unknown User';
+
+            // Start building the content for the tab
+            let content = `<h2>${user}</h2>`;
+            content += `<h5>Total Lab Numbers: ${labNumbers.size}</h5>`;
+
+            if (labNumbers.size > 0) {
+                content += `<h5>Lab Numbers</h5><ul>`;
+                labNumbers.forEach(lab => {
+                    content += `<li>${lab}</li>`;
+                });
+                content += `</ul>`;
+            }
+
+            tab.innerHTML = `
+                <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab(this)">
+                    <i class="bi bi-trash"></i>
+                </span>
+                <h1>Cyto Transcription</h1>
+                ${content}
+            `;
+
+            userTabs.appendChild(tab);
         }
 
         // Function to close a tab

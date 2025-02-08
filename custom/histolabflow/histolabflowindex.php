@@ -393,6 +393,7 @@ if (empty($labNumber_list)) {
                     </select>
                 </div>
             </form>
+            <button style="margin-top: 10px; margin-bottom: 10px;" id="exportButton" class="btn btn-primary">Export to CSV</button>
         </div>
     </div>
    <!-- Placeholder for row count above the table -->
@@ -1371,10 +1372,39 @@ if (empty($labNumber_list)) {
         updateRowCount();
     }
 
+    function exportTableToCSV() {
+        const table = document.getElementById("labDataTable");
+        const rows = table.querySelectorAll("tbody tr");
+
+        // Get column headers from the table header (th elements)
+        const headers = Array.from(table.querySelectorAll("thead th")).map(header => header.textContent.trim());
+
+        // Initialize CSV content with headers
+        let csvContent = headers.join(",") + "\n";  // Create the header row
+
+        // Loop through each row and gather data from each cell
+        rows.forEach(row => {
+            const cells = row.querySelectorAll("td");
+            const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+            csvContent += rowData.join(",") + "\n";  // Append row data
+        });
+
+        // Create a downloadable CSV file
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "all_lab_data.csv");  // File name
+        document.body.appendChild(link);
+        link.click();  // Trigger the download
+    }
+
     // Initial row count display when the page loads
     document.addEventListener("DOMContentLoaded", () => {
         updateRowCount(); // Call it to show the initial count
     });
+
+    // Add event listener to the export button (assuming the button has the ID 'exportButton')
+    document.getElementById('exportButton').addEventListener('click', exportTableToCSV);
 </script>
 
 
