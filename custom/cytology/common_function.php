@@ -1277,4 +1277,41 @@ function get_cyto_clinical_impression_list() {
     return $clinical_impressions;
 }
 
+
+function get_mfc_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            fk_statut = 1 
+            AND date_commande BETWEEN '2025-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'MFC'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
 ?>

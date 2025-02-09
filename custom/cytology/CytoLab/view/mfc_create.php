@@ -69,8 +69,7 @@ $isDoctor = false;
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
-$LabNumber = $_GET['labNumber'];
-
+$LabNumber = $_GET['LabNumber'];
 
 $assistants = get_cyto_tech_list();
 foreach ($assistants as $assistant) {
@@ -126,54 +125,36 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <h3>Cyto Lab WorkFlow</h3>
             <ul class="nav nav-tabs">
                 <li><a href="../index.php">Home</a></li>
-                <li><a href="./mfc.php">MFC</a></li>
+                <li class="active"><a href="./mfc.php">MFC</a></li>
                 <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
                 <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
                 <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
                 <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
                 <li><a href="../recall.php">Re-Call</a></li>
                 <li><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
-                <li class="active"><a href="./cancel_information.php">Cancel Information</a></li>
+                <li><a href="./cancel_information.php">Cancel Information</a></li>
                 <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
         <br>
 
         <br>
-    <h4>Cancel Information</h4>
-
-    <?php
-
-        // Fetch data using the function
-        $data = cyto_cancel_status();
-
-        // Check for errors or empty data
-        if (isset($data['error'])) {
-            echo '<div class="alert alert-danger">' . htmlspecialchars($data['error']) . '</div>';
-        } elseif (empty($data)) {
-            echo '<div class="alert alert-info">No cancel information available.</div>';
-        } else {
-            // Display data in a table
-            echo '<table class="table table-bordered table-striped">';
-            echo '<thead>';
-            echo '<tr>';
-            echo '<th>Reference</th>';
-            echo '<th>Note</th>';
-            echo '</tr>';
-            echo '</thead>';
-            echo '<tbody>';
-
-            foreach ($data as $row) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($row['ref']) . '</td>';
-                echo '<td>' . htmlspecialchars($row['note_public']) . '</td>';
-                echo '</tr>';
-            }
-
-            echo '</tbody>';
-            echo '</table>';
-        }
-
+    <h4>MFC</h4>
+    <?php 
+      echo ($LabNumber);
     ?>
+       
 </div>
 </body>
 </html>
+
+
+<?php 
+    $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+    $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+
+    print '</div></div>';
+
+    // End of page
+    llxFooter();
+    $db->close();
+?>

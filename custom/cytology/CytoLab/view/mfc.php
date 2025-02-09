@@ -126,54 +126,65 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         <h3>Cyto Lab WorkFlow</h3>
             <ul class="nav nav-tabs">
                 <li><a href="../index.php">Home</a></li>
-                <li><a href="./mfc.php">MFC</a></li>
+                <li class="active"><a href="./mfc.php">MFC</a></li>
                 <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
                 <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
                 <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
                 <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
                 <li><a href="../recall.php">Re-Call</a></li>
                 <li><a href="./doctor_instruction.php">Doctor's Instructions</a></li>
-                <li class="active"><a href="./cancel_information.php">Cancel Information</a></li>
+                <li><a href="./cancel_information.php">Cancel Information</a></li>
                 <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
         <br>
 
         <br>
-    <h4>Cancel Information</h4>
+    <h4>MFC</h4>
 
-    <?php
+        <div id="input-group">
+			<label id="input-label">Enter or Scan the Lab Number : </label>
+			<input id="input-field" placeholder="Scan Lab number" type="text" onkeypress="handleLabNumberScan(event)" autofocus>
+			<!-- Error message container -->
+			<div id="error-message" style="color: red; font-size: 14px; margin-top: 5px; display: none;"></div>
+		</div>
 
-        // Fetch data using the function
-        $data = cyto_cancel_status();
-
-        // Check for errors or empty data
-        if (isset($data['error'])) {
-            echo '<div class="alert alert-danger">' . htmlspecialchars($data['error']) . '</div>';
-        } elseif (empty($data)) {
-            echo '<div class="alert alert-info">No cancel information available.</div>';
-        } else {
-            // Display data in a table
-            echo '<table class="table table-bordered table-striped">';
-            echo '<thead>';
-            echo '<tr>';
-            echo '<th>Reference</th>';
-            echo '<th>Note</th>';
-            echo '</tr>';
-            echo '</thead>';
-            echo '<tbody>';
-
-            foreach ($data as $row) {
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($row['ref']) . '</td>';
-                echo '<td>' . htmlspecialchars($row['note_public']) . '</td>';
-                echo '</tr>';
+        <script>
+            function handleLabNumberScan(event) {
+                // Check if the Enter key is pressed
+                if (event.key === 'Enter') {
+                    const inputField = document.getElementById('input-field');
+                    let labNumber = inputField.value.trim(); // Get the scanned lab number
+                    
+                    // Validate input
+                    if (labNumber === '') {
+                        const errorMessage = document.getElementById('error-message');
+                        errorMessage.textContent = 'Lab number cannot be empty!';
+                        errorMessage.style.display = 'block';
+                        return;
+                    }
+                    // Add prefix 'FNA' if it's not already present
+                    if (!labNumber.startsWith('MFC')) {
+                        labNumber = 'MFC' + labNumber;
+                    }
+                    // Clear error message if input is valid
+                    document.getElementById('error-message').style.display = 'none';
+                    // Redirect to the mfc_create.php page with the LabNumber as a query parameter
+                    window.location.href = `./mfc_create.php?LabNumber=${encodeURIComponent(labNumber)}`;
+                }
             }
-
-            echo '</tbody>';
-            echo '</table>';
-        }
-
-    ?>
+        </script>
 </div>
 </body>
 </html>
+
+
+<?php 
+    $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+    $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+
+    print '</div></div>';
+
+    // End of page
+    llxFooter();
+    $db->close();
+?>
