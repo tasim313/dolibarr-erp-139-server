@@ -1072,7 +1072,7 @@ $cyto_special_instruction_json = json_encode($cyto_special_instruction_list);
             userTabs.appendChild(tab);
         }
 
-        function displayCytoSpecialInstructionDetails(userCytoSpecialInstructionData, username){
+        function displayCytoSpecialInstructionDetails(userCytoSpec custom/histolabflow/List/group.phpialInstructionData, username){
             const userTabs = document.getElementById('userTabs');
             if (!userTabs) {
                 console.error('User tabs container not found in the DOM.');

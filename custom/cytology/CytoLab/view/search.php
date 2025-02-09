@@ -128,6 +128,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     <h3>Cyto Lab WorkFlow</h3>
         <ul class="nav nav-tabs">
             <li class="active"><a href="../index.php">Home</a></li>
+            <li><a href="./mfc.php">MFC</a></li>
             <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
             <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
             <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
