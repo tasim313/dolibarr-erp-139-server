@@ -200,7 +200,13 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             
                             <div class="form-group">
                                 <label for="description">Description:</label>
-                                <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+                                    <textarea id="description" name="description" class="form-control" rows="5" required>
+Quantity: 
+Color: 
+Appearance: 
+Sediment: 
+Clot: 
+                                    </textarea>
                             </div>
                             
                             <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
