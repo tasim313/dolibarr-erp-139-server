@@ -140,7 +140,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
         <br>
     <h4>MFC</h4>
-
+        <?php 
+            $mfc_list = get_mfc_labnumber_list(); 
+            $lab_numbers = json_encode(array_column($mfc_list, 'lab_number')); // Extract lab numbers as an array
+        ?>
         <div id="input-group">
 			<label id="input-label">Enter or Scan the Lab Number : </label>
 			<input id="input-field" placeholder="Scan Lab number" type="text" onkeypress="handleLabNumberScan(event)" autofocus>
@@ -149,28 +152,39 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 		</div>
 
         <script>
+            // Parse PHP array into JavaScript
+            const mfcLabNumbers = <?php echo $lab_numbers; ?>; 
+
             function handleLabNumberScan(event) {
-                // Check if the Enter key is pressed
                 if (event.key === 'Enter') {
                     const inputField = document.getElementById('input-field');
-                    let labNumber = inputField.value.trim(); // Get the scanned lab number
-                    
+                    let labNumber = inputField.value.trim(); 
+
                     // Validate input
                     if (labNumber === '') {
-                        const errorMessage = document.getElementById('error-message');
-                        errorMessage.textContent = 'Lab number cannot be empty!';
-                        errorMessage.style.display = 'block';
+                        showError('Lab number cannot be empty!');
                         return;
                     }
-                    // Add prefix 'FNA' if it's not already present
+
+                    // Add prefix 'MFC' if not already present
                     if (!labNumber.startsWith('MFC')) {
                         labNumber = 'MFC' + labNumber;
                     }
-                    // Clear error message if input is valid
-                    document.getElementById('error-message').style.display = 'none';
-                    // Redirect to the mfc_create.php page with the LabNumber as a query parameter
-                    window.location.href = `./mfc_create.php?LabNumber=${encodeURIComponent(labNumber)}`;
+
+                    // Check if the lab number exists in the list
+                    if (mfcLabNumbers.includes(labNumber)) {
+                        // Redirect to mfc_create.php
+                        window.location.href = `./mfc_create.php?LabNumber=${encodeURIComponent(labNumber)}`;
+                    } else {
+                        showError('This lab number is not MFC. Please insert a valid MFC lab number.');
+                    }
                 }
+            }
+
+            function showError(message) {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
             }
         </script>
 </div>

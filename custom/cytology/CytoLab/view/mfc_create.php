@@ -135,13 +135,86 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <li><a href="./cancel_information.php">Cancel Information</a></li>
                 <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
-        <br>
-
-        <br>
-    <h4>MFC</h4>
+        
+   
     <?php 
-      echo ($LabNumber);
+    //   echo ($LabNumber);
+    //   echo($loggedInUsername);
+      $mfc_list = get_mfc_create_list($LabNumber);
     ?>
+
+        <?php if (!empty($mfc_list)): // If lab number exists, show update form ?>
+            <?php $mfc_data = $mfc_list[0]; ?> 
+
+            <div class="container">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">MFC Update</h3></div>
+                    <div class="panel-body">
+                        <form method="POST" action="../edit/update_mfc.php">
+                            
+                            <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+
+                            <div class="form-group">
+                                <label for="previous_description">Previous Description:</label>
+                                <textarea id="previous_description" class="form-control" rows="5" readonly><?php 
+                                    $previous_data = json_decode($mfc_data['previous_description'], true); 
+                                    if (!empty($previous_data)) {
+                                        foreach ($previous_data as $entry) {
+                                            echo "Old Description: " . $entry['old_description'] . "\n";
+                                            echo "Created By: " . $entry['created_user'] . "\n";
+                                            echo "Updated By: " . $entry['updated_user'] . "\n";
+                                            echo "Created Time: " . $entry['created_time'] . "\n";
+                                            echo "Updated Time: " . $entry['updated_time'] . "\n";
+                                            echo "-----------------------------------\n";
+                                        }
+                                    }
+                                ?></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description:</label>
+                                <textarea id="description" name="description" class="form-control" rows="4" required><?php echo trim(htmlspecialchars($mfc_data['description'])); ?></textarea>
+                            </div>
+
+
+                            <input type="hidden" name="updated_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+
+                            <button type="submit" class="btn btn-warning">
+                                Submit
+                            </button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+        <?php else: // If lab number is not found, show insert form ?>
+            <div class="container" style="margin-top:30px;">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h3 class="panel-title">MFC New Entry</h3></div>
+                    <div class="panel-body">
+                        <form method="POST" action="../insert/insert_mfc.php">
+                            
+                            <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                            
+                            <div class="form-group">
+                                <label for="description">Description:</label>
+                                <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+                            </div>
+                            
+                            <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                            
+                            <button type="submit" class="btn btn-primary">
+                                Submit
+                            </button>
+                            
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
        
 </div>
 </body>

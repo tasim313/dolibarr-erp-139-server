@@ -1314,4 +1314,39 @@ function get_mfc_labnumber_list() {
     return $labnumbers;
 }
 
+function get_mfc_create_list($lab_number) {
+    global $pg_con;
+
+    // Validate lab_number to prevent SQL injection
+    $lab_number = pg_escape_string($pg_con, $lab_number);
+
+    // Corrected SQL Query: Added FROM clause and fixed WHERE condition
+    $sql = "SELECT rowid, lab_number, created_user, updated_user, created_date, updated_date, description, previous_description 
+            FROM llx_mfc
+            WHERE lab_number = '$lab_number'";
+
+    $result = pg_query($pg_con, $sql);
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = [
+                'rowid' => $row['rowid'],
+                'lab_number' => $row['lab_number'],
+                'created_user' => $row['created_user'],
+                'updated_user' => $row['updated_user'],
+                'created_date' => $row['created_date'],
+                'updated_date' => $row['updated_date'],
+                'description' => $row['description'],
+                'previous_description' => $row['previous_description']
+            ];
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
 ?>
