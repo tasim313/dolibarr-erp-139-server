@@ -130,6 +130,18 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
             text-align: left;
             padding-left: 0;
         }
+        .fixation-row {
+            display: flex;
+            flex-wrap: wrap; /* Allows the content to wrap to the next line if needed */
+            margin-bottom: 10px; /* Adds space between rows */
+        }
+
+        .fixation-item {
+            flex: 1 1 200px; /* Allows the items to take equal space, with a minimum width of 200px */
+            margin: 5px;
+            padding: 10px;  
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -364,57 +376,115 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
             <!-- Fixation Details -->
             
             <div >
-                <?php 
+                <?php
+                    // Fetch fixation details
                     $fixationInformation = get_cyto_fixation_details($cyto_id);
 
-                    // Initialize variables for counting and concatenating
-                    $dryYesCount = 0;
-                    $dryNoCount = 0;
+                    // Initialize arrays for storing counts and details
+                    $dryYesCounts = [];
+                    $dryNoCounts = [];
                     $aspirationMaterials = [];
                     $specialInstructions = [];
                     $locations = [];
+                    $locationPrefixCount = [];  // To track the occurrence of each location
 
                     if (!empty($fixationInformation)) {
                         foreach ($fixationInformation as $info_fixation) {
-                            // Count the dry values
+                            // Collect unique locations, aspiration materials, and special instructions
+                            $location = $info_fixation['location'];
+                            $aspirationMaterial = $info_fixation['aspiration_materials'];
+                            $specialInstruction = $info_fixation['special_instructions'];
+
+                            // Ensure unique entries for locations
+                            if (!in_array($location, $locations)) {
+                                $locations[] = $location;
+                            }
+
+                            if (!in_array($aspirationMaterial, $aspirationMaterials)) {
+                                $aspirationMaterials[] = $aspirationMaterial;
+                            }
+                            if (!in_array($specialInstruction, $specialInstructions)) {
+                                $specialInstructions[] = $specialInstruction;
+                            }
+
+                            // Count the dry values by location
                             if ($info_fixation['dry'] === 'Yes') {
-                                $dryYesCount++;
+                                if (!isset($dryYesCounts[$location])) {
+                                    $dryYesCounts[$location] = 0;
+                                }
+                                $dryYesCounts[$location]++;
                             } elseif ($info_fixation['dry'] === 'No') {
-                                $dryNoCount++;
-                            }
-
-                            // Collect aspiration materials and special instructions for later display
-                            if (!in_array($info_fixation['aspiration_materials'], $aspirationMaterials)) {
-                                $aspirationMaterials[] = $info_fixation['aspiration_materials'];
-                            }
-                            if (!in_array($info_fixation['special_instructions'], $specialInstructions)) {
-                                $specialInstructions[] = $info_fixation['special_instructions'];
-                            }
-
-                            // Collect unique locations
-                            if (!in_array($info_fixation['location'], $locations)) {
-                                $locations[] = $info_fixation['location'];
+                                if (!isset($dryNoCounts[$location])) {
+                                    $dryNoCounts[$location] = 0;
+                                }
+                                $dryNoCounts[$location]++;
                             }
                         }
                     }
-                ?>
 
-                <table class="table" id="fixation-details-table" style="border-collapse: collapse; width: 100%; border-top: none;  margin-top:-15px;">
-                    <tbody>
-                        <?php if (empty($fixationInformation)): ?>
-                            <tr><td colspan="2"></td></tr>
-                        <?php else: ?>
-                            <tr>
-                                
-                                <td  style="padding: 8px; border: none; font-size:16px;">
-                                    <b>A/M:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= implode(', ', $aspirationMaterials) ?>
-                                </td>
-                              
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-                <form method="POST" action="insert/update_clinical_information.php">
+                    // Clean up the arrays by trimming empty values
+                    $cleanedLocations = array_filter(array_map('trim', $locations));
+                    $cleanedSpecialInstructions = array_filter(array_map('trim', $specialInstructions));
+
+                    // Initialize a variable to keep track of the letter to append as a prefix
+                    $prefixIndex = 0;  // Start with 'P-' for the first location
+
+                    // We will iterate over the cleaned locations and display each location, A/M, slide, and special instructions in the required format
+                    for ($i = 0; $i < count($cleanedLocations); $i++):
+                        // Get values for the current location
+                        $location = htmlspecialchars($cleanedLocations[$i]);
+                        $aspirationMaterial = htmlspecialchars($aspirationMaterials[$i] ?? ''); // Default empty string if no aspiration material
+                        
+                        // Get slide counts for the specific location
+                        $dryNo = isset($dryNoCounts[$location]) ? $dryNoCounts[$location] : 0;
+                        $dryYes = isset($dryYesCounts[$location]) ? $dryYesCounts[$location] : 0;
+                        $slide = htmlspecialchars("$dryNo+$dryYes"); // Combine slide counts
+
+                        $specialInstruction = htmlspecialchars($cleanedSpecialInstructions[$i] ?? ''); // Default empty if no special instruction
+
+                        // Generate the prefix for the location
+                        if ($prefixIndex === 0) {
+                            $prefix = 'P-'; // First unique location gets "P-"
+                        } else {
+                            $prefix = chr(64 + $prefixIndex) . "-"; // Generate prefix (A, B, C, etc.)
+                        }
+
+                        // Increment the prefix index
+                        $prefixIndex++;
+
+                        // Combine the prefix with the location name
+                        $prefixedLocation = $prefix . $location;
+                ?>
+                <!-- Display each section for a location horizontally -->
+                <div class="fixation-row">
+                    <?php if (!empty($prefixedLocation)): ?>
+                        <div class="fixation-item">
+                            <b>Location:</b> <?= $prefixedLocation ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($aspirationMaterial)): ?>
+                        <div class="fixation-item">
+                            <b>A/M:</b> <?= $aspirationMaterial ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($slide)): ?>
+                        <div class="fixation-item">
+                            <b>Slide:</b> <?= $slide ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($specialInstruction)): ?>
+                        <div class="fixation-item">
+                            <b>Special Instructions:</b> <?= $specialInstruction ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endfor; ?>
+
+
+                <form method="POST" action="insert/update_clinical_information.php" style="margin-top:20px;">
                     <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-15px;">
                             <?php if (empty($clinicalInformation)): ?>
                                 <tr><td colspan="2" style="border: none; text-align: center;"></td></tr>
@@ -465,45 +535,6 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
                     <button type="submit" class="btn btn-primary" style="margin-bottom:30px;">Save</button>
                 </form>
 
-                <?php
-                    // Remove empty values from the array
-                    $cleanedLocations = array_filter(array_map('trim', $locations));
-                    $cleanedSpecialInstructions = array_filter(array_map('trim', $specialInstructions));
-
-                    // Ensure values are properly checked
-                    $showLocation = !empty($cleanedLocations);
-                    $showSlide = !empty($dryNoCount) || !empty($dryYesCount);
-                    $showSpecialInstructions = !empty($cleanedSpecialInstructions);
-
-                    // If at least one section has data, display the table
-                    if ($showLocation || $showSlide || $showSpecialInstructions): ?>
-                        <table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">
-                            <tbody>
-                                <tr>
-                                    <?php if ($showLocation): ?>
-                                        <td style="padding: 8px; border: none; font-size:18px;">
-                                            <b>Location:</b> <?= htmlspecialchars(implode(', ', $cleanedLocations)) ?>
-                                        </td>
-                                    <?php endif; ?>
-
-                                    <?php if ($showSlide): ?>
-                                        <td style="padding: 8px; border: none; font-size:18px;">
-                                            <b>Slide:</b> <?= htmlspecialchars($dryNoCount) ?>+<?= htmlspecialchars($dryYesCount) ?>
-                                        </td>
-                                    <?php endif; ?>
-
-                                    <?php if ($showSpecialInstructions): ?>
-                                        <td style="padding: 8px; border: none; font-size:18px;">
-                                            <b>Special Instructions:</b> <?= htmlspecialchars(implode(', ', $cleanedSpecialInstructions)) ?>
-                                        </td>
-                                    <?php endif; ?>
-                                </tr>
-                            </tbody>
-                        </table>
-                <?php endif; ?>
-
-
-       
             </div>
 
           
