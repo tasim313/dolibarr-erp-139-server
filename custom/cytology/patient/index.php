@@ -966,9 +966,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         });
 
 
+
          // When the form is submitted, collect the fixation details and add them to the form
          document.getElementById("clinical-information-form").addEventListener("submit", function(event) {
-        event.preventDefault();
+           event.preventDefault();
+           
 
         const tbody = document.getElementById('fixation-details-body');
         const fixationData = [];
