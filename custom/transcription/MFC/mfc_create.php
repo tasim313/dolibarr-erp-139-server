@@ -261,6 +261,50 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
                     </div>
                 </div>
             </div>
+            
+            <?php
+                // Call the function to get diagnosis data by lab number
+                $diagnosis_by_doctor = cyto_diagnosis_by_lab_number($trimmedLabNumber);
+
+                // Check if data is found (i.e., $diagnosis_by_doctor is not an empty array)
+                if (!empty($diagnosis_by_doctor) && isset($diagnosis_by_doctor[0])) {
+                    // Display the data in a table
+                    echo '<table class="table table-bordered table-striped">';
+                    echo '<tr><th>Microscopic Description And Diagnosis</th></tr>';
+
+                    // Loop through the diagnosis data and display in the table
+                    foreach ($diagnosis_by_doctor as $diagnosis) {
+                        echo '<tr>';
+                        echo '<td><b>' . htmlspecialchars($diagnosis['diagnosis']) . '</b></td>';
+
+                        // Check if there is previous diagnosis data
+                        if (!empty($diagnosis['previous_diagnosis'])) {
+                            $previousDiagnosisData = json_decode($diagnosis['previous_diagnosis'], true);
+                            $previousDiagnosisText = '';
+
+                            // Loop through each entry in the previous diagnosis data
+                            foreach ($previousDiagnosisData as $entry) {
+                                $previousDiagnosisText .= "Previous: " . htmlspecialchars($entry['previous']) . "<br>";
+                                $previousDiagnosisText .= "Date: " . htmlspecialchars($entry['Date']) . "<br>";
+                                $previousDiagnosisText .= "Created by: " . htmlspecialchars($entry['created_user']) . "<br>";
+                                $previousDiagnosisText .= "Updated by: " . htmlspecialchars($entry['updated_user']) . "<br><br>";
+                            }
+
+                            // Display the formatted previous diagnosis data
+                            // echo '<td>' . $previousDiagnosisText . '</td>';
+                        } else {
+                            echo '<td></td>';
+                        }
+
+                        echo '</tr>';
+                    }
+
+                    echo '</table>';
+                } else {
+                    // If no data is found, do not display the table
+                    echo '<p></p>';
+                }
+            ?>
 
             
 
