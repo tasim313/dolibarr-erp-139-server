@@ -522,7 +522,7 @@ switch (true) {
         <i class="fas fa-file-alt" aria-hidden="true"></i> Report
 </button>
 
-<a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
+<a href="Cyto/mfc_edit.php?lab_number=<?php echo 'MFC' . $LabNumber; ?>">
     <button style="border:none; background-color: white; color: black;">
             <i class="fas fa-edit" aria-hidden="true"></i> Edit
     </button>
@@ -2400,53 +2400,31 @@ switch (true) {
 
         </script>
 
-
-        <!-- <script>
-            $(document).ready(function() {
-                $('#readlabno').on('submit', function(e) {
-                    e.preventDefault();
-                    let labno = $('#labno').val();
-                    if (labno) {
-                        $('#lookuplabno').html('<h3 class="semi-bold">Lookup Current Status for Lab No: ' + labno + '</h3>');
-                        // Construct the URL with labno parameter
-                        let url = 'lab_status.php?labno=' + labno;
-
-                        // Redirect to the constructed URL
-                        window.location.href = url;
-                    }
-                });
-
-                $('#tab-screening, #tab-final-screening, #tab-status').on('click', function() {
-                    let labno = $('#labno').val();
-                    if (labno) {
-                        $('#lookuplabno').html('<h3 class="semi-bold">Lookup Current Status for Lab No: ' + labno + '</h3>');
-                        // Construct the URL with labno parameter
-                        let url = 'lab_status.php?labno=' + labno;
-
-                        // Redirect to the constructed URL
-                        window.location.href = url;
-                    }
-                });
-            });
-        </script> -->
-        
+ 
         <script>
             $(document).ready(function() {
                 // Retrieve the lab numbers from PHP
-                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list()); ?>;
+                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
+                const mfcLab = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
+                console.log('mfc lab number :', mfcLab);
 
                 function checkLabNumberAndRedirect(labno) {
                     if (labno) {
                         
                         // Check if the labno exists in cytoLab
-                        const found = cytoLab.some(lab => lab.lab_number === labno);
+                        const foundCyto = cytoLab.some(lab => lab.lab_number === labno);
+                        // Check if the labno exists in mfcLab
+                        const foundMfc = mfcLab.some(lab => lab.lab_number === 'MFC' + labno);
+                       
 
-                        if (found) {
-                            
-                            // Redirect to cytoindex.php if labno is valid
+                        if (foundCyto) {
+                            // Redirect to cytoindex.php if labno is in cytoLab
                             window.location.href = 'Cyto/index.php?labno=' + labno;
+                        } else if (foundMfc) {
+                            // Redirect to mfc_lab_status.php if labno is in mfcLab
+                            window.location.href = 'mfc_lab_status.php?labno=' + labno;
                         } else {
-                            
+                            // Redirect to lab_status.php if labno is not found in either list
                             window.location.href = 'lab_status.php?labno=' + labno;
                         }
                     } else {
@@ -2454,12 +2432,14 @@ switch (true) {
                     }
                 }
 
+                // Handle the form submission
                 $('#readlabno').on('submit', function(e) {
                     e.preventDefault();
                     let labno = $('#labno').val();
                     checkLabNumberAndRedirect(labno);
                 });
 
+                // Handle click events for the tabs
                 $('#tab-screening, #tab-final-screening, #tab-status').on('click', function() {
                     let labno = $('#labno').val();
                     checkLabNumberAndRedirect(labno);
@@ -2517,11 +2497,11 @@ switch (true) {
         <script>
             // Function to show only the report iframe and hide the status
             function loadReport() {
-                var labNumber = "<?php echo htmlspecialchars('HPL' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
+                var labNumber = "<?php echo htmlspecialchars('MFC' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
                 var iframe = document.getElementById('reportFrame');
                 
                 // Set the report URL with the lab number and make the iframe visible
-                iframe.src = "../grossmodule/hpl_report.php?lab_number=" + labNumber;
+                iframe.src = "/custom/transcription/MFC/mfc_report.php?LabNumber=" + labNumber;
                 iframe.style.display = "block";  // Show the report iframe
 
                 // Hide the status section when the report is shown
