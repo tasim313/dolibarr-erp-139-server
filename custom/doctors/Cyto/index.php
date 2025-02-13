@@ -434,32 +434,37 @@ switch (true) {
                         
                     </div>
 
-                    <div class="col-md-6" id="finalization-section" class="disabled-section"  style="width: fit-content;">
+                    <div class="col-md-6" id="finalization-section" style="width: fit-content;">
                         <div id="finalization-section">
                             <h4 class="mt-3" style="cursor: pointer;" id="finalization-header">
                                 <i class="fas fa-microscope text-success mr-2"></i> Finalization
                             </h4>
                         </div>
-                        <div id="final-study-history-section">
-                            <h4 class="mt-3" style="cursor: pointer;" id="final-study-history-header" onclick="toggleTab('final-study-history-tab')">
-                                <i class="fas fa-book-open mr-2"></i> Study / History
-                            </h4>
+
+                        <div class="disabled-section" id="final-screening-option-section">
+                                <div id="final-study-history-section">
+                                    <h4 class="mt-3" style="cursor: pointer;" id="final-study-history-header" onclick="toggleTab('final-study-history-tab')">
+                                        <i class="fas fa-book-open mr-2"></i> Study / History
+                                    </h4>
+                                </div>
+                                <div id="final-lab-instructions-section">
+                                    <h4 class="mt-3" style="cursor: pointer;" id="final-lab-instructions-header" onclick="toggleTab('final-Lab-instruction-tab')">
+                                        <i class="fas fa-flask mr-2"></i> Lab Instructions
+                                    </h4>
+                                </div>
+                                <div id="final-cyto-instruction-section">
+                                    <h4 class="mt-3" style="cursor: pointer;" id="final-cyto-instruction-header" onclick="toggleTab('final-cyto-instruction-tab')">
+                                        <i class="fas fa-undo mr-2"></i> Recall Instruction
+                                    </h4>
+                                </div>
+                                <div id="finalization-done-section">
+                                    <h4 class="mt-3" style="cursor: pointer;" id="finalization-done-header">
+                                        <i class="fas fa-check-circle mr-2"></i> Finalization Done
+                                    </h4>
+                                </div>
                         </div>
-                        <div id="final-lab-instructions-section">
-                            <h4 class="mt-3" style="cursor: pointer;" id="final-lab-instructions-header" onclick="toggleTab('final-Lab-instruction-tab')">
-                                <i class="fas fa-flask mr-2"></i> Lab Instructions
-                            </h4>
-                        </div>
-                        <div id="final-cyto-instruction-section">
-                            <h4 class="mt-3" style="cursor: pointer;" id="final-cyto-instruction-header" onclick="toggleTab('final-cyto-instruction-tab')">
-                                <i class="fas fa-undo mr-2"></i> Recall Instruction
-                            </h4>
-                        </div>
-                        <div id="finalization-done-section">
-                            <h4 class="mt-3" style="cursor: pointer;" id="finalization-done-header">
-                                <i class="fas fa-check-circle mr-2"></i> Finalization Done
-                            </h4>
-                        </div>
+                        
+                        
                     </div>
             </div>
 
@@ -1223,7 +1228,7 @@ switch (true) {
 </script>
 
 <!-- here modal logic  this logic tab disable-->
-<script>
+<!-- <script>
     document.addEventListener("DOMContentLoaded", function () {
             let isScreeningDone = false; // Default state: Screening is not done
             let isLeaving = false; // Track if the user is leaving the page
@@ -1292,6 +1297,39 @@ switch (true) {
             });
 
     });
+</script> -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Variables for controlling visibility
+        let isScreeningActive = false; // Track whether Screening section is active
+        let isFinalScreeningActive = false;
+
+        // Get references to necessary elements
+        const screeningHeader = document.getElementById("screening-header");
+        const finalizationHeader = document.getElementById("finalization-header");
+
+        const screeningSection = document.getElementById("screening-option-section");
+        const finalizationSection = document.getElementById("final-screening-option-section");
+
+        // Add event listener for "Screening"
+        screeningHeader.addEventListener("click", function () {
+            // Make Screening section visible and accessible
+            isScreeningActive = true;
+            screeningSection.classList.remove("disabled-section");
+            screeningSection.style.pointerEvents = "auto";
+            screeningSection.style.opacity = "1";
+        });
+
+        // Add event listener for "Finalization" - It's always enabled and visible
+        finalizationHeader.addEventListener("click", function () {
+            // No need for additional logic here as Finalization is already enabled
+            finalizationSection.classList.remove("disabled-section");
+            finalizationSection.style.pointerEvents = "auto";
+            finalizationSection.style.opacity = "1";
+        });
+    });
+
 </script>
 
  <!-- Custom Modal -->
