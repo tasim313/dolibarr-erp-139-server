@@ -767,95 +767,190 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 <!-- Chief Information -->
 <script>
+    // const chiefComplainList = <?= json_encode($chief_complain_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+    // let currentIndex = -1;
+
+    // function showSuggestions(term) {
+    //     const suggestionsList = document.getElementById('suggestions-list');
+    //     const textarea = document.getElementById('reason-for-fnac');
+    //     suggestionsList.innerHTML = ''; // Clear previous suggestions
+    //     currentIndex = -1; // Reset index
+
+    //     if (term.length < 2) {
+    //         suggestionsList.style.display = 'none';
+    //         return;
+    //     }
+
+    //     // Filter matching values
+    //     const filteredList = chiefComplainList.filter(item =>
+    //         item.chief_complain.toLowerCase().includes(term.toLowerCase())
+    //     );
+
+    //     if (filteredList.length > 0) {
+    //         filteredList.forEach((item, index) => {
+    //             const li = document.createElement('li');
+    //             li.textContent = item.chief_complain;
+    //             li.style.padding = '5px';
+    //             li.style.cursor = 'pointer';
+    //             li.style.borderBottom = '1px solid #ccc';
+    //             li.dataset.index = index;
+
+    //             // Populate textarea on click
+    //             li.onclick = () => {
+    //                 textarea.value = item.chief_complain;
+    //                 suggestionsList.style.display = 'none';
+    //             };
+
+    //             suggestionsList.appendChild(li);
+    //         });
+    //         suggestionsList.style.display = 'block';
+    //     } else {
+    //         suggestionsList.style.display = 'none';
+    //     }
+    // }
+
+    // document.getElementById('reason-for-fnac').addEventListener('input', function () {
+    //     showSuggestions(this.value);
+    // });
+
+    // document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
+    //     const suggestionsList = document.getElementById('suggestions-list');
+    //     const suggestions = Array.from(suggestionsList.getElementsByTagName('li'));
+
+    //     if (suggestions.length === 0) return;
+
+    //     if (e.key === 'ArrowDown') {
+    //         e.preventDefault();
+    //         currentIndex = (currentIndex + 1) % suggestions.length;
+    //         highlightSuggestion(suggestions, currentIndex);
+    //     } else if (e.key === 'ArrowUp') {
+    //         e.preventDefault();
+    //         currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
+    //         highlightSuggestion(suggestions, currentIndex);
+    //     } else if (e.key === 'Enter') {
+    //         e.preventDefault();
+    //         if (currentIndex >= 0) {
+    //             suggestions[currentIndex].click();
+    //         }
+    //     } else if (e.key === 'Escape') {
+    //         suggestionsList.style.display = 'none';
+    //         currentIndex = -1;
+    //     }
+    // });
+
+    // function highlightSuggestion(suggestions, index) {
+    //     suggestions.forEach((suggestion, i) => {
+    //         if (i === index) {
+    //             suggestion.style.backgroundColor = '#d3d3d3';
+    //             suggestion.scrollIntoView({ block: 'nearest' });
+    //         } else {
+    //             suggestion.style.backgroundColor = 'white';
+    //         }
+    //     });
+    // }
+
+    // // Hide suggestions when clicking outside
+    // document.addEventListener('click', function (event) {
+    //     const suggestionsList = document.getElementById('suggestions-list');
+    //     if (!suggestionsList.contains(event.target) && event.target.id !== 'reason-for-fnac') {
+    //         suggestionsList.style.display = 'none';
+    //     }
+    // });
+
     const chiefComplainList = <?= json_encode($chief_complain_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-    let currentIndex = -1;
+let currentIndex = -1;
 
-    function showSuggestions(term) {
-        const suggestionsList = document.getElementById('suggestions-list');
-        const textarea = document.getElementById('reason-for-fnac');
-        suggestionsList.innerHTML = ''; // Clear previous suggestions
-        currentIndex = -1; // Reset index
+function showSuggestions(term) {
+    const suggestionsList = document.getElementById('suggestions-list');
+    const textarea = document.getElementById('reason-for-fnac');
+    suggestionsList.innerHTML = ''; // Clear previous suggestions
+    currentIndex = -1; // Reset index
 
-        if (term.length < 2) {
-            suggestionsList.style.display = 'none';
-            return;
-        }
-
-        // Filter matching values
-        const filteredList = chiefComplainList.filter(item =>
-            item.chief_complain.toLowerCase().includes(term.toLowerCase())
-        );
-
-        if (filteredList.length > 0) {
-            filteredList.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.textContent = item.chief_complain;
-                li.style.padding = '5px';
-                li.style.cursor = 'pointer';
-                li.style.borderBottom = '1px solid #ccc';
-                li.dataset.index = index;
-
-                // Populate textarea on click
-                li.onclick = () => {
-                    textarea.value = item.chief_complain;
-                    suggestionsList.style.display = 'none';
-                };
-
-                suggestionsList.appendChild(li);
-            });
-            suggestionsList.style.display = 'block';
-        } else {
-            suggestionsList.style.display = 'none';
-        }
+    if (term.length < 2) {
+        suggestionsList.style.display = 'none';
+        return;
     }
 
-    document.getElementById('reason-for-fnac').addEventListener('input', function () {
-        showSuggestions(this.value);
-    });
+    // Filter matching values
+    const filteredList = chiefComplainList
+        .filter(item => item.chief_complain.toLowerCase().includes(term.toLowerCase()))
+        // Sort results to prioritize the best matches (optional, can be customized)
+        .sort((a, b) => a.chief_complain.toLowerCase().indexOf(term.toLowerCase()) - b.chief_complain.toLowerCase().indexOf(term.toLowerCase()));
 
-    document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
-        const suggestionsList = document.getElementById('suggestions-list');
-        const suggestions = Array.from(suggestionsList.getElementsByTagName('li'));
+    // Limit results to top 3 matches
+    const topSuggestions = filteredList.slice(0, 3);
 
-        if (suggestions.length === 0) return;
+    if (topSuggestions.length > 0) {
+        topSuggestions.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.textContent = item.chief_complain;
+            li.style.padding = '5px';
+            li.style.cursor = 'pointer';
+            li.style.borderBottom = '1px solid #ccc';
+            li.dataset.index = index;
 
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            currentIndex = (currentIndex + 1) % suggestions.length;
-            highlightSuggestion(suggestions, currentIndex);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
-            highlightSuggestion(suggestions, currentIndex);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (currentIndex >= 0) {
-                suggestions[currentIndex].click();
-            }
-        } else if (e.key === 'Escape') {
-            suggestionsList.style.display = 'none';
-            currentIndex = -1;
-        }
-    });
+            // Populate textarea on click
+            li.onclick = () => {
+                textarea.value = item.chief_complain;
+                suggestionsList.style.display = 'none';
+            };
 
-    function highlightSuggestion(suggestions, index) {
-        suggestions.forEach((suggestion, i) => {
-            if (i === index) {
-                suggestion.style.backgroundColor = '#d3d3d3';
-                suggestion.scrollIntoView({ block: 'nearest' });
-            } else {
-                suggestion.style.backgroundColor = 'white';
-            }
+            suggestionsList.appendChild(li);
         });
+        suggestionsList.style.display = 'block';
+    } else {
+        suggestionsList.style.display = 'none';
     }
+}
 
-    // Hide suggestions when clicking outside
-    document.addEventListener('click', function (event) {
-        const suggestionsList = document.getElementById('suggestions-list');
-        if (!suggestionsList.contains(event.target) && event.target.id !== 'reason-for-fnac') {
-            suggestionsList.style.display = 'none';
+document.getElementById('reason-for-fnac').addEventListener('input', function () {
+    showSuggestions(this.value);
+});
+
+document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
+    const suggestionsList = document.getElementById('suggestions-list');
+    const suggestions = Array.from(suggestionsList.getElementsByTagName('li'));
+
+    if (suggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        currentIndex = (currentIndex + 1) % suggestions.length;
+        highlightSuggestion(suggestions, currentIndex);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
+        highlightSuggestion(suggestions, currentIndex);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentIndex >= 0) {
+            suggestions[currentIndex].click();
+        }
+    } else if (e.key === 'Escape') {
+        suggestionsList.style.display = 'none';
+        currentIndex = -1;
+    }
+});
+
+function highlightSuggestion(suggestions, index) {
+    suggestions.forEach((suggestion, i) => {
+        if (i === index) {
+            suggestion.style.backgroundColor = '#d3d3d3';
+            suggestion.scrollIntoView({ block: 'nearest' });
+        } else {
+            suggestion.style.backgroundColor = 'white';
         }
     });
+}
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', function (event) {
+    const suggestionsList = document.getElementById('suggestions-list');
+    if (!suggestionsList.contains(event.target) && event.target.id !== 'reason-for-fnac') {
+        suggestionsList.style.display = 'none';
+    }
+});
+
 </script>
 
 
@@ -1127,7 +1222,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 
 <!-- On Examination -->
-<script>
+<!-- <script>
     const onExaminationList = <?php echo json_encode($on_examination_list); ?>;
     let currentExamIndex = -1;
 
@@ -1150,6 +1245,103 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
         if (filteredList.length > 0) {
             filteredList.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.on_examination;
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.setAttribute('data-index', index);
+
+                // On click, populate the textarea and hide suggestions
+                li.onclick = () => {
+                    textarea.value = item.on_examination;
+                    suggestionsList.style.display = 'none';
+                };
+
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
+        } else {
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    // Handle key events for navigation in suggestions
+    document.getElementById('site-of-aspiration-editor').addEventListener('keydown', function (e) {
+        const suggestionsList = document.getElementById('examination-suggestions-list');
+        const suggestions = suggestionsList.getElementsByTagName('li');
+
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'Tab') {
+            e.preventDefault();
+            currentExamIndex = (currentExamIndex + 1) % suggestions.length;
+            highlightExaminationSuggestion(suggestions, currentExamIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentExamIndex = (currentExamIndex - 1 + suggestions.length) % suggestions.length;
+            highlightExaminationSuggestion(suggestions, currentExamIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentExamIndex >= 0) {
+                suggestions[currentExamIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            suggestionsList.style.display = 'none';
+            currentExamIndex = -1;
+        }
+    });
+
+    // Highlight the currently selected suggestion
+    function highlightExaminationSuggestion(suggestions, index) {
+        for (let i = 0; i < suggestions.length; i++) {
+            if (i === index) {
+                suggestions[i].style.backgroundColor = '#d3d3d3';
+                suggestions[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                suggestions[i].style.backgroundColor = 'white';
+            }
+        }
+    }
+
+    // Handle input for real-time suggestions
+    document.getElementById('site-of-aspiration-editor').addEventListener('input', function () {
+        const term = this.value;
+        showExaminationSuggestions(term);
+    });
+</script> -->
+<script>
+    const onExaminationList = <?php echo json_encode($on_examination_list); ?>;
+    let currentExamIndex = -1;
+
+    function showExaminationSuggestions(term) {
+        const suggestionsList = document.getElementById('examination-suggestions-list');
+        const textarea = document.getElementById('site-of-aspiration-editor');
+        suggestionsList.innerHTML = ''; // Clear previous suggestions
+        currentExamIndex = -1; // Reset index
+
+        // Don't show suggestions for less than 2 characters
+        if (term.length < 2) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
+
+        // Filter matching values from the list
+        const filteredList = onExaminationList.filter(item =>
+            item.on_examination.toLowerCase().includes(term.toLowerCase())
+        );
+
+        // Sort the filtered list by the relevance of the match (can be customized)
+        const sortedList = filteredList.sort((a, b) => 
+            a.on_examination.toLowerCase().indexOf(term.toLowerCase()) - 
+            b.on_examination.toLowerCase().indexOf(term.toLowerCase())
+        );
+
+        // Limit the list to top 3 matches
+        const topSuggestions = sortedList.slice(0, 1);
+
+        // Display the top 3 suggestions
+        if (topSuggestions.length > 0) {
+            topSuggestions.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.textContent = item.on_examination;
                 li.style.padding = '5px';
@@ -1314,7 +1506,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </script>
 
 <!-- clicnical information -->
-<script>
+<!-- <script>
     // Load clinical history list from PHP
     const clinicalHistoryList = <?= json_encode($clinical_history, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
@@ -1405,10 +1597,112 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         showClinicalHistorySuggestions(term);
     });
 
+</script> -->
+<script>
+    // Load clinical history list from PHP
+    const clinicalHistoryList = <?= json_encode($clinical_history, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+
+    // Variables to track suggestions and index
+    let currentClinicalIndex = -1;
+
+    // Show suggestions based on input
+    function showClinicalHistorySuggestions(term) {
+        const suggestionsList = document.getElementById('clinical-history-suggestions');
+        const textarea = document.getElementById('clinical-history');
+        suggestionsList.innerHTML = ''; // Clear previous suggestions
+        currentClinicalIndex = -1; // Reset the index
+
+        // Don't show suggestions for less than 2 characters
+        if (term.length < 2) {
+            suggestionsList.style.display = 'none';
+            return;
+        }
+
+        // Filter matching values from clinical history list
+        const filteredList = clinicalHistoryList.filter(item =>
+            item.relevant_clinical_history.toLowerCase().includes(term.toLowerCase())
+        );
+
+        // Sort the filtered list by the relevance of the match (can be customized)
+        const sortedList = filteredList.sort((a, b) => 
+            a.relevant_clinical_history.toLowerCase().indexOf(term.toLowerCase()) - 
+            b.relevant_clinical_history.toLowerCase().indexOf(term.toLowerCase())
+        );
+
+        // Limit the list to top 3 matches
+        const topSuggestions = sortedList.slice(0, 3);
+
+        // Display the top 3 suggestions
+        if (topSuggestions.length > 0) {
+            topSuggestions.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.relevant_clinical_history;
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.setAttribute('data-index', index);
+
+                // On click, populate the textarea and hide suggestions
+                li.onclick = () => {
+                    textarea.value = item.relevant_clinical_history;
+                    suggestionsList.style.display = 'none';
+                };
+
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
+        } else {
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    // Handle key events for navigation in suggestions
+    document.getElementById('clinical-history').addEventListener('keydown', function (e) {
+        const suggestionsList = document.getElementById('clinical-history-suggestions');
+        const suggestions = suggestionsList.getElementsByTagName('li');
+
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'Tab') {
+            e.preventDefault();
+            currentClinicalIndex = (currentClinicalIndex + 1) % suggestions.length;
+            highlightSuggestion(suggestions, currentClinicalIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentClinicalIndex = (currentClinicalIndex - 1 + suggestions.length) % suggestions.length;
+            highlightSuggestion(suggestions, currentClinicalIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentClinicalIndex >= 0) {
+                suggestions[currentClinicalIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            suggestionsList.style.display = 'none';
+            currentClinicalIndex = -1;
+        }
+    });
+
+    // Highlight the currently selected suggestion
+    function highlightSuggestion(suggestions, index) {
+        for (let i = 0; i < suggestions.length; i++) {
+            if (i === index) {
+                suggestions[i].style.backgroundColor = '#d3d3d3';
+                suggestions[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                suggestions[i].style.backgroundColor = 'white';
+            }
+        }
+    }
+
+    // Handle input for real-time suggestions
+    document.getElementById('clinical-history').addEventListener('input', function () {
+        const term = this.value;
+        showClinicalHistorySuggestions(term);
+    });
 </script>
 
+
 <!-- clinical impression -->
-<script>
+<!-- <script>
     // Ensure the JavaScript is executed after the DOM is fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         const clinicalImpressionList = <?= json_encode($clinical_impression, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
@@ -1496,7 +1790,108 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             }
         }
     });
+</script> -->
+<script>
+    // Ensure the JavaScript is executed after the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const clinicalImpressionList = <?= json_encode($clinical_impression, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+        let currentClinicalImpressionIndex = -1;
+
+        // Function to show suggestions based on the user's input
+        function showClinicalImpressionSuggestions(term) {
+            const suggestionsList = document.getElementById('clinical-impression-suggestions');
+            const textarea = document.getElementById('clinical-impression');
+            suggestionsList.innerHTML = ''; 
+            currentClinicalImpressionIndex = -1;
+
+            if (term.length < 2) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+
+            // Filter matching values from the list
+            const filteredList = clinicalImpressionList.filter(item =>
+                item.clinical_impression.toLowerCase().includes(term.toLowerCase())
+            );
+
+            // Sort the filtered list by the relevance of the match (can be customized)
+            const sortedList = filteredList.sort((a, b) => 
+                a.clinical_impression.toLowerCase().indexOf(term.toLowerCase()) - 
+                b.clinical_impression.toLowerCase().indexOf(term.toLowerCase())
+            );
+
+            // Limit the list to top 3 matches
+            const topSuggestions = sortedList.slice(0, 3);
+
+            // Display the top 3 suggestions
+            if (topSuggestions.length > 0) {
+                topSuggestions.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = item.clinical_impression;
+                    li.style.padding = '5px';
+                    li.style.cursor = 'pointer';
+                    li.setAttribute('data-index', index);
+
+                    // Set the click event to fill the textarea with the suggestion
+                    li.onclick = function() {
+                        textarea.value = item.clinical_impression;
+                        suggestionsList.style.display = 'none';
+                    };
+
+                    suggestionsList.appendChild(li);
+                });
+                suggestionsList.style.display = 'block';
+            } else {
+                suggestionsList.style.display = 'none';
+            }
+        }
+
+        // Event listener for input in the textarea
+        document.getElementById('clinical-impression').addEventListener('input', function () {
+            const term = this.value;
+            showClinicalImpressionSuggestions(term);
+        });
+
+        // Event listener for keyboard navigation (Up and Down Arrow, Enter, Escape)
+        document.getElementById('clinical-impression').addEventListener('keydown', function (e) {
+            const suggestionsList = document.getElementById('clinical-impression-suggestions');
+            const suggestions = suggestionsList.getElementsByTagName('li');
+
+            if (suggestions.length === 0) return;
+
+            if (e.key === 'ArrowDown' || e.key === 'Tab') {
+                e.preventDefault();
+                currentClinicalImpressionIndex = (currentClinicalImpressionIndex + 1) % suggestions.length;
+                highlightClinicalImpressionSuggestion(suggestions, currentClinicalImpressionIndex);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentClinicalImpressionIndex = (currentClinicalImpressionIndex - 1 + suggestions.length) % suggestions.length;
+                highlightClinicalImpressionSuggestion(suggestions, currentClinicalImpressionIndex);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentClinicalImpressionIndex >= 0) {
+                    suggestions[currentClinicalImpressionIndex].click();
+                }
+            } else if (e.key === 'Escape') {
+                suggestionsList.style.display = 'none';
+                currentClinicalImpressionIndex = -1;
+            }
+        });
+
+        // Function to highlight the currently selected suggestion
+        function highlightClinicalImpressionSuggestion(suggestions, index) {
+            for (let i = 0; i < suggestions.length; i++) {
+                if (i === index) {
+                    suggestions[i].style.backgroundColor = '#d3d3d3';
+                    suggestions[i].scrollIntoView({ block: 'nearest' });
+                } else {
+                    suggestions[i].style.backgroundColor = 'white';
+                }
+            }
+        }
+    });
 </script>
+
 
 <!-- Local Storage allows you to store user input in the browser  -->
 <script>
