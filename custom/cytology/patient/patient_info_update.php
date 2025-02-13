@@ -119,6 +119,114 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     <link href="../../grossmodule/bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.quilljs.com/2.0.0-dev.3/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
+    <style>
+        .form-group-slide {
+            display: flex;
+            align-items: center; /* Vertically align the elements */
+            justify-content: flex-start; /* Optional: Align the items to the start (left side) */
+        }
+
+        .form-group-slide .form-control {
+            width: auto; /* Let the input fields take up only as much space as needed */
+        }
+
+        .form-group-slide .btn {
+            margin-left: 10px; /* Add space between button and inputs */
+        }
+        .dropbtn {
+            padding: 16px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        #myInput {
+            box-sizing: border-box;
+            background-position: 14px 12px;
+            background-repeat: no-repeat;
+            font-size: 16px;
+            padding: 14px 20px 12px 45px;
+            border: none;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #myInput:focus {outline: 3px solid #ddd;}
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #FFFFFF;
+            min-width: 230px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .show {display: block;}
+
+        #dry-slides-description:focus {
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
+        }
+        #clinical-history:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
+        }
+        #site-of-aspiration-editor:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #fixation-comments:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #number-of-needle:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #number-of-syringe:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        /* #location-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        } */
+        #slides-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #aspiration_materials-input:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        #clinical-impression:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7);
+            border-color:rgb(223, 14, 77); 
+        }
+        /* Change to success style on hover */
+        #populate-table:hover, 
+        #populate-table:focus {
+            background-color: #28a745; /* Bootstrap's success color */
+            color: white; /* Ensure text is visible */
+            outline: none; /* Optional: Remove default focus outline */
+        }
+        #reason-for-fnac:focus{
+            box-shadow: 0 0 10px 2px rgba(233, 54, 81, 0.7); 
+            border-color:rgb(223, 14, 77); 
+        }
+    </style>
 
 </head>
 <body>
@@ -397,6 +505,48 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                     </table>
             </div>
 
+            <h3>Aspiration Note:</h3>
+            <!-- Total Slides Prepared -->
+            <div class="form-group form-group-slide d-flex align-items-center">
+                <label for="location-input" class="mr-2">Aspiration:</label> &nbsp; 
+                <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" > &nbsp; &nbsp; &nbsp;
+                <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
+                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" > &nbsp; &nbsp; &nbsp;
+                <label for="aspiration_materials-input" class="mr-2">Aspiration Materials:</label>&nbsp;
+                <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" > &nbsp; &nbsp; &nbsp;
+                <label for="special_instruction-input" class="mr-2">Special Instruction:</label>
+                <input type="text" id="special-instruction-input" name="special_instruction_input" class="form-control mr-3" placeholder="Enter Special Instruction"> &nbsp; &nbsp; &nbsp;
+                
+                <button type="button" class="btn btn-primary" id="populate-table">Generate slide</button>
+            </div>
+
+            <!-- Slide Fixation Details -->
+            <form id="fixation-form" action="../Cyto/fixation_details_update.php" method="POST">
+                <div class="form-group">
+                    <label>Slide Fixation Details:</label>
+                    <input type="hidden" name="LabNumber" value="<?php echo $LabNumber; ?>">
+                    <table class="table table-bordered" id="fixation-details-table">
+                        <thead>
+                            <tr>
+                                <th>RowId</th>
+                                <th>Slide Number</th>
+                                <th>Location</th>
+                                <th>Fixation Method</th>
+                                <th>Dry</th>
+                                <th>Aspiration Materials</th>
+                                <th>Special Instruction</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fixation-details-body">
+                            <!-- Dynamic Rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <button type="submit" class="btn btn-success">Save Fixation Details</button>
+            </form>
+
+
             <div class="mt-4">
                 <h4>Fixation Details</h4>
                 <?php 
@@ -454,6 +604,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                
                 <?php 
                    $fixationAdditionalDetails = get_cyto_fixation_additional_details($cyto_id)
                 ?>
@@ -501,47 +652,121 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 </html>
 
 
-<!-- <script>
-    $(document).ready(function() {
+<!-- FNAC Fixation Details -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const LabNumber = "<?php echo $LabNumber; ?>";  // Fetch LabNumber from PHP
+        let locationCounter = {};
+        let locationLetters = {};
+        let rowCounter = 1;
 
-        
-        // Loop through all buttons with ids like 'clinicalInformationBtn-<rowid>'
-        <?php foreach ($clinicalInformation as $info): ?>
-            $("#clinicalInformationBtn-<?= $info['rowid'] ?>").on("click", function(e) {
-                e.preventDefault();  // Prevent form submission
+        function updateSlideCode(row, location) {
+            let slideCode;
 
-                var rowid = $(this).attr("id").split('-')[1];  // Extract rowid from the button id
-                var chief_complain = $("textarea[data-rowid='" + rowid + "'][data-field='chief_complain']").val();
-                var relevant_clinical_history = $("textarea[data-rowid='" + rowid + "'][data-field='relevant_clinical_history']").val();
-                var on_examination = $("textarea[data-rowid='" + rowid + "'][data-field='on_examination']").val();
-            
-                // Send the data via AJAX
-                $.ajax({
-                    url: '../Cyto/patient_clinical_info_update.php',  // Change this path as per your directory structure
-                    type: 'POST',
-                    data: {
-                        rowid: rowid,
-                        chief_complain: chief_complain,
-                        relevant_clinical_history: relevant_clinical_history,
-                        on_examination: on_examination
-                    },
-                    success: function(response) {
-                        if (response.trim() === 'success') {
-                            alert('Clinical Information updated successfully!');
-                        } else {
-                            alert('Clinical Information updated successfully!');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('An error occurred: ' + error);
-                    }
+            if (!locationCounter[location]) {
+                locationCounter[location] = 1;
+            } else {
+                locationCounter[location]++;
+            }
+
+            slideCode = `${LabNumber}FC-${location}-${locationCounter[location]}`;
+            row.querySelector('.slide-code').textContent = slideCode;
+        }
+
+        function addRow(location, isDry, aspirationMaterials, specialInstruction) {
+            const tbody = document.getElementById('fixation-details-body');
+            const newRow = document.createElement('tr');
+
+            newRow.innerHTML = `
+                <td>${rowCounter}</td>
+                <td class="slide-code"></td>
+                <td>${location}</td>
+                <td>
+                    <select class="form-control fixation-method-select">
+                        <option value=""></option>
+                        <option value="Alcohol">Alcohol fixation</option>
+                        <option value="Formalin">Formalin fixation</option>
+                        <option value="Air-dried">Air-dried</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <input type="text" class="form-control other-fixation-input" placeholder="Specify fixation method" style="display: none;">
+                </td>
+                <td><input type="checkbox" class="dry-checkbox" ${isDry ? 'checked' : ''}></td>
+                <td><input type="text" class="form-control aspiration-materials-input" value="${aspirationMaterials}"></td>
+                <td><textarea class="form-control special-instruction-input">${specialInstruction}</textarea></td>
+                <td><button type="button" class="btn btn-danger remove-row">Remove</button></td>
+            `;
+
+            newRow.querySelector('.fixation-method-select').addEventListener('change', function () {
+                const otherInput = newRow.querySelector('.other-fixation-input');
+                otherInput.style.display = this.value === "Other" ? 'block' : 'none';
+            });
+
+            newRow.querySelector('.remove-row').addEventListener('click', () => {
+                tbody.removeChild(newRow);
+                rowCounter--; // Adjust row count
+            });
+
+            tbody.appendChild(newRow);
+            updateSlideCode(newRow, location);
+            rowCounter++;
+        }
+
+        document.getElementById('populate-table').addEventListener('click', function () {
+            const slidesInput = document.getElementById('slides-input').value.trim();
+            const locationInput = document.getElementById('location-input').value.trim();
+            const aspirationMaterials = document.getElementById('aspiration_materials-input').value.trim();
+            const specialInstruction = document.getElementById('special-instruction-input').value.trim();
+
+            if (!slidesInput || !aspirationMaterials || !locationInput) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const [fixationSlides, drySlides] = slidesInput.split('+').map(Number);
+            if (isNaN(fixationSlides) || isNaN(drySlides)) {
+                alert('Invalid slide input format. Use "2+1" format.');
+                return;
+            }
+
+            for (let i = 0; i < fixationSlides; i++) addRow(locationInput, false, aspirationMaterials, specialInstruction);
+            for (let i = 0; i < drySlides; i++) addRow(locationInput, true, aspirationMaterials, specialInstruction);
+
+            document.getElementById('location-input').value = '';
+            document.getElementById('slides-input').value = '';
+            document.getElementById('aspiration_materials-input').value = '';
+            document.getElementById('special-instruction-input').value = '';
+        });
+
+        document.getElementById("fixation-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            const tbody = document.getElementById('fixation-details-body');
+            const rows = tbody.querySelectorAll('tr');
+
+            document.querySelectorAll('.hidden-fixation-input').forEach(input => input.remove());
+
+            rows.forEach((row, index) => {
+                const slideNumber = row.querySelector('.slide-code').textContent;
+                const location = row.querySelector('td:nth-child(3)').textContent;
+                const fixationMethod = row.querySelector('.fixation-method-select').value;
+                const isDry = row.querySelector('.dry-checkbox').checked ? 'Yes' : 'No';
+                const aspirationMaterials = row.querySelector('.aspiration-materials-input').value;
+                const specialInstruction = row.querySelector('.special-instruction-input').value;
+
+                ['slideNumber', 'location', 'fixationMethod', 'isDry', 'aspirationMaterials', 'specialInstruction'].forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `fixation_data[${index}][${key}]`;
+                    input.value = eval(key);
+                    input.classList.add('hidden-fixation-input');
+                    document.getElementById("fixation-form").appendChild(input);
                 });
             });
-        <?php endforeach; ?>
 
+            this.submit();
+        });
     });
-</script> -->
-
+</script>
 
 
 
