@@ -12,7 +12,7 @@ function cyto_microscopic_description_lab($lab_number) {
                microscopic_description, 
                conclusion, 
                comment,
-               aspiration_notes,
+               specimen_name,
                gross_note, 
                recall,
                chief_complain

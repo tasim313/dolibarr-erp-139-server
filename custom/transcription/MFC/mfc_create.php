@@ -365,7 +365,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
                         <thead>
                             <tr>
                                 <th>Chief Complain</th>
-                                <th>Aspiration Notes</th>
+                                <th>Specimen Name</th>
                                 <th>Gross Note</th>
                                 <th>Microscopic Description</th>
                                 <th>Conclusion</th>
@@ -383,10 +383,10 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
                                     </div>
                                 </td>
 
-                                <!-- Aspiration Notes -->
+                                <!-- specimen_name -->
                                 <td>
-                                    <div id="aspiration-notes-container" class="quill-editor">
-                                        <?= htmlspecialchars_decode(!empty($data['aspiration_notes']) ? $data['aspiration_notes'] : ($info['on_examination'] ?? '')); ?>
+                                    <div id="specimen_name-container" class="quill-editor">
+                                        <?= htmlspecialchars_decode($data['specimen_name'] ?? ''); ?>
                                     </div>
                                 </td>
 
@@ -589,14 +589,14 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
 <script>
         let isEditing = false;
 
-        const aspirationNotesEditor = new Quill('#aspiration-notes-container', {
+        const SpecimenNameEditor = new Quill('#specimen_name-container', {
             theme: 'snow',
             readOnly: true,
-            placeholder: 'Aspiration Notes',
+            placeholder: 'Specimen Name',
             modules: { toolbar: false }
         });
 
-        aspirationNotesEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['aspiration_notes'] ?? htmlspecialchars($info['on_examination'] ?? '')); ?>`;
+        SpecimenNameEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['specimen_name']  ?? ''); ?>`;
 
         const grossNoteEditor = new Quill('#gross-note-container', {
             theme: 'snow',
@@ -654,7 +654,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
         document.getElementById('editMicroscopicBtn').addEventListener('click', function () {
             if (!isEditing) {
                 // Enable editing
-                aspirationNotesEditor.enable(); 
+                SpecimenNameEditor.enable(); 
                 grossNoteEditor.enable();  
                 microscopicDescriptionEditor.enable();
                 conclusionDescriptionEditor.enable();
@@ -674,7 +674,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
         document.getElementById('saveMicroscopicBtn').addEventListener('click', function () {
             if (isEditing) {
                 // Gather data from editors (HTML content)
-                const aspirationNotes = aspirationNotesEditor.root.innerHTML.trim();
+                const SpecimenNames = SpecimenNameEditor.root.innerHTML.trim();
                 const grossNote = grossNoteEditor.root.innerHTML.trim(); 
                 const microscopicDescription = microscopicDescriptionEditor.root.innerHTML.trim();
                 const conclusionDescription = conclusionDescriptionEditor.root.innerHTML.trim();
@@ -683,7 +683,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
                 const chiefComplainDescription = chiefComplainEditor.root.innerHTML.trim(); // Get data from Chief Complain
 
                 // Disable editing
-                aspirationNotesEditor.disable();
+                SpecimenNameEditor.disable();
                 grossNoteEditor.disable();
                 microscopicDescriptionEditor.disable();
                 conclusionDescriptionEditor.disable();
@@ -693,7 +693,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
 
                 // Prepare data for submission
                 const formData = new FormData();
-                formData.append('aspiration-notes', aspirationNotes);
+                formData.append('specimen_name', SpecimenNames);
                 formData.append('gross-note', grossNote);
                 formData.append('microscopic-description', microscopicDescription);
                 formData.append('conclusion-description', conclusionDescription);
