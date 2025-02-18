@@ -471,7 +471,10 @@ if ($fk_cyto_id_result) {
 }
 
 // Prepare clinical details
-$clinical_details_info = "SELECT chief_complain AS clinical_details FROM llx_cyto_microscopic_description WHERE lab_number ='$LabNumber'";
+$clinical_details_info = "SELECT chief_complain AS clinical_details FROM llx_cyto_microscopic_description WHERE lab_number ='$LabNumber' AND chief_complain != '<p><br></p>' 
+AND chief_complain != '<br>' 
+AND chief_complain != '<p>&nbsp;</p>' 
+AND NOT chief_complain ~ '^<p\s*[^>]*>\s*</p>$'";
 $clinical_details_result = pg_query($pg_con, $clinical_details_info);
 
 if (!$clinical_details_result) {
@@ -489,12 +492,12 @@ if (!$gross_note_result) {
 }
 
 // SQL operation for aspiration_note
-$aspiration_note_query = "select aspiration_notes from llx_cyto_microscopic_description where lab_number ='$LabNumber' AND aspiration_notes != '<p><br></p>' 
-AND aspiration_notes != '<br>' 
-AND aspiration_notes != '<p>&nbsp;</p>' 
+$aspiration_note_query = "SELECT aspiration_notes FROM llx_cyto_microscopic_description 
+WHERE lab_number = '$LabNumber' 
+AND aspiration_notes NOT IN ('<p><br></p>', '<br>', '<p>&nbsp;</p>') 
 AND NOT aspiration_notes ~ '^<p\s*[^>]*>\s*</p>$'";
-$aspiration_note_result = pg_query($pg_con, $aspiration_note_query);
 
+$aspiration_note_result = pg_query($pg_con, $aspiration_note_query);
 if (!$aspiration_note_result) {
     die("Error in SQL query for aspiration note: " . pg_last_error());
 }
@@ -545,22 +548,28 @@ if (!$recall_details_result) {
     die("Query failed for recall_description: " . pg_last_error());
 }
 
+$specimen_name_query = "SELECT specimen_name FROM llx_cyto_microscopic_description 
+WHERE lab_number = '$LabNumber' 
+AND specimen_name NOT IN ('<p><br></p>', '<br>', '<p>&nbsp;</p>') 
+AND NOT specimen_name ~ '^<p\s*[^>]*>\s*</p>$'";
+
+$specimen_name_result = pg_query($pg_con, $specimen_name_query);
+if (!$specimen_name_result) {
+    die("Error in SQL query for specimen name: " . pg_last_error());
+}
+
 // Initialize content for the HTML table
 $html = '
 <table border="0" cellspacing="0" cellpadding="4" style="width:100%; table-layout: fixed;">';
 
 // Add Clinical Details
-$html .= '<tr>
-            <th style="width: 26%;"><b>Clinical Details:</b></th>
-            <td style="width: 74%;">';
+$clinical_details_rows = [];
 
-// Add clinical_details
-// Check if there are rows in the result
 if (pg_num_rows($clinical_details_result) > 0) {
-    $clinical_details_rows = [];
     while ($row = pg_fetch_assoc($clinical_details_result)) {
-        // Normalize <br> tags: collapse multiple <br> to a single <br>
         $clinical_details = $row['clinical_details'];
+
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
         $clinical_details = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $clinical_details);
 
         // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
@@ -572,17 +581,54 @@ if (pg_num_rows($clinical_details_result) > 0) {
         // Trim to remove leading and trailing whitespace
         $clinical_details = trim($clinical_details);
 
-        // Add the formatted clinical_details to the rows
-        $clinical_details_rows[] = $clinical_details;
+        // Add only non-empty clinical details
+        if (!empty($clinical_details)) {
+            $clinical_details_rows[] = $clinical_details;
+        }
     }
-
-    // Combine the rows with <br/> for output
-    $html .= implode('<br/>', $clinical_details_rows);
-} else {
-    $html .= 'No clinical details available.';
 }
 
-$html .= '</td></tr>';
+// Display the row only if there is valid clinical details data
+if (!empty($clinical_details_rows)) {
+    $html .= '<tr>
+                <th style="width: 26%;"><b>Clinical Details:</b></th>
+                <td style="width: 74%;">' . implode('<br/>', $clinical_details_rows) . '</td>
+              </tr>';
+}
+
+
+
+// Prepare an array to store processed specimen names
+$specimen_name_rows = [];
+
+while ($row = pg_fetch_assoc($specimen_name_result)) {
+    $specimen_name = $row['specimen_name'];
+
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
+    $specimen_name = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $specimen_name);
+
+    // Handle <p> tags: replace <p> with <br> only if the content isn't just whitespace
+    $specimen_name = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $specimen_name);
+
+    // Remove trailing <br> tags if they don't precede text
+    $specimen_name = preg_replace('/<br>\s*$/', '', $specimen_name);
+
+    // Trim to remove leading and trailing whitespace
+    $specimen_name = trim($specimen_name);
+
+    // Only add non-empty values to the array
+    if (!empty($specimen_name)) {
+        $specimen_name_rows[] = $specimen_name;
+    }
+}
+
+// Only add the Specimen Name row if there is valid content
+if (!empty($specimen_name_rows)) {
+    $html .= '<tr>
+            <th style="width: 26%;"><b>Specimen Name:</b></th>
+            <td style="width: 74%;">' . implode('<br/>', $specimen_name_rows) . '</td>
+        </tr>';
+}
 
 
 // Add gross_note
@@ -617,35 +663,40 @@ if (pg_num_rows($gross_note_result) > 0) {
 }
 
 // Add Aspiration Note
-// Check if there are rows in the result
-if (pg_num_rows($aspiration_note_result) > 0) {
-    $html .= '<tr>
-            <th style="width: 26%;"><b>Aspiration Note:</b></th>
-            <td style="width: 74%;">';
-
+// Check if the query returns any rows for aspiration notes
 $aspiration_note_rows = [];
+
 while ($row = pg_fetch_assoc($aspiration_note_result)) {
-    // Normalize <br> tags: collapse multiple <br> to a single <br>
     $aspiration_note = $row['aspiration_notes'];
+
+    // Normalize <br> tags: collapse multiple <br> to a single <br>
     $aspiration_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $aspiration_note);
-    
-    // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+
+    // Handle <p> tags: replace <p> with <br> only if the content isn't just whitespace
     $aspiration_note = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $aspiration_note);
-    
+
     // Remove trailing <br> tags if they don't precede text
     $aspiration_note = preg_replace('/<br>\s*$/', '', $aspiration_note);
-    
+
     // Trim to remove leading and trailing whitespace
     $aspiration_note = trim($aspiration_note);
 
-    // Add the formatted Aspiration Note to the rows
-    $aspiration_note_rows[] = $aspiration_note;
+    // Only add non-empty values to the array
+    if (!empty($aspiration_note)) {
+        $aspiration_note_rows[] = $aspiration_note;
+    }
 }
 
-// Combine the rows with <br/> for output
-$html .= implode('<br/>', $aspiration_note_rows);
-$html .= '</td></tr>';
+// Only add the Aspiration Note row if there is valid content
+if (!empty($aspiration_note_rows)) {
+    $html .= '<tr>
+            <th style="width: 26%;"><b>Aspiration Note:</b></th>
+            <td style="width: 74%;">' . implode('<br/>', $aspiration_note_rows) . '</td>
+        </tr>';
 }
+
+// Close table only once at the end
+$html .= '</table>';
 
 
 // Add recall_details
@@ -711,13 +762,10 @@ $html .= implode('<br/>', $microscopic_description_rows);
 $html .= '</td></tr>';
 
 // Add Conclusion Description
-$html .= '<tr>
-            <th style="width: 26%;"><b>Conclusion:</b></th>
-            <td style="width: 74%;">';
-
 $conclusion_description_rows = [];
+
 while ($row = pg_fetch_assoc($conclusion_details_result)) {
-    $description = $row['conclusion'];
+    $description = trim($row['conclusion']);
 
     // Normalize <br> tags: collapse multiple <br> to a single <br>
     $description = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $description);
@@ -735,9 +783,22 @@ while ($row = pg_fetch_assoc($conclusion_details_result)) {
     $conclusion_description_rows[] = $description;
 }
 
-// Combine the rows with <br/> for output
-$html .= implode('<br/>', $conclusion_description_rows);
-$html .= '</td></tr>';
+// Generate the conclusion row if there is data
+if (!empty($conclusion_description_rows)) {
+    $html .= '<tr>
+                <th style="width: 26%;"><b>Conclusion:</b></th>
+                <td style="width: 74%;">';
+
+    // FIX: Use Specimen Name Array (comma-separated if multiple names exist)
+    if (!empty($specimen_name_rows)) {
+        $html .= '<b>' . implode(', ', $specimen_name_rows) . '</b>, <b>Cytology:</b> <br/>' . implode('<br/>', $conclusion_description_rows);
+
+    } else {
+        $html .= implode('<br/>', $conclusion_description_rows);
+    }
+
+    $html .= '</td></tr>';
+}
 
 
 // Check if the query returns any rows
@@ -771,7 +832,7 @@ if (pg_num_rows($comment_details_result) == 0) {
         }
 
         // Combine the rows with <br/> for output
-        $html .= implode('<br/>', $$comment_description_rows);
+        $html .= implode('<br/>', $comment_description_rows);
         $html .= '</td></tr>';
         $html .= '</table>';
 }

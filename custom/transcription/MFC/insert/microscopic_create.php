@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $microscopic = pg_escape_string($pg_con, $_POST['microscopic-description'] ?? '');
     $conclusion = pg_escape_string($pg_con, $_POST['conclusion-description'] ?? '');
     $comment = pg_escape_string($pg_con, $_POST['comment-description'] ?? '');
-    $aspiration_notes = pg_escape_string($pg_con, $_POST['aspiration-notes'] ?? '');
+    $specimen_name = pg_escape_string($pg_con, $_POST['specimen_name'] ?? '');
     $gross_note = pg_escape_string($pg_con, $_POST['gross-note'] ?? '');
     $recall = pg_escape_string($pg_con, $_POST['recall-description'] ?? '');
     $created_user = pg_escape_string($pg_con, $_POST['created_user'] ?? '');
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 microscopic_description = '$microscopic',
                 conclusion = '$conclusion',
                 comment = '$comment',
-                aspiration_notes = '$aspiration_notes',
+                specimen_name = '$specimen_name',
                 gross_note = '$gross_note',
                 recall = '$recall',
                 chief_complain = '$chief_complain',  -- Update the chief_complain field
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 microscopic_description,
                 conclusion,
                 comment,
-                aspiration_notes,
+                specimen_name,
                 gross_note,
                 recall,
                 chief_complain,   -- Insert the chief_complain field
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 '$microscopic',
                 '$conclusion',
                 '$comment',
-                '$aspiration_notes',
+                '$specimen_name',
                 '$gross_note',
                 '$recall',
                 '$chief_complain',  -- Insert chief_complain value
