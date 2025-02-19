@@ -65,7 +65,7 @@ $loggedInUsername = $user->login;
             <label for="labNumber">Enter Lab Number</label>
             <input type="text" class="form-control" id="labNumber" placeholder="Enter Lab Number">
         </div>
-        <button class="btn btn-primary" id="searchBtn">Search</button>
+        <button class="btn btn-primary" id="searchBtn">Submit</button>
         
         <!-- Message for showing results -->
         <div id="message" class="mt-4"></div>
@@ -75,32 +75,35 @@ $loggedInUsername = $user->login;
     <script src="../../grossmodule/jquery/jquery.min.js"></script>
     <script src="../../grossmodule/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
     <script>
-        // JavaScript to handle the search logic
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            const labNumber = document.getElementById('labNumber').value;
+        // Assuming these functions return arrays of objects with 'lab_number' keys
+        const fna_lab_numbers = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
+        const mfc_lab_numbers = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
+        const hpl_lab_numbers = <?php echo json_encode(get_hpl_labnumber_list()); ?>;
+
+        // Extract only the lab numbers from the objects
+        const fnaLabNumbers = fna_lab_numbers.map(item => item.lab_number.trim());
+        const mfcLabNumbers = mfc_lab_numbers.map(item => item.lab_number.trim());
+        const hplLabNumbers = hpl_lab_numbers.map(item => item.lab_number.trim());
+
+
+        document.getElementById('searchBtn').addEventListener('click', function () {
+            const labNumber = document.getElementById('labNumber').value.trim().toLowerCase();
             
             if (labNumber) {
-                // Use AJAX to call PHP function and check lab number
-                $.ajax({
-                    url: 'diagonsis_micro_complete_by_lab.php', // Replace with the PHP file where the function is defined
-                    type: 'GET',
-                    data: { lab_number: labNumber },
-                    success: function(response) {
-                        if (response === 'OK') {
-                            document.getElementById('message').innerHTML = `<div class="alert alert-success">Lab number ${labNumber} is ready for the next step.</div>`;
-                            // Proceed to next step (you can redirect or perform other actions)
-                        } else {
-                            document.getElementById('message').innerHTML = `<div class="alert alert-warning">Please complete the micro description and diagnosis for lab number ${labNumber} before proceeding.</div>`;
-                        }
-                    },
-                    error: function() {
-                        document.getElementById('message').innerHTML = `<div class="alert alert-danger">Error processing your request. Please try again.</div>`;
-                    }
-                });
+                if (fnaLabNumbers.includes(labNumber)) {
+                    window.location.href = 'fna/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                } else if (mfcLabNumbers.includes(labNumber)) {
+                    window.location.href = 'mfc/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                } else if (hplLabNumbers.includes(labNumber)) {
+                    window.location.href = 'hpl/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                } else {
+                    document.getElementById('message').innerHTML = `<div class="alert alert-danger">This lab number does not match. Please enter a valid lab number.</div>`;
+                }
             } else {
                 document.getElementById('message').innerHTML = `<div class="alert alert-danger">Please enter a lab number.</div>`;
             }
         });
+
     </script>
 </body>
 </html>
