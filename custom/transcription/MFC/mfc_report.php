@@ -642,12 +642,18 @@ if (pg_num_rows($gross_note_result) > 0) {
     while ($row = pg_fetch_assoc($gross_note_result)) {
         // Normalize <br> tags: collapse multiple <br> to a single <br>
         $gross_note = $row['gross_note'];
-        $gross_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $gross_note);
 
-        // Handle <p> tags: replace <p> with <br> if the content isn't just whitespace
+        // Remove unnecessary <p> tags that are blank or contain only whitespace
+        $gross_note = preg_replace('/<p[^>]*>\s*<\/p>/', '', $gross_note); // Remove empty <p> tags
+        $gross_note = preg_replace('/<p[^>]*>\s*<\/p>/', '', $gross_note); // Clean up empty or whitespace-only <p>
+
+        // Remove <p> tags and keep the content intact, replacing them with <br> tags
         $gross_note = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $gross_note);
 
-        // Remove trailing <br> tags if they don't precede text
+        // Normalize <br> tags: collapse multiple <br> to a single <br>
+        $gross_note = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $gross_note);
+
+        // Remove trailing <br> tags if they don't precede any content
         $gross_note = preg_replace('/<br>\s*$/', '', $gross_note);
 
         // Trim to remove leading and trailing whitespace
