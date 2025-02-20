@@ -36,6 +36,9 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
+echo '<script src="'.DOL_URL_ROOT.'/includes/ckeditor/ckeditor.js"></script>';
 
 // Load translation files required by the page
 $langs->loadLangs(array("cytology@cytology"));
@@ -135,6 +138,17 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
     <!-- Include Quill's CSS and JS -->
     <link href="https://cdn.quilljs.com/2.0.0-dev.3/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/2.0.0-dev.3/quill.js"></script>
+    <style>
+       #description {
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: normal; /* Prevents excessive spacing */
+            padding: 10px;
+            line-height: 1.5; /* Ensures readability */
+        }
+    </style>
+
 </head>
 <body>
     <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
@@ -257,7 +271,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="description" class="form-label fw-bold">Gross Note:</label>
-                        <textarea id="description" class="form-control bg-light text-dark fw-semibold" rows="4" readonly><?php echo $description; ?></textarea>
+                        <div id="description" class="form-control bg-light text-dark fw-semibold">
+                            <?php echo htmlspecialchars_decode($description); ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -582,6 +598,11 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
 </body>
 </html>
 
+<script>
+    $(document).ready(function() {
+        initHtmlTextArea('description'); // Initialize Dolibarr's WYSIWYG Editor
+    });
+</script>
 
 
 <!-- Rich text editor for Microscopic Information -->
@@ -605,7 +626,34 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
             modules: { toolbar: false }
         });
 
-        grossNoteEditor.root.innerHTML = `<?= htmlspecialchars_decode($data['gross_note'] ?? htmlspecialchars_decode($description) ?? ''); ?>`;
+        // Function to clean HTML content
+    function cleanHtmlContent(content) {
+        if (!content) return "";
+
+        // Decode HTML entities to prevent double encoding
+        let tempElement = document.createElement("div");
+        tempElement.innerHTML = content;
+        content = tempElement.innerHTML; // Get the actual HTML structure
+
+        // Remove empty <p> tags (even if they contain only spaces or new lines)
+        content = content.replace(/<p>\s*<\/p>/g, "");
+
+        // Remove unnecessary multiple <br> tags (keeping only one)
+        content = content.replace(/(<br\s*\/?>\s*)+/g, "<br>");
+
+        // Remove leading & trailing <br> tags
+        content = content.replace(/^(<br\s*\/?>\s*)+|(<br\s*\/?>\s*)+$/g, "");
+
+        // Remove leading & trailing white spaces
+        return content.trim();
+    }
+
+    // Get PHP variable and clean it
+    let rawGrossNote = `<?= htmlspecialchars_decode($data['gross_note'] ?? htmlspecialchars_decode($description) ?? ''); ?>`;
+    let cleanedGrossNote = cleanHtmlContent(rawGrossNote);
+
+    // Set cleaned data in Quill editor
+    grossNoteEditor.root.innerHTML = cleanedGrossNote;
 
 
         // Initialize Quill editors

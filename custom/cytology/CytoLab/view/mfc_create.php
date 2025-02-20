@@ -37,6 +37,9 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
+echo '<script src="'.DOL_URL_ROOT.'/includes/ckeditor/ckeditor.js"></script>';
 
 // Load translation files required by the page
 $langs->loadLangs(array("cytology@cytology"));
@@ -137,94 +140,184 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             </ul>
         
    
-    <?php 
-    //   echo ($LabNumber);
-    //   echo($loggedInUsername);
-      $mfc_list = get_mfc_create_list($LabNumber);
-    ?>
+            <?php
+                // Fetch MFC list for the specific Lab Number
+                $mfc_list = get_mfc_create_list($LabNumber);
 
-        <?php if (!empty($mfc_list)): // If lab number exists, show update form ?>
-            <?php $mfc_data = $mfc_list[0]; ?> 
+                // Check if any data is available for the lab number
+                if (!empty($mfc_list) && isset($mfc_list[0]['description']) && !empty($mfc_list[0]['description'])) {
+                    // If description data exists, use it
+                    $description_data = $mfc_list[0]['description'];
+                    
+                    $data_available = true; // Flag to indicate data is available
+                } else {
+                    // If no data or description is empty
+                    $description_data = ''; // Default empty string for description
+                    $data_available = false; // Flag to indicate no data is available
+                }
 
-            <div class="container">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3 class="panel-title">MFC Update</h3></div>
-                    <div class="panel-body">
-                        <form method="POST" action="../edit/update_mfc.php">
-                            
-                            <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                date_default_timezone_set('Asia/Dhaka');
+                function formatDateTime($datetime) {
+                    return date("d F, Y h:i A", strtotime($datetime));
+                }
+            ?>
 
-                            <div class="form-group">
-                                <label for="previous_description">Previous Description:</label>
-                                <textarea id="previous_description" class="form-control" rows="5" readonly><?php 
-                                    $previous_data = json_decode($mfc_data['previous_description'], true); 
-                                    if (!empty($previous_data)) {
-                                        foreach ($previous_data as $entry) {
-                                            echo "Old Description: " . $entry['old_description'] . "\n";
-                                            echo "Created By: " . $entry['created_user'] . "\n";
-                                            echo "Updated By: " . $entry['updated_user'] . "\n";
-                                            echo "Created Time: " . $entry['created_time'] . "\n";
-                                            echo "Updated Time: " . $entry['updated_time'] . "\n";
-                                            echo "-----------------------------------\n";
-                                        }
-                                    }
-                                ?></textarea>
-                            </div>
+            <?php if (!empty($mfc_list)): // If lab number exists, show update form ?>
+                <?php $mfc_data = $mfc_list[0]; ?> 
 
-                            <div class="form-group">
-                                <label for="description">Description:</label>
-                                <textarea id="description" name="description" class="form-control" rows="4" required><?php echo trim(htmlspecialchars($mfc_data['description'])); ?></textarea>
-                            </div>
+                <div class="container">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">MFC Update</h3></div>
+                        <div class="panel-body">
+                            <form method="POST" action="../edit/update_mfc.php">
+                                
+                                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+
+                                <div class="form-group">
+                                    <label for="previous_description">Previous Description:</label>
+                                    <div id="previous_description" class="form-control" style="min-height: 150px; overflow-y: auto; background-color: #f5f5f5; padding: 10px;">
+                                        <?php 
+                                            $previous_data = json_decode($mfc_data['previous_description'], true); 
+                                            if (!empty($previous_data)) {
+                                                foreach ($previous_data as $entry) {
+                                                    echo "<strong>Old Description:</strong> " . $entry['old_description'] . "";
+                                                    echo "<strong>Created By:</strong> " . htmlspecialchars($entry['created_user']) . "<br>";
+                                                    echo "<strong>Updated By:</strong> " . htmlspecialchars($entry['updated_user']) . "<br>";
+                                                    echo "<strong>Created Time:</strong> " . formatDateTime($entry['created_time']) . "<br>";
+                                                    echo "<strong>Updated Time:</strong> " . formatDateTime($entry['updated_time']) . "<br>";
+                                                    echo "<hr>"; // Add a separator between entries
+                                                }
+                                            }
+                                        ?>
+                                    </div>
+                                </div>
 
 
-                            <input type="hidden" name="updated_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                                <div class="form-group">
+                                    <label for="description">Description:</label>
+                                    <textarea id="description" name="description" class="form-control" rows="4" required><?php echo htmlspecialchars(trim($mfc_data['description'])); ?></textarea>
+                                </div>
 
-                            <button type="submit" class="btn btn-warning">
-                                Submit
-                            </button>
+                                <input type="hidden" name="updated_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
 
-                        </form>
+                                <button type="submit" class="btn btn-warning">
+                                    Submit
+                                </button>
+
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+            <?php elseif ($data_available): // If description data is available ?>
+                <div class="container" style="margin-top:30px;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">MFC New Entry</h3></div>
+                        <div class="panel-body">
+                            <form method="POST" action="../insert/insert_mfc.php">
+                                
+                                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                                
+                                <div class="form-group">
+                                    <label for="description">Description:</label>  
+                                    <textarea id="description" name="description" class="form-control" rows="10" required><?php echo htmlspecialchars($description_data); ?></textarea>
+                                </div>
 
-        <?php else: // If lab number is not found, show insert form ?>
-            <div class="container" style="margin-top:30px;">
-                <div class="panel panel-default">
-                    <div class="panel-heading"><h3 class="panel-title">MFC New Entry</h3></div>
-                    <div class="panel-body">
-                        <form method="POST" action="../insert/insert_mfc.php">
-                            
-                            <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
-                            
-                            <div class="form-group">
-                                <label for="description">Description:</label>
-                                    <textarea id="description" name="description" class="form-control" rows="5" required>
-Quantity: 
-Color: 
-Appearance: 
-Sediment: 
-Clot: 
-                                    </textarea>
-                            </div>
-                            
-                            <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
-                            
-                            <button type="submit" class="btn btn-primary">
-                                Submit
-                            </button>
-                            
-                        </form>
+                                <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    Submit
+                                </button>
+                                
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <?php endif; ?>
+                <script>
+                    // Initialize Dolibarr's WYSIWYG editor for description if data is available
+                    initHtmlTextArea('description');
+                </script>
+            <?php else: // If no description data, show CKEditor initialization with default content ?>
+                <div class="container" style="margin-top:30px;">
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><h3 class="panel-title">MFC New Entry</h3></div>
+                        <div class="panel-body">
+                            <form method="POST" action="../insert/insert_mfc.php">
+                                
+                                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                                
+                                <div class="form-group">
+                                    <label for="description">Description:</label>  
+                                    <textarea id="description" name="description" class="form-control" rows="10" required></textarea>
+                                </div>
+
+                                <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    Submit
+                                </button>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+
 
        
 </div>
 </body>
 </html>
+
+<script>
+    $(document).ready(function() {
+
+    // Function to clean up empty <p> tags and unnecessary white spaces
+    function cleanHtmlContent(content) {
+        // Remove empty <p> tags (including those with only spaces)
+        content = content.replace(/<p>\s*<\/p>/g, '');
+
+        // Trim overall content
+        return content.trim();
+    }
+
+    // Initialize CKEditor
+    CKEDITOR.replace('description');
+        // Check if mfc data is available and pass it to CKEditor after initialization
+        <?php if (!empty($mfc_list)): ?>
+            CKEDITOR.replace('description');
+            // Directly use the HTML content without escaping it
+            let formattedDescription = `<?php echo $mfc_data['description']; ?>`;
+            CKEDITOR.instances.description.setData(formattedDescription);
+        <?php elseif ($data_available): ?>
+            CKEDITOR.replace('description');
+            let formattedDescription = `<?php echo $description_data; ?>`;
+            CKEDITOR.instances.description.setData(formattedDescription);
+        <?php else: ?>
+            // Default content for new entries
+            let defaultContent = `
+                <p>Quantity: </p>
+                <p>Color: </p>
+                <p>Appearance: </p>
+                <p>Sediment: </p>
+                <p>Clot: </p>
+            `;
+            defaultContent = cleanHtmlContent(defaultContent);
+            CKEDITOR.instances.description.setData(defaultContent);
+        <?php endif; ?>
+
+        // Ensure read-only mode for previous_description
+        if ($('textarea#previous_description').length) {
+            $('textarea#previous_description').attr('readonly', 'readonly');
+            $('textarea#previous_description').prop('disabled', true); 
+            initHtmlTextArea('previous_description'); // Initialize Dolibarr's WYSIWYG Editor for previous description
+        }
+    });
+</script>
+
+
+
 
 
 <?php 
