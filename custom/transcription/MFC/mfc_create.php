@@ -627,33 +627,33 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
         });
 
         // Function to clean HTML content
-    function cleanHtmlContent(content) {
-        if (!content) return "";
+        function cleanHtmlContent(content) {
+            if (!content) return "";
 
-        // Decode HTML entities to prevent double encoding
-        let tempElement = document.createElement("div");
-        tempElement.innerHTML = content;
-        content = tempElement.innerHTML; // Get the actual HTML structure
+            // Decode HTML entities to prevent double encoding
+            let tempElement = document.createElement("div");
+            tempElement.innerHTML = content;
+            content = tempElement.innerHTML; // Get the actual HTML structure
 
-        // Remove empty <p> tags (even if they contain only spaces or new lines)
-        content = content.replace(/<p>\s*<\/p>/g, "");
+            // Remove empty <p> tags (even if they contain only spaces or new lines)
+            content = content.replace(/<p>\s*<\/p>/g, "");
 
-        // Remove unnecessary multiple <br> tags (keeping only one)
-        content = content.replace(/(<br\s*\/?>\s*)+/g, "<br>");
+            // Remove unnecessary multiple <br> tags (keeping only one)
+            content = content.replace(/(<br\s*\/?>\s*)+/g, "<br>");
 
-        // Remove leading & trailing <br> tags
-        content = content.replace(/^(<br\s*\/?>\s*)+|(<br\s*\/?>\s*)+$/g, "");
+            // Remove leading & trailing <br> tags
+            content = content.replace(/^(<br\s*\/?>\s*)+|(<br\s*\/?>\s*)+$/g, "");
 
-        // Remove leading & trailing white spaces
-        return content.trim();
-    }
+            // Remove leading & trailing white spaces
+            return content.trim();
+        }
 
-    // Get PHP variable and clean it
-    let rawGrossNote = `<?= htmlspecialchars_decode($data['gross_note'] ?? htmlspecialchars_decode($description) ?? ''); ?>`;
-    let cleanedGrossNote = cleanHtmlContent(rawGrossNote);
+        // Get PHP variable and clean it
+        let rawGrossNote = `<?= htmlspecialchars_decode($data['gross_note'] ?? htmlspecialchars_decode($description) ?? ''); ?>`;
+        let cleanedGrossNote = cleanHtmlContent(rawGrossNote);
 
-    // Set cleaned data in Quill editor
-    grossNoteEditor.root.innerHTML = cleanedGrossNote;
+        // Set cleaned data in Quill editor
+        grossNoteEditor.root.innerHTML = cleanedGrossNote;
 
 
         // Initialize Quill editors

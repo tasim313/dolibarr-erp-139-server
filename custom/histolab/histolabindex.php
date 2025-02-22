@@ -668,7 +668,9 @@ echo '<div class="tab-container">
                                                         sectionCodeCount += Object.keys(sectionGroups).length;
 
                                                         // Generate the horizontal display of sections with \'multiple\' for sections that appear more than once
-                                                        const sectionDisplay = Object.keys(sectionGroups).map(sectionKey => {
+                                                        const sectionDisplay = Object.keys(sectionGroups)
+    .sort(compareSectionCodes) // Sort the section codes properly
+    .map(sectionKey => { 
                                                             const count = sectionGroups[sectionKey].count;
                                                             const section = sectionGroups[sectionKey];
                                                             let additionalInfo = "";
