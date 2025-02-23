@@ -396,11 +396,11 @@ switch (true) {
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-    var searchInput = document.getElementById("searchLabNumber");
-    if (searchInput) {
-        searchInput.focus(); 
-    }
-});
+        var searchInput = document.getElementById("searchLabNumber");
+        if (searchInput) {
+            searchInput.focus(); 
+        }
+    });
 </script>
 
 
