@@ -736,7 +736,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
 
 <!-- Doctor , Assistant and Station information -->
-<script>
+<!-- <script>
     window.onload = function() {
         const storeDoctor = sessionStorage.getItem('doctor_name');
         const storedAssistant = sessionStorage.getItem('assistant');
@@ -762,7 +762,38 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
         sessionStorage.setItem('doctor_name', selectedDoctor);
     });
 
+</script> -->
+<script>
+    window.onload = function() {
+        const storeDoctor = "<?php echo $loggedInUsername; ?>";
+        const storedDoctor = sessionStorage.getItem('doctor_name') || storeDoctor;
+        const storedAssistant = sessionStorage.getItem('assistant');
+        const storedStation = sessionStorage.getItem('cyto_station_type');
+
+        // Auto-fill fields if values exist
+        if (storedDoctor) {
+            document.getElementById('doctor_name').value = storedDoctor;
+        }
+        if (storedAssistant) {
+            document.getElementById('assistant').value = storedAssistant;
+        }
+        if (storedStation) {
+            document.getElementById('cyto_station_type').value = storedStation;
+        }
+    };
+
+    // Store values on form submission
+    document.getElementById('clinical-information-form').addEventListener('submit', function(event) {
+        const selectedAssistant = document.getElementById('assistant').value;
+        const selectedStation = document.getElementById('cyto_station_type').value;
+        const selectedDoctor = document.getElementById('doctor_name').value;
+
+        sessionStorage.setItem('assistant', selectedAssistant);
+        sessionStorage.setItem('cyto_station_type', selectedStation);
+        sessionStorage.setItem('doctor_name', selectedDoctor);
+    });
 </script>
+
 
 
 <!-- Chief Information -->
