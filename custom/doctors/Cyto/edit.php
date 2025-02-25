@@ -391,7 +391,7 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
                     if (!empty($fixationInformation)) {
                         foreach ($fixationInformation as $info_fixation) {
                             // Collect unique locations, aspiration materials, and special instructions
-                            $location = $info_fixation['location'];
+                            $location = trim($info_fixation['location']) ?: 'Proper';
                             $aspirationMaterial = $info_fixation['aspiration_materials'];
                             $specialInstruction = $info_fixation['special_instructions'];
 
