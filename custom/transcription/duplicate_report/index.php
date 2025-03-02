@@ -91,11 +91,11 @@ $loggedInUsername = $user->login;
             
             if (labNumber) {
                 if (fnaLabNumbers.includes(labNumber)) {
-                    window.location.href = 'fna/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                    window.location.href = 'fna/duplicate.php?LabNumber=' + encodeURIComponent(labNumber);
                 } else if (mfcLabNumbers.includes(labNumber)) {
-                    window.location.href = 'mfc/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                    window.location.href = 'mfc/duplicate.php?LabNumber=' + encodeURIComponent(labNumber);
                 } else if (hplLabNumbers.includes(labNumber)) {
-                    window.location.href = 'hpl/index.php?LabNumber=' + encodeURIComponent(labNumber);
+                    window.location.href = 'hpl/duplicate.php?LabNumber=' + encodeURIComponent(labNumber);
                 } else {
                     document.getElementById('message').innerHTML = `<div class="alert alert-danger">This lab number does not match. Please enter a valid lab number.</div>`;
                 }

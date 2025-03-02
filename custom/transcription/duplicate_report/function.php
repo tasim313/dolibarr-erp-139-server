@@ -142,4 +142,64 @@ function get_hpl_labnumber_list() {
     return $labnumbers;
 }
 
+function get_duplicate_report_doctor_assisted_by_signature_details($labNumber) {
+    global $pg_con;
+
+    $existingdata = array();
+
+    $sql = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+    dd.designation as designation, ds.rowid as row_id
+    FROM llx_doctor_degination AS dd
+    INNER JOIN llx_duplicate_report_doctor_assisted AS ds ON dd.username = ds.doctor_username
+    WHERE ds.lab_number = '$labNumber'";
+
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'row_id' => $row['row_id'],
+                'username' => $row['username'],
+                'education' => $row['education'],
+                'designation' => $row['designation']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
+
+function get_duplicate_report_doctor_finalized_by_signature_details($labNumber) {
+    global $pg_con;
+    $existingdata = array();
+
+    $sql = "SELECT dd.username as username, dd.doctor_name as doctor_name, dd.education as education, 
+            dd.designation as designation, ds.rowid as row_id
+            FROM llx_doctor_degination AS dd
+            INNER JOIN llx_duplicate_report_doctor_finalized_by_signature AS ds ON dd.username = ds.doctor_username
+            WHERE ds.lab_number = '$labNumber'";
+
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'row_id' => $row['row_id'],
+                'username' => $row['username'],
+                'education' => $row['education'],
+                'designation' => $row['designation']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>
