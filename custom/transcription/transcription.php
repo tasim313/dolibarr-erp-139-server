@@ -363,24 +363,7 @@ print('<button class="button-class secondary">
 </button>');
 
 echo '<button class="button-class secondary" onclick="history.back()" class="styled-back-btn">Back</button>';
-echo '<form id="duplicateReportForm" action="save_duplicate_report_data.php" method="POST">
-    <input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumberWithoutPrefix, ENT_QUOTES, 'UTF-8') . '">
-    <input type="hidden" name="user_id" value="' . htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8') . '">
-</form>';
 
-echo '<button class="button-class secondary" onclick="submitAndRedirect()">
-    <a id="reportLink" href="duplicate_report/hpl/index.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '&username=' . urlencode($loggedInUsername) . '" target="_blank">Duplicate Report</a>
-</button>';
-
-echo '<script>
-function submitAndRedirect() {
-    document.getElementById("duplicateReportForm").submit();
-
-    setTimeout(function() {
-        document.getElementById("reportLink").click();
-    }, 500);
-}
-</script>';
 
 print("
 <form id='clinicalDetailsForm' method='post' action='clinical_details.php'>
