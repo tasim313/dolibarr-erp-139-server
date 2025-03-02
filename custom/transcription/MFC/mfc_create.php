@@ -151,9 +151,35 @@ $reportUrl = "http://" . $host . "/custom/transcription/MFC/mfc_report.php?LabNu
 
 </head>
 <body>
-    <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
-    <a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>&nbsp; &nbsp;&nbsp;
-    <button class="btn btn-info btn-md" onclick="history.back()">Back</button>
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <a href="<?= $homeUrl ?>" class="btn btn-info btn-md">Home</a>&nbsp; &nbsp;&nbsp;
+        <a href="<?= $reportUrl ?>" class="btn btn-info btn-md" target="_blank">Preview</a>&nbsp; &nbsp;&nbsp;
+        <button class="btn btn-info btn-md" onclick="history.back()">Back</button>
+        
+        <?php
+            $LabNumberWithoutPrefix = str_replace(["MFC", "-MFC"], "", $LabNumber);
+            echo('<form id="duplicateReportForm" action="../save_duplicate_report_data.php" method="POST">
+                    <input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumberWithoutPrefix, ENT_QUOTES, 'UTF-8') . '">
+                    <input type="hidden" name="user_id" value="' . htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8') . '">
+                </form>
+
+                <button class="btn btn-info btn-md" onclick="submitAndRedirect()">
+                    <a id="reportLink" href="../duplicate_report/mfc/index.php?LabNumber=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '&username=' . urlencode($loggedInUsername) . '" target="_blank">Duplicate Report</a>
+                </button>'
+            );
+        ?>
+    </div>
+    
+    <script>
+        function submitAndRedirect() {
+            document.getElementById("duplicateReportForm").submit();
+
+            setTimeout(function() {
+                document.getElementById("reportLink").click();
+            }, 500);
+        }
+    </script>
+
     <div class="container">
         <div class=" text-center mt-5 ">
             <h3>Microscopic Details</h3>
