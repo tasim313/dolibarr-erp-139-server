@@ -1,5 +1,5 @@
 <?php
-include("connection.php");
+include("../connection.php");
 
 // Check if all required fields are present
 $required_fields = ['doctor_username', 'lab_number',  'created_user'];
@@ -15,7 +15,7 @@ $lab_number = $_POST['lab_number'];
 $created_user = $_POST['created_user'];
 
 // Insert the doctor signature
-$insert_query = "INSERT INTO llx_doctor_finalized_by_signature  (doctor_username, lab_number, created_user) VALUES ($1, $2, $3)";
+$insert_query = "INSERT INTO llx_duplicate_report_doctor_finalized_by_signature  (doctor_username, lab_number, created_user) VALUES ($1, $2, $3)";
 $insert_result = pg_query_params($pg_con, $insert_query, array($doctor_username, $lab_number, $created_user));
 
 if (!$insert_result) {
@@ -25,7 +25,7 @@ if (!$insert_result) {
 }
 
 echo "Doctor signature inserted successfully.";
-header("Location: transcription.php?lab_number=$lab_number");
+header("Location: " . $_SERVER['HTTP_REFERER']);
 
 // Close the database connection
 pg_close($pg_con);

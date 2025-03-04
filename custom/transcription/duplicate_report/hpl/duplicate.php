@@ -70,7 +70,7 @@ $lab_number =  $_GET['LabNumber'];
         <?php 
             echo '
             <form id="duplicateReportForm" action="../../save_duplicate_report_data.php" method="POST">
-                <input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">
+                <input type="hidden" name="lab_number" value="' . htmlspecialchars($lab_number, ENT_QUOTES, 'UTF-8') . '">
                 <input type="hidden" name="user_id" value="' . htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8') . '">
             </form>
         ';
@@ -130,7 +130,7 @@ $lab_number =  $_GET['LabNumber'];
                     // Hidden Inputs
                     echo '<input type="hidden" name="lab_number" value="' . $LabNumber . '" readonly>';
                     echo '<input type="hidden" name="created_user" value="' . htmlspecialchars($loggedInUsername) . '">';
-                    echo '<input type="hidden" name="row_id" value="' . htmlspecialchars($list['row_id']) . '">'; // Hidden input to store row_id for update
+                    echo '<input type="hidden" name="rowid" value="' . htmlspecialchars($list['row_id']) . '">'; // Hidden input to store row_id for update
 
                     // Submit Button
                     echo '<div class="form-group">';
@@ -204,7 +204,7 @@ $lab_number =  $_GET['LabNumber'];
                     // Hidden Inputs
                     echo '<input type="hidden" name="lab_number" value="' . $LabNumber . '" readonly>';
                     echo '<input type="hidden" name="created_user" value="' . htmlspecialchars($loggedInUsername) . '">';
-                    echo '<input type="hidden" name="row_id" value="' . htmlspecialchars($list['row_id']) . '">'; // Hidden input to store row_id for update
+                    echo '<input type="hidden" name="rowid" value="' . htmlspecialchars($list['row_id']) . '">'; // Hidden input to store row_id for update
 
                     // Submit Button
                     echo '<div class="form-group">';

@@ -572,12 +572,12 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                             <div class="form-group form-group-slide d-flex align-items-center">
                                 <label for="location-input" class="mr-2">Aspiration:</label> &nbsp; 
                                 <input type="text" id="location-input" name="location_input" class="form-control mr-3" placeholder="Enter location (e.g., Proper)" > &nbsp; &nbsp; &nbsp;
-
-                                <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
-                                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" > &nbsp; &nbsp; &nbsp; 
-
+                                
                                 <label for="aspiration_materials-input" class="mr-2">Aspiration Materials:</label>&nbsp;
                                 <input type="text" id="aspiration_materials-input" name="aspiration_materials_input" class="form-control mr-3" placeholder="Enter Aspiration Materials" > &nbsp; &nbsp; &nbsp;
+                                
+                                <label for="slides-input" class="mr-2">Slide:</label> &nbsp; 
+                                <input type="text" id="slides-input" name="slides_input" class="form-control mr-3" placeholder="Enter slide (e.g., 2+1)" > &nbsp; &nbsp; &nbsp; 
 
                                 <label for="special_instruction-input" class="mr-2">Special Instruction:</label>
                                 <input type="text" id="special-instruction-input" name="special_instruction_input" class="form-control mr-3" placeholder="Enter Special Instruction"> &nbsp; &nbsp; &nbsp;
@@ -1502,8 +1502,8 @@ document.addEventListener('click', function (event) {
 
         // Check and add non-empty values
         if (location) result.push(`<div><strong>Aspiration:</strong> ${location}</div>`);
-        if (slides) result.push(`<div><strong>Slide:</strong> ${slides}</div>`);
         if (aspirationMaterials) result.push(`<div><strong>Aspiration Materials:</strong> ${aspirationMaterials}</div>`);
+        if (slides) result.push(`<div><strong>Slide:</strong> ${slides}</div>`);
         if (specialInstruction) result.push(`<div><strong>Special Instruction:</strong> ${specialInstruction}</div>`);
 
         // Append the result to the display area
