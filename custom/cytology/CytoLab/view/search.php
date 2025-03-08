@@ -121,6 +121,24 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="../bootstrap-3.4.1-dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="../bootstrap-3.4.1-dist/js/bootstrap.min.js">
+    <style>
+        .left-aligned {
+            text-align: left;
+            padding-left: 0;
+        }
+        .fixation-row {
+            display: flex;
+            flex-wrap: wrap; /* Allows the content to wrap to the next line if needed */
+            margin-bottom: 10px; /* Adds space between rows */
+        }
+
+        .fixation-item {
+            flex: 1 1 200px; /* Allows the items to take equal space, with a minimum width of 200px */
+            margin: 5px;
+            padding: 10px;  
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
 
@@ -389,155 +407,132 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 } 
             ?>
             
-            <!-- Recall -->
-           <?php 
-             
-             
-             $formatted_LabNumber = substr($LabNumber, 3);
-             $recall_status = cyto_recall_lab_number($formatted_LabNumber);
-             
-                if ($recall_status ) {
-                    echo("<h3>Recall Information</h3><br>");
+            <!-- Recall + Recall fixation details-->
+           
+            <?php 
+                $formatted_LabNumber = substr($LabNumber, 3);
+                $recall_status = cyto_recall_lab_number($formatted_LabNumber);
+
+                if ($recall_status) {
                     $recall_cyto_id = $recall_status['rowid'];
-                    // recall clinical information
+
+                    // Recall clinical information
                     $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
-                        // Check if we have valid data or an error message
-                        if (is_array($recall_clinical_information)) {
-                            // If data is found, create a table to display it
-                            echo '<table class="table table-bordered table-striped">';
-                            
-                            // List of fields to exclude
-                            $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
 
-                            // Create a row for the field names (headers)
-                            echo '<tr>';
-                            foreach ($recall_clinical_information as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
+                    if (is_array($recall_clinical_information)) {
+                        // Exclude specific fields
+                        $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
 
-                                // If the field exists and is not empty, display the field name
-                                if (!empty($value)) {
-                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                }
+                        // Create a vertical table for clinical information
+                        echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">';
+
+                        foreach ($recall_clinical_information as $field => $value) {
+                            if (in_array($field, $exclude_fields) || empty($value)) {
+                                continue;
                             }
-                            echo '</tr>';
 
-                            // Create a row for the field values
+                            // Create a row for each field and its value
                             echo '<tr>';
-                            foreach ($recall_clinical_information as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-
-                                // If the field exists and is not empty, display the value
-                                if (!empty($value)) {
-                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                }
-                            }
+                            echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
+                            echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars($value) . '</td>';
                             echo '</tr>';
-
-                            echo '</table>';
-                        } else {
-                            // If no data was found or there's an error
-                            echo '<p>' . $recall_clinical_information . '</p>';
-                        }
-                        
-                        // recall fixation details
-                        $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
-                        if (is_array($recall_fixation_details)) {
-                            // If data is found, create a table to display it
-                            echo '<table class="table table-bordered table-striped">';
-                            
-                            // List of fields to exclude
-                            $exclude_fields = ['rowid', 'cyto_id'];
-                        
-                            // Create a row for the field names (headers)
-                            echo '<tr>';
-                            foreach ($recall_fixation_details as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-                        
-                                // If the field exists and is not empty, display the field name
-                                if (!empty($value)) {
-                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                }
-                            }
-                            echo '</tr>';
-                        
-                            // Create a row for the field values
-                            echo '<tr>';
-                            foreach ($recall_fixation_details as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-                        
-                                // If the field exists and is not empty, display the value
-                                if (!empty($value)) {
-                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                }
-                            }
-                            echo '</tr>';
-                        
-                            echo '</table>';
-                        } else {
-                            // If no data was found or there's an error
-                            echo '<p>' . $recall_fixation_details . '</p>';
                         }
 
+                        echo '</table>';
+                    } else {
+                        echo '<div class="alert alert-warning">No clinical information found.</div>';
+                    }
 
-                        // recall fixation additional details
-                        $recall_fixation_additional_details = cyto_recall_fixation_additional_details($recall_cyto_id);
-                        if (is_array($recall_fixation_additional_details)) {
-                            // If data is found, create a table to display it
-                            echo '<table class="table table-bordered table-striped">';
-                            
-                            // List of fields to exclude
-                            $exclude_fields = ['rowid', 'cyto_id'];
-                        
-                            // Create a row for the field names (headers)
-                            echo '<tr>';
-                            foreach ($recall_fixation_additional_details as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-                        
-                                // If the field exists and is not empty, display the field name
-                                if (!empty($value)) {
-                                    echo '<th>' . ucfirst(str_replace('_', ' ', $field)) . '</th>'; // Field Name
-                                }
+                    // Fetch fixation details
+                    $fixationInformation_recall = cyto_recall_fixation_details($recall_cyto_id);
+
+                    // Initialize arrays for storing counts and details
+                    $dryYesCounts_recall = [];
+                    $dryNoCounts_recall = [];
+                    $aspirationMaterials_recall = [];
+                    $specialInstructions_recall = [];
+                    $locations_recall = [];
+
+                    if (!empty($fixationInformation_recall)) {
+                        foreach ($fixationInformation_recall as $info_fixation_recall) {
+                            // Ensure variable is correctly used
+                            $location_recall = trim($info_fixation_recall['location']) ?: 'Proper';
+                            $aspirationMaterial_recall = $info_fixation_recall['aspiration_materials'];
+                            $specialInstruction_recall = $info_fixation_recall['special_instructions'];
+
+                            // Ensure unique entries for locations
+                            if (!in_array($location_recall, $locations_recall)) {
+                                $locations_recall[] = $location_recall;
                             }
-                            echo '</tr>';
-                        
-                            // Create a row for the field values
-                            echo '<tr>';
-                            foreach ($recall_fixation_additional_details as $field => $value) {
-                                // Skip the fields we want to exclude
-                                if (in_array($field, $exclude_fields)) {
-                                    continue;
-                                }
-                        
-                                // If the field exists and is not empty, display the value
-                                if (!empty($value)) {
-                                    echo '<td>' . htmlspecialchars($value) . '</td>'; // Value
-                                }
+                            if (!in_array($aspirationMaterial_recall, $aspirationMaterials_recall)) {
+                                $aspirationMaterials_recall[] = $aspirationMaterial_recall;
                             }
-                            echo '</tr>';
-                        
-                            echo '</table>';
-                        } else {
-                            // If no data was found or there's an error
-                            echo '<p>' . $recall_fixation_additional_details . '</p>';
+                            if (!in_array($specialInstruction_recall, $specialInstructions_recall)) {
+                                $specialInstructions_recall[] = $specialInstruction_recall;
+                            }
+
+                            // Count the dry values by location
+                            if ($info_fixation_recall['dry'] === 'Yes') {
+                                $dryYesCounts_recall[$location_recall] = ($dryYesCounts_recall[$location_recall] ?? 0) + 1;
+                            } elseif ($info_fixation_recall['dry'] === 'No') {
+                                $dryNoCounts_recall[$location_recall] = ($dryNoCounts_recall[$location_recall] ?? 0) + 1;
+                            }
                         }
-                    
-                } 
-           ?>
+                    }
+
+                    // Clean up the arrays by trimming empty values
+                    $cleanedLocations_recall = array_filter(array_map('trim', $locations_recall));
+                    $cleanedSpecialInstructions_recall = array_filter(array_map('trim', $specialInstructions_recall));
+
+                    // Initialize a variable to keep track of the letter to append as a prefix
+                    $prefixIndex_recall = 0; // Start with 'P-' for the first location
+
+                    // We will iterate over the cleaned locations and display each location, A/M, slide, and special instructions
+                    foreach ($cleanedLocations_recall as $i => $location_recall):
+                        // Get values for the current location
+                        $aspirationMaterial_recall = htmlspecialchars($aspirationMaterials_recall[$i] ?? ''); // Default empty string if no aspiration material
+                        $dryNo_recall = $dryNoCounts_recall[$location_recall] ?? 0;
+                        $dryYes_recall = $dryYesCounts_recall[$location_recall] ?? 0;
+                        $slide_recall = "$dryNo_recall+$dryYes_recall"; // Combine slide counts
+                        $specialInstruction_recall = htmlspecialchars($cleanedSpecialInstructions_recall[$i] ?? ''); // Default empty if no special instruction
+
+                        // Generate the prefix for the location
+                        $prefix_recall = ($prefixIndex_recall === 0) ? 'P-' : chr(64 + $prefixIndex_recall) . "-";
+                        $prefixIndex_recall++;
+
+                        // Combine the prefix with the location name
+                        $prefixedLocation_recall = $prefix_recall . $location_recall;
+                        ?>
+                        
+                        <div class="fixation-row">
+                            <?php if (!empty($prefixedLocation_recall)): ?>
+                                <div class="fixation-item">
+                                    <b>Location:</b> <?= $prefixedLocation_recall ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($aspirationMaterial_recall)): ?>
+                                <div class="fixation-item">
+                                    <b>A/M:</b> <?= $aspirationMaterial_recall ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($slide_recall)): ?>
+                                <div class="fixation-item">
+                                    <b>Slide:</b> <?= $slide_recall ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($specialInstruction_recall)): ?>
+                                <div class="fixation-item">
+                                    <b>Special Instructions:</b> <?= $specialInstruction_recall ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                    <?php endforeach;
+                }
+            ?>
 
            <!-- recall management -->
             <?php 
