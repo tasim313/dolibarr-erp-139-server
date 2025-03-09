@@ -537,7 +537,8 @@ switch (true) {
                                             }
                                         }
                                         echo "<td class='field-value' style='padding: 4px; border: none;'>" . $formatted_data . "</td>";
-                                    } else if (in_array($field, ['recall_reason'])) {
+                                    } 
+                                    else if (in_array($field, ['recall_reason'])) {
                                         $formatted_recall_reasons = '';
                                         if ($field == 'recall_reason') {
                                             $recall_data_json = json_decode($value, true);
@@ -2097,6 +2098,27 @@ switch (true) {
 
 <!-- screening Tab Control -->
 <script>
+    // Automatically show default statuses ("Screening Complete" and "Finalization Complete") when the page loads
+    window.onload = function() {
+        displayDefaultStatuses();
+    };
+
+    function displayDefaultStatuses() {
+        const statusTab = document.getElementById("status-tab");
+
+        // Create default statuses and add them to the tab
+        const defaultStatuses = [];
+        
+        defaultStatuses.forEach(status => {
+            const statusElement = document.createElement("div");
+            statusElement.textContent = status;
+            statusElement.classList.add("status-item");
+            statusTab.appendChild(statusElement);
+        });
+        
+        // Make the Status Tab visible
+        statusTab.style.display = "block";
+    }
     // Function to toggle the visibility of a tab and hide others
     function toggleTab(tabId) {
         // Get the tab to show

@@ -538,98 +538,131 @@ $reportUrl = "http://" . $host . "/custom/doctors/Cyto/Report.php?LabNumber=" . 
             </div>
 
           
-            <!-- Recall -->
+            <!-- Recall + Recall fixation details-->
            
             <?php 
-                $formatted_LabNumber = substr($LabNumber, 3);
-                $recall_status = cyto_recall_lab_number($formatted_LabNumber);
+                    $formatted_LabNumber = substr($LabNumber, 3);
+                    $recall_status = cyto_recall_lab_number($formatted_LabNumber);
 
-                if ($recall_status) {
-                    $recall_cyto_id = $recall_status['rowid'];
-                    
-                    // Recall clinical information
-                    $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
+                    if ($recall_status) {
+                        $recall_cyto_id = $recall_status['rowid'];
 
-                    if (is_array($recall_clinical_information)) {
-                        // Exclude specific fields
-                        $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
+                        // Recall clinical information
+                        $recall_clinical_information = cyto_recall_clinical_information($recall_cyto_id);
 
-                        // Create a vertical table for clinical information
-                        echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">';
-                        
-                        foreach ($recall_clinical_information as $field => $value) {
-                            if (in_array($field, $exclude_fields) || empty($value)) {
-                                continue;
+                        if (is_array($recall_clinical_information)) {
+                            // Exclude specific fields
+                            $exclude_fields = ['rowid', 'cyto_id', 'chief_complain'];
+
+                            // Create a vertical table for clinical information
+                            echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none; margin-top:-20px;">';
+
+                            foreach ($recall_clinical_information as $field => $value) {
+                                if (in_array($field, $exclude_fields) || empty($value)) {
+                                    continue;
+                                }
+
+                                // Create a row for each field and its value
+                                echo '<tr>';
+                                echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
+                                echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars($value) . '</td>';
+                                echo '</tr>';
                             }
 
-                            // Create a row for each field and its value
-                            echo '<tr>';
-                            echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">' . ucfirst(str_replace('_', ' ', $field)) . '</th>';
-                            echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars($value) . '</td>';
-                            echo '</tr>';
+                            echo '</table>';
+                        } else {
+                            echo '<div class="alert alert-warning">No clinical information found.</div>';
                         }
 
-                        echo '</table>';
-                    } else {
-                        echo '<div class="alert alert-warning"></div>';
-                    }
+                        // Fetch fixation details
+                        $fixationInformation_recall = cyto_recall_fixation_details($recall_cyto_id);
 
-                    // Recall fixation details
-                    $recall_fixation_details = cyto_recall_fixation_details($recall_cyto_id);
+                        // Initialize arrays for storing counts and details
+                        $dryYesCounts_recall = [];
+                        $dryNoCounts_recall = [];
+                        $aspirationMaterials_recall = [];
+                        $specialInstructions_recall = [];
+                        $locations_recall = [];
 
-                    if (is_array($recall_fixation_details) && !empty($recall_fixation_details)) {
-                        $dry_no_count = 0;
-                        $dry_yes_count = 0;
-                        $exclude_fields = ['rowid', 'cyto_id', 'fixation_method', 'dry'];
+                        if (!empty($fixationInformation_recall)) {
+                            foreach ($fixationInformation_recall as $info_fixation_recall) {
+                                // Ensure variable is correctly used
+                                $location_recall = trim($info_fixation_recall['location']) ?: 'Proper';
+                                $aspirationMaterial_recall = $info_fixation_recall['aspiration_materials'];
+                                $specialInstruction_recall = $info_fixation_recall['special_instructions'];
 
-                        // Initialize arrays to aggregate data
-                        $aggregated_data = [
-                            'location' => [],
-                            'aspiration_materials' => [],
-                            'special_instructions' => [],
-                        ];
+                                // Ensure unique entries for locations
+                                if (!in_array($location_recall, $locations_recall)) {
+                                    $locations_recall[] = $location_recall;
+                                }
+                                if (!in_array($aspirationMaterial_recall, $aspirationMaterials_recall)) {
+                                    $aspirationMaterials_recall[] = $aspirationMaterial_recall;
+                                }
+                                if (!in_array($specialInstruction_recall, $specialInstructions_recall)) {
+                                    $specialInstructions_recall[] = $specialInstruction_recall;
+                                }
 
-                        // Iterate through records to count "dry" values and aggregate data
-                        foreach ($recall_fixation_details as $record) {
-                            if (isset($record['dry'])) {
-                                $dry_value = strtolower($record['dry']);
-                                if ($dry_value === 'no') {
-                                    $dry_no_count++;
-                                } elseif ($dry_value === 'yes') {
-                                    $dry_yes_count++;
+                                // Count the dry values by location
+                                if ($info_fixation_recall['dry'] === 'Yes') {
+                                    $dryYesCounts_recall[$location_recall] = ($dryYesCounts_recall[$location_recall] ?? 0) + 1;
+                                } elseif ($info_fixation_recall['dry'] === 'No') {
+                                    $dryNoCounts_recall[$location_recall] = ($dryNoCounts_recall[$location_recall] ?? 0) + 1;
                                 }
                             }
-
-                            // Aggregate specific fields
-                            if (!empty($record['location']) && !in_array($record['location'], $aggregated_data['location'])) {
-                                $aggregated_data['location'][] = $record['location'];
-                            }
-                            if (!empty($record['aspiration_materials']) && !in_array($record['aspiration_materials'], $aggregated_data['aspiration_materials'])) {
-                                $aggregated_data['aspiration_materials'][] = $record['aspiration_materials'];
-                            }
-                            if (!empty($record['special_instructions']) && !in_array($record['special_instructions'], $aggregated_data['special_instructions'])) {
-                                $aggregated_data['special_instructions'][] = $record['special_instructions'];
-                            }
                         }
 
-                        // Create a vertical table for fixation details
-                        echo '<table class="table" style="border-collapse: collapse; width: 100%; border-top: none;" margin-top:400px;>';
+                        // Clean up the arrays by trimming empty values
+                        $cleanedLocations_recall = array_filter(array_map('trim', $locations_recall));
+                        $cleanedSpecialInstructions_recall = array_filter(array_map('trim', $specialInstructions_recall));
 
-                        echo '<tr>';
-                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Location:</th>';
-                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['location'])) . '</td>';
-                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Slide:</th>';
-                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . $dry_no_count . ' + ' . $dry_yes_count . '</td>'; // No count + Yes count
-                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Aspiration Materials:</th>';
-                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['aspiration_materials'])) . '</td>';
-                        echo '<th style="text-align: left; padding: 8px; border: none; font-size:20px;">Special Instructions:</th>';
-                        echo '<td style="padding: 8px; border: none; font-size:20px;">' . htmlspecialchars(implode(', ', $aggregated_data['special_instructions'])) . '</td>';
-                        echo '</tr>';
-                        echo '</table>';
-                    } else {
-                        echo '<div class="alert alert-warning"></div>';
+                        // Initialize a variable to keep track of the letter to append as a prefix
+                        $prefixIndex_recall = 0; // Start with 'P-' for the first location
+
+                        // We will iterate over the cleaned locations and display each location, A/M, slide, and special instructions
+                        foreach ($cleanedLocations_recall as $i => $location_recall):
+                                // Get values for the current location
+                                $aspirationMaterial_recall = htmlspecialchars($aspirationMaterials_recall[$i] ?? ''); // Default empty string if no aspiration material
+                                $dryNo_recall = $dryNoCounts_recall[$location_recall] ?? 0;
+                                $dryYes_recall = $dryYesCounts_recall[$location_recall] ?? 0;
+                                $slide_recall = "$dryNo_recall+$dryYes_recall"; // Combine slide counts
+                                $specialInstruction_recall = htmlspecialchars($cleanedSpecialInstructions_recall[$i] ?? ''); // Default empty if no special instruction
+
+                                // Generate the prefix for the location
+                                $prefix_recall = ($prefixIndex_recall === 0) ? 'P-' : chr(64 + $prefixIndex_recall) . "-";
+                                $prefixIndex_recall++;
+
+                                // Combine the prefix with the location name
+                                $prefixedLocation_recall = $prefix_recall . $location_recall;
+                                ?>
+                                
+                                <div class="fixation-row">
+                                    <?php if (!empty($prefixedLocation_recall)): ?>
+                                        <div class="fixation-item">
+                                            <b>Location:</b> <?= $prefixedLocation_recall ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($aspirationMaterial_recall)): ?>
+                                        <div class="fixation-item">
+                                            <b>A/M:</b> <?= $aspirationMaterial_recall ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($slide_recall)): ?>
+                                        <div class="fixation-item">
+                                            <b>Slide:</b> <?= $slide_recall ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($specialInstruction_recall)): ?>
+                                        <div class="fixation-item">
+                                            <b>Special Instructions:</b> <?= $specialInstruction_recall ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+
+                        <?php endforeach;
                     }
-                }
             ?>
 
            
