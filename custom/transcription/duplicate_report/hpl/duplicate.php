@@ -596,11 +596,22 @@ $abbreviations = get_abbreviations_list();
             echo '</form>';
         ?>
 
-        <?php 
-           $sections = get_gross_specimen_section($fk_gross_id);
-           $specimen_count_value = number_of_specimen($fk_gross_id);
-           $alphabet_string = numberToAlphabet($specimen_count_value); 
-           
+        <!-- Section Code -->
+        <?php
+
+           $other_sections = other_report_gross_specimen_section($LabNumber);
+
+           // Check if the function returns valid data
+           if (!empty($other_sections)) {
+                $sections = $other_sections;
+                $specimen_count_value = number_of_specimen($fk_gross_id);
+                $alphabet_string = numberToAlphabet($specimen_count_value); 
+           } else {
+                $sections = get_gross_specimen_section($fk_gross_id);
+                $specimen_count_value = number_of_specimen($fk_gross_id);
+                $alphabet_string = numberToAlphabet($specimen_count_value); 
+           } 
+
            print('<br>');print('<br>');print('<br>');print('<br>');
            print("<div>");
            
@@ -611,7 +622,8 @@ $abbreviations = get_abbreviations_list();
                echo '<button type="submit" id="' . $button_id . '" data-specimen-letter="' . $specimenLetter . '" onclick="handleButtonClick(this)">Generate Section Codes</button>';
                echo '<br><br>';
            }
-           print('<form id="specimen_section_form" method="post" action="hpl_new_report_data_insert.php">
+           print('<form id="specimen_section_form" method="post" action="insert/specimen_section.php">
+           <input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">
            <div id="fields-container"> 
            </div>
            <br>
@@ -663,8 +675,8 @@ $abbreviations = get_abbreviations_list();
 
 
             // Begin the form
-            print('<form id="section-code-form" method="post" action="hpl_new_report_data_insert.php">');
-
+            print('<form id="section-code-form" method="post" action="insert/specimen_section.php">');
+            print('<input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">');
             // Start the table with headers
             echo '<table>';
             echo '<thead>';
@@ -696,6 +708,11 @@ $abbreviations = get_abbreviations_list();
                 echo '<td>';
                 echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" style="width:30%;">';
                 echo '</td>';
+                print('<input type="hidden" name="cassettes_numbers[]" value="' . htmlspecialchars($section['cassettes_numbers']) . '">');
+                print('<input type="hidden" name="re_gross[]" value="' . htmlspecialchars($section['re_gross']) . '">');
+                print('<input type="hidden" name="gross_specimen_section_id[]" value="' . htmlspecialchars($section['gross_specimen_section_id']) . '">');
+                print('<input type="hidden" name="requires_slide_for_block[]" value="' . htmlspecialchars($section['requires_slide_for_block']) . '">');
+                print('<input type="hidden" name="decalcified_bone[]" value="' . htmlspecialchars($section['decalcified_bone']) . '">');
                 
                 // Bone Present (Radio buttons)
                 echo '<td>';
@@ -728,80 +745,19 @@ $abbreviations = get_abbreviations_list();
 
         ?>
 
+        <!-- Micro Description -->
         <?php 
-            // summary of section
-            // Initialize counters and summary text
-            $total_sections = count($sections); // Number of section codes
-            $total_tissues = 0;
-            $tissue_description = '';
-
-            // Loop through the sections to count tissues and form the description
-            foreach ($sections as $section) {
-                // Check if the tissue value contains the string "multiple"
-                if (strpos($section['tissue'], 'multiple') !== false) {
-                    $tissue_description = 'multiple pieces';  // Set description as "multiple pieces"
-                    break;  // Exit the loop, as we found a string indicating "multiple"
-                } elseif (is_numeric($section['tissue']) && $section['tissue'] > 1) {
-                    $total_tissues += $section['tissue'];  // Sum the tissue pieces if numeric
-                } else {
-                    $total_tissues += 1;  // Default to 1 tissue piece if not "multiple"
-                }
-            }
-
-            // Formulate the generated summary text based on the findings
-            if (!empty($tissue_description)) {
-                // If tissue description is "multiple pieces"
-                $generated_summary = ucfirst($tissue_description) . " embedded in " . numberToWords($total_sections) . " block" . ($total_sections > 1 ? 's' : '') . ".";
-            } else {
-                // Otherwise, use the total tissue count
-                $generated_summary = ucfirst(numberToWords($total_tissues)) . " pieces embedded in " . numberToWords($total_sections) . " block" . ($total_sections > 1 ? 's' : '') . ".";
-            }
-
-            // Function to convert numbers to words
-            function numberToWords($number)
-            {
-                $words = array(
-                    0 => 'zero', 1 => 'one', 2 => 'two', 3 => 'three', 4 => 'four', 5 => 'five', 6 => 'six',
-                    7 => 'seven', 8 => 'eight', 9 => 'nine', 10 => 'ten', 11 => 'eleven', 12 => 'twelve', 13 => 'thirteen',
-                    14 => 'fourteen', 15 => 'fifteen', 16 => 'sixteen', 17 => 'seventeen', 18 => 'eighteen', 19 => 'nineteen',
-                    20 => 'twenty', 30 => 'thirty', 40 => 'forty', 50 => 'fifty', 60 => 'sixty', 70 => 'seventy',
-                    80 => 'eighty', 90 => 'ninety'
-                );
-
-                if ($number <= 20) {
-                    return $words[$number];
-                } else {
-                    return $words[10 * floor($number / 10)] . (($number % 10) ? '-' . $words[$number % 10] : '');
-                }
-            }
-
-            $summaries = get_gross_summary_of_section($fk_gross_id);
-            print('<form method="post" action="hpl_new_report_data_insert.php" id="auto-submit-form">');
-            foreach ($summaries as $summary) {
-                echo '<div class="row">';
-                echo '<div class="col-25">';
-                echo '<label for="summary">Summary</label>';
-                echo '</div>';
-                echo '<div class="col-75">';
-                print('<textarea name="summary" id="summary">'. htmlspecialchars($generated_summary) .'</textarea>');
-                echo '</div>';
-                echo '</div>';
-                echo '<div class="row">';
-                echo '<div class="col-25">';
-                echo '<label for="ink_code">Ink Code</label>';
-                echo '</div>';
-                echo '<div class="col-75">';
-                print('<textarea name="ink_code" id="ink_code" >'.htmlspecialchars($summary['ink_code']) .'</textarea>');
-                echo '</div>';
-                echo '</div>';
-                echo '<input type="hidden" name="gross_summary_id" value="' . htmlspecialchars($summary['gross_summary_id']) . '">';
-                echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
-            }
-            echo '<input type="submit" value="Save">';
-            echo '</form>';
 
             // Micro Description
-            $existingMicroDescriptions = getExistingMicroDescriptions($LabNumber);
+            $other_existingMicroDescriptions = other_report_ExistingMicroDescriptions($LabNumber);
+
+            // Check if the function returns valid data
+            if (!empty($other_existingMicroDescriptions)) {
+                $existingMicroDescriptions = $other_existingMicroDescriptions;
+            } else {
+                $existingMicroDescriptions = getExistingMicroDescriptions($LabNumber);
+            } 
+            
             $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 
             // Ensure $existingMicroDescriptions is an array
@@ -815,7 +771,7 @@ $abbreviations = get_abbreviations_list();
                 <form action="" id="<?php echo $formId; ?>" class="micro-description-form">
                     <div class="form-group">
                         <label for="specimen" class="bold-label">Specimen:</label>
-                        <textarea class="specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
+                        <textarea class="specimen-textarea" name="specimen[]"><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
                         <div id="quill-editor-<?php echo $key; ?>" class="editor"></div>
 
                         <!-- Hidden textarea to store Quill content -->
@@ -855,7 +811,7 @@ $abbreviations = get_abbreviations_list();
             }
 
             echo '<h2 class="heading">Diagnosis Description</h2>';
-            echo '<form action="" id="diagnosisDescriptionForm" method="POST">';
+            echo '<form action="insert/diagnosis.php" id="diagnosisDescriptionForm" method="POST">';
 
             foreach ($existingDiagnosisDescriptions as $index => $specimen) {
                 // Prepare fallback values if some fields are missing
@@ -875,7 +831,7 @@ $abbreviations = get_abbreviations_list();
                 echo '</div>';
                 echo '<div class="col-75">';
                 echo '<input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>';
-                echo '<input type="text" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" readonly>';
+                echo '<input type="text" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" >';
                 echo '</div>';
                 echo '</div>';
 
@@ -1180,31 +1136,44 @@ $abbreviations = get_abbreviations_list();
         });
 
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Add event listener to all forms
-            document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
-                form.addEventListener("submit", function(event) {
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".btn.btn-primary").forEach((button) => {
+                button.addEventListener("click", function (event) {
                     event.preventDefault();
-                    const formData = new FormData(this);
-                    
-                    // Add dynamic fields manually if necessary
-                    document.querySelectorAll(`#${this.id} [data-field] textarea`).forEach(textarea => {
-                        formData.append(textarea.name, textarea.value);
+
+                    let formData = new FormData();
+                    let index = 0;
+
+                    document.querySelectorAll("form[id^='microDescriptionForm']").forEach((form) => {
+                        formData.append(`specimen[]`, form.querySelector("[name='specimen[]']").value);
+                        formData.append(`description[]`, form.querySelector("[name='description[]']").value);
+                        formData.append(`fk_gross_id[]`, form.querySelector("[name='fk_gross_id[]']").value);
+                        formData.append(`created_user[]`, form.querySelector("[name='created_user[]']").value);
+                        formData.append(`status[]`, form.querySelector("[name='status[]']").value);
+                        formData.append(`lab_number[]`, form.querySelector("[name='lab_number[]']").value);
+                        formData.append(`row_id[]`, form.querySelector("[name='row_id[]']").value);
+                        index++;
                     });
 
-                    fetch("hpl_new_report_data_insert.php", {
+                   
+                    
+                    for (let pair of formData.entries()) {
+                        console.log(pair[0], pair[1]);
+                    }
+
+                    fetch("insert/microscopic_description.php", {
                         method: "POST",
-                        body: formData
+                        body: formData,
                     })
-                    .then(response => response.text())
-                    .then(data => {
-                        console.log('Micro Description:', data);
-                        var labNumber = "<?php echo $LabNumber; ?>"; 
-                        window.location.href = `hpl_new_report_data_insert.php?lab_number=${labNumber}`;
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                    });
+                        .then((response) => response.text())
+                        .then((data) => {
+                            
+                            // alert("Microscopic Descriptions saved successfully.");
+                            window.location.reload(); // Refresh the page after saving
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                        });
                 });
             });
         });
@@ -1257,22 +1226,37 @@ $abbreviations = get_abbreviations_list();
 
         document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
             event.preventDefault();
+
+            // Update hidden textareas with Quill editor content
+            document.querySelectorAll(".editor").forEach((editor, index) => {
+                const quill = new Quill(editor);
+                const descriptionTextarea = document.getElementById(`diagnosis-textarea-${index}`);
+                const commentTextarea = document.getElementById(`comment-textarea-${index}`);
+                descriptionTextarea.value = quill.root.innerHTML;
+                commentTextarea.value = quill.root.innerHTML;
+            });
+
+            // Log FormData for debugging
             const formData = new FormData(this);
-            
-            fetch("hpl_new_report_data_insert.php", {
+            for (let pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+
+            // Submit the form
+            fetch("insert/diagnosis.php", {
                 method: "POST",
                 body: formData
             })
             .then(response => response.text())
             .then(data => {
                 console.log(data); 
-                var labNumber = "<?php echo $LabNumber; ?>"; 
-                window.location.href = `hpl_new_report_data_insert.php?lab_number=${labNumber}`
+                window.location.href = `insert/diagnosis.php`;
             })
             .catch(error => {
                 console.error("Error:", error);
             });
         });
+        
     </script>
 
     <script>
