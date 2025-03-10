@@ -547,7 +547,16 @@ $abbreviations = get_abbreviations_list();
 
         <!-- Gross Information -->
         <?php 
-            $specimens = get_gross_specimen_description($fk_gross_id);
+
+            $other_specimen = other_report_gross_specimen_description($LabNumber);
+
+            // Check if the function returns valid data
+            if (!empty($other_specimen)) {
+                $specimens = $other_specimen;
+            } else {
+                $specimens = get_gross_specimen_description($fk_gross_id);
+            } 
+            
 
             print('<form method="post" action="insert/gross_specimen.php">');
             print('<input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">');
