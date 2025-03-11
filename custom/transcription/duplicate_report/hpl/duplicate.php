@@ -802,7 +802,16 @@ $abbreviations = get_abbreviations_list();
 
         <!-- Diagnosis Description -->
         <?php
-            $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
+            // Diagnosis Description
+            $other_existingDiagnosisDescriptions = other_report_ExistingDiagnosisDescriptions($LabNumber);
+
+            // Check if the function returns valid data
+            if (!empty($other_existingDiagnosisDescriptions)) {
+                $existingDiagnosisDescriptions = $other_existingDiagnosisDescriptions;
+            } else {
+                $existingDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumber);
+            } 
+            
             $specimens_list = get_gross_specimens_list($LabNumberWithoutPrefix);
 
             // Ensure $existingDiagnosisDescriptions is an array
@@ -887,7 +896,7 @@ $abbreviations = get_abbreviations_list();
                     float: right;
                     transition: box-shadow 0.3s ease;" 
                     id="diagnosisDescriptionSaveButton" type="submit" 
-                    name="submit" value="att_relation" class="btn btn-primary">Save</button>
+                    name="submit" value="att_relation">Save</button>
                 </div>';
             echo '</form>';
         ?>
@@ -1169,7 +1178,7 @@ $abbreviations = get_abbreviations_list();
                         .then((data) => {
                             
                             // alert("Microscopic Descriptions saved successfully.");
-                            window.location.reload(); // Refresh the page after saving
+                            // window.location.reload(); // Refresh the page after saving
                         })
                         .catch((error) => {
                             console.error("Error:", error);
@@ -1224,39 +1233,33 @@ $abbreviations = get_abbreviations_list();
                 .catch(error => console.error('Error loading shortcuts:', error));
         });
 
-        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
-            event.preventDefault();
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent the default form submission
 
-            // Update hidden textareas with Quill editor content
-            document.querySelectorAll(".editor").forEach((editor, index) => {
-                const quill = new Quill(editor);
-                const descriptionTextarea = document.getElementById(`diagnosis-textarea-${index}`);
-                const commentTextarea = document.getElementById(`comment-textarea-${index}`);
-                descriptionTextarea.value = quill.root.innerHTML;
-                commentTextarea.value = quill.root.innerHTML;
-            });
+                let formData = new FormData(this); // Use the form's data directly
 
-            // Log FormData for debugging
-            const formData = new FormData(this);
-            for (let pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
-            }
+                // Log FormData Key-Value Pairs
+                console.log("🟢 Captured Form Data:");
+                for (let pair of formData.entries()) {
+                    console.log(pair[0], pair[1]);
+                }
 
-            // Submit the form
-            fetch("insert/diagnosis.php", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data); 
-                window.location.href = `insert/diagnosis.php`;
-            })
-            .catch(error => {
-                console.error("Error:", error);
+                fetch("insert/diagnosis.php", {
+                    method: "POST",
+                    body: formData,
+                })
+                    .then((response) => response.text())
+                    .then((data) => {
+                        // console.log("✅ Server Response:", data);
+                        // window.location.reload(); // Uncomment to refresh the page after saving
+                    })
+                    .catch((error) => {
+                        console.error("❌ Fetch Error:", error);
+                    });
             });
         });
-        
+
     </script>
 
     <script>
