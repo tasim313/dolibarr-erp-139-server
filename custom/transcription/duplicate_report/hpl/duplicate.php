@@ -347,18 +347,44 @@ $abbreviations = get_abbreviations_list();
             <label for="labNumber">Lab Number</label>
             <input type="text" class="form-control" id="labNumber" readonly value=<?php echo htmlspecialchars($LabNumber)?>>
         </div>
-        <?php 
-            echo '
+
+        <div>
+            <h2>Select Report Type</h2>
             <form id="duplicateReportForm" action="../../save_duplicate_report_data.php" method="POST">
-                <input type="hidden" name="lab_number" value="' . htmlspecialchars($lab_number, ENT_QUOTES, 'UTF-8') . '">
-                <input type="hidden" name="user_id" value="' . htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8') . '">
+                <div class="form-group">
+                    <label for="reportType">Choose Report Type:</label>
+                    <select class="form-control" id="reportType" name="reportType">
+                        <option value="duplicate">Duplicate Report</option>
+                        <option value="correction">Correction of Report</option>
+                        <option value="review">Internal Histopathology Review</option>
+                        <option value="corrigendum">Corrigendum</option>
+                        <option value="addendum">Addendum</option>
+                    </select>
+                </div>
+
+                <!-- New Lab Number -->
+                <div class="form-group">
+                    <label for="newLabNumber">New Lab Number:</label>
+                    <input type="text" class="form-control" id="newLabNumber" name="newLabNumber" required>
+                </div>
+
+                <!-- Hidden Fields -->
+                <input type="hidden" name="previous_lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                
+                <!-- Additional Hidden Fields -->
+                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8'); ?>">
+
+                <!-- Submit button -->
+                <button class="btn btn-primary text-white" onclick="submitAndRedirect()">Submit</button>
             </form>
-        ';
-        
-        echo '
-            <button class="btn btn-primary text-white" onclick="submitAndRedirect()">Duplicate Report</button>
-        ';
-        
+        </div>
+
+
+        <br>
+        <?php 
+           
         echo '
             <script>
                 function submitAndRedirect() {
