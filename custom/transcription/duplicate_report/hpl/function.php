@@ -254,4 +254,33 @@ function other_report_ExistingMicroDescriptions($labNumber) {
     return $existingMicroDescriptions;
 }
 
+
+function other_report_ExistingDiagnosisDescriptions($labNumber) {
+    global $pg_con;
+
+    $existingDiagnosisDescriptions = array();
+
+    $sql = "SELECT rowid,lab_number,fk_gross_id, description, specimen, title, comment FROM llx_other_report_diagnosis WHERE lab_number = '$labNumber' ORDER BY rowid ASC";
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingDiagnosisDescriptions[] = array(
+                'row_id' => $row['rowid'],
+                'lab_number' => $row['lab_number'],
+                'fk_gross_id' => $row['fk_gross_id'],
+                'description' => $row['description'],
+                'title' => $row['title'],
+                'comment' => $row['comment'],
+                'specimen' => $row['specimen']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingDiagnosisDescriptions;
+}
+
 ?>
