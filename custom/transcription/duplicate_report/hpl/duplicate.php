@@ -353,12 +353,12 @@ $abbreviations = get_abbreviations_list();
             <form id="duplicateReportForm" action="../../save_duplicate_report_data.php" method="POST">
                 <div class="form-group">
                     <label for="reportType">Choose Report Type:</label>
-                    <select class="form-control" id="reportType" name="reportType">
-                        <option value="duplicate">Duplicate Report</option>
-                        <option value="correction">Correction of Report</option>
-                        <option value="review">Internal Histopathology Review</option>
-                        <option value="corrigendum">Corrigendum</option>
-                        <option value="addendum">Addendum</option>
+                    <select class="form-control" id="reportType" name="reportType" onchange="updateStatusDetails()">
+                        <option value="Duplicate Report">Duplicate Report</option>
+                        <option value="Correction of Report">Correction of Report</option>
+                        <option value="Internal Histopathology Review">Internal Histopathology Review</option>
+                        <option value="Corrigendum">Corrigendum</option>
+                        <option value="Addendum">Addendum</option>
                     </select>
                 </div>
 
@@ -373,36 +373,53 @@ $abbreviations = get_abbreviations_list();
                 <input type="hidden" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
                 
                 <!-- Additional Hidden Fields -->
-                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="lab_number" value="<?php echo htmlspecialchars($lab_number, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($loggedInUserId, ENT_QUOTES, 'UTF-8'); ?>">
 
+                <!-- Hidden Fields for fk_status_id and description -->
+                <input type="hidden" id="fk_status_id" name="fk_status_id">
+                <input type="hidden" id="description" name="description">
+
                 <!-- Submit button -->
-                <button class="btn btn-primary text-white" onclick="submitAndRedirect()">Submit</button>
+                <button type="button" class="btn btn-info text-white" onclick="submitAndRedirect(event)">Submit</button>
             </form>
         </div>
 
+        <script>
 
-        <br>
-        <?php 
-           
-        echo '
-            <script>
-                function submitAndRedirect() {
-                    var formData = new FormData(document.getElementById("duplicateReportForm"));
+            function updateStatusDetails() {
+                // Mapping of report types to their fk_status_id and description
+                const statusMap = {
+                    "Duplicate Report": { description: "Duplicate Report issued", fk_status_id: 53 },
+                    "Correction of Report": { description: "Correction of Report issued", fk_status_id: 65 },
+                    "Internal Histopathology Review": { description: "Internal Histopathology Report issued", fk_status_id: 66 },
+                    "Corrigendum": { description: "Corrigendum Report issued", fk_status_id: 67 },
+                    "Addendum": { description: "Addendum Report issued", fk_status_id: 68 }
+                };
+                // Get selected report type
+                const selectedReportType = document.getElementById("reportType").value;
+                // Update hidden input fields
+                document.getElementById("fk_status_id").value = statusMap[selectedReportType].fk_status_id;
+                document.getElementById("description").value = statusMap[selectedReportType].description;
+            }
+
+            function submitAndRedirect(event) {
+                event.preventDefault(); // Prevent default form submission
+                updateStatusDetails(); // Ensure the hidden fields are updated
+                var formData = new FormData(document.getElementById("duplicateReportForm"));
+                fetch("../../save_duplicate_report_data.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.text()) // Handle response if needed
+                .then(() => {
+                    window.open("index.php?lab_number=<?php echo htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8'); ?>&username=<?php echo urlencode($loggedInUsername); ?>", "_blank");
+                })
+                .catch(error => console.error("Error submitting form:", error));
+            }
+
+        </script>
         
-                    fetch("../../save_duplicate_report_data.php", {
-                        method: "POST",
-                        body: formData
-                    })
-                    .then(response => response.text()) // Handle response if needed
-                    .then(() => {
-                        window.open("index.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '&username=' . urlencode($loggedInUsername) . '", "_blank");
-                    })
-                    .catch(error => console.error("Error submitting form:", error));
-                }
-            </script>
-        ';
-        ?>
 
         <!-- Patient Information -->
         <?php 
@@ -528,7 +545,7 @@ $abbreviations = get_abbreviations_list();
                     <input type="hidden" id="createdUserInput" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
 
                     <div class="col-sm-offset-2 col-sm-10 text-right">
-                        <button style="margin-top:10px;" id="saveBtn" type="submit" class="btn btn-primary">
+                        <button style="margin-top:10px;" id="saveBtn" type="submit" class="btn btn-info">
                             <?php echo $isUpdating ? 'Update' : 'Save'; ?>
                         </button>
                     </div>
@@ -563,7 +580,7 @@ $abbreviations = get_abbreviations_list();
             echo('
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10 text-right">
-                      <button style="margin-top:10px;" type="submit" class="btn btn-primary">Save</button>
+                      <button style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
                     </div>  
                 </div>
                 </div>'
@@ -614,7 +631,7 @@ $abbreviations = get_abbreviations_list();
                 '
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10 text-right">
-                        <button style="margin-top:10px;" type="submit" class="btn btn-primary">Save</button>
+                        <button style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
                     </div>  
                 </div>
                 '
@@ -965,7 +982,7 @@ $abbreviations = get_abbreviations_list();
                     // Submit Button
                     echo '<div class="form-group">';
                     echo '<div class="col-sm-offset-2 col-sm-10 text-right">';
-                    echo '<button type="submit" class="btn btn-primary">Update</button>';
+                    echo '<button type="submit" class="btn btn-info">Update</button>';
                     echo '</div>';
                     echo '</div>';
 
@@ -1001,7 +1018,7 @@ $abbreviations = get_abbreviations_list();
                 // Submit Button
                 echo '<div class="form-group">';
                 echo '<div class="col-sm-offset-2 col-sm-10 text-right">';
-                echo '<button type="submit" class="btn btn-primary">Save</button>';
+                echo '<button type="submit" class="btn btn-info">Save</button>';
                 echo '</div>';
                 echo '</div>';
 
@@ -1039,7 +1056,7 @@ $abbreviations = get_abbreviations_list();
                     // Submit Button
                     echo '<div class="form-group">';
                     echo '<div class="col-sm-offset-2 col-sm-10 text-right">';
-                    echo '<button type="submit" class="btn btn-primary">Update</button>';
+                    echo '<button type="submit" class="btn btn-info">Update</button>';
                     echo '</div>';
                     echo '</div>';
 
@@ -1076,7 +1093,7 @@ $abbreviations = get_abbreviations_list();
                 // Submit Button
                 echo '<div class="form-group">';
                 echo '<div class="col-sm-offset-2 col-sm-10 text-right">';
-                echo '<button type="submit" class="btn btn-primary">Save</button>';
+                echo '<button type="submit" class="btn btn-info">Save</button>';
                 echo '</div>';
                 echo '</div>';
 

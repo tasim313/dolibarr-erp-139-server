@@ -447,15 +447,9 @@ $htmlContent = '
 $pdf->writeHTML($htmlContent, true, false, true, false, '');
 
 // SQL operation for Site Of Specimen
-$Site_Of_Specimen = "SELECT de.fk_commande, de.fk_product, de.description AS specimen, c.ref, e.num_containers
-FROM 
-    llx_commande AS c 
-JOIN 
-    llx_commandedet AS de ON de.fk_commande = c.rowid
-JOIN 
-    llx_commande_extrafields AS e ON e.fk_object = c.rowid
-WHERE 
-    c.ref = '$LabNumberWithoutPrefix'";
+$Site_Of_Specimen = "SELECT rowid, lab_number, site_of_specimen AS specimen 
+                     FROM llx_other_report_site_of_specimen 
+                     WHERE lab_number = '$LabNumber'";
 
 $Site_Of_Specimen_result = pg_query($pg_con, $Site_Of_Specimen);
 
@@ -465,7 +459,7 @@ if (!$Site_Of_Specimen_result) {
 }
 
 // Prepare clinical details
-$clinical_details_info = "SELECT clinical_details FROM llx_clinical_details WHERE lab_number = '$LabNumber'";
+$clinical_details_info = "SELECT clinical_details FROM llx_other_report_clinical_details WHERE lab_number = '$LabNumber'";
 $clinical_details_result = pg_query($pg_con, $clinical_details_info);
 
 // Check if the query was successful
@@ -492,7 +486,7 @@ if ($fk_gross_id_result) {
 }
 
 // Prepare gross description
-$gross_description = "SELECT specimen_id, specimen, gross_description FROM llx_gross_specimen WHERE fk_gross_id = '$fk_gross_id' ORDER BY specimen_id ASC";
+$gross_description = "SELECT specimen_id, specimen, gross_description FROM llx_other_report_gross_specimen  WHERE lab_number = '$LabNumber' ORDER BY specimen_id ASC";
 $gross_description_result = pg_query($pg_con, $gross_description);
 
 // Check if the query was successful
@@ -502,7 +496,7 @@ if (!$gross_description_result) {
 
 
 // SQL operation for dynamic data
-$micro_details_info = "SELECT description, specimen FROM llx_micro WHERE lab_number = '$LabNumber' ORDER BY row_id ASC";
+$micro_details_info = "SELECT description, specimen FROM llx_other_report_micro WHERE lab_number = '$LabNumber' ORDER BY rowid ASC";
 $micro_details_result = pg_query($pg_con, $micro_details_info);
 
 // Check if the query was successful
@@ -511,7 +505,7 @@ if (!$micro_details_result) {
 }
 
 // SQL operation for dynamic data
-$diagnosis_details_info  = "SELECT  description, specimen, title, comment FROM llx_diagnosis WHERE lab_number = '$LabNumber' ORDER BY row_id ASC";
+$diagnosis_details_info  = "SELECT  description, specimen, title, comment FROM llx_other_report_diagnosis WHERE lab_number = '$LabNumber' ORDER BY rowid ASC";
 $diagnosis_details_result = pg_query($pg_con, $diagnosis_details_info);
 
 // Check if the query was successful
@@ -520,7 +514,7 @@ if (!$diagnosis_details_result) {
 }
 
 // Fetch section information from the database
-$sections_info = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_gross_specimen_section WHERE fk_gross_id = $1  ORDER BY 
+$sections_info = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_other_report_gross_specimen_section WHERE fk_gross_id = $1  ORDER BY 
 LEFT(section_code, 1) ASC, 
 CAST(SUBSTRING(section_code, 2) AS INTEGER) ASC, 
 gross_specimen_section_id ASC";
@@ -581,7 +575,26 @@ foreach ($grouped_sections as $specimen_letter => $sections) {
 // Remove the trailing comma and space
 $section_code_list = rtrim($section_code_list, ', ');
 $currentDateTime = date('Y-m-d');
-$html = '<h4 align="center">(Duplicate Report: Date ' . $currentDateTime . ')</h4><br>';
+
+// Fetch report_type from the database based on LabNumber
+$report_type_query = "SELECT report_type FROM llx_other_report WHERE previous_lab_number = '$LabNumber' ORDER BY rowid DESC LIMIT 1";
+$report_type_result = pg_query($pg_con, $report_type_query);
+
+// Check if the query was successful
+if (!$report_type_result) {
+    die("Query failed for report_type: " . pg_last_error());
+}
+
+// Fetch the report_type value from the query result
+$report_type_row = pg_fetch_assoc($report_type_result);
+$report_type = $report_type_row['report_type'];  // Get the dynamic report type
+
+// Get the current date and time
+$currentDateTime = date("d F, Y h:i A");  // You can adjust this format as needed
+
+// Prepare the HTML with the dynamic report type
+$html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Date ' . $currentDateTime . ')</h4><br>';
+
 // Write the HTML content
 $pdf->writeHTML($html, true, false, true, false, '');
 
