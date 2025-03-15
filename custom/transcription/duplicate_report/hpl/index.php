@@ -57,21 +57,8 @@ if ($invoice_result) {
 }
 
 // sql opertaion for dynamic data 
-$patient_information = "SELECT s.rowid AS rowid,
-    s.nom AS nom,
-    s.code_client AS code_client,
-    s.address AS address,
-    s.phone AS phone,
-    s.fax AS fax,
-    e.date_of_birth,
-    e.sex,
-    e.ageyrs,
-    e.att_name,
-    e.att_relation
-    FROM llx_commande AS c
-    JOIN llx_societe AS s ON c.fk_soc = s.rowid
-    JOIN llx_societe_extrafields AS e ON s.rowid = e.fk_object
-    WHERE ref = '$LabNumberWithoutPrefix'";
+$patient_information = "select rowid, nom, code_client, address, phone, fax, date_of_birth, sex, ageyrs, att_name, att_relation
+from llx_other_report_patient_information where lab_number = '$LabNumber'";
 
 $patient_information_result = pg_query($pg_con, $patient_information);
 
