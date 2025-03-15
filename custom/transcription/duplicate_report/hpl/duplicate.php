@@ -338,16 +338,21 @@ $abbreviations = get_abbreviations_list();
             background-color: #007bb5; /* Darker blue on hover */
         }
 
+        .form-container {
+            display: flex;
+            align-items: center; /* Align vertically */
+            gap: 10px; /* Spacing between elements */
+        }
+
+        .form-container .form-group {
+            margin-bottom: 0; /* Remove bottom margin */
+        }
+
     </style>
 </head>
 <body>
     <div class="mt-5">
         
-        <div class="form-group">
-            <label for="labNumber">Lab Number</label>
-            <input type="text" class="form-control" id="labNumber" readonly value=<?php echo htmlspecialchars($LabNumber)?>>
-        </div>
-
         <div>
             <h2>Select Report Type</h2>
             <form id="duplicateReportForm" action="../../save_duplicate_report_data.php" method="POST">
@@ -381,7 +386,7 @@ $abbreviations = get_abbreviations_list();
                 <input type="hidden" id="description" name="description">
 
                 <!-- Submit button -->
-                <button type="button" class="btn btn-info text-white" onclick="submitAndRedirect(event)">Submit</button>
+                <button id="commonSaveButton" type="button" class="btn btn-info text-white" onclick="submitAndRedirect(event)">Submit</button>
             </form>
         </div>
 
@@ -412,14 +417,24 @@ $abbreviations = get_abbreviations_list();
                     body: formData
                 })
                 .then(response => response.text()) // Handle response if needed
-                .then(() => {
-                    window.open("index.php?lab_number=<?php echo htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8'); ?>&username=<?php echo urlencode($loggedInUsername); ?>", "_blank");
-                })
                 .catch(error => console.error("Error submitting form:", error));
             }
 
         </script>
         
+        <div class="form-container">
+            <div class="form-group">
+                <button class="button-class secondary">
+                    <?php echo htmlspecialchars($LabNumber); ?>
+                </button>
+            </div>
+
+            <button class="button-class secondary">
+                <a href="index.php?lab_number=<?php echo htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8'); ?>&username=<?php echo urlencode($loggedInUsername); ?>" target="_blank">
+                    Preview
+                </a>
+            </button>
+        </div>
 
         <!-- Patient Information -->
         <?php 
@@ -564,7 +579,7 @@ $abbreviations = get_abbreviations_list();
                 $specimenIformation   = get_gross_specimens_list($LabNumberWithoutPrefix);
             }
             
-            print('<form method="post" action="insert/site_of_specimen.php" class="form-horizontal">'); 
+            print('<form id="specimenForm" method="post" action="insert/site_of_specimen.php" class="form-horizontal">'); 
             print('<div class="form-group">
                 <h2 style="margin-left:15px;">Site Of Specimen</h2>'); 
                 foreach ($specimenIformation as $list) {
@@ -580,7 +595,7 @@ $abbreviations = get_abbreviations_list();
             echo('
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10 text-right">
-                      <button style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
+                      <button id="specimenbtn" style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
                     </div>  
                 </div>
                 </div>'
@@ -601,7 +616,7 @@ $abbreviations = get_abbreviations_list();
             } 
             
 
-            print('<form method="post" action="insert/gross_specimen.php">');
+            print('<form id="grossForm" method="post" action="insert/gross_specimen.php">');
             print('<input type="hidden" name="lab_number" value="' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">');
             foreach ($specimens as $index => $specimen) {
                 echo '<div class="row">';
@@ -631,7 +646,7 @@ $abbreviations = get_abbreviations_list();
                 '
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10 text-right">
-                        <button style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
+                        <button id="grossbtn" style="margin-top:10px;" type="submit" class="btn btn-info">Save</button>
                     </div>  
                 </div>
                 '
@@ -835,7 +850,7 @@ $abbreviations = get_abbreviations_list();
                         <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
                     </div>
                     <div class="grid">
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button id='microbtn' type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </form>
                 <?php
@@ -929,7 +944,7 @@ $abbreviations = get_abbreviations_list();
                 echo '<input type="hidden" name="row_id[]" value="' . htmlspecialchars($row_id) . '">';
             }
 
-            echo '<div class="grid">
+            echo '<div id="diagnosisbtn" class="grid">
                     <button style="background-color: rgb(118, 145, 225);
                     color: white;
                     padding: 12px 20px;
@@ -1899,6 +1914,5 @@ $abbreviations = get_abbreviations_list();
         });
     </script>
 
-   
 </body>
 </html>
