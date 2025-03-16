@@ -354,7 +354,7 @@ $abbreviations = get_abbreviations_list();
     <div class="mt-5">
         
         <div>
-            <h2>Select Report Type</h2>
+            <h2>Select Supplementary Report Type</h2>
             <form id="duplicateReportForm" action="../../save_duplicate_report_data.php" method="POST">
                 <div class="form-group">
                     <label for="reportType">Choose Report Type:</label>

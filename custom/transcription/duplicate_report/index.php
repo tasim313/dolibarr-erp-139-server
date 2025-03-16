@@ -59,7 +59,7 @@ $loggedInUsername = $user->login;
 </head>
 <body>
     <div class="container mt-5">
-        <h3>Lab Number Search</h3>
+        <h3>Supplementary Report</h3>
         <!-- Search Field -->
         <div class="form-group">
             <label for="labNumber">Enter Lab Number</label>
