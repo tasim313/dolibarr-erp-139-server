@@ -579,11 +579,11 @@ $report_type = $report_type_row['report_type'];  // Get the dynamic report type
 // Get the current date and time
 $currentDateTime = date("d F, Y h:i A");  // You can adjust this format as needed
 
-// Prepare the HTML with the dynamic report type
-$html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Date ' . $currentDateTime . ')</h4><br>';
-
-// Write the HTML content
-$pdf->writeHTML($html, true, false, true, false, '');
+// Only add the HTML line if report_type is NOT "Correction of Report"
+if (strcasecmp(trim($report_type), "Correction of Report") !== 0) {
+    $html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Date ' . $currentDateTime . ')</h4><br>';
+    $pdf->writeHTML($html, true, false, true, false, '');
+}
 
 
 // Initialize content for the HTML table
