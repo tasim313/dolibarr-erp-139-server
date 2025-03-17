@@ -154,9 +154,9 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             <ul class="nav nav-tabs">
                 <li><a href="../index.php">Home</a></li>
                 <li><a href="./mfc.php">MFC</a></li>
-                <li><a href="./unstain_slide.php">UnStain Slide</a></li>
+                <li class="active"><a href="./unstain_slide.php">UnStain Slide</a></li>
                 <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
-                <li class="active"><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
+                <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
                 <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>
                 <li><a href="./sbo.php">SBO(Slide Block Order)</a></li>
                 <li><a href="../recall.php">Re-Call</a></li>
@@ -165,7 +165,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
                 <li><a href="./postpone_information.php">Postpone</a></li>
             </ul>
         <br>
-        <h1>Slide Prepare</h1>
+        <h1>UnStain Slide Prepare</h1>
         <div class="tab-container">
             <!-- Tab Links -->
             <div class="tabs">
@@ -182,7 +182,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             <div id="List" class="tabcontent active">
                
                 <!-- Form to Input Lab Number -->
-                <form id="labForm" action="../insert/slide_prepare.php" method="POST">
+                <form id="labForm" action="../insert/unstain_slide_prepare.php" method="POST">
                     <label for="lab_number" style="font-size: 35px;">Lab Number:</label>
                     <input type="text" id="lab_number" name="lab_number" required placeholder="Enter Lab Number" style="padding: 10px; font-size: 16px; width: 100%; margin-bottom: 20px;">
 
@@ -195,7 +195,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             </div>
 
             <div id="Complete" class="tabcontent">
-                <h3>Completed Slide Prepare </h3>
+                <h3>Completed UnStain Slide Prepare </h3>
 
                 <!-- Search Input -->
                 <div class="search-container">
@@ -211,7 +211,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
 
                 <?php
                     // Fetch data
-                    $slide_prepare = cyto_slide_prepared_list();
+                    $slide_prepare = get_cyto_unstain_slide_list();
                     // Fields to exclude
                     $excluded_fields = [''];
                     // Check for errors or empty data

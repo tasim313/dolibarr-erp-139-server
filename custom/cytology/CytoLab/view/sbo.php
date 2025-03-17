@@ -155,6 +155,7 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
             <ul class="nav nav-tabs">
                 <li><a href="../index.php">Home</a></li>
                 <li><a href="./mfc.php">MFC</a></li>
+                <li><a href="./unstain_slide.php">UnStain Slide</a></li>
                 <li><a href="./special_instruction.php" class="tab">Special Instructions</a></li>
                 <li><a href="./slide_prepared.php" class="tab">Slide Prepared</a></li>
                 <li><a href="./new_slide_centrifuge.php" class="tab">New Slide (Centrifuge)</a></li>

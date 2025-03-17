@@ -1349,4 +1349,53 @@ function get_mfc_create_list($lab_number) {
     return $labnumbers;
 }
 
+
+function get_cyto_unstain_slide_list() {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // SQL query to fetch the required data from llx_cyto_slide_prepared
+    $sql = "
+        select lab_number, created_user, created_date
+         from llx_cyto where additional_information = 'UnStain Slide'
+    ";
+
+    // Prepare the SQL query with a fixed statement name
+    $stmt_name = "get_unstain_slide_prepared_list";
+
+    // Prepare the SQL statement
+    $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+    // Check if the preparation was successful
+    if (!$prepare_result) {
+        error_log('Query preparation error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while preparing the query.'];
+    }
+
+    // Execute the prepared query
+    $result = pg_execute($pg_con, $stmt_name, []);
+
+    // Check if the query execution was successful
+    if ($result) {
+        // Fetch all rows of the result
+        $rows = pg_fetch_all($result);
+
+        // Free the result resource
+        pg_free_result($result);
+
+        // Return the fetched rows or an empty array if no data found
+        if (empty($rows)) {
+            error_log('No rows found for slide preparation.');
+        }
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
