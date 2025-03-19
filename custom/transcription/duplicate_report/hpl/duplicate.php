@@ -549,13 +549,24 @@ $abbreviations = get_abbreviations_list();
             }
             
             $clinicalText = $clinicalDetails['clinical_details'] ?? ''; // Get clinical details or empty string
+            $addressingText = $clinicalDetails['addressing'] ?? '';
         ?>
             <form id="clinicalDetailsForm" method="post" action="insert/clinical_details.php" class="form-horizontal">
                 <div class="form-group">
+                    <!-- Addressing Textarea -->
+                    <div class="col-sm-12 mt-3" style="margin-bottom: 25px;">
+                        <h2 style="margin-left:15px;">Addressing:</h2>
+                        <div id="addressingEditor" style="height: 100px;"><?php echo html_entity_decode($addressingText); ?></div>
+                        <input type="hidden" id="addressingTextarea" name="addressing">
+                    </div>
+
+                    <br>
                     <h2 style="margin-left:15px;">Clinical Details</h2>
                     <div class="col-sm-12">
-                        <textarea id="clinicalDetailsTextarea" name="clinical_details" class="form-control" rows="2"><?php echo htmlspecialchars($clinicalText); ?></textarea>
+                        <div id="clinicalDetailsEditor" style="height: 100px;"><?php echo html_entity_decode($clinicalText); ?></div>
+                        <input type="hidden" id="clinicalDetailsTextarea" name="clinical_details">
                     </div>
+
                     <input type="hidden" id="labNumberInput" name="lab_number" value="<?php echo htmlspecialchars($LabNumber); ?>">
                     <input type="hidden" id="createdUserInput" name="created_user" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
 
@@ -564,7 +575,6 @@ $abbreviations = get_abbreviations_list();
                             <?php echo $isUpdating ? 'Update' : 'Save'; ?>
                         </button>
                     </div>
-
                 </div>
             </form>
 
@@ -1158,6 +1168,29 @@ $abbreviations = get_abbreviations_list();
                 }
             }
         });
+    </script>
+
+    <script>
+        // Initialize Quill editors
+        var addressingQuill = new Quill('#addressingEditor', {
+            theme: 'snow',
+            modules: {
+                        toolbar: []  // Customize toolbar if needed
+                    }
+        });
+
+        var clinicalDetailsQuill = new Quill('#clinicalDetailsEditor', {
+            theme: 'snow',
+            modules:{
+                        toolbar: []  // Customize toolbar if needed
+                    }
+        });
+
+        // Update hidden inputs before form submission
+        document.getElementById('clinicalDetailsForm').onsubmit = function() {
+            document.getElementById('addressingTextarea').value = addressingQuill.root.innerHTML;
+            document.getElementById('clinicalDetailsTextarea').value = clinicalDetailsQuill.root.innerHTML;
+        };
     </script>
 
 
