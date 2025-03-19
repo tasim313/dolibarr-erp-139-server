@@ -454,6 +454,14 @@ if (!$clinical_details_result) {
     die("Query failed for clinical_details: " . pg_last_error());
 }
 
+// Prepare addressing details
+$addressing_details_info = "SELECT addressing FROM llx_other_report_clinical_details WHERE lab_number = '$LabNumber'";
+$addressing_details_result = pg_query($pg_con, $addressing_details_info);
+
+if (!$addressing_details_result) {
+    die("Query failed for addressing_details: " . pg_last_error());
+}
+
 // SQL operation for dynamic data 
 $fk_gross_id = "SELECT gross_id FROM llx_gross WHERE lab_number = '$LabNumber'";
 $fk_gross_id_result = pg_query($pg_con, $fk_gross_id);
@@ -577,11 +585,15 @@ $report_type_row = pg_fetch_assoc($report_type_result);
 $report_type = $report_type_row['report_type'];  // Get the dynamic report type
 
 // Get the current date and time
-$currentDateTime = date("d F, Y h:i A");  // You can adjust this format as needed
+$currentDateTime = date("d F, Y");  // You can adjust this format as needed
 
 // Only add the HTML line if report_type is NOT "Correction of Report"
-if (strcasecmp(trim($report_type), "Correction of Report") !== 0) {
-    $html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Date ' . $currentDateTime . ')</h4><br>';
+if (strcasecmp($report_type, "Correction of Report") !== 0) {
+    if (strcasecmp($report_type, "Internal Histopathology Review") === 0) {
+        $html = '<h4 align="center">(Review Report: Dated ' . $currentDateTime . ')</h4><br>';
+    } else {
+        $html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Dated ' . $currentDateTime . ')</h4><br>';
+    }
     $pdf->writeHTML($html, true, false, true, false, '');
 }
 
@@ -589,6 +601,39 @@ if (strcasecmp(trim($report_type), "Correction of Report") !== 0) {
 // Initialize content for the HTML table
 $html = '
 <table border="0" cellspacing="0" cellpadding="4" style="width:100%; table-layout: fixed;">';
+
+// Add Addressing
+$addressing_details_rows = [];
+while ($row = pg_fetch_assoc($addressing_details_result)) {
+    if (!empty($row['addressing'])) {
+        $addressing = $row['addressing'];
+
+        // Decode HTML entities (if stored as encoded)
+        $addressing = html_entity_decode($addressing);
+
+        // Replace <p> tags with <br> for proper formatting
+        $addressing = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1<br>', $addressing);
+
+        // Normalize <br> tags: collapse multiple <br> into a single <br>
+        $addressing = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $addressing);
+
+        // Remove trailing <br> tags if they don't precede text
+        $addressing = preg_replace('/<br>\s*$/', '', $addressing);
+
+        // Trim leading/trailing spaces
+        $addressing = trim($addressing);
+
+        $addressing_details_rows[] = $addressing;
+    }
+}
+
+// Show the "Addressing" row only if there are valid values
+if (!empty($addressing_details_rows)) {
+    $html .= '<tr>
+                <th style="width: 26%;"><b>Addressing:</b></th>
+                <td style="width: 74%;">' . implode('<br>', $addressing_details_rows) . '</td>
+              </tr>';
+}
 
 // Add Site Of Specimen
 $html .= '<tr>
@@ -605,12 +650,34 @@ $html .= '</td></tr>';
 $html .= '<tr>
             <th style="width: 26%;"><b>Clinical Details:</b></th>
             <td style="width: 74%;">';
+
 $clinical_details_rows = [];
 while ($row = pg_fetch_assoc($clinical_details_result)) {
-    $clinical_details_rows[] = htmlspecialchars($row['clinical_details']);
+    if (!empty($row['clinical_details'])) {
+        $clinical_details = $row['clinical_details'];
+
+        // Decode HTML entities if stored as encoded
+        $clinical_details = html_entity_decode($clinical_details);
+
+        // Replace <p> tags with <br> for proper formatting
+        $clinical_details = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1<br>', $clinical_details);
+
+        // Normalize multiple <br> tags into a single <br>
+        $clinical_details = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $clinical_details);
+
+        // Remove trailing <br> tags
+        $clinical_details = preg_replace('/<br>\s*$/', '', $clinical_details);
+
+        // Trim spaces
+        $clinical_details = trim($clinical_details);
+
+        $clinical_details_rows[] = $clinical_details;
+    }
 }
-$html .= implode('<br/>', $clinical_details_rows);
+
+$html .= implode('<br>', $clinical_details_rows);
 $html .= '</td></tr>';
+
 
 // Add Gross Description
 $html .= '<tr>

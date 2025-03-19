@@ -90,7 +90,7 @@ function other_report_clinicalInformation($lab_number) {
 
     // SQL query to fetch the required data
     $sql = "
-        SELECT clinical_details FROM llx_other_report_clinical_details WHERE lab_number = $1";
+        SELECT clinical_details, addressing FROM llx_other_report_clinical_details WHERE lab_number = $1";
 
     // Prepare the SQL query
     $stmt_name = "get_other_report_clinical_information";
