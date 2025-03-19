@@ -585,14 +585,14 @@ $report_type_row = pg_fetch_assoc($report_type_result);
 $report_type = $report_type_row['report_type'];  // Get the dynamic report type
 
 // Get the current date and time
-$currentDateTime = date("d F, Y h:i A");  // You can adjust this format as needed
+$currentDateTime = date("d F, Y");  // You can adjust this format as needed
 
 // Only add the HTML line if report_type is NOT "Correction of Report"
 if (strcasecmp($report_type, "Correction of Report") !== 0) {
     if (strcasecmp($report_type, "Internal Histopathology Review") === 0) {
-        $html = '<h4 align="center">(Review Report: Date ' . $currentDateTime . ')</h4><br>';
+        $html = '<h4 align="center">(Review Report: Dated ' . $currentDateTime . ')</h4><br>';
     } else {
-        $html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Date ' . $currentDateTime . ')</h4><br>';
+        $html = '<h4 align="center">(' . htmlspecialchars($report_type) . ': Dated ' . $currentDateTime . ')</h4><br>';
     }
     $pdf->writeHTML($html, true, false, true, false, '');
 }
