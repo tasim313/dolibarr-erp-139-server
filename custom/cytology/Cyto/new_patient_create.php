@@ -63,7 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $chief_complain = $reason_for_fnac;  // Otherwise, use $reason_for_fnac
         }
         
-        var_dump($cyto_id, $chief_complain, $clinical_history, $site_of_aspiration);
+        // Check if required fields are empty
+        if (empty($chief_complain) || empty($clinical_history) || empty($site_of_aspiration) || empty($clinical_impression)) {
+            echo "<script>alert('Error: Required clinical fields are missing. Please provide all required information.'); window.history.back();</script>";
+            exit;
+        }
         $sql_summary = "INSERT INTO llx_cyto_clinical_information (
                             cyto_id,
                             chief_complain,
@@ -96,6 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         )";
 
         $result_fixation_additional = pg_query($pg_con, $sql_fixation_additional);
+
+        if (!$result_summary || !$result_fixation_additional) {
+            echo "<script>alert('Error: Data insertion failed. Please check all required fields and try again.'); window.history.back();</script>";
+            exit;
+        }
+
 
         // Insert fixation data if available
         if (!empty($fixation_data)) {
