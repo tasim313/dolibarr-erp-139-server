@@ -909,7 +909,7 @@ function showSuggestions(term) {
         .sort((a, b) => a.chief_complain.toLowerCase().indexOf(term.toLowerCase()) - b.chief_complain.toLowerCase().indexOf(term.toLowerCase()));
 
     // Limit results to top 3 matches
-    const topSuggestions = filteredList.slice(0, 3);
+    const topSuggestions = filteredList.slice(0, 0);
 
     if (topSuggestions.length > 0) {
         topSuggestions.forEach((item, index) => {
@@ -1368,7 +1368,7 @@ document.addEventListener('click', function (event) {
         );
 
         // Limit the list to top 3 matches
-        const topSuggestions = sortedList.slice(0, 1);
+        const topSuggestions = sortedList.slice(0, 0);
 
         // Display the top 3 suggestions
         if (topSuggestions.length > 0) {
