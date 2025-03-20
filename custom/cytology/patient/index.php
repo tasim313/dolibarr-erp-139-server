@@ -889,99 +889,119 @@ $reportUrl = "http://" . $host . "/custom/transcription/FNA/fna_report.php?LabNu
     // });
 
     const chiefComplainList = <?= json_encode($chief_complain_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
-let currentIndex = -1;
+    let currentIndex = -1;
 
-function showSuggestions(term) {
-    const suggestionsList = document.getElementById('suggestions-list');
-    const textarea = document.getElementById('reason-for-fnac');
-    suggestionsList.innerHTML = ''; // Clear previous suggestions
-    currentIndex = -1; // Reset index
+    function showSuggestions(term) {
+        const suggestionsList = document.getElementById('suggestions-list');
+        const textarea = document.getElementById('reason-for-fnac');
+        suggestionsList.innerHTML = ''; // Clear previous suggestions
+        currentIndex = -1; // Reset index
 
-    if (term.length < 2) {
-        suggestionsList.style.display = 'none';
-        return;
-    }
-
-    // Filter matching values
-    const filteredList = chiefComplainList
-        .filter(item => item.chief_complain.toLowerCase().includes(term.toLowerCase()))
-        // Sort results to prioritize the best matches (optional, can be customized)
-        .sort((a, b) => a.chief_complain.toLowerCase().indexOf(term.toLowerCase()) - b.chief_complain.toLowerCase().indexOf(term.toLowerCase()));
-
-    // Limit results to top 3 matches
-    const topSuggestions = filteredList.slice(0, 0);
-
-    if (topSuggestions.length > 0) {
-        topSuggestions.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.textContent = item.chief_complain;
-            li.style.padding = '5px';
-            li.style.cursor = 'pointer';
-            li.style.borderBottom = '1px solid #ccc';
-            li.dataset.index = index;
-
-            // Populate textarea on click
-            li.onclick = () => {
-                textarea.value = item.chief_complain;
-                suggestionsList.style.display = 'none';
-            };
-
-            suggestionsList.appendChild(li);
-        });
-        suggestionsList.style.display = 'block';
-    } else {
-        suggestionsList.style.display = 'none';
-    }
-}
-
-document.getElementById('reason-for-fnac').addEventListener('input', function () {
-    showSuggestions(this.value);
-});
-
-document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
-    const suggestionsList = document.getElementById('suggestions-list');
-    const suggestions = Array.from(suggestionsList.getElementsByTagName('li'));
-
-    if (suggestions.length === 0) return;
-
-    if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        currentIndex = (currentIndex + 1) % suggestions.length;
-        highlightSuggestion(suggestions, currentIndex);
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
-        highlightSuggestion(suggestions, currentIndex);
-    } else if (e.key === 'Enter') {
-        e.preventDefault();
-        if (currentIndex >= 0) {
-            suggestions[currentIndex].click();
+        if (term.length < 2) {
+            suggestionsList.style.display = 'none';
+            return;
         }
-    } else if (e.key === 'Escape') {
-        suggestionsList.style.display = 'none';
-        currentIndex = -1;
-    }
-});
 
-function highlightSuggestion(suggestions, index) {
-    suggestions.forEach((suggestion, i) => {
-        if (i === index) {
-            suggestion.style.backgroundColor = '#d3d3d3';
-            suggestion.scrollIntoView({ block: 'nearest' });
+        // Filter matching values
+        const filteredList = chiefComplainList
+            .filter(item => item.chief_complain.toLowerCase().includes(term.toLowerCase()))
+            // Sort results to prioritize the best matches (optional, can be customized)
+            .sort((a, b) => a.chief_complain.toLowerCase().indexOf(term.toLowerCase()) - b.chief_complain.toLowerCase().indexOf(term.toLowerCase()));
+
+        // Limit results to top 3 matches
+        const topSuggestions = filteredList.slice(0, 0);
+
+        if (topSuggestions.length > 0) {
+            topSuggestions.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = item.chief_complain;
+                li.style.padding = '5px';
+                li.style.cursor = 'pointer';
+                li.style.borderBottom = '1px solid #ccc';
+                li.dataset.index = index;
+
+                // Populate textarea on click
+                li.onclick = () => {
+                    textarea.value = item.chief_complain;
+                    suggestionsList.style.display = 'none';
+                };
+
+                suggestionsList.appendChild(li);
+            });
+            suggestionsList.style.display = 'block';
         } else {
-            suggestion.style.backgroundColor = 'white';
+            suggestionsList.style.display = 'none';
+        }
+    }
+
+    document.getElementById('reason-for-fnac').addEventListener('input', function () {
+        showSuggestions(this.value);
+    });
+
+    document.getElementById('reason-for-fnac').addEventListener('keydown', function (e) {
+        const suggestionsList = document.getElementById('suggestions-list');
+        const suggestions = Array.from(suggestionsList.getElementsByTagName('li'));
+
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            currentIndex = (currentIndex + 1) % suggestions.length;
+            highlightSuggestion(suggestions, currentIndex);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            currentIndex = (currentIndex - 1 + suggestions.length) % suggestions.length;
+            highlightSuggestion(suggestions, currentIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentIndex >= 0) {
+                suggestions[currentIndex].click();
+            }
+        } else if (e.key === 'Escape') {
+            suggestionsList.style.display = 'none';
+            currentIndex = -1;
         }
     });
-}
 
-// Hide suggestions when clicking outside
-document.addEventListener('click', function (event) {
-    const suggestionsList = document.getElementById('suggestions-list');
-    if (!suggestionsList.contains(event.target) && event.target.id !== 'reason-for-fnac') {
-        suggestionsList.style.display = 'none';
+    function highlightSuggestion(suggestions, index) {
+        suggestions.forEach((suggestion, i) => {
+            if (i === index) {
+                suggestion.style.backgroundColor = '#d3d3d3';
+                suggestion.scrollIntoView({ block: 'nearest' });
+            } else {
+                suggestion.style.backgroundColor = 'white';
+            }
+        });
     }
-});
 
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function (event) {
+        const suggestionsList = document.getElementById('suggestions-list');
+        if (!suggestionsList.contains(event.target) && event.target.id !== 'reason-for-fnac') {
+            suggestionsList.style.display = 'none';
+        }
+    });
+
+</script>
+
+<!-- User can not insert empty enter -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.getElementById("reason-for-fnac");
+
+        textarea.addEventListener("input", function () {
+            // Trim whitespace from input
+            textarea.value = textarea.value.trimStart();
+        });
+
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (textarea.value.trim() === "") {
+                alert("Please fill out this field.");
+                textarea.focus();
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    });
 </script>
 
 
@@ -1731,6 +1751,26 @@ document.addEventListener('click', function (event) {
     });
 </script>
 
+<!-- User can not insert empty enter -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const clinicalHistoryTextarea = document.getElementById("clinical-history");
+        
+        // Trim whitespace on input
+        clinicalHistoryTextarea.addEventListener("input", function () {
+            this.value = this.value.trimStart(); // Prevent leading spaces
+        });
+
+        // Validate before form submission
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (clinicalHistoryTextarea.value.trim() === "") { // Trim to check empty input
+                alert("Please fill out this field.");
+                clinicalHistoryTextarea.focus();
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    });
+</script>
 
 <!-- clinical impression -->
 <!-- <script>
@@ -1923,6 +1963,26 @@ document.addEventListener('click', function (event) {
     });
 </script>
 
+<!-- User can not insert empty enter -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.getElementById("site-of-aspiration-editor");
+
+        // Trim whitespace on input dynamically
+        textarea.addEventListener("input", function () {
+            this.value = this.value.trimStart(); // Prevent leading spaces
+        });
+
+        // Validate before form submission
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (textarea.value.trim() === "") { // Trim to check empty input
+                alert("Please fill out this field.");
+                textarea.focus();
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    });
+</script>
 
 <!-- Local Storage allows you to store user input in the browser  -->
 <script>
@@ -1995,6 +2055,26 @@ document.addEventListener('click', function (event) {
         }
         });
   });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const textarea = document.getElementById("clinical-impression");
+
+        // Remove leading spaces when typing
+        textarea.addEventListener("input", function () {
+            this.value = this.value.trimStart();
+        });
+
+        // Validate before form submission
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (textarea.value.trim() === "") { // Check if only spaces or empty
+                alert("Please fill out this field.");
+                textarea.focus();
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    });
 </script>
 
 
