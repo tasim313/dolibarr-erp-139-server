@@ -65,9 +65,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Check if required fields are empty
         if (empty($chief_complain) || empty($clinical_history) || empty($site_of_aspiration) || empty($clinical_impression)) {
-            echo "<script>alert('Error: Required clinical fields are missing. Please provide all required information.'); window.history.back();</script>";
+            echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+            echo "<script>
+                Swal.fire({
+                    icon: 'error', // Red error icon
+                    title: 'Error!',
+                    text: 'Required clinical fields are missing. Please provide all required information.',
+                    confirmButtonColor: '#d33'
+                }).then(() => {
+                    window.history.back(); // Go back after closing
+                });
+            </script>";
             exit;
         }
+        
         $sql_summary = "INSERT INTO llx_cyto_clinical_information (
                             cyto_id,
                             chief_complain,
