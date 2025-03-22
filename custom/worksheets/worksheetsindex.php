@@ -12,9 +12,9 @@ require_once DOL_DOCUMENT_ROOT.'/societe/class/client.class.php';
 require_once DOL_DOCUMENT_ROOT.'/commande/class/commande.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/order.lib.php';
 
-if (!$user->rights->commande->lire) {
-	accessforbidden();
-}
+// if (!$user->rights->commande->lire) {
+// 	accessforbidden();
+// }
 
 $hookmanager = new HookManager($db);
 
@@ -68,7 +68,7 @@ if ($tmp) {
  * Draft orders
  */
 
-if (!empty($conf->commande->enabled)) {
+if (true) {
 	 $sql = "SELECT c.rowid, c.ref, s.nom as name, s.rowid as socid";
 	 $sql .= ", s.client";
 	 $sql .= ", s.code_client";
@@ -221,7 +221,7 @@ $max = 10;
  * Orders to process
 */
 
-if (!empty($conf->commande->enabled)) {
+if (true) {
 	 $sql = "SELECT c.rowid, c.entity, c.ref, c.fk_statut, c.facture, c.date_commande as date, s.nom as name, s.rowid as socid";
 	 $sql .= ", s.client";
 	 $sql .= ", s.code_client";
@@ -311,7 +311,7 @@ if (!empty($conf->commande->enabled)) {
  * Orders that are in process
 */
 
-if (!empty($conf->commande->enabled)) {
+if (true) {
 	 $sql = "SELECT c.rowid, c.entity, c.ref, c.fk_statut, c.facture, c.date_commande as date, s.nom as name, s.rowid as socid";
 	 $sql .= ", s.client";
 	 $sql .= ", s.code_client";
