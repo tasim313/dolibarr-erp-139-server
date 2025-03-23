@@ -69,6 +69,7 @@ $abbreviations = get_abbreviations_list();
     <title>Lab Number Search</title>
     <!-- Add Bootstrap  -->
     <link href="../../bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         main {
             display: flex;
@@ -390,6 +391,7 @@ $abbreviations = get_abbreviations_list();
             </form>
         </div>
 
+       
         <script>
 
             function updateStatusDetails() {
@@ -409,18 +411,79 @@ $abbreviations = get_abbreviations_list();
             }
 
             function submitAndRedirect(event) {
-                event.preventDefault(); // Prevent default form submission
-                updateStatusDetails(); // Ensure the hidden fields are updated
+                event.preventDefault(); 
+                updateStatusDetails(); 
+
                 var formData = new FormData(document.getElementById("duplicateReportForm"));
+
                 fetch("../../save_duplicate_report_data.php", {
                     method: "POST",
                     body: formData
                 })
-                .then(response => response.text()) // Handle response if needed
-                .catch(error => console.error("Error submitting form:", error));
+                .then(response => response.json()) // Parse the response as JSON
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show success message in modal
+                        document.getElementById('successMessage').innerText = data.message;
+                        $('#successModal').modal('show'); // Show Bootstrap success modal
+                        // Redirect after a delay
+                        setTimeout(() => {
+                            window.location.href = "<?php echo $_SERVER['HTTP_REFERER']; ?>";
+                        }, 2000); // Redirect after 2 seconds
+                    } else {
+                        // Show error message in modal
+                        document.getElementById('errorMessage').innerText = data.message;
+                        $('#errorModal').modal('show'); // Show Bootstrap error modal
+                    }
+                })
+                .catch(error => {
+                    console.error("Error submitting form:", error);
+                    document.getElementById('errorMessage').innerText = "An unexpected error occurred. Please try again.";
+                    $('#errorModal').modal('show'); // Show Bootstrap error modal
+                });
             }
 
         </script>
+
+        <!-- Success Modal -->
+        <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="successModalLabel">Success</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="successMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Modal -->
+        <div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="errorMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="form-container">
             <div class="form-group">
