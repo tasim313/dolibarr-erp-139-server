@@ -520,7 +520,7 @@ if (!$diagnosis_details_result) {
 }
 
 // Fetch section information from the database
-$sections_info = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_gross_specimen_section WHERE fk_gross_id = $1  ORDER BY 
+$sections_info = "SELECT gross_specimen_section_id, fk_gross_id, section_code, specimen_section_description, cassettes_numbers FROM llx_gross_specimen_section WHERE TRIM(fk_gross_id) = $1  ORDER BY 
 LEFT(section_code, 1) ASC, 
 CAST(SUBSTRING(section_code, 2) AS INTEGER) ASC, 
 gross_specimen_section_id ASC";
