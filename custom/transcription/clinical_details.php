@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $update_lab_number = trim($lab_number, '.');
         echo '<script>';
-        echo 'window.location.href = "transcription.php?lab_number=' . $update_lab_number . '"';
+        header("Location: " . $_SERVER['HTTP_REFERER']);
         echo '</script>';
     } else {
         // If clinical details do not exist, insert them
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $update_lab_number = trim($lab_number, '.');
         echo '<script>';
-        echo 'window.location.href = "transcription.php?lab_number=' . $update_lab_number . '"';
+        header("Location: " . $_SERVER['HTTP_REFERER']);
         echo '</script>';
         
     }
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     pg_close($pg_con);
 } else {
     // If the request method is not POST, redirect to another page
-    header("Location: transcriptionindex.php"); 
+    header("Location: " . $_SERVER['HTTP_REFERER']);
     exit();
 }
 
