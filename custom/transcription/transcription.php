@@ -659,7 +659,7 @@ foreach ($existingMicroDescriptions as $key => $existingDescription) {
             <textarea style="display:none;" id="hidden_description<?php echo $key; ?>" name="description[]" data-index="<?php echo $key; ?>">
             <?php 
                 // Check if the description is empty and set a default value if it is
-                $micro_pre_define_text = trim("    Sections Show    ");
+                $micro_pre_define_text = trim("Sections Show");
                 $descriptionValue = !empty($existingDescription['description']) ? htmlspecialchars($existingDescription['description']) : $micro_pre_define_text;
                 echo $descriptionValue; 
                 ?>
