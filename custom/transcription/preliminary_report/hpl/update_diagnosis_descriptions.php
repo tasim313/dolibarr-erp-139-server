@@ -8,11 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         die("Database connection failed: " . pg_last_error());
     }
 
-    // Debug: Output the POST data to check what is being received
-    // You can temporarily log or print this data
-    // var_dump($_POST);
-    // die();
-
+    
     $fk_gross_id = pg_escape_string(trim($_POST['fk_gross_id'][0]));
     $lab_number = pg_escape_string(trim($_POST['lab_number'][0]));
     $created_user = pg_escape_string(trim($_POST['created_user'][0]));

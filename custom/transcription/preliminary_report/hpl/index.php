@@ -1026,8 +1026,8 @@ if (empty($existingDiagnosisDescriptions)) {
 
 
 echo "<h2 class='heading'>Doctor's Signature</h2>";
-$details = get_doctor_assisted_by_signature_details($LabNumber);
-$finialized_by = get_doctor_finalized_by_signature_details($LabNumber);
+$details = get_preliminary_report_doctor_assisted_by_signature_details($LabNumber);
+$finialized_by = get_preliminary_report_doctor_finalized_by_signature_details($LabNumber);
 $information = get_doctor_degination_details();
 if (!empty($details)) {
     foreach($details as $list){
