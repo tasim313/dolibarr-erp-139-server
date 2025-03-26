@@ -78,7 +78,7 @@ function getExistingPreliminaryReportDiagnosisDescriptions($labNumber) {
     $existingPreliminaryReportDiagnosisDescriptions = array();
 
     $sql = "SELECT row_id, lab_number, fk_gross_id, description, created_user, status, specimen, title, comment 
-    FROM llx_diagnosis WHERE llx_preliminary_report_diagnosis = '$labNumber' order by row_id ASC";
+    FROM llx_preliminary_report_diagnosis WHERE lab_number = '$labNumber' order by row_id ASC";
     $result = pg_query($pg_con, $sql);
 
     if ($result) {

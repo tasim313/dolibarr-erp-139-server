@@ -192,13 +192,13 @@ print('
 
         .col-25 {
             float: left;
-            width: 15%;
+            width: 6%;
             margin-top: 6px;
         }
 
         .col-75 {
             float: left;
-            width: 85%;
+            width: 94%;
             margin-top: 6px;
         }
 
@@ -540,7 +540,7 @@ foreach ($specimens as $index => $specimen) {
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
 echo '<input style="margin-top: 10px; margin-bottom:10px;" type="submit" value="Save">';
-echo '</form>';
+echo '</form><br>';
 
 
 $sections = get_gross_specimen_section($fk_gross_id);
@@ -561,7 +561,7 @@ print('<form id="specimen_section_form" method="post" action="../../gross_specim
 <br>
 <button id="saveButton">Save</button>
 </form>');
-print("</div>");
+print("</div><br>");
 
 
 // Print the form container
@@ -827,7 +827,7 @@ if (empty($existingMicroDescriptions)) {
                 
                 <!-- Hidden fields -->
                 <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($existingDescription['fk_gross_id']); ?>">
-                <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($existingDescription['created_user']); ?>">
+                <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
                 <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
                 <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
             </div>
@@ -838,6 +838,7 @@ if (empty($existingMicroDescriptions)) {
         <?php
     }
 }
+
 ?>
 
 
@@ -856,87 +857,171 @@ echo '<h2 class="heading">Diagnosis Description</h2>';
 if (empty($existingDiagnosisDescriptions)) {
     // Show Insert Form when no records exist
     ?>
+    <form action="insert_diagnosis_description.php" id="diagnosisInsertDescriptionForm" method="POST" class="diagnosisInsertDescriptionForm">
+        <?php foreach ($specimens_list as $index => $specimen) { ?>
+            <div class="form-group">
+                <label for="diagnosis_specimen_<?php echo $index; ?>" class="bold-label">Specimen:</label>
+                <textarea class="diagnosis-specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars((string) $specimen['specimen']); ?></textarea>
+
+                <div class="row">
+                    <div class="col-25">
+                        <label for="title" class="bold-label" style="width: 80px;">Title:</label>
+                    </div>
+                    <div class="col-75">
+                        <?php $titleValue = !empty($specimen['title']) ? htmlspecialchars($specimen['title']) : 'biopsy'; ?>
+                        <input type="text" name="title[]" value="<?php echo $titleValue; ?>">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-25">
+                        <label for="description" class="bold-label" style="width: 40px;">Description:</label>
+                    </div>
+                    <div class="col-75">
+                        <div id="diagnosis-quill-editor-new-<?php echo $index; ?>" class="editor"></div>
+                        <textarea style="display:none;" id="diagnosis_hidden_description_new_<?php echo $index; ?>" name="description[]"></textarea>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-25">
+                        <label for="comment" class="bold-label" style="width: 120px;">Comment:</label>
+                    </div>
+                    <div class="col-75">
+                        <div id="comment-quill-editor-<?php echo $index; ?>" class="editor"></div>
+                        <textarea name="comment[]" id="comment-textarea-<?php echo $index; ?>" style="display:none;"><?php echo htmlspecialchars($comment); ?></textarea>
+                    </div>
+                </div>
+            </div>
+        <?php } ?>
+
+        <!-- Hidden input fields -->
+        <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($LabNumber); ?>">
+        <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($fk_gross_id); ?>">
+        <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+        <input type="hidden" name="status[]" value="Done">
+
+        <div class="grid">
+            <br><button type="submit" class="btn btn-success">Save</button>
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var forms = document.querySelectorAll(".diagnosisInsertDescriptionForm");
+
+            forms.forEach(function (form) {
+                form.addEventListener("submit", function () {
+                    <?php foreach ($specimens_list as $index => $specimen) { ?>
+                        var quillEditor = document.querySelector("#diagnosis-quill-editor-new-<?php echo $index; ?> .ql-editor");
+                        if (quillEditor) {
+                            document.getElementById("diagnosis_hidden_description_new_<?php echo $index; ?>").value = quillEditor.innerHTML;
+                        }
+
+                        var commentEditor = document.querySelector("#comment-quill-editor-<?php echo $index; ?> .ql-editor");
+                        if (commentEditor) {
+                            document.getElementById("comment-textarea-<?php echo $index; ?>").value = commentEditor.innerHTML;
+                        }
+                    <?php } ?>
+                });
+            });
+
+            <?php foreach ($specimens_list as $index => $specimen) { ?>
+                var quill<?php echo $index; ?> = new Quill("#diagnosis-quill-editor-new-<?php echo $index; ?>", {
+                    theme: "snow"
+                });
+
+                quill<?php echo $index; ?>.on("text-change", function () {
+                    document.getElementById("diagnosis_hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
+                });
+
+                var commentQuill<?php echo $index; ?> = new Quill("#comment-quill-editor-<?php echo $index; ?>", {
+                    theme: "snow"
+                });
+
+                commentQuill<?php echo $index; ?>.on("text-change", function () {
+                    document.getElementById("comment-textarea-<?php echo $index; ?>").value = commentQuill<?php echo $index; ?>.root.innerHTML;
+                });
+            <?php } ?>
+        });
+    </script>
+
    
     <?php
 }else {
-    echo '<form action="" id="diagnosisDescriptionForm" method="POST">';
-    foreach ($existingDiagnosisDescriptions as $index => $specimen) {
-        // Prepare fallback values if some fields are missing
-        $description = $specimen['description'] ?? '';
-        $title = $specimen['title'] ?? '';
-        $comment = $specimen['comment'] ?? '';
-        $fk_gross_id = $specimen['fk_gross_id'] ?? '';
-        $created_user = $specimen['created_user'] ?? '';
-        $status = $specimen['status'] ?? '';
-        $lab_number = $specimen['lab_number'] ?? '';
-        $row_id = $specimen['row_id'] ?? '';
-    
-        // Specimen display
-        echo '<div class="row">';
-        echo '<div class="col-25">';
-        echo '<label for="specimen">Specimen</label>';
-        echo '</div>';
-        echo '<div class="col-75">';
-        echo '<input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>';
-        echo '<input type="text" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" readonly>';
-        echo '</div>';
-        echo '</div>';
-    
-        // title field 
-        echo '<div class="row">';
-        echo '<div class="col-25">';
-        echo '<label for="title" class="bold-label" style="width: 120px;">Title:</label>';
-        echo '</div>';
-        echo '<div class="col-75">';
-        // Check if the title is available; otherwise, use "biopsy"
-        $titleValue = !empty($specimen['title']) ? htmlspecialchars($specimen['title']) : 'biopsy';
-        echo '<input type="text" name="title[]" value="' . $titleValue . '">';
-        echo '</div>';
-        echo '</div>';
-    
-        // Description field with Quill editor
-        echo '<div class="row">';
-        echo '<div class="col-25">';
-        echo '<label for="description" class="bold-label" style="width: 120px;">Description:</label>';
-        echo '</div>';
-        echo '<div class="col-75">';
-        echo '<div id="diagnosis-quill-editor-' . $index . '" class="editor"></div>';
-        echo '<textarea name="description[]" id="diagnosis-textarea-' . $index . '" style="display:none;">' . htmlspecialchars($description) . '</textarea>';
-        echo '</div>';
-        echo '</div>';
-    
-        // Comment field with Quill editor
-        echo '<div class="row">';
-        echo '<div class="col-25">';
-        echo '<label for="comment" class="bold-label" style="width: 120px;">Comment:</label>';
-        echo '</div>';
-        echo '<div class="col-75">';
-        echo '<div id="comment-quill-editor-' . $index . '" class="editor"></div>';
-        echo '<textarea name="comment[]" id="comment-textarea-' . $index . '" style="display:none;">' . htmlspecialchars($comment) . '</textarea>';
-        echo '</div>';
-        echo '</div>';
-    
-        // Hidden fields for additional metadata
-        echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
-        echo '<input type="hidden" name="created_user[]" value="' . htmlspecialchars($created_user) . '">';
-        echo '<input type="hidden" name="status[]" value="' . htmlspecialchars($status) . '">';
-        echo '<input type="hidden" name="lab_number[]" value="' . htmlspecialchars($lab_number) . '">';
-        echo '<input type="hidden" name="row_id[]" value="' . htmlspecialchars($row_id) . '">';
-    }
-    
-    echo '<div class="grid">
-            <button style="background-color: rgb(118, 145, 225);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            float: right;
-            transition: box-shadow 0.3s ease;" 
-            id="diagnosisDescriptionSaveButton" type="submit" 
-            name="submit" value="att_relation" class="btn btn-primary">Save</button>
-        </div>';
-    echo '</form>';
+    ?>
+    <form action="" id="diagnosisDescriptionForm" method="POST">
+        <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+            <?php
+                // Prepare fallback values if some fields are missing
+                $description = $specimen['description'] ?? '';
+                $title = $specimen['title'] ?? 'biopsy';
+                $comment = $specimen['comment'] ?? '';
+                $fk_gross_id = $specimen['fk_gross_id'] ?? '';
+                $status = $specimen['status'] ?? '';
+                $lab_number = $specimen['lab_number'] ?? '';
+                $row_id = $specimen['row_id'] ?? '';
+                $specimen_text = $specimen['specimen'] ?? '';
+                $specimen_id = $specimen['specimen_id'] ?? '';
+            ?>
+
+            <!-- Specimen display -->
+            <div class="row">
+                <div class="col-25">
+                    <label for="specimen">Specimen</label>
+                </div>
+                <div class="col-75">
+                    <input type="hidden" name="specimen_id[]" value="<?= htmlspecialchars($specimen_id) ?>" readonly>
+                    <input type="text" name="specimen[]" value="<?= htmlspecialchars($specimen_text) ?>" readonly>
+                </div>
+            </div>
+
+            <!-- Title field -->
+            <div class="row">
+                <div class="col-25">
+                    <label for="title" class="bold-label" style="width: 120px;">Title:</label>
+                </div>
+                <div class="col-75">
+                    <input type="text" name="title[]" value="<?= htmlspecialchars($title) ?>">
+                </div>
+            </div>
+
+            <!-- Description field with Quill editor -->
+            <div class="row">
+                <div class="col-25">
+                    <label for="description" class="bold-label" style="width: 120px;">Description:</label>
+                </div>
+                <div class="col-75">
+                    <div id="diagnosis-quill-editor-<?= $index ?>" class="editor"><?= $description ?></div>
+                    <textarea name="description[]" id="diagnosis-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($description) ?></textarea>
+                </div>
+            </div>
+
+            <!-- Comment field with Quill editor -->
+            <div class="row">
+                <div class="col-25">
+                    <label for="comment" class="bold-label" style="width: 120px;">Comment:</label>
+                </div>
+                <div class="col-75">
+                    <div id="comment-quill-editor-<?= $index ?>" class="editor"><?= $comment ?></div>
+                    <textarea name="comment[]" id="comment-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($comment) ?></textarea>
+                </div>
+            </div>
+
+            <!-- Hidden fields for additional metadata -->
+            <input type="hidden" name="fk_gross_id[]" value="<?= htmlspecialchars($fk_gross_id) ?>">
+            <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+            <input type="hidden" name="status[]" value="<?= htmlspecialchars($status) ?>">
+            <input type="hidden" name="lab_number[]" value="<?= htmlspecialchars($lab_number) ?>">
+            <input type="hidden" name="row_id[]" value="<?= htmlspecialchars($row_id) ?>">
+
+        <?php endforeach; ?>
+
+        <div class="grid">
+            <button id="diagnosisDescriptionSaveButton" type="submit" name="submit" value="att_relation" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+    <?php
 }
 
 
@@ -1556,23 +1641,111 @@ if (!empty($finialized_by)) {
             .catch(error => console.error('Error loading shortcuts:', error));
     });
 
-    document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
-        
-        fetch("update_diagnosis_descriptions.php", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text())
-        .then(data => {
-            console.log(data); 
-            var labNumber = "<?php echo $LabNumber; ?>"; 
-            window.location.href = `transcription.php?lab_number=${labNumber}`
-        })
-        .catch(error => {
-            console.error("Error:", error);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all Quill editors
+        <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+            // Description editor
+            var descEditor<?= $index ?> = new Quill('#diagnosis-quill-editor-<?= $index ?>', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'header': 1 }, { 'header': 2 }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'script': 'sub'}, { 'script': 'super' }],
+                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        [{ 'direction': 'rtl' }],
+                        [{ 'size': ['small', false, 'large', 'huge'] }],
+                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'font': [] }],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Comment editor
+            var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        ['blockquote', 'code-block'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Set initial content
+            descEditor<?= $index ?>.root.innerHTML = `<?= $description ?>`;
+            commentEditor<?= $index ?>.root.innerHTML = `<?= $comment ?>`;
+        <?php endforeach; ?>
+
+        // Handle form submission
+        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            // Update hidden textareas with Quill content
+            <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+                document.getElementById('diagnosis-textarea-<?= $index ?>').value = 
+                    descEditor<?= $index ?>.root.innerHTML;
+                document.getElementById('comment-textarea-<?= $index ?>').value = 
+                    commentEditor<?= $index ?>.root.innerHTML;
+            <?php endforeach; ?>
+
+            const formData = new FormData(this);
+            
+            fetch("update_diagnosis_descriptions.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
         });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            // Ctrl+S or Command+S to save
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                document.getElementById('diagnosisDescriptionSaveButton').click();
+            }
+        });
+
+        // Load shortcuts (if needed)
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                    let wordEnd = cursorPosition;
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function(event) {
+                        if (event.key === 'Insert') {
+                            let cursorPosition = this.selectionStart;
+                            handleShortcutInput(this, cursorPosition);
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
     });
 
 </script>
