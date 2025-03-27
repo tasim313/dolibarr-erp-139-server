@@ -75,38 +75,53 @@ $loggedInUsername = $user->login;
     <script src="../../grossmodule/jquery/jquery.min.js"></script>
     <script src="../../grossmodule/bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
     <script>
-            // Fetch the lab numbers for HPL and IHC test types
-            const preliminaryLabNumbers = <?php echo json_encode(get_preliminary_report_labnumber_list()); ?>;
+        // Fetch the lab numbers for HPL and IHC test types
+        const preliminaryLabNumbers = <?php echo json_encode(get_preliminary_report_labnumber_list()); ?>;
 
-            // Create separate lists for HPL and IHC
-            const hplLabNumbers = [];
-            const ihcLabNumbers = [];
+        // Create separate lists for HPL and IHC
+        const hplLabNumbers = [];
+        const ihcLabNumbers = [];
 
-            preliminaryLabNumbers.forEach(item => {
-                if (item.test_type === 'HPL') {
-                    hplLabNumbers.push(item.lab_number.trim());
-                } else if (item.test_type === 'IHC') {
-                    ihcLabNumbers.push(item.lab_number.trim());
-                }
-            });
+        preliminaryLabNumbers.forEach(item => {
+            if (item.test_type === 'HPL') {
+                hplLabNumbers.push(item.lab_number.trim());
+            } else if (item.test_type === 'IHC') {
+                ihcLabNumbers.push(item.lab_number.trim());
+            }
+        });
 
-            document.getElementById('searchBtn').addEventListener('click', function () {
-                const labNumber = document.getElementById('labNumber').value.trim().toLowerCase();
-                
-                if (labNumber) {
-                    if (hplLabNumbers.includes(labNumber)) {
-                        window.location.href = 'hpl/index.php?LabNumber=' + encodeURIComponent("HPL" + labNumber);
-                    } else if (ihcLabNumbers.includes(labNumber)) {
-                        window.location.href = 'ihc/index.php?LabNumber=' + encodeURIComponent(labNumber);
-                    } else {
-                        document.getElementById('message').innerHTML = 
-                            `<div class="alert alert-danger">This lab number does not match. Please enter a valid lab number.</div>`;
-                    }
+        function handleLabNumberSearch() {
+            const labNumber = document.getElementById('labNumber').value.trim().toLowerCase();
+            
+            if (labNumber) {
+                if (hplLabNumbers.includes(labNumber)) {
+                    window.location.href = 'hpl/index.php?LabNumber=' + encodeURIComponent("HPL" + labNumber);
+                } else if (ihcLabNumbers.includes(labNumber)) {
+                    window.location.href = 'ihc/index.php?LabNumber=' + encodeURIComponent(labNumber);
                 } else {
                     document.getElementById('message').innerHTML = 
-                        `<div class="alert alert-danger">Please enter a lab number.</div>`;
+                        `<div class="alert alert-danger">This lab number does not match. Please enter a valid lab number.</div>`;
                 }
-            });
+            } else {
+                document.getElementById('message').innerHTML = 
+                    `<div class="alert alert-danger">Please enter a lab number.</div>`;
+            }
+        }
+
+        // Add event listener for button click
+        document.getElementById('searchBtn').addEventListener('click', handleLabNumberSearch);
+        
+        // Add event listener for Enter key in the input field
+        document.getElementById('labNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                handleLabNumberSearch();
+            }
+        });
+        
+        // Focus on the input field when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('labNumber').focus();
+        });
     </script>
 
 </body>

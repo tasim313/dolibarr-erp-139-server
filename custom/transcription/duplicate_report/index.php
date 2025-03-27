@@ -85,8 +85,7 @@ $loggedInUsername = $user->login;
         const mfcLabNumbers = mfc_lab_numbers.map(item => item.lab_number.trim());
         const hplLabNumbers = hpl_lab_numbers.map(item => item.lab_number.trim());
 
-
-        document.getElementById('searchBtn').addEventListener('click', function () {
+        function handleLabNumberSearch() {
             const labNumber = document.getElementById('labNumber').value.trim().toLowerCase();
             
             if (labNumber) {
@@ -102,8 +101,22 @@ $loggedInUsername = $user->login;
             } else {
                 document.getElementById('message').innerHTML = `<div class="alert alert-danger">Please enter a lab number.</div>`;
             }
-        });
+        }
 
+        // Add event listener for button click
+        document.getElementById('searchBtn').addEventListener('click', handleLabNumberSearch);
+        
+        // Add event listener for Enter key in the input field (for barcode scanner)
+        document.getElementById('labNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                handleLabNumberSearch();
+            }
+        });
+        
+        // Focus on the input field when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('labNumber').focus();
+        });
     </script>
 </body>
 </html>
