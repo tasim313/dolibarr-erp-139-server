@@ -623,15 +623,23 @@ while ($row = pg_fetch_assoc($addressing_details_result)) {
         // Trim leading/trailing spaces
         $addressing = trim($addressing);
 
+        // Add the addressing text to the rows array
         $addressing_details_rows[] = $addressing;
     }
 }
 
+// Check if the content is just <p><br></p> or equivalent
+$final_addressing = implode('<br>', $addressing_details_rows);
+if ($final_addressing === '<br>') {
+    // If the result is only <br>, do not display the row
+    $final_addressing = '';  // Clear the addressing details to skip this row
+}
+
 // Show the "Addressing" row only if there are valid values
-if (!empty($addressing_details_rows)) {
+if (!empty($final_addressing)) {
     $html .= '<tr>
                 <th style="width: 26%;"><b>Addressing:</b></th>
-                <td style="width: 74%;">' . implode('<br>', $addressing_details_rows) . '</td>
+                <td style="width: 74%;">' . $final_addressing . '</td>
               </tr>';
 }
 

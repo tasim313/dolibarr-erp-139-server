@@ -450,7 +450,7 @@ echo ' </select>
 }
 print('</div>');
 print('<button class="button-class secondary">
-<a href="../../../grossmodule/hpl_report.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '&username=' . urlencode($loggedInUsername) . '" target="_blank">Preview</a>
+<a href="report.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '&username=' . urlencode($loggedInUsername) . '" target="_blank">Preview</a>
 </button>');
 
 // Button displaying the LabNumber with different styling
@@ -1232,6 +1232,7 @@ if (!empty($finialized_by)) {
 <!-- Gross Description Abbreviations -->
 <script>
         const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
+        console.log('abbreviations :', abbreviations_value);
         
         const abbreviations = {};
 
