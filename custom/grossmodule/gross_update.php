@@ -495,6 +495,7 @@ echo '<th scope="col">Bone Present</th>';
 echo '<th scope="col">Slide</th>';
 echo '<th scope="col">Decalcified</th>';
 echo '<th scope="col">Re-Gross</th>';
+echo '<th scope="col">Delete</th>';
 echo '</tr>';
 echo '</thead>';
 
@@ -502,6 +503,9 @@ echo '</thead>';
 echo '<tbody>';
 $i = 0;  // Initialize a counter for unique radio button names
 foreach ($sections as $section) {
+
+    $sectionId = htmlspecialchars($section['gross_specimen_section_id']);
+
     echo '<tr>';
     
     // Section Code
@@ -510,7 +514,7 @@ foreach ($sections as $section) {
     // Description
     echo '<td>';
     echo '<textarea name="specimen_section_description[]" style="width:120%;">' . htmlspecialchars($section['specimen_section_description']) . '</textarea>';
-    echo '<input type="hidden" name="gross_specimen_section_Id[]" value="' . htmlspecialchars($section['gross_specimen_section_id']) . '">';
+    echo '<input type="hidden" name="gross_specimen_section_Id[]" value="' . $sectionId . '">';
     echo '<input type="hidden" name="sectionCode[]" value="' . htmlspecialchars($section['section_code']) . '" readonly>';
     echo '</td>';
     
@@ -547,6 +551,12 @@ foreach ($sections as $section) {
         } else {
             echo '<input type="hidden" name="re_gross[]" value="">';
         }
+    echo '</td>';
+
+    echo '<td>';
+    echo '<button type="button" onclick="deleteSection(' . $sectionId . ')" style="background:none; border:none; cursor:pointer;">';
+    echo '<img src="IMAGES/trash.png" alt="Delete" width="20">';
+    echo '</button>';
     echo '</td>';
     
     echo '</tr>';
@@ -1830,4 +1840,13 @@ function saveChanges(button) {
     })
     .catch(error => console.error('Error:', error));
 }
+</script>
+
+<!-- Delete Gross section code Delete -->
+<script>
+    function deleteSection(id) {
+        if (confirm("Are you sure you want to delete this section?")) {
+            window.location.href = "delete_gross_specimen_section.php?id=" + encodeURIComponent(id);
+        }
+    }
 </script>
