@@ -528,6 +528,12 @@ switch (true) {
     </button>
 </a>
 
+<a href="../transcription/preliminary_report/hpl/index.php?LabNumber=<?php echo 'HPL' . $LabNumber; ?>">
+    <button style="border:none; background-color: white; color: black;">
+            <i class="fas fa-edit" aria-hidden="true"></i> Preliminary Report
+    </button>
+</a>
+
 <button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showRightTab('status')">
 <i class="fa fa-search" aria-hidden="true"></i>Status</button>
 
@@ -540,10 +546,10 @@ switch (true) {
                     <div class="tab-buttons button-container">
                                         
                         <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i>Screening</button>
+                            <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>
                                         
                         <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i>Finalization</button>
+                            <i class="fas fa-microscope" aria-hidden="true"></i> Finalization Report</button>
                                         
                                     
                     </div>
@@ -585,7 +591,7 @@ switch (true) {
                             
                             <button class="small-button" id="screening_done"  onclick="openTab(event, 'Screening-Done')">
                                 <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
-                                <span class="button-text">Screening Done</span>
+                                <span class="button-text">Preliminary Report Issued</span>
                                 </i>
                             </button>
                             
@@ -624,7 +630,7 @@ switch (true) {
                        
                             <button class="small-button" id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
                             <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
-                            <span class="button-text">Finalization Done</span>
+                            <span class="button-text">Final Report Issued</span>
                             </i></button>
                        
                         </ul>
@@ -888,7 +894,7 @@ switch (true) {
 
 
                 <div id="Screening-Done" class="tabcontent_1">
-                    <p>Screening Done</p>
+                    <p>Preliminary Report Issued</p>
                 </div>  
 
                 <div id="Final-Screening-Start" class="tabcontent_1">
@@ -1110,7 +1116,7 @@ switch (true) {
                 </div>
     
                 <div id="Final-Screening-Done" class="tabcontent_1">
-                    <p>Final Screening Done</p>
+                    <p>Final Report Issued</p>
                 </div>
     </div>
 

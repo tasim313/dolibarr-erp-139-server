@@ -698,13 +698,20 @@ while ($row = pg_fetch_assoc($diagnosis_details_result)) {
     // Trim to remove leading and trailing whitespace
     $description = trim($description);
 
-    // Check if the comment is empty
-    if (empty($comment)) {
-        // Comment is empty, so don't include it
+    // Normalize comment
+    $comment = $row['comment'];
+    $comment = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $comment);
+    $comment = preg_replace('/<p[^>]*>(.*?)<\/p>/', '$1<br>', $comment);
+    $comment = preg_replace('/<br>\s*$/', '', $comment);
+    $comment = trim($comment);
+
+    // Check if the comment is empty or contains only whitespace or the specific unwanted string
+    if (empty($comment) || $comment === '<p><br></p>' || $comment === '<br>' || $comment === '') {
+        // Comment is empty or unwanted, so don't include it
         $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description;
     } else {
-        // Comment is not empty, include it with formatting
-        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description . "<strong>Comment : </strong>" . $comment;
+        // Comment has valid content
+        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description . "<br><strong>Comment: </strong>" . $comment;
     }
 }
 
