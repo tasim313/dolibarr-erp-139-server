@@ -63,7 +63,10 @@ $hasConsultants = false;
 foreach ($userGroupNames as $group) {
     if ($group['group'] === 'Transcription') {
         $hasTranscriptionist = true;
-    } 
+    }
+    if ($group['group'] === 'Consultants') {
+        $hasConsultants = true;
+    }  
 }
 
 // Access control using switch statement
@@ -71,6 +74,9 @@ switch (true) {
   case $hasTranscriptionist:
       // Transcription  has access, continue with the page content...
       break;
+  case $hasConsultants:
+	   // Doctor has access, continue with the page content...
+	   break;
   default:
       echo "<h1>Access Denied</h1>";
       echo "<p>You are not authorized to view this page.</p>";
