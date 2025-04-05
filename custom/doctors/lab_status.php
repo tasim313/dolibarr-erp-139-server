@@ -519,20 +519,24 @@ switch (true) {
 </form>
 
 <button style="border:none; background-color: white; color: black;" onclick="loadReport()">
-        <i class="fas fa-file-alt" aria-hidden="true"></i> Report
+        <i class="fas fa-file-alt" aria-hidden="true"></i> Final Report
 </button>
 
 <a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
     <button style="border:none; background-color: white; color: black;">
-            <i class="fas fa-edit" aria-hidden="true"></i> Edit
+            <i class="fas fa-edit" aria-hidden="true"></i> Final Report Edit
     </button>
-</a>
+</a>&ensp;&ensp;&ensp;&ensp;
+
+<button style="border:none; background-color: white; color: black;" onclick="loadPreliminaryReport()">
+    <i class="fas fa-file-alt" aria-hidden="true"></i> Preliminary Report
+</button>
 
 <a href="../transcription/preliminary_report/hpl/index.php?LabNumber=<?php echo 'HPL' . $LabNumber; ?>">
     <button style="border:none; background-color: white; color: black;">
-            <i class="fas fa-edit" aria-hidden="true"></i> Preliminary Report
+            <i class="fas fa-edit" aria-hidden="true"></i> Preliminary Report Edit
     </button>
-</a>
+</a>&ensp;&ensp;&ensp;&ensp;
 
 <button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showRightTab('status')">
 <i class="fa fa-search" aria-hidden="true"></i>Status</button>
@@ -549,7 +553,7 @@ switch (true) {
                             <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>
                                         
                         <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i> Finalization Report</button>
+                            <i class="fas fa-microscope" aria-hidden="true"></i> Final Report</button>
                                         
                                     
                     </div>
@@ -2573,6 +2577,18 @@ switch (true) {
                             }
                         });
                         
+            }
+
+            function loadPreliminaryReport() {
+                var labNumber = "<?php echo htmlspecialchars('HPL' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
+                var iframe = document.getElementById('reportFrame');
+                
+                // Set the report URL with the lab number and make the iframe visible
+                iframe.src = "../transcription/preliminary_report/hpl/report.php?lab_number=" + labNumber;
+                iframe.style.display = "block";  // Show the report iframe
+
+                // Hide the status section when the report is shown
+                document.getElementById('status').style.display = 'none';
             }
         </script>
 
