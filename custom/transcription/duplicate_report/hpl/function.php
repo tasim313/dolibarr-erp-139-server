@@ -1,5 +1,5 @@
 <?php 
-include ("../connection.php");
+include ("connection.php");
 
 
 function other_report_patient_information_by_lab($lab_number) {
