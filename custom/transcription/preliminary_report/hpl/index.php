@@ -1604,17 +1604,16 @@ if (!empty($finialized_by)) {
 
 
 <script>
-
-    // Diagnosis Description
-    document.addEventListener('keydown', function(event) {
-            // Check for Ctrl + S (or Command + S on Mac)
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault(); // Prevent default behavior of Enter key
-                document.getElementById('diagnosisDescriptionSaveButton').click(); // Submit the form 
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ctrl+S to submit the form globally
+        document.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                document.getElementById('diagnosisDescriptionSaveButton').click();
             }
-    });
+        });
 
-    document.addEventListener('DOMContentLoaded', function() {
+        // Load and handle text shortcuts
         fetch('shortcuts.json')
             .then(response => response.json())
             .then(shortcuts => {
@@ -1622,7 +1621,6 @@ if (!empty($finialized_by)) {
                     let text = inputElement.value;
                     let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
                     let wordEnd = cursorPosition;
-
                     let word = text.substring(wordStart, wordEnd).trim();
 
                     if (shortcuts[word]) {
@@ -1632,26 +1630,23 @@ if (!empty($finialized_by)) {
                 }
 
                 document.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.addEventListener('keydown', function(event) {
-                        if (event.key === 'Insert') { // Insert key
+                    textarea.addEventListener('keydown', function (event) {
+                        if (event.key === 'Insert') {
                             let cursorPosition = this.selectionStart;
                             handleShortcutInput(this, cursorPosition);
                         }
 
-                        if (event.ctrlKey && event.key === 's') {
-                            event.preventDefault(); // Prevent default behavior of Ctrl+S
-                            this.closest('form').submit(); // Submit the form containing the textarea
+                        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                            event.preventDefault();
+                            this.closest('form').submit();
                         }
                     });
                 });
             })
             .catch(error => console.error('Error loading shortcuts:', error));
-    });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize all Quill editors
+        // Initialize Quill editors and set their content
         <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
-            // Description editor
             var descEditor<?= $index ?> = new Quill('#diagnosis-quill-editor-<?= $index ?>', {
                 theme: 'snow',
                 modules: {
@@ -1659,9 +1654,9 @@ if (!empty($finialized_by)) {
                         ['bold', 'italic', 'underline', 'strike'],
                         ['blockquote', 'code-block'],
                         [{ 'header': 1 }, { 'header': 2 }],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'script': 'sub'}, { 'script': 'super' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        [{ 'script': 'sub' }, { 'script': 'super' }],
+                        [{ 'indent': '-1' }, { 'indent': '+1' }],
                         [{ 'direction': 'rtl' }],
                         [{ 'size': ['small', false, 'large', 'huge'] }],
                         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -1673,86 +1668,48 @@ if (!empty($finialized_by)) {
                 }
             });
 
-            // Comment editor
             var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
                 theme: 'snow',
                 modules: {
                     toolbar: [
                         ['bold', 'italic', 'underline', 'strike'],
                         ['blockquote', 'code-block'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                         ['clean']
                     ]
                 }
             });
 
-            // Set initial content
-            descEditor<?= $index ?>.root.innerHTML = `<?= $description ?>`;
-            commentEditor<?= $index ?>.root.innerHTML = `<?= $comment ?>`;
+            // Set unique content for each editor
+            descEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['description'] ?? '') ?>;
+            commentEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['comment'] ?? '') ?>;
         <?php endforeach; ?>
 
         // Handle form submission
-        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function(event) {
+        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function (event) {
             event.preventDefault();
-            
-            // Update hidden textareas with Quill content
+
+            // Update hidden fields with Quill content before submitting
             <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
-                document.getElementById('diagnosis-textarea-<?= $index ?>').value = 
+                document.getElementById('diagnosis-textarea-<?= $index ?>').value =
                     descEditor<?= $index ?>.root.innerHTML;
-                document.getElementById('comment-textarea-<?= $index ?>').value = 
+                document.getElementById('comment-textarea-<?= $index ?>').value =
                     commentEditor<?= $index ?>.root.innerHTML;
             <?php endforeach; ?>
 
             const formData = new FormData(this);
-            
+
             fetch("update_diagnosis_descriptions.php", {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.text())
-            .then(data => {
-                window.location.reload();
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(event) {
-            // Ctrl+S or Command+S to save
-            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-                event.preventDefault();
-                document.getElementById('diagnosisDescriptionSaveButton').click();
-            }
-        });
-
-        // Load shortcuts (if needed)
-        fetch('shortcuts.json')
-            .then(response => response.json())
-            .then(shortcuts => {
-                function handleShortcutInput(inputElement, cursorPosition) {
-                    let text = inputElement.value;
-                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
-                    let wordEnd = cursorPosition;
-                    let word = text.substring(wordStart, wordEnd).trim();
-
-                    if (shortcuts[word]) {
-                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
-                    }
-                }
-
-                document.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.addEventListener('keydown', function(event) {
-                        if (event.key === 'Insert') {
-                            let cursorPosition = this.selectionStart;
-                            handleShortcutInput(this, cursorPosition);
-                        }
-                    });
+                .then(response => response.text())
+                .then(data => {
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
                 });
-            })
-            .catch(error => console.error('Error loading shortcuts:', error));
+        });
     });
-
 </script>

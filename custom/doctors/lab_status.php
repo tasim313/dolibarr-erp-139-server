@@ -3,6 +3,7 @@
 // database connection and function file
 include('connection.php');
 include('../transcription/common_function.php');
+include('../transcription/preliminary_report/preliminary_report_function.php');
 include('../grossmodule/gross_common_function.php');
 include('../cytology/common_function.php');
 include('../histolab/histo_common_function.php');
@@ -93,6 +94,10 @@ $userGroupNames = getUserGroupNames($loggedInUserId);
 
 $hasConsultants = false;
 
+$LabNumberWithPrefix = "HPL" . $LabNumber;
+$fk_gross_id = getGrossIdByLabNumber($LabNumber);
+
+
 
 // Check if "Bones" status exists in the $bone_status array
 $showBoneSlideReady = false;
@@ -158,8 +163,7 @@ switch (true) {
         }
 
         /* Container for two-column layout */
-        .container 
-        {
+        .container {
             display: flex;
             justify-content: space-between;
             width: 100%;
@@ -182,8 +186,8 @@ switch (true) {
 
         .flex-container > div {
             margin: 10px;
-            padding: 20px;
-            font-size: 10px;
+            padding: 10px;
+            font-size: 20px;
             flex: 1; /* Make divs flexible */
         }
 
@@ -300,18 +304,6 @@ switch (true) {
             font-size: 15px;
         }
 
-        /* Left side: buttons, form */
-        .left-side {
-            width: 50%; 
-            padding: 20px;
-                
-        }
-
-        .right-side 
-        {
-            width: 50%;
-            padding: 20px;
-        }
         
         @media (max-width: 768px) {
             .container {
@@ -351,6 +343,23 @@ switch (true) {
             font-size: 12px;
         }
 
+        .panel {
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 0.5px;
+            padding: 10px;
+        }
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: 0.5px;
+        }
+
+        .modal-body {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
         /* Responsive Styles */
 
         /* Extra Large Screens (Large Monitors) */
@@ -364,18 +373,16 @@ switch (true) {
             }
         }
 
-            /* Large Screens (Desktops) */
-            @media only screen and (min-width: 992px) and (max-width: 1199px) {
-                .flex-container > div {
-                    font-size: 12px;
-                }
-
-                .tab-buttons.button-container {
-                    justify-content: space-around;
-                }
-
-                
+        /* Large Screens (Desktops) */
+        @media only screen and (min-width: 992px) and (max-width: 1199px) {
+            .flex-container > div {
+                font-size: 12px;
             }
+            .tab-buttons.button-container {
+                justify-content: space-around;
+            }
+            
+        }
 
         /* Medium Screens (Tablets in Landscape Mode) */
         @media only screen and (min-width: 768px) and (max-width: 991px) {
@@ -538,33 +545,28 @@ switch (true) {
     </button>
 </a>&ensp;&ensp;&ensp;&ensp;
 
-<button style="border:none; font-size: 20px;" id="tab-status" class="inactive" onclick="toggleStatusTab(), showRightTab('status')">
+<button style="border:none; font-size: 20px;" id="tab-status" data-toggle="modal" data-target="#exampleModalCenter">
 <i class="fa fa-search" aria-hidden="true"></i>Status</button>
 
-<div class="container">
-    <!-- Left Side (Buttons, Form, Tabs) -->
-            
-    <div class="left-side">
-            
-                <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
-                    <div class="tab-buttons button-container">
-                                        
-                        <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>
-                                        
-                        <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                            <i class="fas fa-microscope" aria-hidden="true"></i> Final Report</button>
-                                        
-                                    
-                    </div>
-                </ul>
 
-                <div class="flex-container">
 
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- Left Panel: Option List -->
+    <div class="col-md-3 panel ">
+            <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
+                <div class="tab-buttons button-container">                          
+                    <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
+                        <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>                       
+                    <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
+                        <i class="fas fa-microscope" aria-hidden="true"></i> Final Report</button>                        
+                </div>
+            </ul>
+
+            <div class="flex-container" style="margin-top:-50px;">
                     <div id="screening" class="tab-content tab btn-group grayed-out">
-                        <center><h6>Screening</h6></center>
                         <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist" style=" justify-content: space-between">
-                            
                             <button class="small-button"  onclick="openTab(event, 'Screening-Study')">
                                 <i class="fas fa-book" style="font-size: 18px; vertical-align: middle;">
                                 <span class="button-text">Study / History</span></i>
@@ -595,7 +597,7 @@ switch (true) {
                             
                             <button class="small-button" id="screening_done"  onclick="openTab(event, 'Screening-Done')">
                                 <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
-                                <span class="button-text">Preliminary Report Issued</span>
+                                <span class="button-text">Report Issued</span>
                                 </i>
                             </button>
                             
@@ -603,7 +605,7 @@ switch (true) {
                     </div>
 
                     <div id="final-screening" class="tab-content tab btn-group grayed-out">
-                        <center><h6>Final Screening</h6></center>
+                       
                         <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist" style=" justify-content: space-between">
                         
                         
@@ -633,8 +635,8 @@ switch (true) {
                         <?php endif; ?>
                        
                             <button class="small-button" id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
-                            <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
-                            <span class="button-text">Final Report Issued</span>
+                                <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
+                                <span class="button-text">Report Issued</span>
                             </i></button>
                        
                         </ul>
@@ -645,7 +647,7 @@ switch (true) {
                     </div>
 
                 
-                </div>
+            </div>
 
             
                 <div id="Screening-Start" class="tabcontent_1">
@@ -1124,171 +1126,561 @@ switch (true) {
                 </div>
     </div>
 
-    <div class="right-side">
-        <!-- iframe to display the report -->
-        <iframe id="reportFrame" style="width:200%; height:1200px; border:none; display:none;"></iframe>
-        <div id="status" class="tab-content grayed-out">
-                        <h3 class="semi-bold">
-                            <center>Current  Status: <?php echo htmlspecialchars($LabNumber); ?></center>
-                        </h3>
-                        <table border="0">
-                            <thead>
-                                <tr>
-                                    <!-- <th>Section</th> -->
-                                    <th>Status</th>
-                                    <th>Descriptions</th>
-                                    <th>Time</th>
-                                    <th>User</th>
-                                    <th>Delete</th>
-                                </tr>
-                            </thead>
-                            <tbody id="status-table-body">
-                            <?php 
-                                $statusValues = array_column($lab_status, 'WSStatusName');
-                                $sortedRows = [];
+    <!-- Middle Panel: PDF View -->
+    <div class="col-md-6 panel">
+      <iframe id="reportFrame" style="width:100%; height:800px; border:none; display:none;"></iframe>
+    </div>
 
-                                foreach ($lab_status as $list) {
-                                    $statusColor = '';
-                                    if (in_array($list['section'], ['Gross', 'Lab', 'Microscopy', 'Screening', 'description'])) {
+    <!-- Right Panel: Form -->
+    <div class="col-md-3 panel ">
+      <h5>Edit / Insert Form</h5>
 
-                                        // Check if statusName is 'Diagnosis Completed' and skip this row
-                                        if ($list['WSStatusName'] === 'Diagnosis Completed') {
-                                            continue;
-                                        }
-                                        // Check if statusName is 'Start Screening' and skip this row
-                                        if ($list['WSStatusName'] === 'Start Screening') {
-                                            continue;
-                                        }
+        <!-- Choice Dropdown -->
+        <div class="form-group">
+            <label for="formTypeSelect">Select Report Type</label>
+            <select class="form-control" id="formTypeSelect">
+            <option value="preliminary">Preliminary</option>
+            <option value="final">Final</option>
+            </select>
+        </div>
 
-                                        // Check if statusName is 'Final Screening Start' and skip this row
-                                        if ($list['WSStatusName'] === 'Final Screening Start') {
-                                            continue;
-                                        }
-                                        
+        <!-- Preliminary Form -->
+        <div id="preliminaryForm">
+            <div class="form-group">
+                <label for="formEditTypeSelect">Select Edit Type</label>
+                <select class="form-control" id="formEditTypeSelect">
+                <option value="Clinical Details">Clinical Details</option>
+                <option value="Site Of Specimen">Site Of Specimen</option>
+                <option value="Gross">Gross</option>
+                <option value="Microscopic">Microscopic</option>
+                <option value="Diagnosis">Diagnosis</option>
+                </select>
+            </div>
 
-                                        if ($list['WSStatusName'] == 'Special Stain others requested' && !in_array('Special Stain others Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'IHC-Block-Markers-requested' && !in_array('IHC-Block-Markers-completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'R/C requested' && !in_array('R/C Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'M/R/C requested' && !in_array('M/R/C Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Deeper Cut requested' && !in_array('Deeper Cut Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Serial Sections requested' && !in_array('Serial Sections Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Block D/C & R/C requested' && !in_array('Block D/C & R/C Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain AFB requested' && !in_array('Special Stain AFB Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain GMS requested' && !in_array('Special Stain GMS Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain PAS requested' && !in_array('Special Stain PAS Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain PAS with Diastase requested' && !in_array('Special Stain PAS with Diastase Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain Fite Faraco requested' && !in_array('Special Stain Fite Faraco Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain Brown-Brenn requested' && !in_array('Special Stain Brown-Brenn Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain Congo-Red requested' && !in_array('Special Stain Congo-Red Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Special Stain Bone Decalcification requested' && !in_array('Special Stain Bone Decalcification Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif ($list['WSStatusName'] == 'Re-gross Requested' && !in_array('Regross Completed', $statusValues)) {
-                                            $statusColor = 'red';
-                                        } elseif (in_array($list['WSStatusName'], [
-                                            'Special Stain others Completed',
-                                            'IHC-Block-Markers-completed',
-                                            'R/C Completed',
-                                            'M/R/C Completed',
-                                            'Deeper Cut Completed',
-                                            'Serial Sections Completed',
-                                            'Block D/C & R/C Completed',
-                                            'Special Stain AFB Completed',
-                                            'Special Stain GMS Completed',
-                                            'Special Stain PAS Completed',
-                                            'Special Stain PAS with Diastase Completed',
-                                            'Special Stain Fite Faraco Completed',
-                                            'Special Stain Brown-Brenn Completed',
-                                            'Special Stain Congo-Red Completed',
-                                            'Special Stain Bone Decalcification Completed',
-                                            'Regross Completed'
-                                        ])) {
-                                            $statusColor = 'green';
-                                        }
+            <div id="ClinicalDetailsForm">
+                <form id='clinicalDetailsForm' method='post' action='../transcription/clinical_details.php'>
+                    <div class='form-group'>
+                        <h2 class='heading'>Clinical Details</h2>
+                            <div class='controls'>
+                                <textarea id='clinicalDetailsTextarea' name='clinical_details' cols='40' rows='2'></textarea>
+                                <input type='hidden' id='labNumberInput' name='lab_number' value='<?php echo htmlspecialchars($LabNumberWithPrefix); ?>'>
+                                <input type='hidden' id='createdUserInput' name='created_user' value='<?php echo htmlspecialchars($loggedInUsername); ?>'>
+                            </div>
+                            <div class='grid'>
+                                <button style='background-color: rgb(118, 145, 225);
+                                color: white;
+                                padding: 12px 20px;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                float: right;
+                                transition: box-shadow 0.3s ease;' id='saveBtn' type='submit'>Save</button>
+                                <button id='updateBtn' type='submit' style='display: none;'>Update</button>
+                            </div>  
+                    </div>
+                </form>
+            </div>
+            <div id=""></div>
+            <div id=""></div>
+            <div id=""></div>
 
-                                        $dateTime = DateTime::createFromFormat('Y-m-d H:i:s.uP', $list['TrackCreateTime']);
-                                        if ($dateTime === false) {
-                                            $trackCreateTimeFormatted = 'Invalid date';
-                                        } else {
-                                            $trackCreateTimeFormatted = $dateTime->format('F j, Y h:i A');
-                                        }
+            <div id="MicroscopicFrom">
+                <?php 
+                    // Preliminary Report Micro Description
+                    $existingMicroDescriptions = getExistingPreliminaryReportMicroDescriptions($LabNumberWithPrefix);
+                    $specimens_list = get_gross_specimens_list($LabNumber);
+                    // Ensure $existingMicroDescriptions is an array
+                    if (!is_array($existingMicroDescriptions)) {
+                        $existingMicroDescriptions = array();
+                    }
+                    echo '<h2 class="heading">Preliminary Microscopic Description</h2>';
+                    if (empty($existingMicroDescriptions)) {
+                        // Show Insert Form when no records exist
+                        ?>
+                        <form action="../transcription/preliminary_report/hpl/insert_micro_description.php" method="POST" class="micro-description-insert-form">
+                            <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                <div class="form-group">
+                                    <label for="specimen_<?php echo $index; ?>" class="bold-label">Specimen:</label>
+                                    <textarea class="specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars((string) $specimen['specimen']); ?></textarea>
 
-                                        $sortedRows[] = [
-                                            // 'section' => htmlspecialchars($list['section']),
-                                            'statusName' => htmlspecialchars($list['WSStatusName']),
-                                            'description' => htmlspecialchars($list['description']),
-                                            'color' => $statusColor,
-                                            'trackCreateTime' => $trackCreateTimeFormatted,
-                                            'user' => htmlspecialchars($list['TrackUserName']),
-                                            'track_id' => htmlspecialchars($list['track_id'])
-                                        ];
-                                    }
-                                }
+                                    <div id="quill-editor-new-<?php echo $index; ?>" class="editor"></div>
 
-                                usort($sortedRows, function($a, $b) {
-                                    $colorOrder = ['red', 'green', ''];
-                                    $aColorIndex = array_search($a['color'], $colorOrder);
-                                    $bColorIndex = array_search($b['color'], $colorOrder);
-                                    return $aColorIndex - $bColorIndex;
+                                    <!-- Hidden textarea to store Quill content -->
+                                    <textarea style="display:none;" id="hidden_description_new_<?php echo $index; ?>" name="description[]"></textarea>
+                                </div>
+                            <?php } ?>
+
+                            <!-- Hidden input fields -->
+                            <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($LabNumberWithPrefix); ?>">
+                            <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($fk_gross_id); ?>">
+                            <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                            <input type="hidden" name="status[]" value="Done">
+                            
+
+                            <div class="grid">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+
+                        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+                        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                var forms = document.querySelectorAll(".micro-description-insert-form");
+
+                                forms.forEach(function (form) {
+                                    form.addEventListener("submit", function () {
+                                        <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                            var quillEditor = document.querySelector("#quill-editor-new-<?php echo $index; ?> .ql-editor");
+                                            if (quillEditor) {
+                                                document.getElementById("hidden_description_new_<?php echo $index; ?>").value = quillEditor.innerHTML;
+                                            }
+                                        <?php } ?>
+                                    });
                                 });
 
-                                $isGrayedOut = true; // Set this based on actual tab state
-                                $displayCount = 2;
+                                <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                    var quill<?php echo $index; ?> = new Quill("#quill-editor-new-<?php echo $index; ?>", {
+                                        theme: "snow"
+                                    });
 
-                                foreach ($sortedRows as $index => $row) {
-                                    // $section = htmlspecialchars($row['section']);
-                                    $statusName = htmlspecialchars($row['statusName']);
-                                    $description = htmlspecialchars($row['description']);
-                                    $statusColor = htmlspecialchars($row['color']);
-                                    $trackCreateTime = htmlspecialchars($row['trackCreateTime']);
-                                    $user = htmlspecialchars($row['user']);
-                                    $track_id = htmlspecialchars($row['track_id']);
+                                    quill<?php echo $index; ?>.on("text-change", function () {
+                                        document.getElementById("hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
+                                    });
+                                <?php } ?>
+                            });
+                        </script>
 
-                                    // Format the date in 'Asia/Dhaka' timezone
-                                    $dateTime = new DateTime($trackCreateTime, new DateTimeZone('UTC')); // Assuming the input time is in UTC
-                                    $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                                    $formattedTrackCreateTime = $dateTime->format('F j, Y g:i A'); // e.g., February 5, 2024 12:36 PM
-
-                                    $rowClass = '';
-                                    if ($isGrayedOut) {
-                                        if ($index < count($sortedRows) - 2) {
-                                            $rowClass = 'hidden';
-                                        }
-                                    }
-
-                                    echo "<tr class='status-row {$rowClass}'>";
-                                    // echo "<td><p style='font-size: 15px;'>{$section}</p></td>";
-                                    echo "<td><p  style='font-size: 15px; color: {$statusColor};'>{$statusName}</p></td>";
-                                    echo "<td><p  style='font-size: 15px;'>{$description}</p></td>";
-                                    echo "<td><p style='font-size: 15px;'>{$formattedTrackCreateTime}</p></td>";
-                                    echo "<td><p style='font-size: 15px;'>{$user}</p></td>";
-                                    // Add delete icon with confirmation dialog
-                                    echo "<td><p style='font-size: 15px;'>
-                                            <a href='#' onclick='confirmDelete({$track_id})'>
-                                                <i class='fas fa-trash-alt' style='color: red; cursor: pointer;' title='Delete'></i>
-                                            </a>
-                                        </p></td>";
-                                    echo "</tr>";
-                                }
+                        <?php
+                    }else {
+                        foreach ($existingMicroDescriptions as $key => $existingDescription) {
+                            $formId = 'microDescriptionForm' . $key;
                             ?>
-                            </tbody>
-                        </table>
-                    </div>
+                            <form action="../transcription/preliminary_report/hpl/update_micro_descriptions.php" id="<?php echo $formId; ?>" class="micro-description-form" method="POST">
+                                <div class="form-group">
+                                    <textarea class="specimen-textarea" row='1' name="specimen[]" readonly><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
+                                    <!-- Quill Editor Container -->
+                                    <div id="quill-editor-<?php echo $key; ?>" class="editor"></div>
+                                    
+                                    <!-- Hidden textarea for form submission -->
+                                    <textarea style="display:none;" id="hidden_description<?php echo $key; ?>" name="description[]">
+                                        <?php 
+                                        $micro_pre_define_text = "Sections Show";
+                                        $descriptionValue = !empty($existingDescription['description']) ? 
+                                            htmlspecialchars($existingDescription['description']) : 
+                                            $micro_pre_define_text;
+                                        echo $descriptionValue; 
+                                        ?>
+                                    </textarea>
+                                    
+                                    <!-- Hidden fields -->
+                                    <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($existingDescription['fk_gross_id']); ?>">
+                                    <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                                    <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
+                                    <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
+                                </div>
+                                <div class="grid">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div><br>
+                            </form>
+                            <?php
+                        }
+                    }
+                ?>
+            </div>
+            <div id="DiagnosisFrom">
+                <!-- Diagnosis Description -->
+                <?php
+                    $existingDiagnosisDescriptions = getExistingPreliminaryReportDiagnosisDescriptions($LabNumberWithPrefix);
+                    $specimens_list = get_gross_specimens_list($LabNumber);
+
+                    // Ensure $existingDiagnosisDescriptions is an array
+                    if (!is_array($existingDiagnosisDescriptions)) {
+                        $existingDiagnosisDescriptions = array();
+                    }
+
+                    echo '<h2 class="heading text-center mb-4">Diagnosis Description</h2>';
+
+                    if (empty($existingDiagnosisDescriptions)) {
+                        // Show Insert Form when no records exist
+                        ?>
+                        <form action="../transcription/preliminary_report/hpl/insert_diagnosis_description.php" id="diagnosisInsertDescriptionForm" method="POST" class="diagnosisInsertDescriptionForm">
+                            <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                <div class="form-group row">
+                                    <label for="diagnosis_specimen_<?php echo $index; ?>" class="col-sm-3 col-form-label font-weight-bold">Specimen:</label>
+                                    <div class="col-sm-9">
+                                        <textarea class="form-control diagnosis-specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars((string) $specimen['specimen']); ?></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-3 col-form-label font-weight-bold">Title:</label>
+                                    <div class="col-sm-9">
+                                        <?php $titleValue = !empty($specimen['title']) ? htmlspecialchars($specimen['title']) : 'biopsy'; ?>
+                                        <input type="text" name="title[]" class="form-control" value="<?php echo $titleValue; ?>">
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="description" class="col-sm-3 col-form-label font-weight-bold">Description:</label>
+                                    <div class="col-sm-9">
+                                        <div id="diagnosis-quill-editor-new-<?php echo $index; ?>" class="editor mb-3"></div>
+                                        <textarea style="display:none;" id="diagnosis_hidden_description_new_<?php echo $index; ?>" name="description[]"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label for="comment" class="col-sm-3 col-form-label font-weight-bold">Comment:</label>
+                                    <div class="col-sm-9">
+                                        <div id="comment-quill-editor-<?php echo $index; ?>" class="editor mb-3"></div>
+                                        <textarea name="comment[]" id="comment-textarea-<?php echo $index; ?>" style="display:none;"><?php echo htmlspecialchars($comment); ?></textarea>
+                                    </div>
+                                </div>
+                            <?php } ?>
+
+                            <!-- Hidden input fields -->
+                            <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($LabNumberWithPrefix); ?>">
+                            <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($fk_gross_id); ?>">
+                            <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                            <input type="hidden" name="status[]" value="Done">
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-success btn-lg">Save</button>
+                            </div>
+                        </form>
+
+                        <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+                        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                var forms = document.querySelectorAll(".diagnosisInsertDescriptionForm");
+
+                                forms.forEach(function (form) {
+                                    form.addEventListener("submit", function () {
+                                        <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                            var quillEditor = document.querySelector("#diagnosis-quill-editor-new-<?php echo $index; ?> .ql-editor");
+                                            if (quillEditor) {
+                                                document.getElementById("diagnosis_hidden_description_new_<?php echo $index; ?>").value = quillEditor.innerHTML;
+                                            }
+
+                                            var commentEditor = document.querySelector("#comment-quill-editor-<?php echo $index; ?> .ql-editor");
+                                            if (commentEditor) {
+                                                document.getElementById("comment-textarea-<?php echo $index; ?>").value = commentEditor.innerHTML;
+                                            }
+                                        <?php } ?>
+                                    });
+                                });
+
+                                <?php foreach ($specimens_list as $index => $specimen) { ?>
+                                    var quill<?php echo $index; ?> = new Quill("#diagnosis-quill-editor-new-<?php echo $index; ?>", {
+                                        theme: "snow"
+                                    });
+
+                                    quill<?php echo $index; ?>.on("text-change", function () {
+                                        document.getElementById("diagnosis_hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
+                                    });
+
+                                    var commentQuill<?php echo $index; ?> = new Quill("#comment-quill-editor-<?php echo $index; ?>", {
+                                        theme: "snow"
+                                    });
+
+                                    commentQuill<?php echo $index; ?>.on("text-change", function () {
+                                        document.getElementById("comment-textarea-<?php echo $index; ?>").value = commentQuill<?php echo $index; ?>.root.innerHTML;
+                                    });
+                                <?php } ?>
+                            });
+                        </script>
+
+                        <?php
+                    } else {
+                        ?>
+                        <form action="" id="diagnosisDescriptionForm" method="POST">
+                            <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+                                <?php
+                                    // Prepare fallback values if some fields are missing
+                                    $description = $specimen['description'] ?? '';
+                                    $title = $specimen['title'] ?? 'biopsy';
+                                    $comment = $specimen['comment'] ?? '';
+                                    $fk_gross_id = $specimen['fk_gross_id'] ?? '';
+                                    $status = $specimen['status'] ?? '';
+                                    $lab_number = $specimen['lab_number'] ?? '';
+                                    $row_id = $specimen['row_id'] ?? '';
+                                    $specimen_text = $specimen['specimen'] ?? '';
+                                    $specimen_id = $specimen['specimen_id'] ?? '';
+                                ?>
+
+                                <!-- Specimen display -->
+                                <div class="form-group row">
+                                    <label for="specimen" class="col-sm-3 col-form-label font-weight-bold">Specimen:</label>
+                                    <div class="col-sm-9">
+                                        <input type="hidden" name="specimen_id[]" value="<?= htmlspecialchars($specimen_id) ?>" readonly>
+                                        <input type="text" name="specimen[]" class="form-control" value="<?= htmlspecialchars($specimen_text) ?>" readonly>
+                                    </div>
+                                </div>
+
+                                <!-- Title field -->
+                                <div class="form-group row">
+                                    <label for="title" class="col-sm-3 col-form-label font-weight-bold">Title:</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" name="title[]" class="form-control" value="<?= htmlspecialchars($title) ?>">
+                                    </div>
+                                </div>
+
+                                <!-- Description field with Quill editor -->
+                                <div class="form-group row">
+                                    <label for="description" class="col-sm-3 col-form-label font-weight-bold">Description:</label>
+                                    <div class="col-sm-9">
+                                        <div id="diagnosis-quill-editor-<?= $index ?>" class="editor mb-3"><?= $description ?></div>
+                                        <textarea name="description[]" id="diagnosis-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($description) ?></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Comment field with Quill editor -->
+                                <div class="form-group row">
+                                    <label for="comment" class="col-sm-3 col-form-label font-weight-bold">Comment:</label>
+                                    <div class="col-sm-9">
+                                        <div id="comment-quill-editor-<?= $index ?>" class="editor mb-3"><?= $comment ?></div>
+                                        <textarea name="comment[]" id="comment-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($comment) ?></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden fields for additional metadata -->
+                                <input type="hidden" name="fk_gross_id[]" value="<?= htmlspecialchars($fk_gross_id) ?>">
+                                <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
+                                <input type="hidden" name="status[]" value="<?= htmlspecialchars($status) ?>">
+                                <input type="hidden" name="lab_number[]" value="<?= htmlspecialchars($lab_number) ?>">
+                                <input type="hidden" name="row_id[]" value="<?= htmlspecialchars($row_id) ?>">
+
+                            <?php endforeach; ?>
+
+                            <div class="text-center">
+                            <br><br><button id="diagnosisDescriptionSaveButton" type="submit" name="submit" value="att_relation" class="btn btn-primary btn-lg">Save</button>
+                            </div>
+                        </form>
+                        <?php
+                    }
+                ?>
+            </div>
+            
+            
+
         </div>
+
+        <!-- Final Form -->
+        <div id="finalForm" style="display: none;">
+            <div class="form-group">
+            <label for="finalDataInput">Enter Data (Final)</label>
+            <input type="text" class="form-control" id="finalDataInput" name="finalDataInput">
+            </div>
+            <div class="form-group">
+            <label for="finalDescriptionInput">Description</label>
+            <textarea class="form-control" id="finalDescriptionInput" name="finalDescriptionInput"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Save Final</button>
+        </div>
+
     </div>
+
+    
+  </div>
+</div>
+
+
+
+<!-- Modal for Status-->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+    
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">
+           Current Status: <?php echo htmlspecialchars($LabNumber); ?>
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Content Starts -->
+            <div class="tab-content">
+                <table border="0">
+                    <thead>
+                    <tr>
+                        <th>Status</th>
+                        <th>Descriptions</th>
+                        <th>Time</th>
+                        <th>User</th>
+                        <th>Delete</th>
+                    </tr>
+                    </thead>
+                    <tbody id="status-table-body">
+                    <?php 
+                    $shownStatuses = [];
+                    $statusValues = array_column($lab_status, 'WSStatusName');
+                    $sortedRows = [];
+
+                    foreach ($lab_status as $list) {
+                        $statusName = $list['WSStatusName'];
+
+                        // Skip duplicates
+                        $uniqueKey = $statusName . $list['description'] . $list['TrackCreateTime'];
+                        if (in_array($uniqueKey, $shownStatuses)) {
+                        continue;
+                        }
+                        $shownStatuses[] = $uniqueKey;
+
+                        // Skip unwanted statuses
+                        if (in_array($statusName, [
+                        'Diagnosis Completed', 'Start Screening', 'Final Screening Start'
+                        ])) {
+                        continue;
+                        }
+
+                        // Only process certain sections
+                        if (!in_array($list['section'], ['Gross', 'Lab', 'Microscopy', 'Screening', 'description'])) {
+                        continue;
+                        }
+
+                        // Determine color
+                        $statusColor = '';
+                        $requestedCompletedPairs = [
+                        'Special Stain others requested' => 'Special Stain others Completed',
+                        'IHC-Block-Markers-requested' => 'IHC-Block-Markers-completed',
+                        'R/C requested' => 'R/C Completed',
+                        'M/R/C requested' => 'M/R/C Completed',
+                        'Deeper Cut requested' => 'Deeper Cut Completed',
+                        'Serial Sections requested' => 'Serial Sections Completed',
+                        'Block D/C & R/C requested' => 'Block D/C & R/C Completed',
+                        'Special Stain AFB requested' => 'Special Stain AFB Completed',
+                        'Special Stain GMS requested' => 'Special Stain GMS Completed',
+                        'Special Stain PAS requested' => 'Special Stain PAS Completed',
+                        'Special Stain PAS with Diastase requested' => 'Special Stain PAS with Diastase Completed',
+                        'Special Stain Fite Faraco requested' => 'Special Stain Fite Faraco Completed',
+                        'Special Stain Brown-Brenn requested' => 'Special Stain Brown-Brenn Completed',
+                        'Special Stain Congo-Red requested' => 'Special Stain Congo-Red Completed',
+                        'Special Stain Bone Decalcification requested' => 'Special Stain Bone Decalcification Completed',
+                        'Re-gross Requested' => 'Regross Completed'
+                        ];
+
+                        if (array_key_exists($statusName, $requestedCompletedPairs)) {
+                        if (!in_array($requestedCompletedPairs[$statusName], $statusValues)) {
+                            $statusColor = 'red';
+                        }
+                        } elseif (in_array($statusName, array_values($requestedCompletedPairs))) {
+                        $statusColor = 'green';
+                        }
+
+                        // Date formatting
+                        try {
+                        $dateTime = new DateTime($list['TrackCreateTime'], new DateTimeZone('UTC'));
+                        $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                        $formattedTime = $dateTime->format('F j, Y g:i A');
+                        } catch (Exception $e) {
+                        $formattedTime = 'Invalid date';
+                        }
+
+                        // Store cleaned data for output
+                        $sortedRows[] = [
+                        'statusName' => htmlspecialchars($statusName),
+                        'description' => htmlspecialchars($list['description']),
+                        'trackCreateTime' => $formattedTime,
+                        'user' => htmlspecialchars($list['TrackUserName']),
+                        'color' => $statusColor,
+                        'track_id' => htmlspecialchars($list['track_id'])
+                        ];
+                    }
+
+                    // Sort by color: red first, then green, then others
+                    usort($sortedRows, function($a, $b) {
+                        $priority = ['red' => 0, 'green' => 1, '' => 2];
+                        return $priority[$a['color']] <=> $priority[$b['color']];
+                    });
+
+                    // Show all rows
+                    foreach ($sortedRows as $row) {
+                        echo "<tr>";
+                        echo "<td><p style='font-size: 15px; color: {$row['color']};'>{$row['statusName']}</p></td>";
+                        echo "<td><p style='font-size: 15px;'>{$row['description']}</p></td>";
+                        echo "<td><p style='font-size: 15px;'>{$row['trackCreateTime']}</p></td>";
+                        echo "<td><p style='font-size: 15px;'>{$row['user']}</p></td>";
+                        echo "<td><p style='font-size: 15px;'>
+                                <a href='#' onclick='confirmDelete({$row['track_id']})'>
+                                <i class='fas fa-trash-alt' style='color: red; cursor: pointer;' title='Delete'></i>
+                                </a>
+                            </p></td>";
+                        echo "</tr>";
+                    }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
+        <!-- Content Ends -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- Handel form for user select value -->
+<script>
+    // Handle form type selection (Preliminary vs Final)
+    document.addEventListener('DOMContentLoaded', function () {
+        const formTypeSelect = document.getElementById('formTypeSelect');
+        const prelimForm = document.getElementById('preliminaryForm');
+        const finalForm = document.getElementById('finalForm');
+
+        formTypeSelect.addEventListener('change', function () {
+            const selected = this.value;
+            if (selected === 'preliminary') {
+                prelimForm.style.display = 'block';
+                finalForm.style.display = 'none';
+            } else if (selected === 'final') {
+                prelimForm.style.display = 'none';
+                finalForm.style.display = 'block';
+            }
+        });
+
+        // Handle sub-form selection inside Preliminary form (Microscopic vs Diagnosis)
+        const editTypeSelect = document.getElementById("formEditTypeSelect");
+        const microscopicForm = document.getElementById("MicroscopicFrom");
+        const diagnosisForm = document.getElementById("DiagnosisFrom");
+        const clinicalForm = document.getElementById("ClinicalDetailsForm");
+
+        function toggleSubForms() {
+            const selectedType = editTypeSelect.value;
+            if (selectedType === "Microscopic") {
+                microscopicForm.style.display = "block";
+                diagnosisForm.style.display = "none";
+                clinicalForm.style.display = "none";
+            } else if (selectedType === "Diagnosis") {
+                microscopicForm.style.display = "none";
+                diagnosisForm.style.display = "block";
+                clinicalForm.style.display = "none";
+            }
+            else if (selectedType === "Clinical Details") {
+                microscopicForm.style.display = "none";
+                diagnosisForm.style.display = "none";
+                clinicalForm.style.display = "block";
+            }
+        }
+
+        if (editTypeSelect) {
+            toggleSubForms(); // Initial call
+            editTypeSelect.addEventListener("change", toggleSubForms);
+        }
+    });
+</script>
+
+
+   
 
     
         <script>
@@ -2409,36 +2801,6 @@ switch (true) {
             }
 
         </script>
-
-
-        <!-- <script>
-            $(document).ready(function() {
-                $('#readlabno').on('submit', function(e) {
-                    e.preventDefault();
-                    let labno = $('#labno').val();
-                    if (labno) {
-                        $('#lookuplabno').html('<h3 class="semi-bold">Lookup Current Status for Lab No: ' + labno + '</h3>');
-                        // Construct the URL with labno parameter
-                        let url = 'lab_status.php?labno=' + labno;
-
-                        // Redirect to the constructed URL
-                        window.location.href = url;
-                    }
-                });
-
-                $('#tab-screening, #tab-final-screening, #tab-status').on('click', function() {
-                    let labno = $('#labno').val();
-                    if (labno) {
-                        $('#lookuplabno').html('<h3 class="semi-bold">Lookup Current Status for Lab No: ' + labno + '</h3>');
-                        // Construct the URL with labno parameter
-                        let url = 'lab_status.php?labno=' + labno;
-
-                        // Redirect to the constructed URL
-                        window.location.href = url;
-                    }
-                });
-            });
-        </script> -->
         
         <script>
             $(document).ready(function() {
@@ -2551,33 +2913,33 @@ switch (true) {
             }
 
             // Function to toggle the status tab (if needed for active/inactive state)
-            function toggleStatusTab() {
-                        var statusTab = document.getElementById('status');
-                        var statusButton = document.getElementById('tab-status');
+            // function toggleStatusTab() {
+            //             var statusTab = document.getElementById('status');
+            //             var statusButton = document.getElementById('tab-status');
                         
-                        if (statusTab.classList.contains('grayed-out')) {
-                            statusTab.classList.remove('grayed-out');
-                            statusButton.classList.remove('inactive');
-                            statusButton.classList.add('active');
-                        } else {
-                            statusTab.classList.add('grayed-out');
-                            statusButton.classList.add('inactive');
-                            statusButton.classList.remove('active');
-                        }
+            //             if (statusTab.classList.contains('grayed-out')) {
+            //                 statusTab.classList.remove('grayed-out');
+            //                 statusButton.classList.remove('inactive');
+            //                 statusButton.classList.add('active');
+            //             } else {
+            //                 statusTab.classList.add('grayed-out');
+            //                 statusButton.classList.add('inactive');
+            //                 statusButton.classList.remove('active');
+            //             }
                         
-                        // Show or hide the status tab content based on its state
-                        var isGrayedOut = statusTab.classList.contains('grayed-out');
-                        var rows = document.querySelectorAll('#status-table-body .status-row');
+            //             // Show or hide the status tab content based on its state
+            //             var isGrayedOut = statusTab.classList.contains('grayed-out');
+            //             var rows = document.querySelectorAll('#status-table-body .status-row');
                         
-                        rows.forEach(function(row, index) {
-                            if (isGrayedOut && index < rows.length - 2) {
-                                row.classList.add('hidden');
-                            } else {
-                                row.classList.remove('hidden');
-                            }
-                        });
+            //             rows.forEach(function(row, index) {
+            //                 if (isGrayedOut && index < rows.length - 2) {
+            //                     row.classList.add('hidden');
+            //                 } else {
+            //                     row.classList.remove('hidden');
+            //                 }
+            //             });
                         
-            }
+            // }
 
             function loadPreliminaryReport() {
                 var labNumber = "<?php echo htmlspecialchars('HPL' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
@@ -2590,7 +2952,264 @@ switch (true) {
                 // Hide the status section when the report is shown
                 document.getElementById('status').style.display = 'none';
             }
+
+             // Automatically load preliminary report on page load
+
+             document.addEventListener('DOMContentLoaded', loadPreliminaryReport);
         </script>
+
+
+<!-- Clinical Details -->
+<script>
+
+    // Clinical Details
+    document.addEventListener('keydown', function(event) {
+        // Check for Ctrl + S (or Command + S on Mac)
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault(); // Prevent default behavior of Enter key
+            var updateBtn = document.getElementById("updateBtn");
+            var saveBtn = document.getElementById("saveBtn");
+                if (updateBtn.style.display === "inline-block") {
+                    updateBtn.click();
+                } else {
+                    saveBtn.click();
+                } 
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Fetch existing clinical details using AJAX when the page loads
+        fetchExistingClinicalDetails();
+
+        function fetchExistingClinicalDetails() {
+            // Get the lab number from the hidden input field
+            var labNumber = document.getElementById("labNumberInput").value;
+
+            // Make an AJAX request to fetch existing clinical details
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "../transcription/get_clinical_details.php?lab_number=" + labNumber, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Parse the JSON response
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Populate the textarea with existing clinical details
+                        document.getElementById("clinicalDetailsTextarea").value = response.data.clinical_details;
+                        // Toggle visibility of Save and Update buttons based on whether data exists
+                        if (response.data.clinical_details) {
+                            document.getElementById("saveBtn").style.display = "none";
+                            document.getElementById("updateBtn").style.display = "inline-block";
+                        } else {
+                            document.getElementById("saveBtn").style.display = "inline-block";
+                            document.getElementById("updateBtn").style.display = "none";
+                        }
+                    } else {
+                        console.error("Error fetching existing clinical details:", response.error);
+                    }
+                }
+            };
+            xhr.send();
+        }
+    });
+</script>
+
+
+<!-- Micro Description Update  -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    // Micro Description Update 
+
+    document.addEventListener('keydown', function(event) {
+            // Check for Ctrl + S (or Command + S on Mac)
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault(); // Prevent default behavior of Enter key
+                document.getElementById('micro-button').click(); // Submit the form 
+            }
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                    let wordEnd = cursorPosition;
+
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function(event) {
+                        if (event.key === 'Insert') { // Insert key
+                            let cursorPosition = this.selectionStart;
+                            handleShortcutInput(this, cursorPosition);
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all Quill editors
+        <?php foreach ($existingMicroDescriptions as $key => $existingDescription): ?>
+            var quillEditor<?php echo $key; ?> = new Quill('#quill-editor-<?php echo $key; ?>', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']
+                    ]
+                }
+            });
+
+            // Set the initial content from hidden textarea
+            var hiddenTextarea<?php echo $key; ?> = document.getElementById('hidden_description<?php echo $key; ?>');
+            quillEditor<?php echo $key; ?>.root.innerHTML = hiddenTextarea<?php echo $key; ?>.value;
+
+            // Update hidden textarea when editor content changes
+            quillEditor<?php echo $key; ?>.on('text-change', function() {
+                hiddenTextarea<?php echo $key; ?>.value = quillEditor<?php echo $key; ?>.root.innerHTML;
+            });
+        <?php endforeach; ?>
+
+        // Update your form submission handler
+        document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                
+                // Update all hidden textareas before submission
+                var formId = this.id;
+                var key = formId.replace('microDescriptionForm', '');
+                var quillEditor = new Quill('#quill-editor-' + key);
+                document.getElementById('hidden_description' + key).value = quillEditor.root.innerHTML;
+
+                const formData = new FormData(this);
+                
+                fetch("../transcription/preliminary_report/hpl/update_micro_descriptions.php", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+            });
+        });
+    });
+</script>
+
+<!-- Diagnosis Description -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Ctrl+S to submit the form globally
+        document.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                event.preventDefault();
+                document.getElementById('diagnosisDescriptionSaveButton').click();
+            }
+        });
+
+        // Load and handle text shortcuts
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                    let wordEnd = cursorPosition;
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function (event) {
+                        if (event.key === 'Insert') {
+                            let cursorPosition = this.selectionStart;
+                            handleShortcutInput(this, cursorPosition);
+                        }
+
+                        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                            event.preventDefault();
+                            this.closest('form').submit();
+                        }
+                    });
+                });
+            })
+            .catch(error => console.error('Error loading shortcuts:', error));
+
+        // Initialize Quill editors and set their content
+        <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+            var descEditor<?= $index ?> = new Quill('#diagnosis-quill-editor-<?= $index ?>', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        
+                    ]
+                }
+            });
+
+            var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        
+                    ]
+                }
+            });
+
+            // Set unique content for each editor
+            descEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['description'] ?? '') ?>;
+            commentEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['comment'] ?? '') ?>;
+        <?php endforeach; ?>
+
+        // Handle form submission
+        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Update hidden fields with Quill content before submitting
+            <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+                document.getElementById('diagnosis-textarea-<?= $index ?>').value =
+                    descEditor<?= $index ?>.root.innerHTML;
+                document.getElementById('comment-textarea-<?= $index ?>').value =
+                    commentEditor<?= $index ?>.root.innerHTML;
+            <?php endforeach; ?>
+
+            const formData = new FormData(this);
+
+            fetch("../transcription/preliminary_report/hpl/update_diagnosis_descriptions.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
+        });
+    });
+</script>
+
+
 
 </body>
 </html>
