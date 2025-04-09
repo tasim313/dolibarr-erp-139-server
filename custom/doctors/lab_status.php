@@ -558,7 +558,7 @@ switch (true) {
 
 <a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
     <button style="border:none; background-color: white; color: black;">
-            <i class="fas fa-edit" aria-hidden="true"></i> Final Report Edit
+            <i></i> Final Report Edit
     </button>
 </a>&ensp;&ensp;&ensp;&ensp;
 
@@ -622,7 +622,7 @@ switch (true) {
                             <?php endif; ?>
                              
                             <button class="small-button" id="preliminary_report_edit"  onclick="openTab(event, 'Preliminary-Report-Edit')">
-                                <i class="fa fa-edit" style="font-size: 18px; vertical-align: middle;">
+                                <i class="fas fa-edit" aria-hidden="true" style="font-size: 18px; vertical-align: middle;">
                                 <span class="button-text" style="font-size: 18px; vertical-align: middle;">Edit</span>
                                 </i>
                             </button>
@@ -643,32 +643,38 @@ switch (true) {
                         
                             <button class="small-button" onclick="openTab(event, 'Final-Screening-Study')">
                             <i class="fas fa-book" style="font-size: 18px; vertical-align: middle;">
-                            <span class="button-text">Study / History</span>
+                            <span class="button-text" style="font-size: 18px; vertical-align: middle;">Study / History</span>
                             </i></button>
                         
                             <button class="small-button" onclick="openTab(event, 'Final-Screening-LabInstructions')">
                             <i class="fas fa-flask" style="font-size: 18px; vertical-align: middle;">
-                            <span class="button-text">Lab Instructions</span>
+                            <span class="button-text" style="font-size: 18px; vertical-align: middle;">Lab Instructions</span>
                             </i></button> 
                         
                             <button class="small-button" onclick="openTab(event, 'Final-Screening-GrossInstructions')">
                             <i class="fas fa-cut" style="font-size: 18px; vertical-align: middle;">
-                            <span class="button-text">Gross Instructions</span>
+                            <span class="button-text" style="font-size: 18px; vertical-align: middle;">Gross Instructions</span>
                             </i></button>
                         
-                        <?php if ($showBoneSlideReady): ?>
-                               
-                                    <button class="small-button" id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
-                                        <i class="fas fa-bone vertical-icon" style="font-size: 18px; vertical-align: middle;">
-                                            <span class="button-text">Bone Status</span>
-                                        </i>
-                                    </button>
+                            <?php if ($showBoneSlideReady): ?>
                                 
-                        <?php endif; ?>
+                                        <button class="small-button" id="screening_bones_ready" onclick="openTab(event, 'ScreeningBoneRelatedInstructions')">
+                                            <i class="fas fa-bone vertical-icon" style="font-size: 18px; vertical-align: middle;">
+                                                <span class="button-text" style="font-size: 18px; vertical-align: middle;">Bone Status</span>
+                                            </i>
+                                        </button>
+                                    
+                            <?php endif; ?>
+
+                            <button class="small-button" onclick="openTab(event, 'Final-Report-Edit')">
+                            <i  class="fas fa-edit" aria-hidden="true" style="font-size: 18px; vertical-align: middle;">
+                            <span class="button-text" style="font-size: 18px; vertical-align: middle;">Edit</span>
+                            </i></button>
+                        
                        
                             <button class="small-button" id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
                                 <i class="fas fa-check" style="font-size: 18px; vertical-align: middle;">
-                                <span class="button-text">Report Issued</span>
+                                <span class="button-text" style="font-size: 18px; vertical-align: middle;">Report Issued</span>
                             </i></button>
                        
                         </ul>
@@ -1638,6 +1644,208 @@ switch (true) {
                 <div id="Final-Screening-Done" class="tabcontent_1">
                     <p>Final Report Issued</p>
                 </div>
+
+                <div id="Final-Report-Edit" class="tabcontent_1">
+                        <div id="FinalForm">
+                            <div class="form-group">
+                                <label>Select the Editing Section</label>
+                                <div class="option-list">
+                                    <div class="option-item" style="border:none" data-value="Final Clinical Details">Clinical Details</div>
+                                    <div class="option-item" style="border:none" data-value="Final Site Of Specimen">Site Of Specimen</div>
+                                    
+                                    <div class="option-item" style="border:none" data-value="Final Microscopic">Microscopic</div>
+                                    <div class="option-item" style="border:none" data-value="Final Diagnosis">Diagnosis</div>
+                                </div>
+                                <input type="hidden" id="selectedOption" name="selectedOption">
+                            </div>
+                        </div>
+
+                        <div id="final-clinical-details-form" class="form-container" style="display:none;">
+                                <form id='clinicalDetailsForm' method='post' action='../transcription/clinical_details.php'>
+                                    <div class='form-group'>
+                                        <h2 class='heading'>Clinical Details</h2>
+                                            <div class='controls'>
+                                                <textarea id='clinicalDetailsTextarea' name='clinical_details' cols='60' rows='2'></textarea>
+                                                <input type='hidden' id='labNumberInput' name='lab_number' value='<?php echo htmlspecialchars($LabNumberWithPrefix); ?>'>
+                                                <input type='hidden' id='createdUserInput' name='created_user' value='<?php echo htmlspecialchars($loggedInUsername); ?>'>
+                                            </div>
+                                            <div class='grid'>
+                                                <button style='background-color: rgb(118, 145, 225);
+                                                color: white;
+                                                padding: 12px 20px;
+                                                border: none;
+                                                border-radius: 4px;
+                                                cursor: pointer;
+                                                float: right;
+                                                transition: box-shadow 0.3s ease;' id='saveBtn' type='submit'>Save</button>
+                                                <button id='updateBtn' type='submit' style='display: none;'>Update</button>
+                                            </div>  
+                                    </div>
+                                </form>
+                        </div>
+
+                        <div id="final-site-of-specimen-form" class="form-container" style="display:none;">
+                                <?php 
+                                    print('<form method="post" action="../transcription/specimen_update.php?lab_number=' . htmlspecialchars($LabNumber, ENT_QUOTES, 'UTF-8') . '">'); 
+                                ?>
+                                <div class="container mt-4">
+                                    <div class="form-group">
+                                        <h4 class="mb-3">Site of Specimen</h4>
+
+                                        <?php foreach ($specimenIformation as $list): ?>
+                                            <div class="form-row align-items-center mb-3">
+                                                <div class="col">
+                                                    <input type="text" class="form-control" name="new_description[]" value="<?php echo htmlspecialchars($list['specimen'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Enter specimen description">
+                                                    <input type="hidden" name="specimen_rowid[]" value="<?php echo htmlspecialchars($list['specimen_rowid'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+
+                                        <div class="form-group text-right mt-4">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save mr-1"></i> Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php print('</form>'); ?>
+                        </div>
+
+                        <div id="final-microscopic-form" class="form-container" style="display:none;">
+                               <?php 
+                                    $existingFinalMicroDescriptions = getExistingMicroDescriptions($LabNumberWithPrefix);
+                                    $specimens_list = get_gross_specimens_list($LabNumber);
+
+                                    // Ensure $existingMicroDescriptions is an array
+                                    if (!is_array($existingFinalMicroDescriptions)) {
+                                        $existingFinalMicroDescriptions = array();
+                                    }
+                                    echo '<h2 class="heading">Microscopic Description</h2>';
+                                    if (empty($existingFinalMicroDescriptions)) {
+                                        echo('<a href="insert/micro_description_create.php?fk_gross_id=' . htmlspecialchars($fk_gross_id) . ' & user='.$loggedInUsername.'">
+                                        <button type="button" class="btn btn-primary">Create</button></a>');
+                                    }else{
+                                        ?>
+
+                                            <?php foreach ($existingFinalMicroDescriptions as $key => $existingDescription): 
+                                                $formId = 'finalMicroDescriptionForm' . $key;
+                                            ?>
+                                                <form action="" id="<?php echo $formId; ?>" class="micro-description-form">
+                                                    <div class="form-group">
+                                                        <label for="finalSpecimen-<?php echo $key; ?>" class="bold-label"></label>
+                                                        <textarea class="specimen-textarea" id="finalSpecimen-<?php echo $key; ?>" name="final_specimen[]" readonly style="border:none"><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
+
+                                                        <!-- Quill Editor -->
+                                                        <div id="final-quill-editor-<?php echo $key; ?>" class="editor"></div>
+
+                                                        <!-- Hidden textarea to store Quill content -->
+                                                        <textarea style="display:none;" id="final_hidden_description<?php echo $key; ?>" name="final_description[]" data-index="<?php echo $key; ?>">
+                                                            <?php 
+                                                                $micro_pre_define_text = trim("Sections Show");
+                                                                $descriptionValue = !empty($existingDescription['description']) ? htmlspecialchars($existingDescription['description']) : $micro_pre_define_text;
+                                                                echo $descriptionValue; 
+                                                            ?>
+                                                        </textarea>
+
+                                                        <!-- Hidden input fields -->
+                                                        <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($existingDescription['fk_gross_id']); ?>">
+                                                        <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($existingDescription['created_user']); ?>">
+                                                        <input type="hidden" name="status[]" value="<?php echo htmlspecialchars($existingDescription['status']); ?>">
+                                                        <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
+                                                        <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">
+                                                    </div>
+                                                    <div class="grid">
+                                                        <button type="submit" class="btn btn-primary">Save</button><br><br><br>
+                                                    </div>
+                                                </form>
+                                            <?php endforeach; ?>
+
+                                      
+                                        <?php
+                                    }
+                               ?>
+                        </div>
+
+                        <div id="final-diagnosis-form" class="form-container" style="display:none;">
+                            <?php
+                                $existingFinalDiagnosisDescriptions = getExistingDiagnosisDescriptions($LabNumberWithPrefix);
+                                $specimens_list = get_gross_specimens_list($LabNumber);
+
+                                // Ensure $existingFinalDiagnosisDescriptions is an array
+                                if (!is_array($existingFinalDiagnosisDescriptions)) {
+                                    $existinFinalgDiagnosisDescriptions = array();
+                                }
+
+                                echo '<h2 class="heading">Diagnosis Description</h2>';
+                                if(empty($existingFinalDiagnosisDescriptions)){
+                                    echo('<a href="insert/micro_description_create.php?fk_gross_id=' . htmlspecialchars($fk_gross_id) . ' & user='.$loggedInUsername.'">
+                                    <button type="button" class="btn btn-primary">Create</button></a>');
+                                }else{
+                                    echo '<form action="" id="diagnosisFinalDescriptionForm" method="POST">';
+
+                                    foreach ($existingFinalDiagnosisDescriptions as $index => $specimen) {
+                                        $description = $specimen['description'] ?? '';
+                                        $title = $specimen['title'] ?? '';
+                                        $comment = $specimen['comment'] ?? '';
+                                        $fk_gross_id = $specimen['fk_gross_id'] ?? '';
+                                        $created_user = $specimen['created_user'] ?? '';
+                                        $status = $specimen['status'] ?? '';
+                                        $lab_number = $specimen['lab_number'] ?? '';
+                                        $row_id = $specimen['row_id'] ?? '';
+
+                                        echo '<div class="form-group row">';
+                                        echo '<label class="col-md-2 col-form-label text-md-right">Specimen</label>';
+                                        echo '<div class="col-md-10">';
+                                        echo '<input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>';
+                                        echo '<input type="text" class="form-control-plaintext" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" readonly>';
+                                        echo '</div></div>';
+
+                                        // Title
+                                        echo '<div class="form-group row">';
+                                        echo '<label class="col-md-2 col-form-label text-md-right">Title</label>';
+                                        echo '<div class="col-md-10">';
+                                        $titleValue = !empty($title) ? htmlspecialchars($title) : 'biopsy';
+                                        echo '<input type="text" class="form-control" name="title[]" value="' . $titleValue . '">';
+                                        echo '</div></div>';
+
+                                        // Description
+                                        echo '<div class="form-group row">';
+                                        echo '<label class="col-md-2 col-form-label text-md-right">Description</label>';
+                                        echo '<div class="col-md-10">';
+                                        echo '<div id="final-diagnosis-quill-editor-' . $index . '" class="editor border"></div>';
+                                        echo '<textarea name="description[]" id="final-diagnosis-textarea-' . $index . '" class="d-none">' . htmlspecialchars($description) . '</textarea>';
+                                        echo '</div></div>';
+
+                                        // Comment
+                                        echo '<div class="form-group row">';
+                                        echo '<label class="col-md-2 col-form-label text-md-right">Comment</label>';
+                                        echo '<div class="col-md-10">';
+                                        echo '<div id="final-comment-quill-editor-' . $index . '" class="editor border"></div>';
+                                        echo '<textarea name="comment[]" id="final-comment-textarea-' . $index . '" class="d-none">' . htmlspecialchars($comment) . '</textarea>';
+                                        echo '</div></div><br><br>';
+
+                                        echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
+                                        echo '<input type="hidden" name="created_user[]" value="' . htmlspecialchars($created_user) . '">';
+                                        echo '<input type="hidden" name="status[]" value="' . htmlspecialchars($status) . '">';
+                                        echo '<input type="hidden" name="lab_number[]" value="' . htmlspecialchars($lab_number) . '">';
+                                        echo '<input type="hidden" name="row_id[]" value="' . htmlspecialchars($row_id) . '">';
+                                    }
+
+                                    // Submit button
+                                    echo '<div class="form-group row">';
+                                    echo '<div class="col-md-10 offset-md-2">';
+                                    echo '<button type="submit" id="diagnosisDescriptionSaveButton" class="btn btn-primary">Save</button>';
+                                    echo '</div></div>';
+
+                                    echo '</form>';
+
+
+                                }
+                            ?>
+                        </div>
+                </div>
+
+                
     </div>
 
     <!-- Middle Panel: PDF View -->
@@ -3674,6 +3882,196 @@ switch (true) {
             
             // Update the hidden input with the selected value
             document.getElementById('selectedOption').value = this.textContent;
+        });
+    });
+</script>
+
+
+<!-- Final MicroScopic Description Update -->
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+            // Load abbreviation shortcuts
+            fetch('shortcuts.json')
+                .then(response => response.json())
+                .then(shortcuts => {
+                    function handleShortcutInput(inputElement, cursorPosition) {
+                        let text = inputElement.value;
+                        let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                        let wordEnd = cursorPosition;
+                        let word = text.substring(wordStart, wordEnd).trim();
+                        if (shortcuts[word]) {
+                            inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                            inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                        }
+                    }
+
+                    document.querySelectorAll('textarea').forEach(textarea => {
+                        textarea.addEventListener('keydown', function(event) {
+                            if (event.key === 'Insert') {
+                                let cursorPosition = this.selectionStart;
+                                handleShortcutInput(this, cursorPosition);
+                            }
+                        });
+                    });
+                })
+                .catch(error => console.error('Error loading shortcuts:', error));
+
+            // Handle form submission
+            document.querySelectorAll("form[id^='finalMicroDescriptionForm']").forEach(function(form) {
+                form.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(this);
+
+                    document.querySelectorAll(`#${this.id} [data-field] textarea`).forEach(textarea => {
+                        formData.append(textarea.name, textarea.value);
+                    });
+
+                    fetch("insert/update_micro_descriptions.php", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                    });
+                });
+            });
+
+            // Initialize Quill editors
+            <?php foreach ($existingFinalMicroDescriptions as $key => $existingDescription): ?>
+                var finalQuillEditor<?php echo $key; ?> = new Quill('#final-quill-editor-<?php echo $key; ?>', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: []  // Optional toolbar
+                    }
+                });
+
+                var hiddenFinalTextarea<?php echo $key; ?> = document.querySelector('#final_hidden_description<?php echo $key; ?>');
+                finalQuillEditor<?php echo $key; ?>.root.innerHTML = hiddenFinalTextarea<?php echo $key; ?>.value;
+
+                finalQuillEditor<?php echo $key; ?>.on('text-change', function() {
+                    hiddenFinalTextarea<?php echo $key; ?>.value = finalQuillEditor<?php echo $key; ?>.root.innerHTML;
+                });
+
+                finalQuillEditor<?php echo $key; ?>.root.addEventListener('keyup', function(event) {
+                    if (event.key === ' ') {
+                        replaceAbbreviation(finalQuillEditor<?php echo $key; ?>, abbreviations);
+                    }
+                });
+            <?php endforeach; ?>
+
+            // Abbreviation replacement logic
+            function replaceAbbreviation(quillEditor, abbreviations) {
+                var selection = quillEditor.getSelection();
+                if (!selection) return;
+                var textBeforeCursor = quillEditor.getText(0, selection.index);
+                var lastWordMatch = textBeforeCursor.match(/(\S+)\s*$/);
+                if (!lastWordMatch) return;
+                var lastWord = lastWordMatch[1];
+                var abbrevLower = lastWord.toLowerCase();
+
+                for (var abbr in abbreviations) {
+                    if (abbr.toLowerCase() === abbrevLower) {
+                        replaceLastWordWithAbbreviation(quillEditor, lastWord, abbreviations[abbr], selection.index);
+                        break;
+                    }
+                }
+            }
+
+            function replaceLastWordWithAbbreviation(editor, word, fullText, caretPos) {
+                const text = editor.getText();
+                const before = text.substring(0, caretPos);
+                const startOfWord = before.lastIndexOf(word);
+                editor.deleteText(startOfWord, word.length);
+                editor.insertText(startOfWord, fullText.trim(), 'user');
+                editor.setSelection(startOfWord + fullText.length, 0);
+            }
+    });
+
+</script>
+
+
+<!-- Final Diagnosis Description Update -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('shortcuts.json')
+            .then(response => response.json())
+            .then(shortcuts => {
+                function handleShortcutInput(inputElement, cursorPosition) {
+                    let text = inputElement.value;
+                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                    let wordEnd = cursorPosition;
+                    let word = text.substring(wordStart, wordEnd).trim();
+
+                    if (shortcuts[word]) {
+                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                    }
+                }
+
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.addEventListener('keydown', function (event) {
+                        if (event.key === 'Insert') {
+                            handleShortcutInput(this, this.selectionStart);
+                        }
+                        if (event.ctrlKey && event.key === 's') {
+                            event.preventDefault();
+                            this.closest('form').submit();
+                        }
+                    });
+                });
+            });
+
+        // Initialize all Quill editors
+        const editors = [];
+        document.querySelectorAll("[id^='final-diagnosis-quill-editor-']").forEach((editorDiv, index) => {
+            const quill = new Quill(editorDiv, {
+                theme: 'snow',
+                // modules: {
+                //     toolbar: []  // Customize toolbar if needed
+                // }
+            });
+            const textarea = document.getElementById(`final-diagnosis-textarea-${index}`);
+            quill.root.innerHTML = textarea.value;
+            editors.push({ quill, textarea });
+        });
+
+        document.querySelectorAll("[id^='final-comment-quill-editor-']").forEach((editorDiv, index) => {
+            const quill = new Quill(editorDiv, {
+                theme: 'snow',
+                // modules: {
+                //     toolbar: []  // Customize toolbar if needed
+                // }
+            });
+            const textarea = document.getElementById(`final-comment-textarea-${index}`);
+            quill.root.innerHTML = textarea.value;
+            editors.push({ quill, textarea });
+        });
+
+        // Sync Quill data to textarea before submitting
+        document.getElementById("diagnosisFinalDescriptionForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            editors.forEach(({ quill, textarea }) => {
+                textarea.value = quill.root.innerHTML;
+            });
+
+            const formData = new FormData(this);
+
+            fetch("insert/update_diagnosis_descriptions.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                });
         });
     });
 </script>
