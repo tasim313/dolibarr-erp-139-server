@@ -104,6 +104,37 @@ if ($dpr_result && pg_num_rows($dpr_result) > 0) {
     exit;
 }
 
+// Check for Preliminary Report logic
+$preliminary_report = preliminary_report_release($lab_number);
+$preliminary_report_ready = preliminary_report_ready_in_dispatch_centers($lab_number);
+
+$fk_status_id = null;
+
+if ($preliminary_report && !$preliminary_report_ready) {
+    $fk_status_id = 70;
+} elseif ($preliminary_report && $preliminary_report_ready) {
+    $fk_status_id = 11;
+}
+
+if ($fk_status_id) {
+    $exists_sql = "SELECT 1 FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = $2";
+    $exists_result = pg_query_params($pg_con, $exists_sql, [$lab_number, $fk_status_id]);
+
+    if ($exists_result && pg_num_rows($exists_result) > 0) {
+        echo "<script>alert('Status already exists for Preliminary Report.'); window.history.back();</script>";
+        pg_close($pg_con); exit;
+    }
+
+    $insert_sql = "INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id) VALUES ($1, $2, $3)";
+    $insert_result = pg_query_params($pg_con, $insert_sql, [$lab_number, $user_id, $fk_status_id]);
+
+    if ($insert_result) {
+        echo "<script>alert('Inserted successfully for Preliminary Report.'); window.history.back();</script>";
+    } else {
+        echo "<script>alert('Preliminary insert failed: " . htmlspecialchars(pg_last_error($pg_con)) . "'); window.history.back();</script>";
+    }
+    pg_close($pg_con); exit;
+}
 
 // Get the current status of the lab number
 $summary_data = get_summary_list($lab_number);

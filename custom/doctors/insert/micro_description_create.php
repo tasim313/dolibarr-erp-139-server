@@ -1,6 +1,6 @@
 <?php 
 include("connection.php");
-include('../grossmodule/gross_common_function.php');
+include('../../grossmodule/gross_common_function.php');
 
 $fk_gross_id = $_GET['fk_gross_id'];
 $loggedInUsername = $_GET['user'];

@@ -541,40 +541,56 @@ switch (true) {
 </head>
 <body>
 
-<a href="doctorsindex.php">
-    <button style="border:none; background-color: white; color: black;">
+<div class="d-flex align-items-center flex-wrap" style="gap: 20px;">
+
+    <!-- Doctors Home -->
+    <a href="doctorsindex.php" class="btn btn-link text-dark p-0">
         <i class="fas fa-home" aria-hidden="true"></i> Doctors
-    </button>
-</a>
-&nbsp; &nbsp; &nbsp; &nbsp; 
-<form name="readlabno" id="readlabno" action="">
-    <label for="labno">Lab No:</label>
-    <input type="text" id="labno" name="labno" autofocus>
-</form>
+    </a>
 
-<button style="border:none; background-color: white; color: black;" onclick="loadReport()">
+    <!-- Lab No Form -->
+    <form name="readlabno" id="readlabno" action="" class="d-flex align-items-center">
+        <label for="labno" class="mb-0 me-2">Lab No:</label>
+        <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
+    </form>
+
+    <!-- Final Report Button -->
+    <button class="btn btn-link text-dark p-0" onclick="loadReport()">
         <i class="fas fa-file-alt" aria-hidden="true"></i> Final Report
-</button>
-
-<a href="../transcription/transcription.php?lab_number=<?php echo 'HPL' . $LabNumber; ?>">
-    <button style="border:none; background-color: white; color: black;">
-            <i></i> Final Report Edit
     </button>
-</a>&ensp;&ensp;&ensp;&ensp;
 
-<button style="border:none; background-color: white; color: black;" onclick="loadPreliminaryReport()">
-    <i class="fas fa-file-alt" aria-hidden="true"></i> Preliminary Report
-</button>
-
-<a href="../transcription/preliminary_report/hpl/index.php?LabNumber=<?php echo 'HPL' . $LabNumber; ?>">
-    <button style="border:none; background-color: white; color: black;">
-            <i class="fas fa-edit" aria-hidden="true"></i> Preliminary Report Edit
+    <!-- Preliminary Report Button -->
+    <button class="btn btn-link text-dark p-0" onclick="loadPreliminaryReport()">
+        <i class="fas fa-file-alt" aria-hidden="true"></i> Preliminary Report
     </button>
-</a>&ensp;&ensp;&ensp;&ensp;
 
-<button style="border:none; font-size: 20px;" id="tab-status" data-toggle="modal" data-target="#exampleModalCenter">
-<i class="fa fa-search" aria-hidden="true"></i>Status</button>
+    <!-- Status Button -->
+    <button style="border:none; font-size: 20px;" id="tab-status" data-toggle="modal" data-target="#exampleModalCenter">
+        <i class="fa fa-search" aria-hidden="true"></i> Status
+    </button>&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
 
+    <!-- Preliminary Report Section -->
+    <?php 
+     $preliminary_report = preliminary_report__release_doctor_module($LabNumber)
+    ?>
+    <?php if (!empty($preliminary_report) && is_array($preliminary_report)): ?>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            <?php 
+            $final_report = final_report__release_doctor_module($LabNumber);
+            if (!$final_report):  // Show button only if $final_report is false/null/empty
+            ?>
+                <button type="button" class="btn btn-danger">Preliminary Report Released</button>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+            <label for="preliminary_datetime" class="mb-0">For Final Report Collect Date & Time:</label>
+            <input type="datetime-local" id="preliminary_datetime" class="form-control form-control-sm" style="width: 250px;" required>
+            <button id="preliminary_report_release" type="button" class="btn btn-primary" style="display: none;">Preliminary Report Release</button>
+        </div>
+    <?php endif; ?>
+
+</div>
 
 
 <div class="container-fluid">
@@ -1652,7 +1668,7 @@ switch (true) {
                                 <div class="option-list">
                                     <div class="option-item" style="border:none" data-value="Final Clinical Details">Clinical Details</div>
                                     <div class="option-item" style="border:none" data-value="Final Site Of Specimen">Site Of Specimen</div>
-                                    
+                                    <!-- <div class="option-item" style="border:none" data-value="Final Gross">Gross</div> -->
                                     <div class="option-item" style="border:none" data-value="Final Microscopic">Microscopic</div>
                                     <div class="option-item" style="border:none" data-value="Final Diagnosis">Diagnosis</div>
                                 </div>
@@ -1710,6 +1726,129 @@ switch (true) {
                                 </div>
                                 <?php print('</form>'); ?>
                         </div>
+
+                        <div id="final-gross-form" class="form-container" style="display:none;">
+                            <?php
+
+                                $specimens = get_gross_specimen_description($fk_gross_id);
+
+                                print('<form method="post" action="../transcription/update_gross_specimens.php">');
+                                foreach ($specimens as $index => $specimen) {
+                                    echo '<div class="form-group row">';
+                                    
+                                    echo '<label for="specimen" class="col-sm-12 col-form-label" style="white-space: nowrap;">' . htmlspecialchars($specimen['specimen']) . '</label>';
+                                    
+                                    echo '<div class="col-sm-10">';
+                                    echo '<input type="hidden" name="specimen_id[]" value="' . htmlspecialchars($specimen['specimen_id']) . '" readonly>';
+                                    echo '</div>';
+                                    echo '<div class="col-sm-10">';
+                                    echo '<input type="hidden" name="specimen[]" value="' . htmlspecialchars($specimen['specimen']) . '" readonly>';
+                                    echo '</div>';
+                                    echo '</div>';
+                                    echo '<div class="form-group row">';
+                                    
+                                    echo '<label for="gross_description" class="col-sm-2 col-form-label">Gross Description</label>';
+                                
+                                    echo '<div class="col-sm-10">';
+                                    echo '<div id="editor_' . $index . '" class="editor"></div>';
+                                    echo '<textarea name="gross_description[]" id="hidden_gross_description_' . $index . '" style="display:none;">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
+                                    echo '</div>';
+                                    echo '</div><br>';
+                                    echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
+                                }
+                                echo '<input class="btn btn-primary" type="submit" value="Save">';
+                                echo '</form><br>';
+
+
+                                $sections = get_gross_specimen_section($fk_gross_id);
+                                $specimen_count_value = number_of_specimen($fk_gross_id);
+                                $alphabet_string = numberToAlphabet($specimen_count_value); 
+                                print("<div class='container'>");
+
+                                for ($i = 1; $i <= $specimen_count_value; $i++) {
+                                    $specimenLetter = chr($i + 64); 
+                                    $button_id =  "add-more-" . $i ;
+                                    echo '<label for="specimen' . $i . '">Specimen ' . $specimenLetter . ': </label>';
+                                    echo '<button class="btn btn-primary" type="submit" id="' . $button_id . '" data-specimen-letter="' . $specimenLetter . '" onclick="handleButtonClick(this)">Generate Section Codes</button>';
+                                    echo '<br><br>';
+                                }
+                                print('<form id="specimen_section_form" method="post" action="../transcription/gross_specimen_section_generate.php">
+                                        <div id="fields-container"> 
+                                        </div>
+                                        <br>
+                                        <button class="btn btn-primary" id="saveButton">Save</button>
+                                </form>');
+                                print("</div><br>");
+
+
+                                // Print the form container
+                                print('<div >');
+                                // Begin the form
+                                print('<form id="section-code-form" method="post" action="../transcription/update_gross_specimen_section.php">');
+
+                                    // Start the table with headers
+                                    echo '<table class="table table-striped">';
+                                    echo '<thead>';
+                                    echo '<tr>';
+                                    echo '<th>Section Code</th>';
+                                    echo '<th>Description</th>';
+                                    echo '<th>Tissue</th>';
+                                    echo '<th>Bone Present</th>';
+                                    echo '</tr>';
+                                    echo '</thead>';
+
+                                // Table body
+                                echo '<tbody>';
+                                $i = 0;  // Initialize a counter for unique radio button names
+                                foreach ($sections as $section) {
+                                    echo '<tr>';
+                                    
+                                    // Section Code
+                                    echo '<td>' . htmlspecialchars($section['section_code']) . '</td>';
+                                    
+                                    // Description
+                                    echo '<td>';
+                                    echo '<textarea name="specimen_section_description[]" style="width:80%;">' . htmlspecialchars($section['specimen_section_description']) . '</textarea>';
+                                    echo '<input type="hidden" name="gross_specimen_section_Id[]" value="' . htmlspecialchars($section['gross_specimen_section_id']) . '">';
+                                    echo '<input type="hidden" name="sectionCode[]" value="' . htmlspecialchars($section['section_code']) . '" readonly>';
+                                    echo '</td>';
+                                    
+                                    // Tissue
+                                    echo '<td>';
+                                    echo '<input type="text" name="tissue[]" value="' . htmlspecialchars($section['tissue']) . '" style="width:30%;">';
+                                    echo '</td>';
+                                    
+                                    // Bone Present (Radio buttons)
+                                    echo '<td>';
+                                    $boneValue = htmlspecialchars($section['bone']);
+                                    $checkedYes = ($boneValue === 'yes') ? 'checked' : '';
+                                    $checkedNo = ($boneValue === 'no') ? 'checked' : '';
+
+                                    // Use the same name for the group, with [] for each entry
+                                    echo '<input type="radio" name="bone[' . $i . ']" value="yes" ' . $checkedYes . '> Yes ';
+                                    echo '<input type="radio" name="bone[' . $i . ']" value="no" ' . $checkedNo . '> No ';
+                                    echo '</td>';
+                                    
+                                    echo '</tr>';
+                                    $i++;  // Increment the counter for the next row
+                                }
+                                echo '</tbody>';
+                                echo '</table>';
+
+                                // Hidden field for fk_gross_id and submit button
+                                echo '<input type="hidden" name="fk_gross_id" value="' . htmlspecialchars($fk_gross_id) . '">';
+                                echo '<input type="submit" value="Save" class="btn btn-primary" style="margin-top: 15px;">';
+
+                                // End the form and container
+                                echo '</form>';
+                                print("</div>");
+                                print("<br>");
+                                print("<br>");
+                                echo '<div><br></div>';
+                                echo '<div><br></div>';
+                            ?>
+                        </div>
+
 
                         <div id="final-microscopic-form" class="form-container" style="display:none;">
                                <?php 
@@ -4076,6 +4215,65 @@ switch (true) {
     });
 </script>
 
+<!-- Preliminary Report Release information -->
+<script>
+    // Declare outside so it's accessible globally
+    const datetimeInput = document.getElementById("preliminary_datetime");
+    const releaseButton = document.getElementById("preliminary_report_release");
+
+    document.addEventListener("DOMContentLoaded", function() {
+        if (datetimeInput) {
+            datetimeInput.addEventListener("input", function () {
+                if (datetimeInput.value) {
+                    releaseButton.style.display = "inline-block";
+                } else {
+                    releaseButton.style.display = "none";
+                }
+            });
+        }
+    });
+
+    if (releaseButton) {
+        releaseButton.addEventListener('click', function () {
+            const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
+            const loggedInUserId = '<?php echo $loggedInUserId; ?>';
+            const selectedDatetime = datetimeInput?.value;
+
+            const value = {
+                'description': `Final Report available on ${selectedDatetime}`,
+                'fk_status_id': 69
+            };
+
+            if (labNumber && loggedInUserId) {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "insert/preliminary_report_release.php", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                const data = {
+                    labNumber: labNumber,
+                    loggedInUserId: loggedInUserId,
+                    selectedDatetime: selectedDatetime,
+                    values: value
+                };
+                console.log("Sending data:", data);
+                xhr.send(JSON.stringify(data));
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        console.log("Data saved successfully:", xhr.responseText);
+                        showSuccessMessage("Data saved successfully.");
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        console.error("Error saving data:", xhr.statusText);
+                    }
+                };
+            } else {
+                console.error("Lab number and User ID are required.");
+            }
+        });
+    }
+</script>
 
 
 </body>
