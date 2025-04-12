@@ -697,4 +697,110 @@ function cyto_diagnosis_doctor_module($lab_number) {
     }
 }
 
+
+function preliminary_report__release_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT * 
+        FROM llx_commande_trackws 
+        WHERE fk_status_id = '69' 
+          AND labno = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_preliminary_report_release_by_lab_number";
+
+    // Check if the statement has already been prepared
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: []; // Return empty array if no rows found
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+
+function final_report__release_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the lab number is not empty
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT * 
+        FROM llx_commande_trackws 
+        WHERE fk_status_id = '15' 
+          AND labno = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_final_report_release_by_lab_number";
+
+    // Check if the statement has already been prepared
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: []; // Return empty array if no rows found
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
