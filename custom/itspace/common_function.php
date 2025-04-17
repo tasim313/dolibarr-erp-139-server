@@ -146,6 +146,7 @@ function preliminary_report_ready_in_dispatch_centers($lab_number) {
         error_log('Query execution error: ' . pg_last_error($pg_con));
         return ['error' => 'An error occurred while executing the query.'];
     }
+    
 }
 
 ?>

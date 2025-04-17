@@ -50,6 +50,7 @@ $max = 5;
 $now = dol_now();
 
 
+
 /*
  * Actions
  */
@@ -84,6 +85,8 @@ $statuses = [];
 foreach ($lab_status as $status) {
     $statuses[$status['status_name']] = true;
 }
+
+
 
 print("
 <style>
@@ -301,12 +304,14 @@ echo '<div class="tab-container">
 print '</div><div class="fichetwothirdright">';
 
 
+
 $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 
 
 
 print '</div></div>';
+
 
 // End of page
 llxFooter();
