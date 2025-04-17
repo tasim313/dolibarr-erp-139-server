@@ -978,8 +978,8 @@ switch (true) {
                                 <form id='clinicalDetailsForm' method='post' action='../transcription/clinical_details.php'>
                                     <div class='form-group'>
                                         <h2 class='heading'>Clinical Details</h2>
-                                            <div class='controls'>
-                                                <textarea id='clinicalDetailsTextarea' name='clinical_details' cols='60' rows='2'></textarea>
+                                            <div class='controls form-group'>
+                                                <textarea id='clinicalDetailsTextarea' name='clinical_details' class="form-control" rows="4"></textarea>
                                                 <input type='hidden' id='labNumberInput' name='lab_number' value='<?php echo htmlspecialchars($LabNumberWithPrefix); ?>'>
                                                 <input type='hidden' id='createdUserInput' name='created_user' value='<?php echo htmlspecialchars($loggedInUsername); ?>'>
                                             </div>

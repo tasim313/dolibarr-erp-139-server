@@ -59,6 +59,9 @@ llxHeader("", $langs->trans("DeliveryPointArea"));
 
 print load_fiche_titre($langs->trans(""), '', '');
 
+$loggedInUsername = $user->login;
+$loggedInUserId = $user->id;
+
 $invoice_number = $_GET['search'];
 $invoice_value = get_invoice_list_delivery_point($invoice_number);
 
@@ -67,7 +70,14 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
 
 ?>
 
+<!-- Bootstrap CSS -->
 <link href="../bootstrap-3.4.1-dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+
+<!-- Bootstrap JS -->
+<script src="../bootstrap-3.4.1-dist/js/bootstrap.min.js"></script>
+
 
 
 <style>
@@ -102,6 +112,45 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
 
   .input-group .input-group-btn .btn:hover {
     background-color: #0056b3;
+  }
+
+  .popup {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+  }
+
+  .popup-content {
+      background-color: white;
+      margin: 15% auto;
+      padding: 20px;
+      width: 300px;
+      border-radius: 5px;
+  }
+
+  .popup-close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      top: 5px;
+      right: 10px;
+  }
+
+  .popup-close:hover,
+  .popup-close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+  }
+
+  .popup-body p {
+      margin-bottom: 10px;
   }
 </style>
 
@@ -173,11 +222,108 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
 </script>
 
 <script>
+    function initializePopupLogic() {
+        const cashRadio = document.getElementById('paymentCash');
+        const bkashRadio = document.getElementById('paymentBkash');
+        const bkashFields = document.getElementById('bkashFields');
+        const transactionInput = document.getElementById('transactionId');
+        const unpaidForm = document.getElementById('unpaidForm');
+
+        if (cashRadio && bkashRadio && bkashFields && transactionInput) {
+            function toggleBkashFields() {
+                if (bkashRadio.checked) {
+                    bkashFields.style.display = 'block';
+                    transactionInput.setAttribute('required', 'required');
+                } else {
+                    bkashFields.style.display = 'none';
+                    transactionInput.removeAttribute('required');
+                }
+            }
+
+            cashRadio.addEventListener('change', toggleBkashFields);
+            bkashRadio.addEventListener('change', toggleBkashFields);
+            toggleBkashFields(); // Initialize on load
+        }
+        
+        document.getElementById('unpaidsubmitbtn').addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Check form validity first
+            const unpaidForm = document.getElementById('unpaidForm');
+            if (!unpaidForm.checkValidity()) {
+                unpaidForm.reportValidity(); // Show validation UI
+                return; // Stop here, don't show the pop-up
+            }
+
+            // Get form data
+            const method = $('input[name="paymentMethod"]:checked').val();
+            const dueAmount = $('#dueAmount').val();
+            const transactionId = $('#transactionId').val();
+            const referenceNumber = $('#referenceNumber').val();
+
+            let previewHTML = `
+                <p><strong>Payment Method:</strong> ${method}</p>
+                <p><strong>Due Amount:</strong> ৳${parseFloat(dueAmount).toFixed(2)}</p>
+            `;
+
+            if (method === 'Bkash') {
+                previewHTML += `
+                    <p><strong>Transaction ID:</strong> ${transactionId}</p>
+                    <p><strong>Reference Number:</strong> ${referenceNumber}</p>
+                `;
+            }
+
+            // Show the details in the pop-up
+            document.getElementById('popupBody').innerHTML = previewHTML;
+            document.getElementById('popupMessage').style.display = 'block';
+
+            // Show the "Back" button
+            document.getElementById('popupBackBtn').style.display = 'inline-block';
+
+            // When the checkbox is checked, enable the submit button
+            document.getElementById('confirmCheckbox').addEventListener('change', function() {
+                const submitBtn = document.getElementById('popupSubmitBtn');
+                if (this.checked) {
+                    submitBtn.style.display = 'block';  // Show the submit button
+                } else {
+                    submitBtn.style.display = 'none';   // Hide the submit button if unchecked
+                }
+            });
+
+            // Handle Back button click
+            document.getElementById('popupBackBtn').onclick = function () {
+                document.getElementById('popupMessage').style.display = 'none'; // Close the pop-up
+            };
+        });
+
+        // Close the pop-up
+        document.getElementById('popupClose').onclick = function () {
+            document.getElementById('popupMessage').style.display = 'none'; // Close the pop-up
+        };
+
+        // Submit the form when the user confirms the details
+        document.getElementById('popupSubmitBtn').onclick = function () {
+            document.getElementById('popupMessage').style.display = 'none'; // Close the pop-up
+            setTimeout(() => {
+                document.getElementById('unpaidForm').submit();  // Submit the form after a brief delay
+            }, 500);
+        };
+    
+
+        
+
+    }
+</script>
+
+<script>
     document.addEventListener('DOMContentLoaded', function () {
         var phpInvoiceValue = <?php echo json_encode($invoice_value); ?>;
         const paymentData = <?php echo json_encode($payment_list, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
         var resultTab = document.getElementById('invoiceResultTab');
-
+        const loggedInUsername = '<?php echo $loggedInUsername; ?>';
+        const loggedInUserId = <?php echo $loggedInUserId; ?>;
+    
+    
         let globalLastEntry = null;
 
         window.globalLastEntry = null;
@@ -319,6 +465,7 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
 
                               let formHtml = '';
 
+                             
                               if (statusLower === 'unpaid') {
                                   formHtml = `
                                       <form id="unpaidForm" action="due_amount_collection.php" method="POST">
@@ -333,24 +480,49 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
                                                       <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBkash" value="Bkash" required>
                                                       <label class="form-check-label" for="paymentBkash">Bkash</label>
                                                   </div>
-                                                  <div class="form-check">
-                                                      <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBank" value="Bank Transfer" required>
-                                                      <label class="form-check-label" for="paymentBank">Bank Transfer</label>
-                                                  </div>
-                                                  <div class="form-check">
-                                                      <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCard" value="Credit Card" required>
-                                                      <label class="form-check-label" for="paymentCard">Credit Card</label>
-                                                  </div>
+                                                  
                                               </div>
+                                                    <!-- Bkash Extra Fields -->
+                                                    <div id="bkashFields" style="margin-top: 15px; display: none;">
+                                                        <div class="mb-3">
+                                                            <label for="transactionId" class="form-label">Transaction ID <span style="color:red;">*</span></label>
+                                                            <input type="text" class="form-control" id="transactionId" name="transactionId" required>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="referenceNumber" class="form-label">Reference Number</label>
+                                                            <input type="text" class="form-control" id="referenceNumber" name="referenceNumber">
+                                                        </div>
+                                                    </div>
                                           </div>
 
                                           <div class="mb-3">
-                                              <label for="dueAmount" class="form-label">Due Amount</label>
+                                              <label for="dueAmount" class="form-label">Due Amount<span style="color:red;">*</span></label>
                                               <input type="number" step="0.01" class="form-control" id="dueAmount" name="dueAmount" required />
                                               <input type="hidden" name="rowid" value="${lastEntry.invoice_rowid}">
+                                              <input type="hidden" name="ref" value="${lastEntry.invoice_ref}">
+                                              <input type="hidden" name="username" value="${loggedInUsername}">
+                                              <input type="hidden" name="userID" value="${loggedInUserId}">
                                           </div>
-                                          <button type="submit" class="btn btn-primary" style="margin-top:10px;">Submit</button>
+                                          <button id="unpaidsubmitbtn" type="submit" class="btn btn-primary" style="margin-top:10px;">Submit</button>
                                       </form>
+                                      
+                                      <!-- Custom Popup (styled as a modal) -->
+                                        <div id="popupMessage" class="popup" style="display:none;">
+                                            <div class="popup-content">
+                                                <span id="popupClose" class="popup-close">&times;</span>
+                                                <h4 id="popupTitle">Confirm Payment Details</h4>
+                                                <div id="popupBody"></div>
+                                                <div class="mb-3">
+                                                    <input type="checkbox" id="confirmCheckbox"> <label for="confirmCheckbox">I confirm that all the details are correct</label>
+                                                </div>
+                                                <br>
+                                                 <!-- Submit buttons -->
+                                                <button id="popupSubmitBtn" class="btn btn-success" style="display:none;">Confirm & Submit</button>
+                                                <br><br>
+                                                <!-- Back and Close buttons -->
+                                                <button id="popupBackBtn" class="btn btn-danger" style="display: none;">Back</button>
+                                            </div>
+                                        </div>
 
                                   `;
                               } else if (statusLower === 'paid') {
@@ -401,6 +573,10 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
                               `;
 
                               preliminaryReportMessage.style.display = 'block';
+                              // Then immediately initialize modal logic
+                              initializePopupLogic(); // 👇 define this function
+                              
+
                     });
 
                     document.getElementById('finalBtn').addEventListener('click', function () {
@@ -492,6 +668,7 @@ $payment_list = get_payment_list_using_invoice_number_delivery_point($invoice_nu
         }
     });
 </script>
+
 
 
 
