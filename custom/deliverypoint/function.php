@@ -124,5 +124,62 @@ function get_payment_list_using_invoice_number_delivery_point($invoice) {
 }
 
 
+function get_patient_information_invoice($invoice) {
+    global $pg_con;
+
+    if (!$pg_con) {
+        error_log('Database connection error.');
+        return false;
+    }
+
+    $sql = "SELECT 
+                de.description AS specimen,
+                c.ref AS lab_number,
+                f.ref AS invoice_number,
+                s.nom AS customer_name,
+                s.phone AS customer_phone,
+                s.address AS customer_address
+                FROM 
+                    llx_facture AS f
+                LEFT JOIN 
+                    llx_element_element AS ee ON ee.fk_target = f.rowid 
+                    AND ee.sourcetype = 'commande' 
+                    AND ee.targettype = 'facture'
+                LEFT JOIN 
+                    llx_commande AS c ON c.rowid = ee.fk_source
+                LEFT JOIN 
+                    llx_commandedet AS de ON de.fk_commande = c.rowid
+                LEFT JOIN 
+                    llx_societe AS s ON c.fk_soc = s.rowid
+                WHERE 
+                    f.ref = $1
+                ORDER BY 
+                    de.rowid ASC";
+
+    $stmt_name = "get_patient_information_invoice";
+    static $is_prepared = false;
+
+    if (!$is_prepared) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return false;
+        }
+        $is_prepared = true;
+    }
+
+    $result = pg_execute($pg_con, $stmt_name, [$invoice]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: false;
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return false;
+    }
+}
+
+
 
 ?>

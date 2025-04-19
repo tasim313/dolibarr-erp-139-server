@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      }
                }
             }
-            
+
             header("Location: " . $_SERVER['HTTP_REFERER']);
             exit;
         } else {
@@ -116,4 +116,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Error inserting into llx_paiement: " . pg_last_error($pg_con);
     }
 }
+
 ?>
