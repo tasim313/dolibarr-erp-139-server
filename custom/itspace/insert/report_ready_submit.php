@@ -176,6 +176,7 @@ if (!$status_found) {
     exit;
 }
 
+$fk_status_id = 11;
 // Prepare the query to insert data
 $query = "INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id) VALUES ($1, $2, $3)";
 $result = pg_prepare($pg_con, "insert_query", $query);

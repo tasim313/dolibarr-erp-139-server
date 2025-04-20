@@ -77,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newPaymentRowId = $insertedRow['rowid'];
 
         // Now insert into llx_paiement_facture
-        $factureInsertQuery = "INSERT INTO llx_paiement_facture (fk_paiement, fk_facture, amount)
-                               VALUES ('$newPaymentRowId', '$rowid', '$amount')";
+        $factureInsertQuery = "INSERT INTO llx_paiement_facture (fk_paiement, fk_facture, amount, multicurrency_amount)
+                               VALUES ('$newPaymentRowId', '$rowid', '$amount', '$amount')";
         $factureResult = pg_query($pg_con, $factureInsertQuery);
 
         if ($factureResult) {
