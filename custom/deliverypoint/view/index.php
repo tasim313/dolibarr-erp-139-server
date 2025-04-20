@@ -228,6 +228,7 @@ $patient_info =  get_patient_information_invoice($invoice_number);
     function initializePopupLogic() {
         const cashRadio = document.getElementById('paymentCash');
         const bkashRadio = document.getElementById('paymentBkash');
+        const nagadRadio = document.getElementById('paymentNagad');
         const bkashFields = document.getElementById('bkashFields');
         const transactionInput = document.getElementById('transactionId');
         const unpaidForm = document.getElementById('unpaidForm');
@@ -243,9 +244,25 @@ $patient_info =  get_patient_information_invoice($invoice_number);
                 }
             }
 
+            function togglePaymentFields() {
+                if (bkashRadio?.checked || nagadRadio?.checked) {
+                    bkashFields.style.display = 'block';
+                    transactionInput.setAttribute('required', 'required');
+                } else {
+                    bkashFields.style.display = 'none';
+                    transactionInput.removeAttribute('required');
+                }
+            }
+
+            const radios = document.querySelectorAll('input[name="paymentMethod"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', togglePaymentFields);
+            });
+
             cashRadio.addEventListener('change', toggleBkashFields);
             bkashRadio.addEventListener('change', toggleBkashFields);
             toggleBkashFields(); // Initialize on load
+            togglePaymentFields(); // On load
         }
         
         document.getElementById('unpaidsubmitbtn').addEventListener('click', function(e) {
@@ -312,9 +329,6 @@ $patient_info =  get_patient_information_invoice($invoice_number);
             }, 500);
         };
     
-
-        
-
     }
 
 </script>
@@ -486,6 +500,7 @@ $patient_info =  get_patient_information_invoice($invoice_number);
                                           <div class="mb-3">
                                               <label class="form-label d-block">Payment Method</label>
                                               <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
                                                   <div class="form-check">
                                                       <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCash" value="Cash" required>
                                                       <label class="form-check-label" for="paymentCash">Cash</label>
@@ -493,6 +508,22 @@ $patient_info =  get_patient_information_invoice($invoice_number);
                                                   <div class="form-check">
                                                       <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBkash" value="Bkash" required>
                                                       <label class="form-check-label" for="paymentBkash">Bkash</label>
+                                                  </div>
+                                                  <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentNagad" value="Nagad" required>
+                                                        <label class="form-check-label" for="paymentNagad">Nagad</label>
+                                                  </div>
+                                                  <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCreditCard" value="Credit Card" required>
+                                                        <label class="form-check-label" for="paymentCreditCard">Credit Card</label>
+                                                  </div>
+                                                  <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBankTransfer" value="Bank Transfer" required>
+                                                        <label class="form-check-label" for="paymentBankTransfer">Bank Transfer</label>
+                                                  </div>
+                                                  <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="paymentMethod" id="paymentPOS" value="POS" required>
+                                                        <label class="form-check-label" for="paymentPOS">POS</label>
                                                   </div>
                                                   
                                               </div>
@@ -573,6 +604,7 @@ $patient_info =  get_patient_information_invoice($invoice_number);
                                                                 <input type="hidden" name="lab_number" value="${firstEntry.lab_number}">
                                                                 <input type="hidden" name="report_type" value="preliminary report">
                                                                 <input type="hidden" name="user_id" value="${loggedInUserId}">
+                                                                <input type="hidden" name="username" value="${loggedInUsername}">
                                                                 <button type="submit" id="confirmDeliverySubmit" class="btn btn-primary">
                                                                     Submit Delivery
                                                                 </button>
@@ -672,11 +704,272 @@ $patient_info =  get_patient_information_invoice($invoice_number);
                     document.getElementById('finalBtn').addEventListener('click', function () {
                         preliminaryReportMessage.style.display = 'none';
                         noteMessage.style.display = 'none';
+                        let totalPayment = 0;
+                        let rowsHtml = '';
+
+                        if (!paymentData || paymentData.length === 0) {
+                          preliminaryReportMessage.innerHTML = `<p>No payment information available.</p>`;
+                          preliminaryReportMessage.style.display = 'block';
+                          return;
+                        }
+
+                        paymentData.forEach(payment => {
+                            totalPayment += parseFloat(payment.payment_amount) || 0;
+                            rowsHtml += `
+                                <tr>
+                                    <td class="text-center">${payment.payment_ref ?? ''}</td>
+                                    <td class="text-center">${payment.payment_date ? new Date(payment.payment_date).toLocaleString() : ''}</td>
+                                    <td class="text-center">${payment.payment_amount ? parseFloat(payment.payment_amount).toFixed(2) : ''}</td>
+                                </tr>
+                            `;
+                        });
+
+
+                        const lastEntry = paymentData[paymentData.length - 1];
+                              
+                        let totalAmount = parseFloat(lastEntry.total_without_tax) || 0;
+                        let sanitizedTotalPayment = parseFloat(totalPayment);
+
+                        // Fallback to 0 if totalPayment is NaN, null, undefined, or empty
+                        if (isNaN(sanitizedTotalPayment)) {
+                            sanitizedTotalPayment = 0;
+                        }
+
+                        let currencySymbol = '৳';
+
+                        let dueOrExcess = (sanitizedTotalPayment - totalAmount).toFixed(2);
+                        let paymentMessage = '';
+                        if (dueOrExcess > 0) {
+                            paymentMessage = `<div class="alert alert-danger"><strong>We will provide</strong> ${currencySymbol}${Math.abs(dueOrExcess)} to the patient (overpaid).</div>`;
+                        } else if (dueOrExcess < 0) {
+                            paymentMessage = `<div class="alert alert-danger"><strong>We will get</strong> ${currencySymbol}${Math.abs(dueOrExcess)} from the patient (due amount).</div>`;
+                        } else {
+                            paymentMessage = `<div class="alert alert-danger"><strong>Payment Complete</strong></div>`;
+                        }
+
+                        let privateNoteHtml = '';
+                        let publicNoteHtml = '';
+
+                        if (lastEntry.private_note && lastEntry.private_note.trim() !== '') {
+                            privateNoteHtml = `<p><strong>Private Note:</strong> ${lastEntry.private_note}</p>`;
+                        }
+
+                        if (lastEntry.public_note && lastEntry.public_note.trim() !== '') {
+                            publicNoteHtml = `<p><strong>Public Note:</strong> ${lastEntry.public_note}</p>`;
+                        }
+
+                        let dueColor = '';
+                        let statusLower = lastEntry.status_text?.toLowerCase();
+
+                        if (statusLower === 'unpaid') {
+                            dueColor = 'color: red;';
+                        } else if (statusLower === 'paid') {
+                            dueColor = 'color: green;';
+                        } else {
+                            dueColor = 'color: orange;';
+                        }
+
+                        let formHtml = '';
+
+                             
+                        if (statusLower === 'unpaid') {
+                            formHtml = `
+                                <form id="unpaidForm" action="due_amount_collection.php" method="POST">
+                                    <div class="mb-3">
+                                              <label class="form-label d-block">Payment Method</label>
+                                            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCash" value="Cash" required>
+                                                    <label class="form-check-label" for="paymentCash">Cash</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBkash" value="Bkash" required>
+                                                    <label class="form-check-label" for="paymentBkash">Bkash</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentNagad" value="Nagad" required>
+                                                    <label class="form-check-label" for="paymentNagad">Nagad</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentCreditCard" value="Credit Card" required>
+                                                    <label class="form-check-label" for="paymentCreditCard">Credit Card</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentBankTransfer" value="Bank Transfer" required>
+                                                    <label class="form-check-label" for="paymentBankTransfer">Bank Transfer</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="paymentMethod" id="paymentPOS" value="POS" required>
+                                                    <label class="form-check-label" for="paymentPOS">POS</label>
+                                                </div>
+
+                                            </div>
+                                        <!-- Bkash Extra Fields -->
+                                        <div id="bkashFields" style="margin-top: 15px; display: none;">
+                                            <div class="mb-3">
+                                                <label for="transactionId" class="form-label">Transaction ID <span style="color:red;">*</span></label>
+                                                <input type="text" class="form-control" id="transactionId" name="transactionId" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="referenceNumber" class="form-label">Reference Number</label>
+                                                <input type="text" class="form-control" id="referenceNumber" name="referenceNumber">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="dueAmount" class="form-label">Due Amount<span style="color:red;">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="dueAmount" name="dueAmount" required value="${Math.abs(dueOrExcess).toFixed(2)}" />
+                                        <input type="hidden" name="rowid" value="${lastEntry.invoice_rowid}">
+                                        <input type="hidden" name="ref" value="${lastEntry.invoice_ref}">
+                                        <input type="hidden" name="username" value="${loggedInUsername}">
+                                        <input type="hidden" name="userID" value="${loggedInUserId}">
+                                    </div>
+                                    <button id="unpaidsubmitbtn" type="submit" class="btn btn-primary" style="margin-top:10px;">Submit</button>
+                                </form>
+                                      
+                                <!-- Custom Popup (styled as a modal) -->
+                                <div id="popupMessage" class="popup" style="display:none;">
+                                    <div class="popup-content">
+                                        <span id="popupClose" class="popup-close">&times;</span>
+                                        <h4 id="popupTitle">Confirm Payment Details</h4>
+                                        <div id="popupBody"></div>
+                                        <div class="mb-3">
+                                            <input type="checkbox" id="confirmCheckbox"> <label for="confirmCheckbox">I confirm that all the details are correct</label>
+                                        </div>
+                                        <br>
+                                         <!-- Submit buttons -->
+                                        <button id="popupSubmitBtn" class="btn btn-success" style="display:none;">Confirm & Submit</button>
+                                        <br><br>
+                                        <!-- Back and Close buttons -->
+                                        <button id="popupBackBtn" class="btn btn-danger" style="display: none;">Back</button>
+                                    </div>
+                                </div>
+
+                                  `;
+                        } else if (statusLower === 'paid') {
+                                formHtml = `
+                                    <!-- Button trigger modal -->
+                                    <button id="openDeliveryModalBtn" type="button" class="btn btn-success" data-toggle="modal" data-target="#deliveryConfirmationModal">
+                                        Delivered
+                                    </button>
+
+                                    <!-- Bootstrap Modal -->
+                                    <div class="modal fade" id="deliveryConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deliveryModalLabel">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                    <h4 class="modal-title" id="deliveryModalLabel">Delivery Confirmation</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Invoice:</strong> <span id="invoiceNumberDisplay">${firstEntry.invoice_number || 'N/A'}</span></p>
+                                                    <p><strong>Lab No:</strong> <span id="labNumberDisplay"><strong>${firstEntry.lab_number || 'N/A'}</strong></span></p>
+                                                    <p><strong>Patient Name:</strong> <span id="patientNameDisplay">${firstEntry.customer_name || 'N/A'}</span></p>
+                                                    <p><strong>Mobile Number:</strong> <span id="patientPhoneDisplay">${firstEntry.customer_phone || 'N/A'}</span></p>
+                                                    <p><strong>Address:</strong> <span id="patientAddressDisplay">${firstEntry.customer_address || 'N/A'}</span></p>
+                                                    <p><strong>Specimen Name:</strong> <span id="specimenDisplay">
+                                                            <ul style="margin: 5px 0 0 15px;">
+                                                              ${specimenList}
+                                                            </ul></span></p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                                    <form id="deliveredForm" method="POST" action="mark_delivered.php" style="display: inline;">
+                                                        <input type="hidden" name="lab_number" value="${firstEntry.lab_number}">
+                                                        <input type="hidden" name="report_type" value="final report">
+                                                        <input type="hidden" name="user_id" value="${loggedInUserId}">
+                                                        <input type="hidden" name="username" value="${loggedInUsername}">
+                                                        <button type="submit" id="confirmDeliverySubmit" class="btn btn-primary">
+                                                            Submit Delivery
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                 
+                              }
                         finalReportMessage.innerHTML = `
-                        <p>Final Report</p>
-                            <strong>Your Due Payment is calculating.</strong> Please wait a few minutes. Your report will be prepared.
+                                        <p><strong>Final Report</strong></p>
+
+                                        <!-- Invoice Table -->
+                                        <table class="table table-bordered mb-4">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">Invoice Ref</th>
+                                                    <th class="text-center">Invoice Date</th>
+                                                    <th class="text-center">Invoice Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-center"><strong>${lastEntry.invoice_ref}</strong></td>
+                                                    <td class="text-center"><strong>${lastEntry.invoice_date_created}</strong></td>
+                                                    <td class="text-center"><strong>৳${parseFloat(lastEntry.total_without_tax).toFixed(2)}</strong></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <!-- Payment Table -->
+                                        <table class="table table-bordered mb-4">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">Payment Ref</th>
+                                                    <th class="text-center">Payment Date</th>
+                                                    <th class="text-center">Payment Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${rowsHtml}
+                                            </tbody>
+                                        </table>
+
+                                       <!-- Flex container for both tables -->
+                                        <div style="display: flex; justify-content: space-between; gap: 20px; margin-top: -15px;">
+
+                                            <!-- Left: Status table -->
+                                            <table  style="width: 200px;">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="font-size:30px;"><strong>${lastEntry.status_text}</strong></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                            <!-- Right: Total/Paid/Due table -->
+                                            <table  style="width: 200px;">
+                                                <tbody>
+                                                    <tr>
+                                                        <th>Total</th>
+                                                        <td>৳${parseFloat(lastEntry.total_without_tax).toFixed(2)}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Paid</th>
+                                                        <td>৳${totalPayment.toFixed(2)}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Due</th>
+                                                        <td style="${dueColor}">৳${Math.abs(dueOrExcess).toFixed(2)}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                        <br> <br>
+
+
+                                        ${privateNoteHtml}
+                                        ${publicNoteHtml}
+                                        ${paymentMessage}
+                                        ${formHtml}
                         `;
                         finalReportMessage.style.display = 'block';
+                        initializePopupLogic();
                     });
 
                     document.getElementById('noteBtn').addEventListener('click', function () {
