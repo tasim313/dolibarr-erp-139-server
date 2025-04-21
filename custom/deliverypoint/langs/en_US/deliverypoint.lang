@@ -51,3 +51,5 @@ MyPageName = My page name
 #
 MyWidget = My widget
 MyWidgetDescription = My widget description
+PAYMENT_ADD_ConfirmMessage=Do you confirm this payment input for %s %s?
+PAYMENT_ADD_SuccessMessage=Payment of %s %s has been processed successfully
