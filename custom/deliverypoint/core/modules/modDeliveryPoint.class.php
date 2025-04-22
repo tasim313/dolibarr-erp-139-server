@@ -36,7 +36,8 @@ class modDeliveryPoint extends DolibarrModules
 			),
 			'js' => array(
 			),
-			'hooks' => array('all'),
+			'hooks' => array('invoicecard' => array('data' => 'invoicecard', 'file' => 'actions_deliverypoint.class.php'),
+    'payment' => array('data' => 'payment', 'file' => 'interface_99_custom_PaymentTrigger.class.php')),
 			'moduleforexternal' => 0,
 		);
 		
