@@ -176,4 +176,16 @@ print '</div></div>';
 // End of page
 llxFooter();
 
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+if (!empty($_SESSION['invoice_paid_popup'])) {
+    $popup_message = addslashes($_SESSION['invoice_paid_popup']);
+    print "<script>
+        alert('$popup_message');
+        console.log('$popup_message');
+    </script>";
+    unset($_SESSION['invoice_paid_popup']);
+}
+
+
 $db->close();
