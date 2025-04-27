@@ -46,7 +46,7 @@ $( document ).ready(function() {
         switch (true) {
           case ($set_status >0 ):
             $.ajax({
-              url: "http://192.168.1.30:8881/api/index.php/orders/"
+              url: "http://192.168.1.139:8881/api/index.php/orders/"
                 +"setStatus"
                 +"/"+$labno
                 +"/"+$("#dol_userid").val()
@@ -75,7 +75,7 @@ $( document ).ready(function() {
             break;
           default:
             $.ajax({
-              url: "http://192.168.1.30:8881/api/index.php/orders/"
+              url: "http://192.168.1.139:8881/api/index.php/orders/"
                 +"reftracking/"
                 +$labno
                 +"?DOLAPIKEY="+$("#dol_userapikey").val(), 
@@ -109,7 +109,7 @@ $( document ).ready(function() {
         }
         // $(".tab-pane.active").children(".design-process-content").children("h3").after("<p>"+$("#labno").val()+"</p>");
   
-        // $.get("http://192.168.1.30:8881/api/index.php/orders/reftracking/2211-1001?DOLAPIKEY=TwItrbxWmg8e5RQ4HS159nHRrA9K7x03", function(data, status){
+        // $.get("http://192.168.1.139:8881/api/index.php/orders/reftracking/2211-1001?DOLAPIKEY=TwItrbxWmg8e5RQ4HS159nHRrA9K7x03", function(data, status){
         //   // alert("Data: " + data + "\nStatus: " + status);
         //   $(".tab-pane.active").children(".design-process-content").children("h3").after("<p>"
         //     +(data.track_labno)
@@ -139,7 +139,7 @@ $( document ).ready(function() {
         }
 
         $.ajax({
-          url: "http://192.168.1.30:8881/api/index.php/orders/"
+          url: "http://192.168.1.139:8881/api/index.php/orders/"
             +"invtracking/"
             +$invno
             +"?DOLAPIKEY="+$("#dol_userapikey").val(), 
