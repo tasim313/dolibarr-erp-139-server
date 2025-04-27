@@ -56,7 +56,7 @@ $( document ).ready(function() {
       switch (true) {
         default:
           $.ajax({
-            url: "http://192.168.1.30:8881/api/index.php/orders/"
+            url: "http://192.168.1.139:8881/api/index.php/orders/"
               +"datetracking/"
               +$scandate+"/"
               +$set_status
