@@ -182,4 +182,43 @@ function get_patient_information_invoice($invoice) {
 
 
 
+function get_trigger_payment_information($payment_ref) {
+    global $pg_con;
+
+    if (!$pg_con) {
+        error_log('Database connection error.');
+        return false;
+    }
+
+    $sql = "SELECT p.amount, f.total_ttc, f.ref as invoice_ref, f.rowid as invoice_id, f.datef as invoice_date, f.fk_soc as thirdparty_id
+                    FROM llx_paiement p
+                    JOIN llx_paiement_facture pf ON p.rowid = pf.fk_paiement
+                    JOIN llx_facture f ON pf.fk_facture = f.rowid
+                    WHERE p.ref = $1";
+
+    $stmt_name = "get_trigger_payment_information";
+    static $is_prepared = false;
+
+    if (!$is_prepared) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return false;
+        }
+        $is_prepared = true;
+    }
+
+    $result = pg_execute($pg_con, $stmt_name, [$payment_ref]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: false;
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return false;
+    }
+}
+
+
 ?>

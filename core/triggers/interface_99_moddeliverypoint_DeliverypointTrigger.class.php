@@ -1,83 +1,92 @@
 <?php
-
 require_once DOL_DOCUMENT_ROOT . '/core/triggers/dolibarrtriggers.class.php';
 
-/**
- * Trigger to act when invoice is fully paid
- */
-class Interfacedeliverypointtrigger extends DolibarrTriggers
+class InterfaceDeliveryPointTrigger extends DolibarrTriggers
 {
     public function __construct($db)
     {
-        $this->db = $db;
-
+        parent::__construct($db);
         $this->name = preg_replace('/^Interface/i', '', get_class($this));
         $this->family = 'deliverypoint';
-        $this->description = 'Trigger to log and show message when invoice is fully paid';
-        $this->version = '1.0.0';
+        $this->description = 'Trigger for payment processing and delivery point redirection';
+        $this->version = '1.2.0';
         $this->picto = 'technic';
     }
 
-    /**
-     * Trigger execution
-     *
-     * @param string $action
-     * @param object $object
-     * @param User $user
-     * @param Translate $langs
-     * @param Conf $conf
-     * @return int
-     */
     public function runTrigger($action, $object, $user, $langs, $conf)
     {
-        if ($action === 'PAYMENT_CUSTOMER_CREATE') {
-            try {
-                // Manual PostgreSQL connection
-                $host = "postgres";
-                $user = "root";
-                $password = "root";
-                $db_name = "dolibarr";
+        dol_syslog("Trigger " . $this->name . " called for action " . $action, LOG_DEBUG);
+        // Only process payment creation events
+        if ($action !== 'PAYMENT_CUSTOMER_CREATE') {
+            return 0;
+        }
 
-                $pg_conn_string = "host=$host dbname=$db_name user=$user password=$password";
-                $pg_con = pg_connect($pg_conn_string);
+        // Validate payment object
+        if (!is_object($object) || empty($object->ref)) {
+            dol_syslog("Payment object is not valid", LOG_ERR);
+            return 0;
+        }
 
-                if (!$pg_con) {
-                    error_log("DeliveryPoint Trigger: Failed to connect to PostgreSQL: " . pg_last_error());
+        $payment_ref = trim($object->ref);
+        dol_syslog("Processing payment with ref: " . $payment_ref, LOG_DEBUG);
+
+        try {
+            // 1. Get payment and invoice data with payment status
+            $sql = "SELECT p.amount, f.total_ttc, f.ref as invoice_ref,
+                    f.rowid as invoice_id, f.datef as invoice_date,
+                    f.fk_soc as thirdparty_id, f.fk_statut as invoice_status,
+                    f.paye as invoice_paid
+                    FROM " . MAIN_DB_PREFIX . "paiement p
+                    JOIN " . MAIN_DB_PREFIX . "paiement_facture pf ON p.rowid = pf.fk_paiement
+                    JOIN " . MAIN_DB_PREFIX . "facture f ON pf.fk_facture = f.rowid
+                    WHERE p.ref = '" . $this->db->escape($payment_ref) . "'";
+
+            $resql = $this->db->query($sql);
+
+            if (!$resql) {
+                dol_syslog("Payment data query failed: " . $this->db->lasterror(), LOG_ERR);
+                return 0;
+            }
+
+            if ($this->db->num_rows($resql) == 0) {
+                dol_syslog("No payment data found for ref: " . $payment_ref, LOG_WARNING);
+                return 0;
+            }
+
+            $payment_data = $this->db->fetch_array($resql);
+
+            $comment = json_encode($payment_data);
+
+            // 2. Insert into custom table
+            $sql_insert = "INSERT INTO " . MAIN_DB_PREFIX . "custom_trigger
+                            (trigger_value, comment)
+                            VALUES (99, '" . $this->db->escape($comment) . "')";
+
+            $resql_insert = $this->db->query($sql_insert);
+            if ($resql_insert) {
+
+                // Directly check the value of 'invoice_paid' from the fetched array
+                if (isset($payment_data['invoice_paid']) && $payment_data['invoice_paid'] == 1) {
+                    echo ('insert value :' .$resql_insert);
+                    echo("Payment data : " .$payment_data);
+                    echo ("Comment : " . $comment);
+                    $redirect_url = DOL_URL_ROOT . '/custom/deliverypoint/view/index.php?search=' . $payment_data['invoice_ref'];
+                    // // Perform immediate redirect
+                    header("Location: " . $redirect_url);
+                    exit(); // Ensure script stops after redirection
+                } else {
+                    dol_syslog("Payment processed but invoice not fully paid (invoice_paid=" . (isset($payment_data['invoice_paid']) ? $payment_data['invoice_paid'] : 'not found') . ")", LOG_DEBUG);
                     return 0;
                 }
 
-                // Check total amount vs amount paid
-                $invoice_id = $object->facid;
-                $total_ttc = $object->total_ttc;
-                $amount_paid = $object->am;
-
-                if (floatval($amount_paid) >= floatval($total_ttc)) {
-                    // Insert into llx_custom_trigger
-                    $comment = "Invoice #$invoice_id fully paid.";
-                    $insert_sql = "INSERT INTO llx_custom_trigger (trigger_value, comment) VALUES (1, $1)";
-                    $result = pg_query_params($pg_con, $insert_sql, [$comment]);
-
-                    if ($result) {
-                        error_log("DeliveryPoint Trigger: Trigger inserted successfully for invoice $invoice_id.");
-                    } else {
-                        error_log("DeliveryPoint Trigger: Failed to insert trigger - " . pg_last_error($pg_con));
-                    }
-
-                    // Set session to show popup (optional)
-                    if (session_status() === PHP_SESSION_NONE) {
-                        session_start();
-                    }
-                    $_SESSION['invoice_paid_popup'] = "Invoice #$invoice_id has been fully paid.";
-                    header("Location: ".$_SERVER['HTTP_REFERER']);
-                }
-
-                pg_close($pg_con);
-
-            } catch (Exception $e) {
-                error_log('DeliveryPoint Trigger Exception: ' . $e->getMessage());
+            } else {
+                dol_syslog("Insert failed: " . $this->db->lasterror(), LOG_ERR);
+                return 0;
             }
-        }
 
-        return 0;
+        } catch (Exception $e) {
+            dol_syslog("Trigger exception: " . $e->getMessage(), LOG_ERR);
+            return 0;
+        }
     }
 }
