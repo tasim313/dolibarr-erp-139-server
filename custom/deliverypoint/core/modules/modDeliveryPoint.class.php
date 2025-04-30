@@ -36,7 +36,7 @@ class modDeliveryPoint extends DolibarrModules
 			),
 			'js' => array(
 			),
-			'hooks' => array('all'),
+			'hooks' => array('invoicecard'),
 			'moduleforexternal' => 0,
 		);
 		
@@ -152,6 +152,20 @@ class modDeliveryPoint extends DolibarrModules
 				));
 			}
 		}
+
+		// Include our hook file
+		include_once __DIR__.'/../triggers/deliverypoint_buttons.class.php';
+		$conf->global->MAIN_ADD_JS[] = '/custom/deliverypoint/js/delivery_button.js';
+    
+		// Register hook
+		$hookmanager->initHooks(array('invoicecard'));
+		$hookmanager->addAction(
+			'addMoreActionsButtons', 
+			'DeliverypointButtons', 
+			$this->db, 
+			0
+		);
+		
 
 		// Call parent init (essential for Dolibarr modules)
 		return $this->_init($sql, $options);
