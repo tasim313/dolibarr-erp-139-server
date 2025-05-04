@@ -100,6 +100,11 @@ $fk_gross_id = getGrossIdByLabNumber($LabNumberWithPrefix);
 $abbreviations = get_abbreviations_list();
 $specimenIformation   = get_gross_specimens_list($LabNumber);
 
+$current_notification = notification_preliminary_report_current_date_to_future_date();
+$previous_notification = notification_preliminary_report_previous_date();
+
+
+
 // Check if "Bones" status exists in the $bone_status array
 $showBoneSlideReady = false;
 
@@ -538,6 +543,37 @@ switch (true) {
             }
         }
     </style>
+
+    <!-- Modal Notification -->
+    <style>
+        .modal-dialog-fullscreen {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            max-width: none;
+        }
+        .modal-content-fullscreen {
+            height: 100%;
+            border: none;
+            border-radius: 0;
+        }
+        .custom-close-btn {
+            font-size: 2rem;
+            color: blue !important;
+            opacity: 1;
+        }
+        .custom-close-btn:hover {
+            color: darkblue !important;
+        }
+        #notificationBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1051;
+        }
+    </style>
+
 </head>
 <body>
 
@@ -589,6 +625,11 @@ switch (true) {
             <button id="preliminary_report_release" type="button" class="btn btn-primary" style="display: none;">Preliminary Report Release</button>
         </div>
     <?php endif; ?>
+
+    <!-- Notification Button -->
+    <button id="notificationBtn" type="button" class="btn btn-primary d-none">
+        🔔 <span id="notificationCount">0</span> New Notification(s)
+    </button>
 
 </div>
 
@@ -2135,6 +2176,27 @@ switch (true) {
 
 
 
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-fullscreen" role="document">
+    <div class="modal-content modal-content-fullscreen">
+      <div class="modal-header">
+        <h5 class="modal-title">Notifications</h5>
+        <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close" id="modalCloseBtn">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul id="notificationListFuture" class="list-group mb-4"></ul>
+        <ul id="notificationListPast" class="list-group"></ul>
+
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modalExitBtn">Exit</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
@@ -4273,6 +4335,94 @@ switch (true) {
             }
         });
     }
+</script>
+
+
+<!-- Notification Script -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const currentNotification = <?php echo json_encode($current_notification); ?>;
+  const previousNotification = <?php echo json_encode($previous_notification); ?>;
+
+  let notificationCount = 0;
+
+  function generateNotificationKey(item) {
+    return `${item.labno}_${item.status_name}_${item.description}`;
+  }
+
+  function isNotificationSeen(item) {
+    const seen = localStorage.getItem('seenNotifications');
+    const seenList = seen ? JSON.parse(seen) : [];
+    return seenList.includes(generateNotificationKey(item));
+  }
+
+  function markNotificationsAsSeen(allItems) {
+    const seen = localStorage.getItem('seenNotifications');
+    let seenList = seen ? JSON.parse(seen) : [];
+
+    allItems.forEach(item => {
+      const key = generateNotificationKey(item);
+      if (!seenList.includes(key)) {
+        seenList.push(key);
+      }
+    });
+
+    localStorage.setItem('seenNotifications', JSON.stringify(seenList));
+  }
+
+  function addNotification(message, isFuture = true) {
+    notificationCount++;
+    $('#notificationCount').text(notificationCount);
+    $('#notificationBtn').removeClass('d-none');
+
+    const listId = isFuture ? '#notificationListFuture' : '#notificationListPast';
+    $(listId).append('<li class="list-group-item">' + message + '</li>');
+  }
+
+  // Load and compare with seen notifications
+  function loadInitialNotifications() {
+    const unseenItems = [];
+
+    if (Array.isArray(currentNotification)) {
+      currentNotification.forEach(item => {
+        if (!isNotificationSeen(item)) {
+          const msg = `Lab: ${item.labno}, User: ${item.username}, Status: ${item.status_name}, Info: ${item.description}`;
+          addNotification(msg, true);
+          unseenItems.push(item);
+        }
+      });
+    }
+
+    if (Array.isArray(previousNotification)) {
+      previousNotification.forEach(item => {
+        if (!isNotificationSeen(item)) {
+          const msg = `Lab: ${item.labno}, User: ${item.username}, Status: ${item.status_name}, Info: ${item.description}`;
+          addNotification(msg, false);
+          unseenItems.push(item);
+        }
+      });
+    }
+
+    // Store unseen items globally to mark as seen later
+    window._unseenItems = unseenItems;
+  }
+
+  // Show modal and mark as seen
+  $('#notificationBtn').click(function () {
+    $('#notificationModal').modal('show');
+    notificationCount = 0;
+    $('#notificationCount').text('');
+    $('#notificationBtn').addClass('d-none');
+
+    if (window._unseenItems && window._unseenItems.length > 0) {
+      markNotificationsAsSeen(window._unseenItems);
+    }
+  });
+
+  $(document).ready(function () {
+    loadInitialNotifications();
+  });
 </script>
 
 
