@@ -423,6 +423,29 @@ switch (true) {
         }
 
     </style>
+    <!-- modal css -->
+    <style>
+        .modal-dialog-fullscreen {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            max-width: none;
+        }
+        .modal-content-fullscreen {
+            height: 100%;
+            border: none;
+            border-radius: 0;
+        }
+        .custom-close-btn {
+            font-size: 2rem;        /* Makes the button/icon larger */
+            color: blue !important; /* Blue color */
+            opacity: 1;             /* Full visibility */
+        }
+        .custom-close-btn:hover {
+            color: darkblue !important; /* Optional: Darker on hover */
+        }
+    </style>
 </head>
 <body>
 
@@ -1095,6 +1118,28 @@ switch (true) {
     <div id="Final-Screening-Done" class="tabcontent_1">
         <p>Final Screening Done</p>
     </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-fullscreen" role="document">
+        <div class="modal-content modal-content-fullscreen">
+        <div class="modal-header">
+            <h5 class="modal-title">Important Notification</h5>
+            <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close" id="modalCloseBtn">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body text-center">
+            <p>This is a fullscreen notification. You can add any important message or announcement here.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id="modalExitBtn">Exit</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
 
     
         <script>
@@ -2281,6 +2326,20 @@ switch (true) {
                     checkLabNumberAndRedirect(labno);
                 });
             });
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script src="bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+        // Show modal on page load
+        $(document).ready(function() {
+            $('#notificationModal').modal('show');
+        });
+
+        // Optionally add custom behavior on close or exit
+        $('#modalCloseBtn, #modalExitBtn').click(function () {
+            console.log('Modal closed or exited.');
+        });
         </script>
 
 
