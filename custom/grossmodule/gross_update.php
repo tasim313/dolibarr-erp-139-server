@@ -349,7 +349,7 @@ foreach ($specimens as $index => $specimen) {
     echo '</div>';
     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
 }
-echo '<input type="submit" value="Save">';
+echo '<input id="save-btn" type="submit"  value="Save">';
 echo '</form>';
 
 echo ("<style>
@@ -1844,9 +1844,11 @@ function saveChanges(button) {
 
 <!-- Delete Gross section code Delete -->
 <script>
+    
     function deleteSection(id) {
         if (confirm("Are you sure you want to delete this section?")) {
             window.location.href = "delete_gross_specimen_section.php?id=" + encodeURIComponent(id);
         }
     }
 </script>
+
