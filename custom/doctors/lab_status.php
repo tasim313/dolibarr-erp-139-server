@@ -153,6 +153,8 @@ switch (true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <link rel="stylesheet" href="bootstrap-4.4.1-dist/css/bootstrap.min.css">
     <script src="bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="trackwsfiles/css.css"  />
@@ -588,7 +590,7 @@ switch (true) {
     <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
     </form>
 
-    <?php echo("<h5 style='font-weight: bold; text-align: left; margin-left: -50px;'>Lab Number: $LabNumber</h5>") ?>
+    <?php echo("<h5 style='font-weight: bold; text-align: left; margin-left: -70px;'>Lab No: $LabNumber</h5>") ?>
 
     <!-- Status Button -->
     <button style="border:none; font-size: 20px;" id="tab-status" data-toggle="modal" data-target="#exampleModalCenter">
@@ -631,7 +633,7 @@ switch (true) {
     <div class="col-md-6 panel">
             <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
                 <div class="tab-buttons button-container">                          
-                    <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="handlePreliminaryReportTabClick()">
+                    <button style="border:none; font-size: 20px; margin-left: -160px;" id="tab-screening" class="inactive" onclick="handlePreliminaryReportTabClick()">
                         <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>                       
                     <button style="border:none; font-size: 20px;" id="tab-final-screening"
                      class="inactive" onclick="handleFinalReportTabClick()">
@@ -674,6 +676,13 @@ switch (true) {
                             <button class="small-button" id="preliminary_report_edit"  onclick="openTab(event, 'Preliminary-Report-Edit')">
                                 <i class="fas fa-edit" aria-hidden="true" style="font-size: 18px; vertical-align: middle;">
                                 <span class="button-text" style="font-size: 18px; vertical-align: middle;">Edit</span>
+                                </i>
+                            </button>
+
+
+                            <button class="small-button" id="refering-doctor"  onclick="openTab(event, 'Refer-Doctor')">
+                                <i class="fas fa-user" style="font-size: 18px; vertical-align: middle;"></i>
+                                <span class="button-text" style="font-size: 18px; vertical-align: middle;">Ref/Cons</span>
                                 </i>
                             </button>
                             
@@ -720,6 +729,13 @@ switch (true) {
                             <i  class="fas fa-edit" aria-hidden="true" style="font-size: 18px; vertical-align: middle;">
                             <span class="button-text" style="font-size: 18px; vertical-align: middle;">Edit</span>
                             </i></button>
+
+
+                            <button class="small-button" id="final-refering-doctor"  onclick="openTab(event, 'Final-Refer-Doctor')">
+                                <i class="fas fa-user" style="font-size: 18px; vertical-align: middle;"></i>
+                                <span class="button-text" style="font-size: 18px; vertical-align: middle;">Ref/Cons</span>
+                                </i>
+                            </button>
                         
                        
                             <button class="small-button" id='Final_Screening_Done' onclick="openTab(event, 'Final-Screening-Done')">
@@ -992,11 +1008,10 @@ switch (true) {
                 </div> 
                 
                 <div id="Preliminary-Report-Edit" class="tabcontent_1">
-
                         <div id="preliminaryForm">
                             <div class="form-group">
-                                <label>Select the Editing Section</label>
-                                <div class="option-list">
+                                <div class="option-list" style="margin-left: -20px;">
+                                    <label>Select the Editing Section : </label>
                                     <div class="option-item" style="border:none" data-value="Clinical Details">Clinical Details</div>
                                     <div class="option-item" style="border:none" data-value="Site Of Specimen">Site Of Specimen</div>
                                     <div class="option-item" style="border:none" data-value="Gross">Gross</div>
@@ -1180,9 +1195,265 @@ switch (true) {
                                 echo '<div><br></div>';
                                 echo '<div><br></div>';
                             ?>
+                              <!-- Gross Description Abbreviations -->
+                                <script>
+                                        const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
+                                        console.log('abbreviations :', abbreviations_value);
+                                        
+                                        const abbreviations = {};
+
+                                        // Loop through abbreviations_value and map it to the abbreviations object
+                                        abbreviations_value.forEach(item => {
+                                            // Remove HTML tags using replace with a regex
+                                            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
+                                            abbreviations[item.abbreviation_key] = plainText;
+                                        });
+
+                                        
+                                        // Initialize Quill editor for each textarea
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            document.querySelectorAll('.editor').forEach((element, index) => {
+                                                const editor = new Quill(element, {
+                                                    theme: 'snow',
+                                                    modules: {
+                                                        toolbar: []
+                                                    }
+                                                });
+
+                                                // Set the content from the hidden textarea
+                                                const hiddenTextarea = document.querySelector('#hidden_gross_description_' + index);
+                                                editor.root.innerHTML = hiddenTextarea.value;
+
+                                                // Update the hidden textarea when content changes
+                                                editor.on('text-change', function() {
+                                                    hiddenTextarea.value = editor.root.innerHTML;
+                                                });
+
+                                                // Add functionality to replace abbreviations
+                                                editor.root.addEventListener('keydown', function(event) {
+                                                    if (event.key === ' ') { // Check if the space bar is pressed
+                                                        event.preventDefault(); // Prevent default space behavior
+
+                                                        const text = editor.getText(); // Get the current text in the editor
+                                                        const selection = editor.getSelection(); // Get the current selection range
+                                                        const caretPosition = selection.index;
+
+                                                        // Find the word before the caret position
+                                                        const textBeforeCaret = text.substring(0, caretPosition);
+                                                        const words = textBeforeCaret.trim().split(/\s+/);
+                                                        const lastWord = words[words.length - 1]; // Get the last word in its original case
+
+                                                        // Get the character before the word (check for the period rule)
+                                                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+
+                                                        // Check if the word is preceded by a period with no space or if it's empty
+                                                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                                                            // Just insert the space if the rule applies (no abbreviation generated)
+                                                            editor.insertText(caretPosition, ' ');
+                                                            return;
+                                                        }
+
+                                                        // Find the abbreviation in a case-sensitive manner
+                                                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                                                        
+                                                        if (abbreviation) {
+                                                            const fullAbbreviation = abbreviations[abbreviation];
+
+                                                            // Replace the last word with the abbreviation only if it's not part of a longer word
+                                                            replaceLastWordWithAbbreviation(editor, lastWord, fullAbbreviation, caretPosition);
+                                                        } else {
+                                                            // If no abbreviation found, just insert a space
+                                                            editor.insertText(caretPosition, ' ');
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        });
+
+                                        // Helper function to replace the last word with the abbreviation
+                                        function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
+                                            const text = editor.getText();
+                                            const textBeforeCaret = text.substring(0, caretPosition);
+                                            
+                                            // Find the start of the word that needs to be replaced
+                                            const startOfWord = textBeforeCaret.lastIndexOf(word);
+
+                                            // Remove the word first to avoid overlapping or incorrect replacement
+                                            editor.deleteText(startOfWord, word.length);
+
+                                            // Insert the abbreviation, making sure to trim any extra spaces
+                                            editor.insertText(startOfWord, abbreviation.trim(), 'user');  // 'user' to simulate a normal typing action
+                                            
+                                            // Set the caret position after the inserted abbreviation
+                                            editor.setSelection(startOfWord + abbreviation.length, 0);
+
+                                            // Debug: Log text after replacement
+                                            console.log("Text after replacement:", editor.getText());
+                                        }
+                                </script>
+
+                                <script>
+
+                                    const buttonClickCounts = {};
+                                    
+                                    document.getElementById("saveButton").addEventListener("click", function(event) {
+                                        // Prevent the default form submission behavior
+                                        event.preventDefault();
+
+                                        // Get the form element
+                                        const form = document.getElementById("specimen_section_form");
+
+                                        // Submit the form
+                                        form.submit();
+                                    });
+
+                                    let sections = <?php echo json_encode($sections); ?>;
+                                    let lastSectionCodes = {};
+                                    let lastCassetteNumbers = {};
+                                    let lastTissues = {};
+
+                                    // Iterate over each section to find the last section code, cassette number, and tissue for each specimen
+                                    sections.forEach(function(section) {
+                                        let specimenLetter = section.section_code.charAt(0); // Extract the specimen letter
+                                        let sectionCode = section.section_code;
+                                        let cassetteNumber = section.cassettes_numbers;
+                                        let tissue = section.tissue;
+
+                                        // Update the last section code for this specimen
+                                        lastSectionCodes[specimenLetter] = sectionCode;
+
+                                        // Update the last cassette number for this specimen
+                                        if (!lastCassetteNumbers[specimenLetter] || cassetteNumber > lastCassetteNumbers[specimenLetter]) {
+                                            lastCassetteNumbers[specimenLetter] = cassetteNumber;
+                                        }
+
+                                        // Update the last tissue for this specimen
+                                        if (!lastTissues[specimenLetter] || tissue > lastTissues[specimenLetter]) {
+                                            lastTissues[specimenLetter] = tissue;
+                                        }
+                                    });
+
+
+                                    function generateNextSectionCode(specimenLetter) {
+                                        // Generate the next section code
+                                        let sectionCode = '';
+
+                                        if (!lastSectionCodes[specimenLetter] || lastSectionCodes[specimenLetter] === '') {
+                                            // If the last section code is empty or not set, generate it based on the specimen letter and button click count
+                                            sectionCode = specimenLetter + '1';
+                                        } else {
+                                            // Otherwise, generate it sequentially based on the last section code
+                                            const lastSectionNumber = parseInt(lastSectionCodes[specimenLetter].slice(1), 10);
+                                            if (!isNaN(lastSectionNumber)) {
+                                                // Increment the last section number and generate the new section code
+                                                const nextSectionNumber = lastSectionNumber + 1;
+                                                sectionCode = specimenLetter + nextSectionNumber;
+                                            } else {
+                                                // Handle the case where lastSectionNumber is NaN (e.g., if lastSectionCode doesn't follow the expected format)
+                                                console.error("Invalid last section code format:", lastSectionCodes[specimenLetter]);
+                                                // You can provide a default behavior here, such as setting sectionCode to a predefined value
+                                                // sectionCode = specimenLetter + "1";
+                                            }
+                                        }
+                                        return sectionCode;
+                                    }
+                                    
+                                    function handleButtonClick(button) {
+                                        const buttonId = button.id;
+                                        const specimenIndex = button.id.split("-")[1]; 
+                                        const specimenLetter = button.getAttribute('data-specimen-letter');
+                                        buttonClickCounts[buttonId] = (buttonClickCounts[buttonId] || 0) + 1;
+                                        const section_text = 'Section from the ';
+                                        const specimen_count_value = <?php echo $specimen_count_value; ?>;
+                                        const last_value = "<?php echo $last_value; ?>";
+                                        const fk_gross_id = "<?php echo $fk_gross_id;?>";
+                                        const fieldsContainer = document.getElementById("fields-container");
+                                        const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
+                                        const currentYear = new Date().getFullYear();
+                                        const lastTwoDigits = currentYear.toString().slice(-2);
+
+                                        // Generate the next section code
+                                        let sectionCode = generateNextSectionCode(specimenLetter);
+                                        
+                                        // Update the last generated section code
+                                        lastSectionCodes[specimenLetter] = sectionCode;
+                                    
+
+                                        // Create a new field set for each entry
+                                        const fieldSet = document.createElement("fieldset");
+                                        fieldSet.classList.add("card", "p-3", "mb-3", "border-primary"); // Add a class for styling (optional)
+                                        let sectionCodes = [];
+                                        let cassetteNumbers = [];
+                                        let descriptions = [];
+                                        const br = document.createElement("br");
+
+                                        const fkGrossIdInput = document.createElement("input");
+                                        fkGrossIdInput.type = "hidden";
+                                        fkGrossIdInput.name = "fk_gross_id"; // Set the name attribute to identify the input
+                                        fkGrossIdInput.value = "<?php echo $fk_gross_id;?>";
+                                        fieldSet.appendChild(fkGrossIdInput);
+
+                                        // Create the label and input for Section Code
+                                        const sectionCodeLabel = document.createElement("label");
+                                        sectionCodeLabel.textContent = sectionCode +' :';
+                                        const inputSectionCode = document.createElement("input");
+                                        inputSectionCode.type = "hidden"; // Use "text" for Section Code input
+                                        inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
+                                        inputSectionCode.value = sectionCode;
+                                        inputSectionCode.type = "hidden";
+                                        const descriptionInput = document.createElement("input");
+                                        descriptionInput.type = "text"; // Use "text" for Description input
+                                        descriptionInput.name = "specimen_section_description[]"; // Assign unique name based on count
+                                        descriptionInput.value = section_text;
+                                        descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json'); // Specify the shortcut JSON file
+                                        fieldSet.appendChild(sectionCodeLabel);
+                                        fieldSet.appendChild(inputSectionCode);
+                                        fieldSet.appendChild(descriptionInput);
+                                        fieldSet.appendChild(br);
+
+                                        // Create the label and input for cassetteNumbers
+                                        const cassetteNumberLabel = document.createElement("label");
+                                        cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
+                                        const cassetteNumberInput = document.createElement("input");
+                                        cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
+                                        cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
+                                        cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
+                                        fieldSet.appendChild(cassetteNumberInput);
+                                    
+                                        const tissueLabel = document.createElement("label");
+                                        tissueLabel.textContent = "Tissue Pieces In  " + sectionCode 
+                                        const tissueInput = document.createElement("input");
+                                        tissueInput.type = "text"; // Use "text" for Cassette Number input
+                                        tissueInput.name = "tissue[]"; // Assign unique name based on count
+                                        tissueInput.value = '';
+                                        tissueInput.placeholder = "Tissue Pieces In  " + sectionCode ;
+                                        fieldSet.appendChild(tissueInput);
+
+                                        // Change the Bone selection to a checkbox instead of radio buttons
+                                        const boneLabel = document.createElement("label");
+                                        boneLabel.textContent = "Bone?";
+
+                                        const boneInput = document.createElement("input");
+                                        boneInput.type = "checkbox"; // Use checkbox for Bone selection
+                                        boneInput.name = "bone[]"; // Use array notation to handle multiple inputs
+                                        boneInput.value = sectionCode; // Use the section code or another identifier to keep track
+
+                                        // Append the bone checkbox to the fieldSet
+                                        fieldSet.appendChild(boneLabel);
+                                        fieldSet.appendChild(boneInput);
+
+
+                                        const saveButton = document.getElementById("saveButton");
+                                        saveButton.style.display = "block";
+                                        
+                                        // fieldSet.appendChild(descriptionLabel);
+                                        fieldsContainer.appendChild(fieldSet);
+                                        console.log("Field Container: ", fieldSet)
+                                    }
+
+                                    
+                                </script>
                         </div>
-
-
 
                         <div id="microscopic-form" class="form-container" style="display:none;">
                              <?php 
@@ -1467,6 +1738,13 @@ switch (true) {
 
                         
                 </div>
+
+                <div id="Refer-Doctor" class="tabcontent_1">
+                    <form method="POST" action="">
+                        <label>Doctor:</label>
+
+                    </from>
+                </div> 
                 
 
                 
@@ -1698,11 +1976,11 @@ switch (true) {
                 <div id="Final-Report-Edit" class="tabcontent_1">
                         <div id="FinalForm">
                             <div class="form-group">
-                                <label>Select the Editing Section</label>
-                                <div class="option-list">
+                                <div class="option-list" style="margin-left: -20px;">
+                                    <label>Select the Editing Section: </label>
                                     <div class="option-item" style="border:none" data-value="Final Clinical Details">Clinical Details</div>
                                     <div class="option-item" style="border:none" data-value="Final Site Of Specimen">Site Of Specimen</div>
-                                    <!-- <div class="option-item" style="border:none" data-value="Final Gross">Gross</div> -->
+                                    <div class="option-item" style="border:none" data-value="Final Gross">Gross</div>
                                     <div class="option-item" style="border:none" data-value="Final Microscopic">Microscopic</div>
                                     <div class="option-item" style="border:none" data-value="Final Diagnosis">Diagnosis</div>
                                 </div>
@@ -1784,8 +2062,8 @@ switch (true) {
                                     echo '<label for="gross_description" class="col-sm-2 col-form-label">Gross Description</label>';
                                 
                                     echo '<div class="col-sm-10">';
-                                    echo '<div id="editor_' . $index . '" class="editor"></div>';
-                                    echo '<textarea name="gross_description[]" id="hidden_gross_description_' . $index . '" style="display:none;">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
+                                    echo '<div id="final_editor_' . $index . '" class="final_editor"></div>';
+                                    echo '<textarea name="gross_description[]" id="final_hidden_gross_description_' . $index . '" style="display:none;">' . htmlspecialchars($specimen['gross_description']) . '</textarea>';
                                     echo '</div>';
                                     echo '</div><br>';
                                     echo '<input type="hidden" name="fk_gross_id[]" value="' . htmlspecialchars($fk_gross_id) . '">';
@@ -1881,8 +2159,237 @@ switch (true) {
                                 echo '<div><br></div>';
                                 echo '<div><br></div>';
                             ?>
-                        </div>
 
+                                <script>
+                                        const final_abbreviations_value = <?php echo json_encode($abbreviations); ?>;
+                                        const final_abbreviations = {};
+
+                                        // Loop through abbreviations_value and map it to the abbreviations object
+                                        final_abbreviations_value.forEach(item => {
+                                            // Remove HTML tags using replace with a regex
+                                            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
+                                            final_abbreviations[item.abbreviation_key] = plainText;
+                                        });
+
+        
+                                        // Initialize Quill editor for each textarea
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            document.querySelectorAll('.final_editor').forEach((element, index) => {
+                                                const editor = new Quill(element, {
+                                                    theme: 'snow',
+                                                    modules: {
+                                                        toolbar: []
+                                                    }
+                                                });
+
+                                        // Set the content from the hidden textarea
+                                        const hiddenTextarea = document.querySelector('#final_hidden_gross_description_' + index);
+                                        editor.root.innerHTML = hiddenTextarea.value;
+
+                                        // Update the hidden textarea when content changes
+                                        editor.on('text-change', function() {
+                                            hiddenTextarea.value = editor.root.innerHTML;
+                                        });
+
+                                                // Add functionality to replace abbreviations
+                                                editor.root.addEventListener('keydown', function(event) {
+                                                    if (event.key === ' ') { // Check if the space bar is pressed
+                                                        event.preventDefault(); // Prevent default space behavior
+
+                                                        const text = editor.getText(); // Get the current text in the editor
+                                                        const selection = editor.getSelection(); // Get the current selection range
+                                                        const caretPosition = selection.index;
+
+                                                        // Debug: Log current text and caret position
+                                                        console.log("Text before caret:", text.substring(0, caretPosition));
+                                                        console.log("Caret position:", caretPosition);
+
+                                                        // Find the word before the caret position
+                                                        const textBeforeCaret = text.substring(0, caretPosition);
+                                                        const words = textBeforeCaret.trim().split(/\s+/);
+                                                        const lastWord = words[words.length - 1]; // Get the last word in its original case
+
+                                                        // Debug: Log the last word
+                                                        console.log("Last word typed:", lastWord);
+
+                                                        // Get the character before the word (check for the period rule)
+                                                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+
+                                                        // Check if the word is preceded by a period with no space or if it's empty
+                                                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                                                            // Just insert the space if the rule applies (no abbreviation generated)
+                                                            editor.insertText(caretPosition, ' ');
+                                                            return;
+                                                        }
+
+                                                        // Find the abbreviation in a case-sensitive manner
+                                                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                                                        
+                                                        if (abbreviation) {
+                                                            const fullAbbreviation = abbreviations[abbreviation];
+                                                            // Debug: Log abbreviation found
+                                                            console.log("Abbreviation found:", fullAbbreviation);
+
+                                                            // Replace the last word with the abbreviation only if it's not part of a longer word
+                                                            replaceLastWordWithAbbreviation(editor, lastWord, fullAbbreviation, caretPosition);
+                                                        } else {
+                                                            // If no abbreviation found, just insert a space
+                                                            editor.insertText(caretPosition, ' ');
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        });
+
+                                        // Helper function to replace the last word with the abbreviation
+                                        function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
+                                            const text = editor.getText();
+                                            const textBeforeCaret = text.substring(0, caretPosition);
+                                            
+                                            // Find the start of the word that needs to be replaced
+                                            const startOfWord = textBeforeCaret.lastIndexOf(word);
+
+                                            // Remove the word first to avoid overlapping or incorrect replacement
+                                            editor.deleteText(startOfWord, word.length);
+
+                                            // Insert the abbreviation, making sure to trim any extra spaces
+                                            editor.insertText(startOfWord, abbreviation.trim(), 'user');  // 'user' to simulate a normal typing action
+                                            
+                                            // Set the caret position after the inserted abbreviation
+                                            editor.setSelection(startOfWord + abbreviation.length, 0);
+
+                                            // Debug: Log text after replacement
+                                            console.log("Text after replacement:", editor.getText());
+                                        }
+                                </script>
+
+                                <script>
+
+                                        const final_buttonClickCounts = {};
+
+                                        document.getElementById("saveButton").addEventListener("click", function(event) {
+                                            event.preventDefault();
+                                            const final_form = document.getElementById("specimen_section_form");
+                                            final_form.submit();
+                                        });
+
+                                        let final_sections = <?php echo json_encode($sections); ?>;
+                                        let final_lastSectionCodes = {};
+                                        let final_lastCassetteNumbers = {};
+                                        let final_lastTissues = {};
+
+                                        final_sections.forEach(function(section) {
+                                            let final_specimenLetter = section.section_code.charAt(0);
+                                            final_lastSectionCodes[final_specimenLetter] = section.section_code;
+                                            if (!final_lastCassetteNumbers[final_specimenLetter] || section.cassettes_numbers > final_lastCassetteNumbers[final_specimenLetter]) {
+                                                final_lastCassetteNumbers[final_specimenLetter] = section.cassettes_numbers;
+                                            }
+                                            if (!final_lastTissues[final_specimenLetter] || section.tissue > final_lastTissues[final_specimenLetter]) {
+                                                final_lastTissues[final_specimenLetter] = section.tissue;
+                                            }
+                                        });
+
+                                        function final_generateNextSectionCode(final_specimenLetter) {
+                                            if (!final_lastSectionCodes[final_specimenLetter] || final_lastSectionCodes[final_specimenLetter] === '') {
+                                                return final_specimenLetter + '1';
+                                            } else {
+                                                const final_lastSectionNumber = parseInt(final_lastSectionCodes[final_specimenLetter].slice(1), 10);
+                                                if (!isNaN(final_lastSectionNumber)) {
+                                                    return final_specimenLetter + (final_lastSectionNumber + 1);
+                                                } else {
+                                                    console.error("Invalid last section code format:", final_lastSectionCodes[final_specimenLetter]);
+                                                    return final_specimenLetter + "1"; // fallback
+                                                }
+                                            }
+                                        }
+
+                                        function handleButtonClick(final_button) {
+                                            const final_buttonId = final_button.id;
+                                            const final_specimenIndex = final_button.id.split("-")[1]; 
+                                            const final_specimenLetter = final_button.getAttribute('data-specimen-letter');
+
+                                            final_buttonClickCounts[final_buttonId] = (final_buttonClickCounts[final_buttonId] || 0) + 1;
+
+                                            const final_section_text = 'Section from the ';
+                                            const final_specimen_count_value = <?php echo $specimen_count_value; ?>;
+                                            const final_last_value = "<?php echo $last_value; ?>";
+                                            const final_fk_gross_id = "<?php echo $fk_gross_id; ?>";
+                                            const final_fieldsContainer = document.getElementById("fields-container");
+                                            const final_currentYear = new Date().getFullYear();
+                                            const final_lastTwoDigits = final_currentYear.toString().slice(-2);
+
+                                            const final_sectionCode = final_generateNextSectionCode(final_specimenLetter);
+                                            final_lastSectionCodes[final_specimenLetter] = final_sectionCode;
+
+                                            const final_fieldSet = document.createElement("fieldset");
+                                            final_fieldSet.classList.add("card", "p-3", "mb-3", "border-primary");
+
+                                            // Hidden input for fk_gross_id
+                                            const final_fkGrossIdInput = document.createElement("input");
+                                            final_fkGrossIdInput.type = "hidden";
+                                            final_fkGrossIdInput.name = "fk_gross_id";
+                                            final_fkGrossIdInput.value = final_fk_gross_id;
+                                            final_fieldSet.appendChild(final_fkGrossIdInput);
+
+                                            // Section Code
+                                            const final_sectionCodeLabel = document.createElement("label");
+                                            final_sectionCodeLabel.textContent = final_sectionCode + ' :';
+                                            const final_inputSectionCode = document.createElement("input");
+                                            final_inputSectionCode.type = "hidden";
+                                            final_inputSectionCode.name = "sectionCode[]";
+                                            final_inputSectionCode.value = final_sectionCode;
+                                            final_fieldSet.appendChild(final_sectionCodeLabel);
+                                            final_fieldSet.appendChild(final_inputSectionCode);
+
+                                            // Description
+                                            const final_descriptionInput = document.createElement("input");
+                                            final_descriptionInput.type = "text";
+                                            final_descriptionInput.name = "specimen_section_description[]";
+                                            final_descriptionInput.value = final_section_text;
+                                            final_descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json');
+                                            final_fieldSet.appendChild(final_descriptionInput);
+
+                                            final_fieldSet.appendChild(document.createElement("br"));
+
+                                            // Cassette Number
+                                            const final_cassetteNumber = final_sectionCode + '-' + final_last_value + '/' + final_lastTwoDigits;
+                                            const final_cassetteNumberLabel = document.createElement("label");
+                                            final_cassetteNumberLabel.textContent = "Cassette Number: " + final_cassetteNumber;
+                                            const final_cassetteNumberInput = document.createElement("input");
+                                            final_cassetteNumberInput.type = "hidden";
+                                            final_cassetteNumberInput.name = "cassetteNumber[]";
+                                            final_cassetteNumberInput.value = final_cassetteNumber;
+                                            final_fieldSet.appendChild(final_cassetteNumberLabel);
+                                            final_fieldSet.appendChild(final_cassetteNumberInput);
+
+                                            // Tissue
+                                            const final_tissueLabel = document.createElement("label");
+                                            final_tissueLabel.textContent = "Tissue Pieces In " + final_sectionCode;
+                                            const final_tissueInput = document.createElement("input");
+                                            final_tissueInput.type = "text";
+                                            final_tissueInput.name = "tissue[]";
+                                            final_tissueInput.placeholder = "Tissue Pieces In " + final_sectionCode;
+                                            final_fieldSet.appendChild(final_tissueLabel);
+                                            final_fieldSet.appendChild(final_tissueInput);
+
+                                            // Bone
+                                            const final_boneLabel = document.createElement("label");
+                                            final_boneLabel.textContent = "Bone?";
+                                            const final_boneInput = document.createElement("input");
+                                            final_boneInput.type = "checkbox";
+                                            final_boneInput.name = "bone[]";
+                                            final_boneInput.value = final_sectionCode;
+                                            final_fieldSet.appendChild(final_boneLabel);
+                                            final_fieldSet.appendChild(final_boneInput);
+
+                                            const final_saveButton = document.getElementById("saveButton");
+                                            final_saveButton.style.display = "block";
+
+                                            final_fieldsContainer.appendChild(final_fieldSet);
+                                        }
+                                </script>
+                                
+                        </div>
 
                         <div id="final-microscopic-form" class="form-container" style="display:none;">
                                <?php 
@@ -2018,6 +2525,9 @@ switch (true) {
                         </div>
                 </div>
 
+                <div id="Final-Refer-Doctor" class="tabcontent_1">
+                    <p>Final Ref/Cons</p>
+                </div> 
                 
     </div>
 
@@ -3587,265 +4097,8 @@ switch (true) {
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-<!-- Gross Description Abbreviations -->
-<script>
-        const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
-        console.log('abbreviations :', abbreviations_value);
-        
-        const abbreviations = {};
-
-        // Loop through abbreviations_value and map it to the abbreviations object
-        abbreviations_value.forEach(item => {
-            // Remove HTML tags using replace with a regex
-            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
-            abbreviations[item.abbreviation_key] = plainText;
-        });
-
-        
-        // Initialize Quill editor for each textarea
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.editor').forEach((element, index) => {
-                const editor = new Quill(element, {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: []
-                    }
-                });
-
-                // Set the content from the hidden textarea
-                const hiddenTextarea = document.querySelector('#hidden_gross_description_' + index);
-                editor.root.innerHTML = hiddenTextarea.value;
-
-                // Update the hidden textarea when content changes
-                editor.on('text-change', function() {
-                    hiddenTextarea.value = editor.root.innerHTML;
-                });
-
-                // Add functionality to replace abbreviations
-                editor.root.addEventListener('keydown', function(event) {
-                    if (event.key === ' ') { // Check if the space bar is pressed
-                        event.preventDefault(); // Prevent default space behavior
-
-                        const text = editor.getText(); // Get the current text in the editor
-                        const selection = editor.getSelection(); // Get the current selection range
-                        const caretPosition = selection.index;
-
-                        // Find the word before the caret position
-                        const textBeforeCaret = text.substring(0, caretPosition);
-                        const words = textBeforeCaret.trim().split(/\s+/);
-                        const lastWord = words[words.length - 1]; // Get the last word in its original case
-
-                        // Get the character before the word (check for the period rule)
-                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-
-                        // Check if the word is preceded by a period with no space or if it's empty
-                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                            // Just insert the space if the rule applies (no abbreviation generated)
-                            editor.insertText(caretPosition, ' ');
-                            return;
-                        }
-
-                        // Find the abbreviation in a case-sensitive manner
-                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                        
-                        if (abbreviation) {
-                            const fullAbbreviation = abbreviations[abbreviation];
-
-                            // Replace the last word with the abbreviation only if it's not part of a longer word
-                            replaceLastWordWithAbbreviation(editor, lastWord, fullAbbreviation, caretPosition);
-                        } else {
-                            // If no abbreviation found, just insert a space
-                            editor.insertText(caretPosition, ' ');
-                        }
-                    }
-                });
-            });
-        });
-
-        // Helper function to replace the last word with the abbreviation
-        function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
-            const text = editor.getText();
-            const textBeforeCaret = text.substring(0, caretPosition);
-            
-            // Find the start of the word that needs to be replaced
-            const startOfWord = textBeforeCaret.lastIndexOf(word);
-
-            // Remove the word first to avoid overlapping or incorrect replacement
-            editor.deleteText(startOfWord, word.length);
-
-            // Insert the abbreviation, making sure to trim any extra spaces
-            editor.insertText(startOfWord, abbreviation.trim(), 'user');  // 'user' to simulate a normal typing action
-            
-            // Set the caret position after the inserted abbreviation
-            editor.setSelection(startOfWord + abbreviation.length, 0);
-
-            // Debug: Log text after replacement
-            console.log("Text after replacement:", editor.getText());
-        }
-</script>
 
 
-<script>
-
-    const buttonClickCounts = {};
-    
-    document.getElementById("saveButton").addEventListener("click", function(event) {
-        // Prevent the default form submission behavior
-        event.preventDefault();
-
-        // Get the form element
-        const form = document.getElementById("specimen_section_form");
-
-        // Submit the form
-        form.submit();
-    });
-
-    let sections = <?php echo json_encode($sections); ?>;
-    let lastSectionCodes = {};
-    let lastCassetteNumbers = {};
-    let lastTissues = {};
-
-    // Iterate over each section to find the last section code, cassette number, and tissue for each specimen
-    sections.forEach(function(section) {
-        let specimenLetter = section.section_code.charAt(0); // Extract the specimen letter
-        let sectionCode = section.section_code;
-        let cassetteNumber = section.cassettes_numbers;
-        let tissue = section.tissue;
-
-        // Update the last section code for this specimen
-        lastSectionCodes[specimenLetter] = sectionCode;
-
-        // Update the last cassette number for this specimen
-        if (!lastCassetteNumbers[specimenLetter] || cassetteNumber > lastCassetteNumbers[specimenLetter]) {
-            lastCassetteNumbers[specimenLetter] = cassetteNumber;
-        }
-
-        // Update the last tissue for this specimen
-        if (!lastTissues[specimenLetter] || tissue > lastTissues[specimenLetter]) {
-            lastTissues[specimenLetter] = tissue;
-        }
-    });
-
-
-    function generateNextSectionCode(specimenLetter) {
-        // Generate the next section code
-        let sectionCode = '';
-
-        if (!lastSectionCodes[specimenLetter] || lastSectionCodes[specimenLetter] === '') {
-            // If the last section code is empty or not set, generate it based on the specimen letter and button click count
-            sectionCode = specimenLetter + '1';
-        } else {
-            // Otherwise, generate it sequentially based on the last section code
-            const lastSectionNumber = parseInt(lastSectionCodes[specimenLetter].slice(1), 10);
-            if (!isNaN(lastSectionNumber)) {
-                // Increment the last section number and generate the new section code
-                const nextSectionNumber = lastSectionNumber + 1;
-                sectionCode = specimenLetter + nextSectionNumber;
-            } else {
-                // Handle the case where lastSectionNumber is NaN (e.g., if lastSectionCode doesn't follow the expected format)
-                console.error("Invalid last section code format:", lastSectionCodes[specimenLetter]);
-                // You can provide a default behavior here, such as setting sectionCode to a predefined value
-                // sectionCode = specimenLetter + "1";
-            }
-        }
-        return sectionCode;
-    }
-    
-    function handleButtonClick(button) {
-        const buttonId = button.id;
-        const specimenIndex = button.id.split("-")[1]; 
-        const specimenLetter = button.getAttribute('data-specimen-letter');
-        buttonClickCounts[buttonId] = (buttonClickCounts[buttonId] || 0) + 1;
-        const section_text = 'Section from the ';
-        const specimen_count_value = <?php echo $specimen_count_value; ?>;
-        const last_value = "<?php echo $last_value; ?>";
-        const fk_gross_id = "<?php echo $fk_gross_id;?>";
-        const fieldsContainer = document.getElementById("fields-container");
-        const addMoreButton = document.getElementById("<?php echo $button_id; ?>");
-        const currentYear = new Date().getFullYear();
-        const lastTwoDigits = currentYear.toString().slice(-2);
-
-        // Generate the next section code
-        let sectionCode = generateNextSectionCode(specimenLetter);
-        
-        // Update the last generated section code
-        lastSectionCodes[specimenLetter] = sectionCode;
-      
-
-        // Create a new field set for each entry
-        const fieldSet = document.createElement("fieldset");
-        fieldSet.classList.add("card", "p-3", "mb-3", "border-primary"); // Add a class for styling (optional)
-        let sectionCodes = [];
-        let cassetteNumbers = [];
-        let descriptions = [];
-        const br = document.createElement("br");
-
-        const fkGrossIdInput = document.createElement("input");
-        fkGrossIdInput.type = "hidden";
-        fkGrossIdInput.name = "fk_gross_id"; // Set the name attribute to identify the input
-        fkGrossIdInput.value = "<?php echo $fk_gross_id;?>";
-        fieldSet.appendChild(fkGrossIdInput);
-
-        // Create the label and input for Section Code
-        const sectionCodeLabel = document.createElement("label");
-        sectionCodeLabel.textContent = sectionCode +' :';
-        const inputSectionCode = document.createElement("input");
-        inputSectionCode.type = "hidden"; // Use "text" for Section Code input
-        inputSectionCode.name =  "sectionCode[]"; // Assign unique name based on count
-        inputSectionCode.value = sectionCode;
-        inputSectionCode.type = "hidden";
-        const descriptionInput = document.createElement("input");
-        descriptionInput.type = "text"; // Use "text" for Description input
-        descriptionInput.name = "specimen_section_description[]"; // Assign unique name based on count
-        descriptionInput.value = section_text;
-        descriptionInput.setAttribute('data-shortcut-file', 'shortcuts.json'); // Specify the shortcut JSON file
-        fieldSet.appendChild(sectionCodeLabel);
-        fieldSet.appendChild(inputSectionCode);
-        fieldSet.appendChild(descriptionInput);
-        fieldSet.appendChild(br);
-
-        // Create the label and input for cassetteNumbers
-        const cassetteNumberLabel = document.createElement("label");
-        cassetteNumberLabel.textContent = "Cassette Number: " + sectionCode + '-' + last_value + '/' + lastTwoDigits;
-        const cassetteNumberInput = document.createElement("input");
-        cassetteNumberInput.type = "hidden"; // Use "text" for Cassette Number input
-        cassetteNumberInput.name = "cassetteNumber[]"; // Assign unique name based on count
-        cassetteNumberInput.value = sectionCode + '-' + last_value + '/' + lastTwoDigits;
-        fieldSet.appendChild(cassetteNumberInput);
-     
-        const tissueLabel = document.createElement("label");
-        tissueLabel.textContent = "Tissue Pieces In  " + sectionCode 
-        const tissueInput = document.createElement("input");
-        tissueInput.type = "text"; // Use "text" for Cassette Number input
-        tissueInput.name = "tissue[]"; // Assign unique name based on count
-        tissueInput.value = '';
-        tissueInput.placeholder = "Tissue Pieces In  " + sectionCode ;
-        fieldSet.appendChild(tissueInput);
-
-        // Change the Bone selection to a checkbox instead of radio buttons
-        const boneLabel = document.createElement("label");
-        boneLabel.textContent = "Bone?";
-
-        const boneInput = document.createElement("input");
-        boneInput.type = "checkbox"; // Use checkbox for Bone selection
-        boneInput.name = "bone[]"; // Use array notation to handle multiple inputs
-        boneInput.value = sectionCode; // Use the section code or another identifier to keep track
-
-        // Append the bone checkbox to the fieldSet
-        fieldSet.appendChild(boneLabel);
-        fieldSet.appendChild(boneInput);
-
-
-        const saveButton = document.getElementById("saveButton");
-        saveButton.style.display = "block";
-        
-        // fieldSet.appendChild(descriptionLabel);
-        fieldsContainer.appendChild(fieldSet);
-        console.log("Field Container: ", fieldSet)
-    }
-
-    
-</script>
 
 <!--   Display "No" or "Yes" options based on bones_status value -->
 <script>
@@ -4424,7 +4677,7 @@ switch (true) {
   });
 </script>
 
-
+<!-- Changes Tab -->
 <script>
 
     function handleFinalReportTabClick() {
