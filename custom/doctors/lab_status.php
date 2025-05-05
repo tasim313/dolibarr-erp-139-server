@@ -302,17 +302,15 @@ switch (true) {
 
         .option-list {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 8px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .option-item {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 8px 12px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
 
         .option-item:hover {
@@ -587,18 +585,10 @@ switch (true) {
     <!-- Lab No Form -->
     <form name="readlabno" id="readlabno" action="" class="d-flex align-items-center">
         <label for="labno" class="mb-0 me-2">Lab No:</label>
-        <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
+    <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
     </form>
 
-    <!-- Final Report Button -->
-    <button class="btn btn-link text-dark p-0" onclick="loadReport()">
-        <i class="fas fa-file-alt" aria-hidden="true"></i> Final Report
-    </button>
-
-    <!-- Preliminary Report Button -->
-    <button class="btn btn-link text-dark p-0" onclick="loadPreliminaryReport()">
-        <i class="fas fa-file-alt" aria-hidden="true"></i> Preliminary Report
-    </button>
+    <?php echo("<h5 style='font-weight: bold; text-align: left; margin-left: -50px;'>Lab Number: $LabNumber</h5>") ?>
 
     <!-- Status Button -->
     <button style="border:none; font-size: 20px;" id="tab-status" data-toggle="modal" data-target="#exampleModalCenter">
@@ -620,7 +610,7 @@ switch (true) {
         </div>
     <?php else: ?>
         <div class="d-flex align-items-center" style="gap: 10px;">
-            <label for="preliminary_datetime" class="mb-0">For Final Report Collect Date & Time:</label>
+            <label for="preliminary_datetime" class="mb-0">Set Final Reporting Date & Time:</label>
             <input type="datetime-local" id="preliminary_datetime" class="form-control form-control-sm" style="width: 250px;" required>
             <button id="preliminary_report_release" type="button" class="btn btn-primary" style="display: none;">Preliminary Report Release</button>
         </div>
@@ -628,7 +618,7 @@ switch (true) {
 
     <!-- Notification Button -->
     <button id="notificationBtn" type="button" class="btn btn-primary d-none">
-        🔔 <span id="notificationCount">0</span> New Notification(s)
+        <span>💬</span><span id="notificationCount">0</span> New Message(s)
     </button>
 
 </div>
@@ -641,10 +631,13 @@ switch (true) {
     <div class="col-md-6 panel">
             <ul class="nav nav-tabs process-model more-icon-preocess" role="tablist">
                 <div class="tab-buttons button-container">                          
-                    <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="showTab('screening')">
+                    <button style="border:none; font-size: 20px;" id="tab-screening" class="inactive" onclick="handlePreliminaryReportTabClick()">
                         <i class="fas fa-microscope" aria-hidden="true"></i> Preliminary Report</button>                       
-                    <button style="border:none; font-size: 20px;" id="tab-final-screening" class="inactive" onclick="showTab('final-screening')">
-                        <i class="fas fa-microscope" aria-hidden="true"></i> Final Report</button>                        
+                    <button style="border:none; font-size: 20px;" id="tab-final-screening"
+                     class="inactive" onclick="handleFinalReportTabClick()">
+                        <i class="fas fa-microscope" aria-hidden="true"></i> Final Report
+                    </button>  
+                                              
                 </div>
             </ul>
 
@@ -1354,7 +1347,7 @@ switch (true) {
                                             <input type="hidden" name="status[]" value="Done">
 
                                             <div class="text-center">
-                                                <button type="submit" class="btn btn-success btn-lg">Save</button>
+                                                <br><br><button type="submit" class="btn btn-success btn-lg">Save</button>
                                             </div>
                                         </form>
 
@@ -2285,6 +2278,12 @@ switch (true) {
                 // Log the active and inactive tabs
                 logTabStates();
                 startScreeningAndFinalScreening();
+                // Call appropriate function based on tabId
+                if (tabId === 'screening') {
+                    loadPreliminaryReport();
+                } else if (tabId === 'final-screening') {
+                    loadReport();
+                }
             }
 
 
@@ -4387,7 +4386,7 @@ switch (true) {
     if (Array.isArray(currentNotification)) {
       currentNotification.forEach(item => {
         if (!isNotificationSeen(item)) {
-          const msg = `Lab: ${item.labno}, User: ${item.username}, Status: ${item.status_name}, Info: ${item.description}`;
+          const msg = `Lab Number: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
           addNotification(msg, true);
           unseenItems.push(item);
         }
@@ -4397,7 +4396,7 @@ switch (true) {
     if (Array.isArray(previousNotification)) {
       previousNotification.forEach(item => {
         if (!isNotificationSeen(item)) {
-          const msg = `Lab: ${item.labno}, User: ${item.username}, Status: ${item.status_name}, Info: ${item.description}`;
+          const msg = `Lab Number: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
           addNotification(msg, false);
           unseenItems.push(item);
         }
@@ -4423,6 +4422,45 @@ switch (true) {
   $(document).ready(function () {
     loadInitialNotifications();
   });
+</script>
+
+
+<script>
+
+    function handleFinalReportTabClick() {
+        try {
+            showTab('final-screening');
+        } catch (e) {
+            console.error("Error in showTab:", e);
+        }
+
+        // Add a small delay before calling loadReport
+        setTimeout(() => {
+            try {
+                loadReport();
+            } catch (e) {
+                console.error("Error in loadReport:", e);
+            }
+        }, 100); // Adjust timing if needed
+    }
+
+    function handlePreliminaryReportTabClick() {
+        try {
+            showTab('screening');
+        } catch (e) {
+            console.error("Error in showTab:", e);
+        }
+
+        // Add a small delay before calling loadReport
+        setTimeout(() => {
+            try {
+                loadPreliminaryReport();
+            } catch (e) {
+                console.error("Error in loadReport:", e);
+            }
+        }, 100); // Adjust timing if needed
+    }
+
 </script>
 
 

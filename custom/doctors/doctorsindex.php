@@ -89,6 +89,8 @@ $userGroupNames = getUserGroupNames($loggedInUserId);
 
 $hasConsultants = false;
 
+$current_notification = notification_preliminary_report_current_date_to_future_date();
+$previous_notification = notification_preliminary_report_previous_date();
 
 
 foreach ($userGroupNames as $group) {
@@ -1120,7 +1122,7 @@ switch (true) {
     </div>
 
 
-    <!-- Modal -->
+    <!-- Notification Modal -->
     <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-fullscreen" role="document">
         <div class="modal-content modal-content-fullscreen">
@@ -1130,8 +1132,11 @@ switch (true) {
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
-        <div class="modal-body text-center">
-            <p>This is a fullscreen notification. You can add any important message or announcement here.</p>
+        <div class="modal-body ">
+            <div id="notificationContent">
+                <ul id="notificationListFuture" class="list-group mb-3"></ul>
+                <ul id="notificationListPast" class="list-group"></ul>
+            </div>
         </div>
         <div class="modal-footer justify-content-center">
             <button type="button" class="btn btn-primary" data-dismiss="modal" id="modalExitBtn">Exit</button>
@@ -2331,15 +2336,34 @@ switch (true) {
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
         <script src="bootstrap-4.4.1-dist/js/bootstrap.bundle.min.js"></script>
         <script>
-        // Show modal on page load
-        $(document).ready(function() {
-            $('#notificationModal').modal('show');
-        });
+            const currentNotification = <?php echo json_encode($current_notification); ?>;
+            const previousNotification = <?php echo json_encode($previous_notification); ?>;
 
-        // Optionally add custom behavior on close or exit
-        $('#modalCloseBtn, #modalExitBtn').click(function () {
-            console.log('Modal closed or exited.');
-        });
+            // Utility to render notifications
+            function addNotificationToList(listId, notifications) {
+                const listElement = document.getElementById(listId);
+                if (!listElement || !Array.isArray(notifications)) return;
+
+                notifications.forEach(item => {
+                    const msg = `LabNumber: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = msg;
+                    listElement.appendChild(li);
+                });
+            }
+
+            // Show modal and inject notification data
+            $(document).ready(function () {
+                $('#notificationModal').modal('show');
+                addNotificationToList('notificationListFuture', currentNotification);
+                addNotificationToList('notificationListPast', previousNotification);
+            });
+
+            // Optionally log on modal close
+            $('#modalCloseBtn, #modalExitBtn').click(function () {
+                console.log('Modal closed or exited.');
+            });
         </script>
 
 
