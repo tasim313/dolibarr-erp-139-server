@@ -102,6 +102,35 @@ $specimenIformation   = get_gross_specimens_list($LabNumber);
 
 $current_notification = notification_preliminary_report_current_date_to_future_date();
 $previous_notification = notification_preliminary_report_previous_date();
+$refer_comment =  doctor_referral_system_records_list($LabNumber);
+
+$formattedCommentData = array_map(function ($entry) {
+    $rawComments = json_decode($entry['referal_reason'], true) ?? [];
+    $commentMap = [];
+
+    foreach ($rawComments as $comment) {
+        $date = $comment['date'] ?? null;
+
+        foreach ($comment as $key => $value) {
+            if ($key === 'date') continue;
+
+            if (!isset($commentMap[$key])) {
+                $commentMap[$key] = [];
+            }
+
+            $commentMap[$key][] = [
+                'text' => $value,
+                'date' => $date
+            ];
+        }
+    }
+
+    return [
+        'title' => $entry['title'],
+        'comment' => $commentMap,
+        'rowid' => $entry['rowid']
+    ];
+}, $refer_comment);
 
 
 
@@ -1750,22 +1779,8 @@ switch (true) {
 
                     <!-- Submit Form -->
                     <div id="commentFormSection" class="p-4 border rounded">
-                        <form method="POST" action="" class="p-4">
-                            <div class="mb-4">
-                                <label class="form-label fw-semibold text-dark">Select Doctor</label>
-                                <select id="referred_to_doctor_name" name="referred_to_doctor_name" class="form-select form-select-lg" required>
-                                <option value="">Select Doctor</option> 
-                                <?php
-                                    $doctors = get_doctor_list();
-                                    $loggedInUsername = $user->login; 
-                                    foreach ($doctors as $doctor) {
-                                    $selected = ($doctor['doctor_username'] == $loggedInUsername) ? 'selected' : '';
-                                    echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                                    }
-                                ?>
-                                </select>
-                            </div>
-
+                        <form method="POST" action="insert/refer_system.php" class="p-4">
+                            
                             <div class="mb-4">
                                 <label for="ref_comment" class="form-label fw-semibold text-dark">Comment</label>
                                 <textarea 
@@ -1773,7 +1788,7 @@ switch (true) {
                                 id="ref_comment" 
                                 class="form-control mention-box" 
                                 rows="4" 
-                                placeholder="Enter referral comments here..."
+                                placeholder="Type @ to mention a doctor... Enter referral comments here..."
                                 required
                                 style="resize: both; overflow: auto;"
                                 ></textarea>
@@ -2583,22 +2598,8 @@ switch (true) {
 
                         <!-- Submit Form -->
                         <div id="final_commentFormSection" class="p-4 border rounded">
-                            <form method="POST" action="" class="p-4">
-                                <div class="mb-4">
-                                    <label class="form-label fw-semibold text-dark">Select Doctor</label>
-                                    <select id="final_referred_to_doctor_name" name="final_referred_to_doctor_name" class="form-select form-select-lg" required>
-                                    <option value="">Select Doctor</option> 
-                                    <?php
-                                        $doctors = get_doctor_list();
-                                        $loggedInUsername = $user->login; 
-                                        foreach ($doctors as $doctor) {
-                                        $selected = ($doctor['doctor_username'] == $loggedInUsername) ? 'selected' : '';
-                                        echo "<option value='{$doctor['doctor_username']}' $selected>{$doctor['doctor_username']}</option>";
-                                        }
-                                    ?>
-                                    </select>
-                                </div>
-
+                            <form method="POST" action="insert/final_refer_system.php" class="p-4">
+                                
                                 <div class="mb-4">
                                     <label for="final_ref_comment" class="form-label fw-semibold text-dark">Comment</label>
                                     <textarea 
@@ -2606,7 +2607,7 @@ switch (true) {
                                     id="final_ref_comment" 
                                     class="form-control mention-box" 
                                     rows="4" 
-                                    placeholder="Enter referral comments here..."
+                                    placeholder="Type @ to mention a doctor...  Enter referral comments here..."
                                     required
                                     style="resize: both; overflow: auto;"
                                     ></textarea>
@@ -4830,6 +4831,8 @@ switch (true) {
         }, $doctors));
     ?>;
 
+    const loggedInUsername = "<?php echo htmlspecialchars($loggedInUsername, ENT_QUOTES, 'UTF-8'); ?>";
+
     // Tribute.js init for the main form
     document.addEventListener("DOMContentLoaded", function () {
         const tribute = new Tribute({
@@ -4863,96 +4866,122 @@ switch (true) {
         document.getElementById('commentListSection').style.display = 'block';
     }
 
-    // Dummy data for rendering comments
-    let dummyData = [
-        {
-            title: "Lorem",
-            comment: {
-                user_1: "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
-                user_2: "It is a long established fact that a reader will be distracted...",
-                user_3: "Desktop publishing software like Aldus PageMaker...",
-                user_4: "Various versions have evolved over the years..."
-            }
-        },
-        {
-            title: "Ipsum",
-            comment: {
-                user_1: "Another dummy text for user_1",
-                user_2: "Another dummy text for user_2",
-                user_3: "Another dummy text for user_3",
-                user_4: "Another dummy text for user_4"
-            }
-        }
-    ];
+    // Comment Data for rendering comments
+    let commentData = <?php echo json_encode($formattedCommentData); ?>;
+    
 
     // Render comments and handle new comment submission
     function renderComments() {
-        const container = document.getElementById("renderedComments");
-        container.innerHTML = "";
+            const container = document.getElementById("renderedComments");
+            container.innerHTML = "";
 
-        dummyData.forEach((entry, index) => {
-            const section = document.createElement("div");
-            section.className = "mb-4 p-3 border rounded";
+            commentData.forEach((entry) => {
+                const section = document.createElement("div");
+                section.className = "mb-4 p-3 border rounded";
 
-            // Title
-            const titleElem = document.createElement("h6");
-            titleElem.className = "fw-semibold text-primary";
-            titleElem.textContent = `Title: ${entry.title}`;
-            section.appendChild(titleElem);
+                // Title
+                const titleElem = document.createElement("h6");
+                titleElem.className = "fw-semibold text-primary";
+                titleElem.textContent = `Title: ${entry.title}`;
+                section.appendChild(titleElem);
 
-            // Existing comments
-            const ul = document.createElement("ul");
-            for (const [user, comment] of Object.entries(entry.comment)) {
-                const li = document.createElement("li");
-                li.innerHTML = `<strong>${user}:</strong> ${comment}`;
-                ul.appendChild(li);
-            }
-            section.appendChild(ul);
+                // Existing comments
+                const ul = document.createElement("ul");
 
-            // Add new comment form
-            const form = document.createElement("form");
-            form.className = "mt-3";
-            form.innerHTML = `
-                <div class="mb-2">
-                    <textarea class="form-control mention-box" rows="2" name="comment" placeholder="Type @ to mention a doctor..." style="resize: both; overflow: auto;" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-sm btn-success">Add Comment</button>
-                <input type="hidden" name="title" value="${entry.title}">
-            `;
+                for (const [user, comments] of Object.entries(entry.comment)) {
+                    const li = document.createElement("li");
 
-            // Handle form submit to update comments
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const comment = form.querySelector("textarea[name='comment']").value;
-                const title = form.querySelector("input[name='title']").value;
+                    const commentTexts = comments.map(c => {
+                        const dateText = c.date ? ` <small class="text-muted">(${c.date})</small>` : '';
+                        return `${c.text}${dateText}`;
+                    });
 
-                if (!comment.trim()) {
-                    alert("Please write a comment.");
-                    return;
+                    li.innerHTML = `<strong>${user}:</strong><ul><li>${commentTexts.join('</li><li>')}</li></ul>`;
+                    ul.appendChild(li);
                 }
 
-                const username = "current_user"; // Replace with your logged-in user variable
-                const entryToUpdate = dummyData.find(item => item.title === title);
-                if (entryToUpdate) {
-                    entryToUpdate.comment[username] = comment;
-                }
+                section.appendChild(ul);
 
-                renderComments();
+                // New comment form
+                const form = document.createElement("form");
+                form.className = "mt-3";
+                form.setAttribute("action", "insert/update_refer_system.php");
+                form.setAttribute("method", "POST");
+
+                form.innerHTML = `
+                    <div class="mb-2">
+                        <textarea class="form-control mention-box" rows="2" name="comment" placeholder="Type @ to mention a doctor..." style="resize: both; overflow: auto;" required></textarea>
+                    </div>
+                    <input type="hidden" name="title" value="${entry.title}">
+                    <input type="hidden" name="rowid" value="${entry.rowid}">
+                    <button type="submit" class="btn btn-sm btn-success">Add Comment</button>
+                `;
+
+                // Submit event (only once)
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const commentText = form.querySelector("textarea[name='comment']").value.trim();
+                    const title = form.querySelector("input[name='title']").value;
+                    const rowid = form.querySelector("input[name='rowid']").value;
+
+                    if (!commentText) {
+                        alert("Please write a comment.");
+                        return;
+                    }
+
+                    const username = loggedInUsername;
+                    const currentDate = new Date().toLocaleString();
+
+                    // Update local commentData
+                    const entryToUpdate = commentData.find(item => item.title === title);
+                    if (entryToUpdate) {
+                        if (!entryToUpdate.comment[username]) {
+                            entryToUpdate.comment[username] = [];
+                        }
+
+                        entryToUpdate.comment[username].push({
+                            text: commentText,
+                            date: currentDate
+                        });
+                    }
+
+                    // Send to PHP server
+                    fetch("insert/update_refer_system.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            comment: commentText,
+                            title: title,
+                            rowid: rowid,
+                            username: loggedInUsername
+                        })
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        location.reload(); 
+                        renderComments(); // Refresh UI
+                    })
+                    .catch(error => {
+                        console.error("Error saving comment:", error);
+                    });
+                });
+
+                section.appendChild(form);
+                container.appendChild(section);
+
+                // Attach Tribute.js for @mention
+                const textarea = form.querySelector("textarea");
+                const tribute = new Tribute({
+                    values: doctorList,
+                    selectTemplate: function (item) {
+                        return `@${item.original.value}`;
+                    }
+                });
+                tribute.attach(textarea);
             });
-
-            section.appendChild(form);
-            container.appendChild(section);
-
-            // Activate Tribute.js for @mentions
-            const textarea = form.querySelector("textarea");
-            const tribute = new Tribute({
-                values: doctorList,
-                selectTemplate: function (item) {
-                    return `@${item.original.value}`;
-                }
-            });
-            tribute.attach(textarea);
-        });
     }
 
     // Initialize comment rendering when the page is ready
@@ -5003,86 +5032,121 @@ switch (true) {
         document.getElementById('final_commentListSection').style.display = 'block';
     }
 
-    let finalDummyData = [
-        {
-            title: "Final Lorem",
-            comment: {
-                user_1: "Final comment 1 from user_1",
-                user_2: "Final comment 2 from user_2",
-            }
-        },
-        {
-            title: "Final Ipsum",
-            comment: {
-                user_3: "Final text from user_3",
-                user_4: "Final note from user_4",
-            }
-        }
-    ];
+    let finalcommentData = <?php echo json_encode($formattedCommentData); ?>;
 
     function renderFinalComments() {
-        const container = document.getElementById("final_renderedComments");
-        container.innerHTML = "";
+            const container = document.getElementById("final_renderedComments");
+            container.innerHTML = "";
 
-        finalDummyData.forEach((entry) => {
-            const section = document.createElement("div");
-            section.className = "mb-4 p-3 border rounded";
+            finalcommentData.forEach((entry) => {
+                const section = document.createElement("div");
+                section.className = "mb-4 p-3 border rounded";
 
-            const titleElem = document.createElement("h6");
-            titleElem.className = "fw-semibold text-primary";
-            titleElem.textContent = `Title: ${entry.title}`;
-            section.appendChild(titleElem);
+                const titleElem = document.createElement("h6");
+                titleElem.className = "fw-semibold text-primary";
+                titleElem.textContent = `Title: ${entry.title}`;
+                section.appendChild(titleElem);
 
-            const ul = document.createElement("ul");
-            for (const [user, comment] of Object.entries(entry.comment)) {
-                const li = document.createElement("li");
-                li.innerHTML = `<strong>${user}:</strong> ${comment}`;
-                ul.appendChild(li);
-            }
-            section.appendChild(ul);
+                const ul = document.createElement("ul");
+                for (const [user, comments] of Object.entries(entry.comment)) {
+                    const li = document.createElement("li");
+                    const innerUl = document.createElement("ul");
 
-            const form = document.createElement("form");
-            form.className = "mt-3";
-            form.innerHTML = `
-                <div class="mb-2">
-                    <textarea class="form-control mention-box" rows="2" name="comment" placeholder="Type @ to mention a doctor..."  style="resize: both; overflow: auto;" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-sm btn-success">Add Comment</button>
-                <input type="hidden" name="title" value="${entry.title}">
-            `;
+                    comments.forEach(c => {
+                        const dateText = c.date ? ` <small class="text-muted">(${c.date})</small>` : '';
+                        const commentLi = document.createElement("li");
+                        commentLi.innerHTML = `${c.text}${dateText}`;
+                        innerUl.appendChild(commentLi);
+                    });
 
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-                const comment = form.querySelector("textarea[name='comment']").value;
-                const title = form.querySelector("input[name='title']").value;
-
-                if (!comment.trim()) {
-                    alert("Please write a comment.");
-                    return;
+                    li.innerHTML = `<strong>${user}:</strong>`;
+                    li.appendChild(innerUl);
+                    ul.appendChild(li);
                 }
+                section.appendChild(ul);
 
-                const username = "current_user"; // Replace dynamically
-                const entryToUpdate = finalDummyData.find(item => item.title === title);
-                if (entryToUpdate) {
-                    entryToUpdate.comment[username] = comment;
-                }
+                // New comment form
+                const form = document.createElement("form");
+                form.className = "mt-3";
+                form.setAttribute("action", "insert/update_final_refer_system.php");
+                form.setAttribute("method", "POST");
 
-                renderFinalComments();
+                form.innerHTML = `
+                    <div class="mb-2">
+                        <textarea class="form-control mention-box" rows="2" name="comment" placeholder="Type @ to mention a doctor..." style="resize: both; overflow: auto;" required></textarea>
+                    </div>
+                    <input type="hidden" name="title" value="${entry.title}">
+                    <input type="hidden" name="rowid" value="${entry.rowid}">
+                    <button type="submit" class="btn btn-sm btn-success">Add Comment</button>
+                `;
+
+                // Submit event (only once)
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const commentText = form.querySelector("textarea[name='comment']").value.trim();
+                    const title = form.querySelector("input[name='title']").value;
+                    const rowid = form.querySelector("input[name='rowid']").value;
+
+                    if (!commentText) {
+                        alert("Please write a comment.");
+                        return;
+                    }
+
+                    const username = loggedInUsername;
+                    const currentDate = new Date().toLocaleString();
+
+                    // Update local commentData
+                    const entryToUpdate = finalcommentData.find(item => item.title === title);
+                    if (entryToUpdate) {
+                        if (!entryToUpdate.comment[username]) {
+                            entryToUpdate.comment[username] = [];
+                        }
+
+                        entryToUpdate.comment[username].push({
+                            text: commentText,
+                            date: currentDate
+                        });
+                    }
+
+                    // Send to PHP server
+                    fetch("insert/update_final_refer_system.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: new URLSearchParams({
+                            comment: commentText,
+                            title: title,
+                            rowid: rowid,
+                            username: loggedInUsername
+                        })
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        renderFinalComments(); // Refresh UI without reloading
+                    })
+                    .catch(error => {
+                        console.error("Error saving comment:", error);
+                    });
+                });
+
+                section.appendChild(form);
+                container.appendChild(section);
+
+                // Attach Tribute.js for @mention
+                const textarea = form.querySelector("textarea");
+                const tribute = new Tribute({
+                    values: doctorList,
+                    selectTemplate: function (item) {
+                        return `@${item.original.value}`;
+                    }
+                });
+                tribute.attach(textarea);
             });
-
-            section.appendChild(form);
-            container.appendChild(section);
-
-            const textarea = form.querySelector("textarea");
-            const tribute = new Tribute({
-                values: finalDoctorList,
-                selectTemplate: function (item) {
-                    return `@${item.original.value}`;
-                }
-            });
-            tribute.attach(textarea);
-        });
     }
+
+
 </script>
 
 
