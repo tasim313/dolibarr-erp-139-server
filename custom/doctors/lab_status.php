@@ -133,6 +133,9 @@ $formattedCommentData = array_map(function ($entry) {
 }, $refer_comment);
 
 
+$refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
+
+
 
 // Check if "Bones" status exists in the $bone_status array
 $showBoneSlideReady = false;
@@ -2793,7 +2796,7 @@ switch (true) {
       <div class="modal-body">
         <ul id="notificationListFuture" class="list-group mb-4"></ul>
         <ul id="notificationListPast" class="list-group"></ul>
-
+        <div id="referralNotificationContainer" class="mt-2"></div>
       </div>
       <div class="modal-footer justify-content-center">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modalExitBtn">Exit</button>
@@ -4697,6 +4700,7 @@ switch (true) {
 <script>
   const currentNotification = <?php echo json_encode($current_notification); ?>;
   const previousNotification = <?php echo json_encode($previous_notification); ?>;
+  const referNotification = <?php echo json_encode($refer_notification); ?>;
 
   let notificationCount = 0;
 
@@ -4704,11 +4708,23 @@ switch (true) {
     return `${item.labno}_${item.status_name}_${item.description}`;
   }
 
+
+  function generateReferralKey(item) {
+    return `referral_${item.refering_doctor_name}_${item.referal_reason}`;
+  }
+
   function isNotificationSeen(item) {
     const seen = localStorage.getItem('seenNotifications');
     const seenList = seen ? JSON.parse(seen) : [];
     return seenList.includes(generateNotificationKey(item));
   }
+
+  function isReferralSeen(item) {
+    const seen = localStorage.getItem('seenReferralNotifications');
+    const seenList = seen ? JSON.parse(seen) : [];
+    return seenList.includes(generateReferralKey(item));
+  }
+
 
   function markNotificationsAsSeen(allItems) {
     const seen = localStorage.getItem('seenNotifications');
@@ -4724,42 +4740,166 @@ switch (true) {
     localStorage.setItem('seenNotifications', JSON.stringify(seenList));
   }
 
+  function markReferralAsSeen(items) {
+    const seen = localStorage.getItem('seenReferralNotifications');
+    let seenList = seen ? JSON.parse(seen) : [];
+
+    items.forEach(item => {
+      const key = generateReferralKey(item);
+      if (!seenList.includes(key)) {
+        seenList.push(key);
+      }
+    });
+
+    localStorage.setItem('seenReferralNotifications', JSON.stringify(seenList));
+  }
+
+
   function addNotification(message, isFuture = true) {
     notificationCount++;
     $('#notificationCount').text(notificationCount);
     $('#notificationBtn').removeClass('d-none');
 
     const listId = isFuture ? '#notificationListFuture' : '#notificationListPast';
-    $(listId).append('<li class="list-group-item">' + message + '</li>');
+    $(listId).append('<li class="list-group-item border-0">' + message + '</li>');
   }
 
   // Load and compare with seen notifications
-  function loadInitialNotifications() {
-    const unseenItems = [];
 
-    if (Array.isArray(currentNotification)) {
-      currentNotification.forEach(item => {
-        if (!isNotificationSeen(item)) {
-          const msg = `Lab Number: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
-          addNotification(msg, true);
-          unseenItems.push(item);
+    function loadInitialNotifications() {
+        const unseenItems = [];
+        const allItems = [];
+
+        if (Array.isArray(currentNotification)) {
+            currentNotification.forEach(item => {
+            if (!isNotificationSeen(item)) {
+                allItems.push(item);
+                unseenItems.push(item);
+            }
+            });
         }
-      });
+
+        if (Array.isArray(previousNotification)) {
+            previousNotification.forEach(item => {
+            if (!isNotificationSeen(item)) {
+                allItems.push(item);
+                unseenItems.push(item);
+            }
+            });
+        }
+
+        if (allItems.length > 0) {
+            const tableHTML = createTable(allItems);
+            addNotification(tableHTML, true); // or false depending on your use case
+        }
+
+        const unseenReferrals = referNotification.filter(item => !isReferralSeen(item));
+
+        if (unseenReferrals.length > 0) {
+            const referralTableHTML = createReferTable(unseenReferrals);
+            $('#referralNotificationContainer').html(referralTableHTML);
+            window._unseenReferralItems = unseenReferrals;
+            notificationCount++;
+            $('#notificationCount').text(notificationCount);
+            $('#notificationBtn').removeClass('d-none');
+        }
+
+        // Store unseen items globally
+        window._unseenItems = unseenItems;
     }
 
-    if (Array.isArray(previousNotification)) {
-      previousNotification.forEach(item => {
-        if (!isNotificationSeen(item)) {
-          const msg = `Lab Number: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
-          addNotification(msg, false);
-          unseenItems.push(item);
-        }
-      });
+    function createTable(items) {
+        let rows = items.map(item => `
+            <tr>
+            <td scope="row">${item.labno}</td>
+            <td scope="row">${item.username}</td>
+            <td scope="row">${item.status_name}</td>
+            <td scope="row">${item.description}</td>
+            </tr>
+        `).join('');
+
+        return ` 
+            <table class="table table-borderless">
+                <thead>
+                   <tr>
+                        <th scope="col">Lab Number</th>
+                        <th scope="col">Doctor</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Deadline for Final Report Delivery</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                </tbody>
+            </table> 
+        `;
     }
 
-    // Store unseen items globally to mark as seen later
-    window._unseenItems = unseenItems;
-  }
+
+    function createReferTable(items) {
+    const formattedRows = items.map(item => {
+        const grouped = {}; // Will store grouped referral_reason messages
+
+        // Parse the JSON string in referal_reason
+        let messages = [];
+        try {
+            messages = JSON.parse(item.referal_reason);
+        } catch (e) {
+            return `
+                <tr>
+                    <td>${item.lab_number || '-'}</td>
+                    <td scope="row">${item.refering_doctor_name}</td>
+                    <td scope="row"><span class="text-danger">Invalid referral reason format</span></td>
+                </tr>
+            `;
+        }
+
+        // Group by keys like "tasim", "IT", etc.
+        messages.forEach(entry => {
+            const key = Object.keys(entry).find(k => k !== 'date');
+            const value = entry[key];
+            const date = entry.date;
+
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(`${value} (${date})`);
+        });
+
+        // Create formatted output
+        let formattedReason = '';
+        for (const user in grouped) {
+            formattedReason += `<strong>${user}:</strong><br>`;
+            grouped[user].forEach(msg => {
+                formattedReason += `&nbsp;&nbsp;&nbsp;&nbsp;${msg}<br>`;
+            });
+            formattedReason += `<br>`;
+        }
+
+        return `
+            <tr>
+                <td>${item.lab_number || '-'}</td>
+                <td scope="row" style="vertical-align: top;">${item.refering_doctor_name}</td>
+                <td scope="row" style="white-space: pre-line; word-wrap: break-word;">${formattedReason}</td>
+            </tr>
+        `;
+    }).join('');
+
+    return ` 
+        <table class="table table-borderless">
+            <thead>
+                <tr>
+                    <th scope="col">Lab Number</th>
+                    <th scope="col">Doctor Name</th>
+                    <th scope="col">Referral Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${formattedRows}
+            </tbody>
+        </table> 
+    `;
+}
+
+
 
   // Show modal and mark as seen
   $('#notificationBtn').click(function () {
@@ -4771,6 +4911,12 @@ switch (true) {
     if (window._unseenItems && window._unseenItems.length > 0) {
       markNotificationsAsSeen(window._unseenItems);
     }
+
+    // Mark all referral notifications as seen
+    if (window._unseenReferralItems && window._unseenReferralItems.length > 0) {
+      markReferralAsSeen(window._unseenReferralItems);
+    }
+
   });
 
   $(document).ready(function () {
