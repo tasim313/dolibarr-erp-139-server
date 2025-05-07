@@ -822,11 +822,19 @@ function notification_preliminary_report_current_date_to_future_date(){
         FROM llx_commande_trackws ws
         JOIN llx_user u ON u.rowid = ws.user_id
         JOIN llx_commande_wsstatus s ON s.id = ws.fk_status_id
-        WHERE ws.fk_status_id = '69'
-        AND to_timestamp(
+        WHERE 
+            ws.fk_status_id = 69
+            AND to_timestamp(
                 regexp_replace(ws.description, '^.* on ', ''),
                 'Month DD, YYYY HH12:MI AM'
-        ) >= current_date;
+            ) >= current_date
+            AND NOT EXISTS (
+                SELECT 1
+                FROM llx_commande_trackws ws2
+                WHERE 
+                    ws2.labno = ws.labno
+                    AND ws2.fk_status_id IN (15, 10)
+            )
     ";
 
     // Statement name (unique within the connection session)
@@ -887,7 +895,13 @@ function notification_preliminary_report_previous_date(){
         AND to_timestamp(
         regexp_replace(ws.description, '^.* on ', ''),
         'Month DD, YYYY HH12:MI AM'
-      ) < current_date;
+      ) < current_date AND NOT EXISTS (
+                SELECT 1
+                FROM llx_commande_trackws ws2
+                WHERE 
+                    ws2.labno = ws.labno
+                    AND ws2.fk_status_id IN (15, 10)
+            )
     ";
 
     // Statement name (unique within the connection session)
@@ -971,5 +985,76 @@ function doctor_referral_system_records_list($lab_number) {
         return ['error' => 'An error occurred while executing the query.'];
     }
 }
+
+function doctor_referral_system_records_list_by_username($username) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Ensure the username is not empty
+    if (empty($username)) {
+        return ['error' => 'Username is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT 
+            r.rowid,
+            r.title,
+            r.lab_number,
+            r.refering_doctor_name,
+            r.referal_reason
+        FROM 
+            llx_doctor_referral_system_records r
+        WHERE 
+            r.refering_doctor_name = \$1
+
+            -- OR: username is a key in any JSON object
+            OR EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements(r.referal_reason::jsonb) AS elem
+                WHERE elem::jsonb ? \$1
+            )
+
+            -- OR: username appears in any value string (e.g., '@username' mention)
+            OR EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements(r.referal_reason::jsonb) AS elem,
+                     jsonb_each_text(elem) AS kv
+                WHERE kv.value ILIKE '%' || \$1 || '%'
+            );
+    ";
+
+    $stmt_name = "get_doctor_referral_system_records_list_by_username";
+
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the username as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$username]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 
 ?>
