@@ -4811,10 +4811,10 @@ switch (true) {
     function createTable(items) {
         let rows = items.map(item => `
             <tr>
-            <td scope="row">${item.labno}</td>
-            <td scope="row">${item.username}</td>
-            <td scope="row">${item.status_name}</td>
-            <td scope="row">${item.description}</td>
+            <td scope="row" style="width: 4%;">${item.labno}</td>
+            <td scope="row" style="width: 4%;">${item.username}</td>
+            <td scope="row" style="width: 12%;">${item.status_name}</td>
+            <td scope="row" style="width: 80%;">${item.description}</td>
             </tr>
         `).join('');
 
@@ -4837,67 +4837,67 @@ switch (true) {
 
 
     function createReferTable(items) {
-    const formattedRows = items.map(item => {
-        const grouped = {}; // Will store grouped referral_reason messages
+        const formattedRows = items.map(item => {
+            const grouped = {}; // Will store grouped referral_reason messages
 
-        // Parse the JSON string in referal_reason
-        let messages = [];
-        try {
-            messages = JSON.parse(item.referal_reason);
-        } catch (e) {
+            // Parse the JSON string in referal_reason
+            let messages = [];
+            try {
+                messages = JSON.parse(item.referal_reason);
+            } catch (e) {
+                return `
+                    <tr>
+                        <td>${item.lab_number || '-'}</td>
+                        <td scope="row">${item.refering_doctor_name}</td>
+                        <td scope="row"><span class="text-danger">Invalid referral reason format</span></td>
+                    </tr>
+                `;
+            }
+
+            // Group by keys like "tasim", "IT", etc.
+            messages.forEach(entry => {
+                const key = Object.keys(entry).find(k => k !== 'date');
+                const value = entry[key];
+                const date = entry.date;
+
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(`${value} (${date})`);
+            });
+
+            // Create formatted output
+            let formattedReason = '';
+            for (const user in grouped) {
+                formattedReason += `<strong>${user}:</strong><br>`;
+                grouped[user].forEach(msg => {
+                    formattedReason += `&nbsp;&nbsp;&nbsp;&nbsp;${msg}<br>`;
+                });
+                formattedReason += `<br>`;
+            }
+
             return `
                 <tr>
                     <td>${item.lab_number || '-'}</td>
-                    <td scope="row">${item.refering_doctor_name}</td>
-                    <td scope="row"><span class="text-danger">Invalid referral reason format</span></td>
+                    <td scope="row" style="vertical-align: top;">${item.refering_doctor_name}</td>
+                    <td scope="row" style="white-space: pre-line; word-wrap: break-word;">${formattedReason}</td>
                 </tr>
             `;
-        }
+        }).join('');
 
-        // Group by keys like "tasim", "IT", etc.
-        messages.forEach(entry => {
-            const key = Object.keys(entry).find(k => k !== 'date');
-            const value = entry[key];
-            const date = entry.date;
-
-            if (!grouped[key]) grouped[key] = [];
-            grouped[key].push(`${value} (${date})`);
-        });
-
-        // Create formatted output
-        let formattedReason = '';
-        for (const user in grouped) {
-            formattedReason += `<strong>${user}:</strong><br>`;
-            grouped[user].forEach(msg => {
-                formattedReason += `&nbsp;&nbsp;&nbsp;&nbsp;${msg}<br>`;
-            });
-            formattedReason += `<br>`;
-        }
-
-        return `
-            <tr>
-                <td>${item.lab_number || '-'}</td>
-                <td scope="row" style="vertical-align: top;">${item.refering_doctor_name}</td>
-                <td scope="row" style="white-space: pre-line; word-wrap: break-word;">${formattedReason}</td>
-            </tr>
+        return ` 
+            <table class="table table-borderless">
+                <thead>
+                    <tr>
+                        <th scope="col" style="width: 4%;">Lab Number</th>
+                        <th scope="col" style="width: 4%;">Doctor Name</th>
+                        <th scope="col" style="width: 92%;">Referral Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${formattedRows}
+                </tbody>
+            </table> 
         `;
-    }).join('');
-
-    return ` 
-        <table class="table table-borderless">
-            <thead>
-                <tr>
-                    <th scope="col">Lab Number</th>
-                    <th scope="col">Doctor Name</th>
-                    <th scope="col">Referral Reason</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${formattedRows}
-            </tbody>
-        </table> 
-    `;
-}
+    }
 
 
 
@@ -5294,6 +5294,25 @@ switch (true) {
 
 
 </script>
+
+<style>
+.custom-compact-table th,
+.custom-compact-table td {
+    padding: 4px 6px !important;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.custom-compact-table td:nth-child(1),
+.custom-compact-table td:nth-child(2),
+.custom-compact-table td:nth-child(3),
+.custom-compact-table td:nth-child(4) {
+    max-width: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
 
 
 

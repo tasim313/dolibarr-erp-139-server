@@ -91,6 +91,7 @@ $hasConsultants = false;
 
 $current_notification = notification_preliminary_report_current_date_to_future_date();
 $previous_notification = notification_preliminary_report_previous_date();
+$refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
 
 
 foreach ($userGroupNames as $group) {
@@ -1136,6 +1137,7 @@ switch (true) {
             <div id="notificationContent">
                 <ul id="notificationListFuture" class="list-group mb-3"></ul>
                 <ul id="notificationListPast" class="list-group"></ul>
+                <div id="referralNotificationContainer" class="mt-3"></div>
             </div>
         </div>
         <div class="modal-footer justify-content-center">
@@ -2338,26 +2340,125 @@ switch (true) {
         <script>
             const currentNotification = <?php echo json_encode($current_notification); ?>;
             const previousNotification = <?php echo json_encode($previous_notification); ?>;
+            const referNotification = <?php echo json_encode($refer_notification); ?>;
 
             // Utility to render notifications
-            function addNotificationToList(listId, notifications) {
-                const listElement = document.getElementById(listId);
-                if (!listElement || !Array.isArray(notifications)) return;
+            function renderCombinedNotificationTable(current, previous) {
+                    const allNotifications = [...(current || []), ...(previous || [])];
 
-                notifications.forEach(item => {
-                    const msg = `LabNumber: ${item.labno}, Doctor: ${item.username}, Status: ${item.status_name}, Deadline for Final Report Delivery: ${item.description}`;
-                    const li = document.createElement('li');
-                    li.className = 'list-group-item';
-                    li.textContent = msg;
-                    listElement.appendChild(li);
-                });
+                    if (!allNotifications.length) return;
+
+                    let rows = allNotifications.map(item => `
+                        <tr>
+                            <td>${item.labno}</td>
+                            <td>${item.username}</td>
+                            <td>${item.status_name}</td>
+                            <td>${item.description}</td>
+                        </tr>
+                    `).join('');
+
+                    const tableHTML = `
+                        <table class="table table-sm table-borderless align-middle mb-0 custom-compact-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 4%;">Lab Number</th>
+                                    <th style="width: 4%;">Doctor</th>
+                                    <th style="width: 12%;">Status</th>
+                                    <th style="width: 80%;">Deadline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    `;
+
+                    document.getElementById('notificationListFuture').innerHTML = tableHTML;
+            }
+
+            function createReferTable(items) {
+                const formattedRows = items.map(item => {
+                    const grouped = {}; // Will store grouped referral_reason messages
+
+                    // Parse the JSON string in referal_reason
+                    let messages = [];
+                    try {
+                        messages = JSON.parse(item.referal_reason);
+                    } catch (e) {
+                        return `
+                            <tr>
+                                <td>${item.lab_number || '-'}</td>
+                                <td scope="row">${item.refering_doctor_name}</td>
+                                <td scope="row"><span class="text-danger">Invalid referral reason format</span></td>
+                            </tr>
+                        `;
+                    }
+
+                    // Group by keys like "tasim", "IT", etc.
+                    messages.forEach(entry => {
+                        const key = Object.keys(entry).find(k => k !== 'date');
+                        const value = entry[key];
+                        const date = entry.date;
+
+                        if (!grouped[key]) grouped[key] = [];
+                        grouped[key].push(`${value} (${date})`);
+                    });
+
+                    // Create formatted output
+                    let formattedReason = '';
+                    for (const user in grouped) {
+                        formattedReason += `<strong>${user}:</strong><br>`;
+                        grouped[user].forEach(msg => {
+                            formattedReason += `&nbsp;&nbsp;&nbsp;&nbsp;${msg}<br>`;
+                        });
+                        formattedReason += `<br>`;
+                    }
+
+                    return `
+                        <tr>
+                            <td>${item.lab_number || '-'}</td>
+                            <td scope="row" style="vertical-align: top;">${item.refering_doctor_name}</td>
+                            <td scope="row" style="white-space: pre-line; word-wrap: break-word;">${formattedReason}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                return ` 
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 4%;">Lab Number</th>
+                                <th scope="col" style="width: 4%;">Doctor Name</th>
+                                <th scope="col" style="width: 92%;">Referral Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${formattedRows}
+                        </tbody>
+                    </table> 
+                `;
+            }
+
+
+            function loadInitialNotifications() {
+                renderCombinedNotificationTable(currentNotification, previousNotification);
+
+                // Referral section stays the same
+                if (Array.isArray(referNotification) && referNotification.length > 0) {
+                    const referralTableHTML = createReferTable(referNotification);
+                    document.getElementById('referralNotificationContainer').innerHTML = referralTableHTML;
+                }
+
+                if (Array.isArray(referNotification) && referNotification.length > 0) {
+                    const referralTableHTML = createReferTable(referNotification);
+                    document.getElementById('referralNotificationContainer').innerHTML = referralTableHTML;
+                }
             }
 
             // Show modal and inject notification data
             $(document).ready(function () {
                 $('#notificationModal').modal('show');
-                addNotificationToList('notificationListFuture', currentNotification);
-                addNotificationToList('notificationListPast', previousNotification);
+                loadInitialNotifications(); 
             });
 
             // Optionally log on modal close
@@ -2365,6 +2466,26 @@ switch (true) {
                 console.log('Modal closed or exited.');
             });
         </script>
+
+        <style>
+            .custom-compact-table th,
+            .custom-compact-table td {
+                padding: 4px 6px !important;
+                white-space: nowrap;
+                vertical-align: middle;
+            }
+
+            .custom-compact-table td:nth-child(1),
+            .custom-compact-table td:nth-child(2),
+            .custom-compact-table td:nth-child(3),
+            .custom-compact-table td:nth-child(4) {
+                max-width: 1px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        </style>
+
 
 
   
