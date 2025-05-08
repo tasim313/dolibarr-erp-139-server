@@ -92,6 +92,8 @@ $hasConsultants = false;
 $current_notification = notification_preliminary_report_current_date_to_future_date();
 $previous_notification = notification_preliminary_report_previous_date();
 $refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
+$assign_gross =  gross_assign_list_using_doctor_name($loggedInUsername);
+
 
 
 foreach ($userGroupNames as $group) {
@@ -1125,26 +1127,48 @@ switch (true) {
 
     <!-- Notification Modal -->
     <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-fullscreen" role="document">
-        <div class="modal-content modal-content-fullscreen">
-        <div class="modal-header">
-            <h5 class="modal-title">Important Notification</h5>
-            <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close" id="modalCloseBtn">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Important Notification</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" id="modalCloseBtn">
                 <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body ">
-            <div id="notificationContent">
-                <ul id="notificationListFuture" class="list-group mb-3"></ul>
-                <ul id="notificationListPast" class="list-group"></ul>
-                <div id="referralNotificationContainer" class="mt-3"></div>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="container-fluid">
+                <div class="row">
+
+                    <!-- Notification Lists -->
+                    <div class="col-12 col-md-8 mb-3">
+                    <h6 class="text-muted">Upcoming Notifications</h6>
+                    <ul id="notificationListFuture" class="list-group mb-3"></ul>
+
+                    <h6 class="text-muted">Past Notifications</h6>
+                    <ul id="notificationListPast" class="list-group mb-3"></ul>
+
+                    <h6 class="text-muted">Assigned Gross</h6>
+                    <div id="assignNotificationContainer" class="table-responsive mb-3"></div>
+                    </div>
+
+                    <!-- Referral -->
+                    <div class="col-12 col-md-4 mb-3">
+                    <h6 class="text-muted">Referral Notifications</h6>
+                    <ul id="referralNotificationContainer" class="list-group mb-3"></ul>
+                    </div>
+
+                </div>
+                </div>
+            </div>
+
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="modalExitBtn">Exit</button>
+            </div>
+            
             </div>
         </div>
-        <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-primary" data-dismiss="modal" id="modalExitBtn">Exit</button>
-        </div>
-        </div>
-    </div>
     </div>
 
 
@@ -2341,6 +2365,8 @@ switch (true) {
             const currentNotification = <?php echo json_encode($current_notification); ?>;
             const previousNotification = <?php echo json_encode($previous_notification); ?>;
             const referNotification = <?php echo json_encode($refer_notification); ?>;
+            const assignGrossNotification = <?php echo json_encode($assign_gross); ?>;
+            console.log("assignGrossNotification:", assignGrossNotification);
 
             // Utility to render notifications
             function renderCombinedNotificationTable(current, previous) {
@@ -2361,10 +2387,10 @@ switch (true) {
                         <table class="table table-sm table-borderless align-middle mb-0 custom-compact-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 4%;">Lab Number</th>
-                                    <th style="width: 4%;">Doctor</th>
-                                    <th style="width: 12%;">Status</th>
-                                    <th style="width: 80%;">Deadline</th>
+                                    <th style="width: 1%;" >Lab Number</th>
+                                    <th style="width: 1%;" >Doctor</th>
+                                    <th style="width: 38%;">Status</th>
+                                    <th style="width: 60%;">Deadline</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2439,6 +2465,48 @@ switch (true) {
                 `;
             }
 
+            function createAssignGrossTable(data) {
+                let tableHTML = `
+                    <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Assign Date & Time</th>
+                            <th>Lab Number</th>
+                            <th>Patient Name</th>
+                            <th>Specimen Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+
+                data.forEach(item => {
+                    const formattedDate = formatDate(item.assign_create_date);
+                    tableHTML += `
+                    <tr>
+                        <td>${formattedDate}</td>
+                        <td>${item.lab_number}</td>
+                        <td>${item.nom}</td>
+                        <td>${item.specimen}</td>
+                    </tr>
+                    `;
+                });
+
+                tableHTML += `</tbody></table>`;
+                return tableHTML;
+            }
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const options = {
+                    day: '2-digit',
+                    month: 'short',  // or 'long' if you want full month name
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                };
+                return date.toLocaleString('en-US', options);
+            }
 
             function loadInitialNotifications() {
                 renderCombinedNotificationTable(currentNotification, previousNotification);
@@ -2449,9 +2517,11 @@ switch (true) {
                     document.getElementById('referralNotificationContainer').innerHTML = referralTableHTML;
                 }
 
-                if (Array.isArray(referNotification) && referNotification.length > 0) {
-                    const referralTableHTML = createReferTable(referNotification);
-                    document.getElementById('referralNotificationContainer').innerHTML = referralTableHTML;
+               
+                if (Array.isArray(assignGrossNotification) && assignGrossNotification.length > 0) {
+                const assignTableHTML = createAssignGrossTable(assignGrossNotification);
+                document.getElementById('assignNotificationContainer').innerHTML = assignTableHTML;
+                console.log("Assign Gross Table Rendered");
                 }
             }
 
