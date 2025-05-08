@@ -1130,4 +1130,77 @@ function gross_assign_list_using_doctor_name($username) {
     }
 }
 
+function specific_doctor_name_wise_histo_case_list($username) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    $username = trim($username);
+
+    // Ensure the username is not empty
+    if (empty($username)) {
+        return ['error' => 'Username is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        WITH normalized_labs AS (
+            SELECT 
+                g.lab_number,
+                REGEXP_REPLACE(g.lab_number, '^[A-Z]+', '') AS normalized_lab_number,
+                TRIM(g.gross_status) AS gross_status,
+                TRIM(g.gross_doctor_name) AS doctor_name
+            FROM llx_gross g
+            WHERE TRIM(g.gross_doctor_name) = $1
+        ),
+        status_check AS (
+            SELECT 
+                nl.lab_number,
+                nl.normalized_lab_number,
+                nl.gross_status,
+                MAX(CASE WHEN ct.fk_status_id IN (15, 10) THEN 1 ELSE 0 END) AS has_status_15_or_10,
+                MAX(CASE WHEN ct.fk_status_id = 46 THEN 1 ELSE 0 END) AS has_status_46
+            FROM normalized_labs nl
+            LEFT JOIN llx_commande_trackws ct 
+                ON REGEXP_REPLACE(ct.labno, '^[A-Z]+', '') = nl.normalized_lab_number
+                AND ct.fk_status_id IN (15, 10, 46)
+            GROUP BY nl.lab_number, nl.normalized_lab_number, nl.gross_status
+        )
+        SELECT lab_number
+            FROM status_check
+            WHERE has_status_15_or_10 = 0 
+        AND (has_status_46 = 1 OR (has_status_46 = 0 AND gross_status = 'Done'));
+    ";
+
+    $stmt_name = "get_specific_doctor_name_wise_histo_case_list";
+
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the username as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$username]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
