@@ -626,7 +626,7 @@ switch (true) {
     <!-- Lab No Form -->
     <form name="readlabno" id="readlabno" action="" class="d-flex align-items-center">
         <label for="labno" class="mb-0 me-2">Lab No:</label>
-    <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
+        <input type="text" id="labno" name="labno" class="form-control form-control-sm" style="width: 120px;" autofocus>
     </form>
 
     <?php echo("<h5 style='font-weight: bold; text-align: left; margin-left: -70px;'>Lab No: $LabNumber</h5>") ?>
