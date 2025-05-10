@@ -166,11 +166,16 @@ foreach ($userGroupNames as $group) {
     } 
 }
 
+$isAdmin = isUserAdmin($loggedInUserId);
+
 // Access control using switch statement
 switch (true) {
 	case $hasConsultants:
 		// Doctor has access, continue with the page content...
 		break;
+    case $isAdmin:
+        // Admin has access, continue with the page content...
+        break;
 	default:
 		echo "<h1>Access Denied</h1>";
 		echo "<p>You are not authorized to view this page.</p>";
@@ -2055,27 +2060,28 @@ switch (true) {
                         </div>
 
                         <div id="final-clinical-details-form" class="form-container" style="display:none;">
-                                <form id='clinicalDetailsForm' method='post' action='../transcription/clinical_details.php'>
-                                    <div class='form-group'>
-                                        <h2 class='heading'>Clinical Details</h2>
-                                            <div class='controls'>
-                                                <textarea id='clinicalDetailsTextarea' name='clinical_details' cols='60' rows='2'></textarea>
-                                                <input type='hidden' id='labNumberInput' name='lab_number' value='<?php echo htmlspecialchars($LabNumberWithPrefix); ?>'>
-                                                <input type='hidden' id='createdUserInput' name='created_user' value='<?php echo htmlspecialchars($loggedInUsername); ?>'>
-                                            </div>
-                                            <div class='grid'>
-                                                <button style='background-color: rgb(118, 145, 225);
-                                                color: white;
-                                                padding: 12px 20px;
-                                                border: none;
-                                                border-radius: 4px;
-                                                cursor: pointer;
-                                                float: right;
-                                                transition: box-shadow 0.3s ease;' id='saveBtn' type='submit'>Save</button>
-                                                <button id='updateBtn' type='submit' style='display: none;'>Update</button>
-                                            </div>  
+                            <form id='final_clinicalDetailsForm' method='post' action='../transcription/clinical_details.php'>
+                                <div class='form-group'>
+                                    <h2 class='heading'>Clinical Details</h2>
+                                    <div class='controls'>
+                                        <textarea id='final_clinicalDetailsTextarea' name='clinical_details' cols='60' rows='2'></textarea>
+                                        <input type='hidden' id='final_labNumberInput' name='lab_number' value='<?php echo htmlspecialchars($LabNumberWithPrefix); ?>'>
+                                        <input type='hidden' id='final_createdUserInput' name='created_user' value='<?php echo htmlspecialchars($loggedInUsername); ?>'>
                                     </div>
-                                </form>
+                                    <div class='grid'>
+                                        <button style='background-color: rgb(118, 145, 225);
+                                            color: white;
+                                            padding: 12px 20px;
+                                            border: none;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            float: right;
+                                            transition: box-shadow 0.3s ease;' 
+                                            id='final_saveBtn' type='submit'>Save</button>
+                                        <button id='final_updateBtn' type='submit' style='display: none;'>Update</button>
+                                    </div>  
+                                </div>
+                            </form>
                         </div>
 
                         <div id="final-site-of-specimen-form" class="form-container" style="display:none;">
@@ -3450,7 +3456,7 @@ switch (true) {
 
                                         // Optionally, reload the page after a short delay
                                         setTimeout(function() {
-                                            window.location.reload();
+                                            // window.location.reload();
                                         }, 2000);
                                     } else {
                                         console.error("Error saving data:", xhr.status, xhr.statusText);
@@ -3507,8 +3513,8 @@ switch (true) {
                             xhr.onload = function() {
                                 if (xhr.status === 200) {
                                     console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
+                                    // alert("Data saved successfully.");
+                                    // window.location.reload();
                                 } else {
                                     console.error("saving data:");
                                 }
@@ -3559,8 +3565,8 @@ switch (true) {
                             xhr.onload = function() {
                                 if (xhr.status === 200) {
                                     console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
+                                    // alert("Data saved successfully.");
+                                    // window.location.reload();
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
                                 }
@@ -3621,7 +3627,7 @@ switch (true) {
 
                                         // Optionally, reload the page after a short delay
                                         setTimeout(function() {
-                                            window.location.reload();
+                                            // window.location.reload();
                                         }, 2000);
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
@@ -3700,8 +3706,8 @@ switch (true) {
                                         console.log("Data saved successfully:", xhr.responseText);
 
                                         // Display success message and reload window
-                                        alert("Data saved successfully.");
-                                        window.location.reload();
+                                        // alert("Data saved successfully.");
+                                        // window.location.reload();
                                     } else {
                                         console.error("Error saving data:", xhr.status, xhr.statusText);
                                     }
@@ -3836,8 +3842,8 @@ switch (true) {
                             xhr.onload = function() {
                                 if (xhr.status === 200) {
                                     console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
+                                    // alert("Data saved successfully.");
+                                    // window.location.reload();
                                 } else {
                                     console.error("saving data:");
                                 }
@@ -3885,8 +3891,8 @@ switch (true) {
                         .then(response => response.text())
                         .then(result => {
                             console.log(result);
-                            alert('Data saved successfully!');
-                            window.location.reload();
+                            // alert('Data saved successfully!');
+                            // window.location.reload();
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -3937,9 +3943,8 @@ switch (true) {
 
                             xhr.onload = function() {
                                 if (xhr.status === 200) {
-                                    console.log("Data saved successfully:", xhr.responseText);
-                                    alert("Data saved successfully.");
-                                    window.location.reload();
+                                    // console.log("Data saved successfully:", xhr.responseText);
+                                    // window.location.reload();
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
                                 }
@@ -3981,7 +3986,7 @@ switch (true) {
                 // Remove the success message after 3 seconds
                 setTimeout(function() {
                     successMessageDiv.style.display = 'none';
-                }, 3000);
+                }, 100);
             }
 
         </script>
@@ -4055,8 +4060,8 @@ switch (true) {
                     })
                     .then(result => {
                         if (result.success) {
-                            alert(result.message);
-                            window.location.reload(); // Reload the page to reflect the deletion
+                            // alert(result.message);
+                            // window.location.reload(); // Reload the page to reflect the deletion
                         } else {
                             alert('Error: ' + (result.message || 'Failed to delete the entry.'));
                         }
@@ -4189,6 +4194,53 @@ switch (true) {
                         }
                     } else {
                         console.error("Error fetching existing clinical details:", response.error);
+                    }
+                }
+            };
+            xhr.send();
+        }
+    });
+</script>
+
+<!-- Final Clinical Details -->
+ <script>
+    // Clinical Details keyboard shortcut: Ctrl+S
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault(); // Prevent default browser save
+            var updateBtn = document.getElementById("final_updateBtn");
+            var saveBtn = document.getElementById("final_saveBtn");
+            if (updateBtn.style.display === "inline-block") {
+                updateBtn.click();
+            } else {
+                saveBtn.click();
+            } 
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchExistingClinicalDetails();
+
+        function fetchExistingClinicalDetails() {
+            var labNumber = document.getElementById("final_labNumberInput").value;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "../transcription/get_clinical_details.php?lab_number=" + labNumber, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        document.getElementById("final_clinicalDetailsTextarea").value = response.data.clinical_details;
+
+                        if (response.data.clinical_details) {
+                            document.getElementById("final_saveBtn").style.display = "none";
+                            document.getElementById("final_updateBtn").style.display = "inline-block";
+                        } else {
+                            document.getElementById("final_saveBtn").style.display = "inline-block";
+                            document.getElementById("final_updateBtn").style.display = "none";
+                        }
+                    } else {
+                        console.error("Error fetching clinical details:", response.error);
                     }
                 }
             };
@@ -4402,7 +4454,7 @@ switch (true) {
             })
                 .then(response => response.text())
                 .then(data => {
-                    window.location.reload();
+                    // window.location.reload();
                 })
                 .catch(error => {
                     console.error("Error:", error);
@@ -4490,7 +4542,7 @@ switch (true) {
                     })
                     .then(response => response.text())
                     .then(data => {
-                        window.location.reload();
+                        // window.location.reload();
                     })
                     .catch(error => {
                         console.error("Error:", error);
@@ -4624,7 +4676,7 @@ switch (true) {
             })
                 .then(response => response.text())
                 .then(data => {
-                    window.location.reload();
+                    // window.location.reload();
                 })
                 .catch(error => {
                     console.error("Error:", error);
@@ -4680,7 +4732,7 @@ switch (true) {
                         console.log("Data saved successfully:", xhr.responseText);
                         showSuccessMessage("Data saved successfully.");
                         setTimeout(function () {
-                            window.location.reload();
+                            // window.location.reload();
                         }, 2000);
                     } else {
                         console.error("Error saving data:", xhr.statusText);
@@ -4929,38 +4981,140 @@ switch (true) {
 
     function handleFinalReportTabClick() {
         try {
-            showTab('final-screening');
-        } catch (e) {
-            console.error("Error in showTab:", e);
-        }
+            console.log("👉 handleFinalReportTabClick() called");
 
-        // Add a small delay before calling loadReport
-        setTimeout(() => {
-            try {
-                loadReport();
-            } catch (e) {
-                console.error("Error in loadReport:", e);
+            // Step 1: Extract PHP variables
+            const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
+            const loggedInUserId = '<?php echo $loggedInUserId; ?>';
+
+            console.log("🔍 labNumber:", labNumber);
+            console.log("🔍 loggedInUserId:", loggedInUserId);
+
+            // Step 2: Validate inputs
+            if (!labNumber || !loggedInUserId) {
+                console.error("❌ Missing labNumber or loggedInUserId");
+                return;
             }
-        }, 100); // Adjust timing if needed
+
+            const data = { labNumber, loggedInUserId };
+            console.log("📦 Data to be sent:", data);
+
+            // Step 3: Send POST request
+            fetch("insert/final_screening_start.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log("📥 Response received from server");
+                if (!response.ok) throw new Error('❌ Network response was not ok');
+                return response.text();
+            })
+            .then(responseText => {
+                console.log("✅ Response Text:", responseText);
+
+                if (responseText.includes("Data inserted successfully")) {
+                    try {
+                        showTab('final-screening');
+                    } catch (e) {
+                        console.error("Error in showTab:", e);
+                    }
+
+                    // Add a small delay before calling loadReport
+                    setTimeout(() => {
+                        try {
+                            loadReport();
+                        } catch (e) {
+                            console.error("Error in loadReport:", e);
+                        }
+                    }, 100); 
+                    
+                } else {
+                    console.warn("⚠️ Unexpected server response:", responseText);
+                    alert("Server said: " + responseText);
+                }
+            })
+            .catch(error => {
+                console.error("🔥 Fetch error:", error);
+            });
+
+        } catch (e) {
+            console.error("🔥 Unexpected error in handleFinalReportTabClick:", e);
+        }
     }
+
 
     function handlePreliminaryReportTabClick() {
         try {
-            showTab('screening');
-        } catch (e) {
-            console.error("Error in showTab:", e);
-        }
+            console.log("👉 handlePreliminaryReportTabClick() called");
 
-        // Add a small delay before calling loadReport
-        setTimeout(() => {
-            try {
-                loadPreliminaryReport();
-            } catch (e) {
-                console.error("Error in loadReport:", e);
+            // Step 2: Extract variables from PHP
+            const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
+            const loggedInUserId = '<?php echo $loggedInUserId; ?>';
+
+            console.log("🔍 labNumber:", labNumber);
+            console.log("🔍 loggedInUserId:", loggedInUserId);
+
+            // Step 3: Check if data exists
+            if (!labNumber || !loggedInUserId) {
+                console.error("❌ Missing labNumber or loggedInUserId");
+                return;
             }
-        }, 100); // Adjust timing if needed
-    }
 
+            const data = { labNumber, loggedInUserId };
+            console.log("📦 Data to be sent:", data);
+
+            // Step 4: Send data via fetch
+            console.log("📤 Sending data to insert/screening_start.php");
+
+            fetch("insert/screening_start.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                console.log("📥 Response received from server");
+                if (!response.ok) throw new Error('❌ Network response was not ok');
+                return response.text();
+            })
+            .then(responseText => {
+                console.log("✅ Response Text:", responseText);
+
+                if (responseText.includes("Data inserted successfully")) {
+                    console.log("🎯 Data insertion confirmed, calling loadPreliminaryReport()");
+                    // Step 1: Try to show the 'screening' tab
+                    console.log("➡️ Calling showTab('screening')");
+                    try {
+                        showTab('screening');
+                    } catch (e) {
+                        console.error("Error in showTab:", e);
+                    }
+
+                    // Add a small delay before calling loadReport
+                    setTimeout(() => {
+                        try {
+                            loadPreliminaryReport();
+                        } catch (e) {
+                            console.error("Error in loadReport:", e);
+                        }
+                    }, 100);
+                } else {
+                    console.warn("⚠️ Unexpected server response:", responseText);
+                    alert("Server said: " + responseText);
+                }
+            })
+            .catch(error => {
+                console.error("🔥 Error in fetch:", error);
+            });
+
+        } catch (e) {
+            console.error("🔥 Unexpected error in handlePreliminaryReportTabClick:", e);
+        }
+    }
 </script>
 
 
@@ -5296,22 +5450,22 @@ switch (true) {
 </script>
 
 <style>
-.custom-compact-table th,
-.custom-compact-table td {
-    padding: 4px 6px !important;
-    white-space: nowrap;
-    vertical-align: middle;
-}
+    .custom-compact-table th,
+    .custom-compact-table td {
+        padding: 4px 6px !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 
-.custom-compact-table td:nth-child(1),
-.custom-compact-table td:nth-child(2),
-.custom-compact-table td:nth-child(3),
-.custom-compact-table td:nth-child(4) {
-    max-width: 1px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    .custom-compact-table td:nth-child(1),
+    .custom-compact-table td:nth-child(2),
+    .custom-compact-table td:nth-child(3),
+    .custom-compact-table td:nth-child(4) {
+        max-width: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
 

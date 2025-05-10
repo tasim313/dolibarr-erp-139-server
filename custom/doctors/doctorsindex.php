@@ -1131,7 +1131,7 @@ switch (true) {
             <div class="modal-content">
 
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Important Notification</h5>
+                <h5 class="modal-title">Consultant Activities Chart</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" id="modalCloseBtn">
                 <span aria-hidden="true">&times;</span>
                 </button>
