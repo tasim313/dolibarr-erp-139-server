@@ -44,6 +44,60 @@ function get_summary_list($labnumber) {
     return $existingdata;
 }
 
+
+function get_report_ready_list() {
+    global $pg_con;
+
+    // Prepare SQL query without placeholders
+    $sql = "SELECT 
+            ct.id,
+            ct.labno, 
+            u.login AS user_name,  
+            ws.name AS status_name
+        FROM 
+            llx_commande_trackws ct
+        JOIN 
+            llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+        JOIN 
+            llx_user u ON ct.user_id = u.rowid
+        WHERE 
+            ct.fk_status_id = 11
+            AND ct.create_time >= '2024-12-01 00:00:00'::timestamp
+            AND ct.create_time < NOW()  -- Current date & time dynamically
+            AND NOT EXISTS (
+                SELECT 1
+                FROM llx_commande c
+                WHERE c.ref = ct.labno
+                AND c.fk_statut = 3
+            )
+        ORDER BY 
+            ct.id DESC";  // Adjust the date format if necessary
+
+    // Use a prepared statement for safety and efficiency
+    $result = pg_prepare($pg_con, "get_report_query", $sql);
+
+    if ($result === false) {
+        echo 'Error preparing query: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Execute the query without parameters
+    $result = pg_execute($pg_con, "get_report_query", []);
+
+    if ($result === false) {
+        echo 'Error executing query: ' . pg_last_error($pg_con);
+        return [];
+    }
+
+    // Fetch all rows
+    $existingdata = pg_fetch_all($result) ?: [];
+
+    // Free the result resource
+    pg_free_result($result);
+
+    return $existingdata;
+}
+
 function preliminary_report_release($lab_number) {
     global $pg_con;
 
