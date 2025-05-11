@@ -93,6 +93,8 @@ $current_notification = notification_preliminary_report_current_date_to_future_d
 $previous_notification = notification_preliminary_report_previous_date();
 $refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
 $assign_gross =  gross_assign_list_using_doctor_name($loggedInUsername);
+$gross_complete_list =   specific_doctor_name_wise_histo_case_list($loggedInUsername);
+$cyto_case_list = specific_doctor_name_wise_cyto_case_list($loggedInUsername);
 
 
 
@@ -1148,6 +1150,10 @@ switch (true) {
 
                     <h6 class="text-muted">Past Notifications</h6>
                     <ul id="notificationListPast" class="list-group mb-3"></ul>
+                    
+                    <!-- Focused on Screening -->
+                    <div id="focusedOnScreeningContainer" class="mt-3"></div>
+                    <div id="CytoCaseListContainer" class="mt-3"></div>
 
                     <h6 class="text-muted">Assigned Gross</h6>
                     <div id="assignNotificationContainer" class="table-responsive mb-3"></div>
@@ -2366,7 +2372,8 @@ switch (true) {
             const previousNotification = <?php echo json_encode($previous_notification); ?>;
             const referNotification = <?php echo json_encode($refer_notification); ?>;
             const assignGrossNotification = <?php echo json_encode($assign_gross); ?>;
-            console.log("assignGrossNotification:", assignGrossNotification);
+            const focusedOnScreening = <?php echo json_encode($gross_complete_list); ?>;
+            const cytoCaseList = <?php echo json_encode($cyto_case_list); ?>;
 
             // Utility to render notifications
             function renderCombinedNotificationTable(current, previous) {
@@ -2508,6 +2515,70 @@ switch (true) {
                 return date.toLocaleString('en-US', options);
             }
 
+            function createFocusedOnScreeningTable(data) {
+                if (!Array.isArray(data) || data.length === 0) return;
+
+                const columnsPerRow = 5;
+                let rows = '';
+
+                for (let i = 0; i < data.length; i += columnsPerRow) {
+                    const rowItems = data.slice(i, i + columnsPerRow);
+                    const row = rowItems.map(item => `<td>${item.lab_number}</td>`).join('');
+                    rows += `<tr>${row}</tr>`;
+                }
+
+                const tableHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th colspan="${columnsPerRow}" class="text-center">
+                                        Focused on Screening (Lab Numbers)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                document.getElementById('focusedOnScreeningContainer').innerHTML = tableHTML;
+            }
+
+            function createCytoCaseListTable(data) {
+                if (!Array.isArray(data) || data.length === 0) return;
+
+                const columnsPerRow = 5;
+                let rows = '';
+
+                for (let i = 0; i < data.length; i += columnsPerRow) {
+                    const rowItems = data.slice(i, i + columnsPerRow);
+                    const row = rowItems.map(item => `<td>${item.lab_number}</td>`).join('');
+                    rows += `<tr>${row}</tr>`;
+                }
+
+                const tableHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th colspan="${columnsPerRow}" class="text-center">
+                                        Focused on Screening (Lab Numbers)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                document.getElementById('CytoCaseListContainer').innerHTML = tableHTML;
+            }
+
             function loadInitialNotifications() {
                 renderCombinedNotificationTable(currentNotification, previousNotification);
 
@@ -2519,9 +2590,17 @@ switch (true) {
 
                
                 if (Array.isArray(assignGrossNotification) && assignGrossNotification.length > 0) {
-                const assignTableHTML = createAssignGrossTable(assignGrossNotification);
-                document.getElementById('assignNotificationContainer').innerHTML = assignTableHTML;
-                console.log("Assign Gross Table Rendered");
+                    const assignTableHTML = createAssignGrossTable(assignGrossNotification);
+                    document.getElementById('assignNotificationContainer').innerHTML = assignTableHTML;
+                    
+                }
+
+                if (Array.isArray(focusedOnScreening) && focusedOnScreening.length > 0) {
+                    createFocusedOnScreeningTable(focusedOnScreening);
+                }
+
+                if (Array.isArray(cytoCaseList) && cytoCaseList.length > 0) {
+                    createCytoCaseListTable(cytoCaseList);
                 }
             }
 

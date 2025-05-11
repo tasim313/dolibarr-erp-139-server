@@ -1203,4 +1203,70 @@ function specific_doctor_name_wise_histo_case_list($username) {
     }
 }
 
+
+function specific_doctor_name_wise_cyto_case_list($username) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    $username = trim($username);
+
+    // Ensure the username is not empty
+    if (empty($username)) {
+        return ['error' => 'Username is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT c.lab_number
+            FROM llx_cyto c
+            WHERE 
+                c.doctor = $1
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM llx_commande cmd
+                    WHERE cmd.ref = SUBSTRING(c.lab_number FROM 4)  
+                    AND cmd.fk_statut IN (3, -1, 0)
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM llx_cyto_doctor_complete_case d 
+                    WHERE d.lab_number = SUBSTRING(c.lab_number FROM 4)
+                    AND d.screening_done = true
+                    AND d.finalization_done = true
+                )
+            ORDER BY c.rowid DESC
+    ";
+
+    $stmt_name = "get_specific_doctor_name_wise_cyto_case_list";
+
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the username as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$username]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>
