@@ -539,4 +539,76 @@ function get_bone_slide_ready_list() {
     return $existingdata;
 }
 
+
+
+function regross_cassettes_list($start_date, $end_date) {
+    global $pg_con;
+
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Validate input
+    if (empty($start_date) || empty($end_date)) {
+        return ['error' => 'Start and end dates are required.'];
+    }
+
+    $sql = "
+        SELECT 
+            ws.labno,
+            u.login AS username,
+            ws.fk_status_id,
+            ws.create_time,
+            g.gross_id,
+            s.gross_specimen_section_id,
+            s.fk_gross_id,
+            s.section_code,
+            s.cassettes_numbers,
+            s.tissue,
+            s.bone,
+            s.boneslide,
+            s.re_gross
+        FROM 
+            llx_commande_trackws ws
+        JOIN 
+            llx_user u ON u.rowid = ws.user_id
+        JOIN 
+            llx_gross g 
+            ON g.lab_number = 'HPL' || ws.labno
+        JOIN 
+            llx_gross_specimen_section s 
+            ON CAST(s.fk_gross_id AS INTEGER) = g.gross_id
+        WHERE 
+            ws.fk_status_id = '7'
+            AND s.re_gross = 'yes'
+            AND ws.create_time BETWEEN $1 AND $2
+    ";
+
+    $stmt_name = "regross_cassettes_list_stmt";
+
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    $result = pg_execute($pg_con, $stmt_name, [$start_date, $end_date]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 ?>

@@ -105,35 +105,36 @@ if ($dpr_result && pg_num_rows($dpr_result) > 0) {
 }
 
 // Check for Preliminary Report logic
-$preliminary_report = preliminary_report_release($lab_number);
-$preliminary_report_ready = preliminary_report_ready_in_dispatch_centers($lab_number);
+// Step 1: Check if 'Preliminary Report Released' (fk_status_id = 69) exists
+$check_preliminary_report_released_sql = "SELECT 1 FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = 69";
+$result_preliminary_report_released = pg_query_params($pg_con, $check_preliminary_report_released_sql, [$lab_number]);
 
-$fk_status_id = null;
 
-if ($preliminary_report && !$preliminary_report_ready) {
-    $fk_status_id = 70;
-} elseif ($preliminary_report && $preliminary_report_ready) {
-    $fk_status_id = 11;
+// Step 2: Check if 'Preliminary Report Ready' (fk_status_id = 70) exists
+$check_preliminary_report_ready_sql = "SELECT 1 FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = 70";
+$result_preliminary_report_ready = pg_query_params($pg_con, $check_preliminary_report_ready_sql, [$lab_number]);
+
+// Decide which status to insert
+$fk_status_id_to_insert = (pg_num_rows($result_preliminary_report_ready) === 0) ? 70 : 11;
+
+// Step 3: Prevent duplicate insertion of the determined status
+$check_existing_status_sql = "SELECT 1 FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = $2";
+$result_existing_status = pg_query_params($pg_con, $check_existing_status_sql, [$lab_number, $fk_status_id_to_insert]);
+
+if ($result_existing_status && pg_num_rows($result_existing_status) > 0) {
+    echo "<script>alert('Status $lab_number already exists.'); window.history.back();</script>";
+    pg_close($pg_con);
+    exit;
 }
 
-if ($fk_status_id) {
-    $exists_sql = "SELECT 1 FROM llx_commande_trackws WHERE labno = $1 AND fk_status_id = $2";
-    $exists_result = pg_query_params($pg_con, $exists_sql, [$lab_number, $fk_status_id]);
+// Step 4: Insert new status (70 or 11)
+$insert_status_sql = "INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id) VALUES ($1, $2, $3)";
+$insert_result = pg_query_params($pg_con, $insert_status_sql, [$lab_number, $user_id, $fk_status_id_to_insert]);
 
-    if ($exists_result && pg_num_rows($exists_result) > 0) {
-        echo "<script>alert('Status already exists for Preliminary Report.'); window.history.back();</script>";
-        pg_close($pg_con); exit;
-    }
-
-    $insert_sql = "INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id) VALUES ($1, $2, $3)";
-    $insert_result = pg_query_params($pg_con, $insert_sql, [$lab_number, $user_id, $fk_status_id]);
-
-    if ($insert_result) {
-        echo "<script>alert('Inserted successfully for Preliminary Report.'); window.history.back();</script>";
-    } else {
-        echo "<script>alert('Preliminary insert failed: " . htmlspecialchars(pg_last_error($pg_con)) . "'); window.history.back();</script>";
-    }
-    pg_close($pg_con); exit;
+if ($insert_result) {
+    echo "<script>alert('Inserted successfully $lab_number.'); window.history.back();</script>";
+} else {
+    echo "<script>alert('Insert failed: " . htmlspecialchars(pg_last_error($pg_con)) . "'); window.history.back();</script>";
 }
 
 // Get the current status of the lab number

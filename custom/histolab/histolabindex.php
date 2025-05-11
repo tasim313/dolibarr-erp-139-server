@@ -103,6 +103,7 @@ $sbo_list = get_slide_block_order_list();
 $sbo_complete_list = get_slide_block_order_ready_list();
 $batch_name_cassettes_count = date_wise_batch_name_cassettes_count_list();
 $bone_slide_ready_list = get_bone_slide_ready_list();
+$regross_list = regross_cassettes_list($start_date, $end_date);
 
 print '<div class="fichecenter"><div class="fichethirdleft">';
 
@@ -307,6 +308,9 @@ echo '<div class="tab-container">
                 <i class="fas fa-bone vertical-icon" style="font-size: 35px;"></i>Bone Dcal</button>
             <button style="border:none" class="tablink" onclick="openTab(event, \'SBO\')">
                     <i class="fa fa-eraser" style="font-size: 35px;"></i> SBO
+            </button>
+            <button style="border:none" class="tablink" onclick="openTab(event, \'Re-Gross\')">
+                    <i class="fas fa-book" style="font-size: 35px;"></i> Re-Gross Ledger
             </button>
             </div>
 
@@ -1517,6 +1521,7 @@ echo '<div class="tab-container">
                 echo '</div>';
             echo '</div>';
 
+            
             echo '<div id="SBO" class="tabcontent">
             <!-- Sub-tab Links -->
             <div class="sub-tabs">
@@ -1610,8 +1615,147 @@ echo '<div class="tab-container">
     echo '<p>No Slide Block Orders available.</p>';
     }
     echo '</div>'; // Close complete List of SBO subtab content
-
     echo '</div>'; // Close tabcontent
+
+    echo('
+        <div id="Re-Gross" class="tabcontent">
+            <h1>Regross</h1>
+            <div class="container">
+                <input type="date" id="regrossfromDateTime" class="input-field" placeholder="From">
+                <input type="date" id="regrosstoDateTime" class="input-field" placeholder="To">
+                <button id="regrosssubmitBtn" class="btn">Submit</button>&nbsp;&nbsp;
+                <button id="regrossgeneratePdfBtn" class="btn">Generate PDF</button>
+            </div>
+            
+            
+                <!-- Table content goes here -->
+                <table id="histoReGrossTable">
+                        
+                </table>
+           
+
+            <input type="hidden" id="loggedInUsername" value="' . htmlspecialchars($loggedInUsername) . '">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+            <!-- jsPDF AutoTable plugin -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+        <div>
+
+        <style>
+                #histoReGrossTable {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                    font-family: Arial, sans-serif;
+                }
+
+                #histoReGrossTable th,
+                #histoReGrossTable td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                    font-size: 14px;
+                }
+
+                #histoReGrossTable th {
+                    background-color: #f2f2f2;
+                    font-weight: bold;
+                }
+
+                #histoReGrossTable tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+
+                #histoReGrossTable tr:hover {
+                    background-color: #e9e9e9;
+                }
+
+                .table-container {
+                    overflow-x: auto;
+                }
+        </style>
+
+        <script>
+            document.getElementById("regrosssubmitBtn").addEventListener("click", function () {
+                const startDate = document.getElementById("regrossfromDateTime").value;
+                const endDate = document.getElementById("regrosstoDateTime").value;
+                console.log("Sending dates:", startDate, endDate);
+
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end dates.");
+                    return;
+                }
+
+                fetch("regross_data_fetch.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": \'application/json\'
+                    },
+                    body: JSON.stringify({
+                        start_date: startDate,
+                        end_date: endDate
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received data:", data);
+                    const tbody = document.getElementById(\'histoReGrossTable\');
+                    tbody.innerHTML = ""; // Clear previous rows
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = \'<tr><td colspan="6">No data found.</td></tr>\';
+                        return;
+                    }
+
+                    const seenLabnos = new Set();
+
+                    const formatDate = (datetimeString) => {
+                        const date = new Date(datetimeString);
+                        return new Intl.DateTimeFormat(\'en-GB\', {
+                            timeZone: \'Asia/Dhaka\',
+                            day: \'2-digit\',
+                            month: \'long\',
+                            year: \'numeric\',
+                            hour: \'numeric\',
+                            minute: \'2-digit\',
+                            hour12: true
+                        }).format(date);
+                    };
+
+                    data.forEach(row => {
+                        const tr = document.createElement(\'tr\');
+
+                        const showLabno = !seenLabnos.has(row.labno);
+                        if (showLabno) {
+                            seenLabnos.add(row.labno);
+                        }
+
+                        tr.innerHTML = `
+                            <td>${showLabno ? row.labno : ""}</td>
+                            <td>Cassettes:${row.cassettes_numbers}</td>
+                            <td>Tissue:${row.tissue}</td>
+                            <td>Bone:${row.bone}</td>
+                            <td>BoneSlide:${row.boneslide}</td>
+                            <td>Re-Gross:${row.re_gross}</td>
+                            <td>Re-Gross Date: ${formatDate(row.create_time)}</td>
+                            <td>UserName:${row.username}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(error => {
+                    console.error(\'Error:\', error);
+                    alert(\'Failed to fetch regross data.\');
+                });
+            });
+
+           
+
+
+        </script>
+        '
+    );
+
 echo  '</div>';
 
 
