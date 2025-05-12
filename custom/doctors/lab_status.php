@@ -5010,49 +5010,26 @@ switch (true) {
 <script>
 
     function handleFinalReportTabClick() {
-        try {
-            console.log("👉 handleFinalReportTabClick() called");
-
-            // Step 1: Extract PHP variables
             const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
             const loggedInUserId = '<?php echo $loggedInUserId; ?>';
 
-            console.log("🔍 labNumber:", labNumber);
-            console.log("🔍 loggedInUserId:", loggedInUserId);
-
-            // Step 2: Validate inputs
             if (!labNumber || !loggedInUserId) {
-                console.error("❌ Missing labNumber or loggedInUserId");
                 return;
             }
 
-            const data = { labNumber, loggedInUserId };
-            console.log("📦 Data to be sent:", data);
-
-            // Step 3: Send POST request
             fetch("insert/final_screening_start.php", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data)
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ labNumber, loggedInUserId })
             })
-            .then(response => {
-                console.log("📥 Response received from server");
-                if (!response.ok) throw new Error('❌ Network response was not ok');
-                return response.text();
-            })
-            .then(responseText => {
-                console.log("✅ Response Text:", responseText);
-
-                if (responseText.includes("Data inserted successfully")) {
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === "inserted") {
                     try {
-                        showTab('final-screening');
-                    } catch (e) {
-                        console.error("Error in showTab:", e);
-                    }
-
-                    // Add a small delay before calling loadReport
+                         showTab('final-screening');
+                        } catch (e) {
+                            console.error("Error in showTab:", e);
+                        }
                     setTimeout(() => {
                         try {
                             loadReport();
@@ -5060,32 +5037,25 @@ switch (true) {
                             console.error("Error in loadReport:", e);
                         }
                     }, 100); 
-                    
+                } else if (result.status === "not_found") {
+                    alert(result.message);  
                 } else {
-                    console.warn("⚠️ Unexpected server response:", responseText);
-                    alert("Server said: " + responseText);
+                    alert("⚠️ " + result.message);
                 }
             })
             .catch(error => {
-                console.error("🔥 Fetch error:", error);
+                console.error("🔥 Fetch error:");
             });
-
-        } catch (e) {
-            console.error("🔥 Unexpected error in handleFinalReportTabClick:", e);
-        }
     }
 
 
     function handlePreliminaryReportTabClick() {
         try {
-            console.log("👉 handlePreliminaryReportTabClick() called");
+            
 
             // Step 2: Extract variables from PHP
             const labNumber = '<?php echo isset($_GET['labno']) ? htmlspecialchars($_GET['labno']) : ''; ?>';
             const loggedInUserId = '<?php echo $loggedInUserId; ?>';
-
-            console.log("🔍 labNumber:", labNumber);
-            console.log("🔍 loggedInUserId:", loggedInUserId);
 
             // Step 3: Check if data exists
             if (!labNumber || !loggedInUserId) {
@@ -5094,10 +5064,9 @@ switch (true) {
             }
 
             const data = { labNumber, loggedInUserId };
-            console.log("📦 Data to be sent:", data);
+            
 
             // Step 4: Send data via fetch
-            console.log("📤 Sending data to insert/screening_start.php");
 
             fetch("insert/screening_start.php", {
                 method: "POST",
@@ -5107,21 +5076,16 @@ switch (true) {
                 body: JSON.stringify(data)
             })
             .then(response => {
-                console.log("📥 Response received from server");
                 if (!response.ok) throw new Error('❌ Network response was not ok');
                 return response.text();
             })
             .then(responseText => {
-                console.log("✅ Response Text:", responseText);
-
                 if (responseText.includes("Data inserted successfully")) {
-                    console.log("🎯 Data insertion confirmed, calling loadPreliminaryReport()");
                     // Step 1: Try to show the 'screening' tab
-                    console.log("➡️ Calling showTab('screening')");
                     try {
                         showTab('screening');
                     } catch (e) {
-                        console.error("Error in showTab:", e);
+                        console.error("Error in showTab:");
                     }
 
                     // Add a small delay before calling loadReport
@@ -5129,20 +5093,19 @@ switch (true) {
                         try {
                             loadPreliminaryReport();
                         } catch (e) {
-                            console.error("Error in loadReport:", e);
+                            console.error("Error in loadReport:");
                         }
                     }, 100);
                 } else {
-                    console.warn("⚠️ Unexpected server response:", responseText);
                     alert("Server said: " + responseText);
                 }
             })
             .catch(error => {
-                console.error("🔥 Error in fetch:", error);
+                console.error("🔥 Error in fetch:");
             });
 
         } catch (e) {
-            console.error("🔥 Unexpected error in handlePreliminaryReportTabClick:", e);
+            console.error("🔥 Unexpected error in handlePreliminaryReportTabClick:");
         }
     }
 </script>
