@@ -977,13 +977,13 @@ switch (true) {
                                 <input type="checkbox" id="stain14" onclick="toggleVisibility('stainInput14')" value="44"> Block Number
                             </label>
                             <div id="stainInput14" class="hidden">
-                                <textarea id="lab_stain_14" type="text" name="text"></textarea>
+                                <textarea id="lab_stain_14" type="text" name="text" style="resize: both; overflow: auto;"></textarea>
                             </div>
                             <br><label>
                                 <input type="checkbox" id="stain15" onclick="toggleVisibility('stainInput15')" value="44"> Markers
                             </label>
                             <div id="stainInput15" class="hidden">
-                                <textarea id="lab_stain_15" type="text" name="text"></textarea>
+                                <textarea id="lab_stain_15" type="text" name="text" style="resize: both; overflow: auto;"></textarea>
                             </div>
                             </h3>
                         </ul> 
@@ -1001,7 +1001,7 @@ switch (true) {
                                 <input type="checkbox" id="stain9" onclick="toggleVisibility('stainInput9')" value="6"> Gross Check & Re-gross for/of
                         </label>
                         <div id="stainInput9" class="hidden">
-                            <textarea id="gross_check_re_gross_screening" type="text" name="text" rows="4" cols="50"></textarea>
+                            <textarea id="gross_check_re_gross_screening" type="text" name="text" rows="4" cols="50" style="resize: both; overflow: auto;"></textarea>
                         </div>
                         </div>
                     </h4>
@@ -2004,13 +2004,13 @@ switch (true) {
                                     <input type="checkbox" id="finalScreeningIHC1" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput1')" value="44"> Block Number
                                 </label>
                                 <div id="finalScreeningIHCInput1" class="hidden">
-                                    <textarea id="finalScreeningIHCLabInput" type="text" name="finalScreeningIHCText1"></textarea>
+                                    <textarea id="finalScreeningIHCLabInput" type="text" name="finalScreeningIHCText1" style="resize: both; overflow: auto;"></textarea>
                                 </div>
                                 <br><label>
                                     <input type="checkbox" id="finalScreeningIHC2" onclick="toggleVisibilityFinalScreening('finalScreeningIHCInput2')" value="44"> Markers
                                 </label>
                                 <div id="finalScreeningIHCInput2" class="hidden">
-                                    <textarea id="finalScreeningIHCLabMarkers" type="text" name="finalScreeningIHCText2"></textarea>
+                                    <textarea id="finalScreeningIHCLabMarkers" type="text" name="finalScreeningIHCText2" style="resize: both; overflow: auto;"></textarea>
                                 </div>
                                 </h3>
                             </ul> 
@@ -3047,6 +3047,20 @@ switch (true) {
                 document.getElementById(tabName).style.display = "block";
                 evt.currentTarget.className += " active";
             }
+
+            function updateButtonAndFocusInput(buttonId, inputId = 'labno') {
+                var button = document.getElementById(buttonId);
+                if (button) {
+                    button.style.backgroundColor = 'green';
+                    button.style.color = 'white';
+                    button.innerText = 'Saved';
+                }
+
+                var input = document.getElementById(inputId);
+                if (input) {
+                    input.focus();
+                }
+            }
         </script>
 
         
@@ -3458,7 +3472,8 @@ switch (true) {
                                         // Optionally, reload the page after a short delay
                                         setTimeout(function() {
                                             // window.location.reload();
-                                        }, 2000);
+                                            updateButtonAndFocusInput('history-button');
+                                        }, 100);
                                     } else {
                                         console.error("Error saving data:", xhr.status, xhr.statusText);
                                     }
@@ -3516,6 +3531,7 @@ switch (true) {
                                     console.log("Data saved successfully:", xhr.responseText);
                                     // alert("Data saved successfully.");
                                     // window.location.reload();
+                                    updateButtonAndFocusInput('lab-button');
                                 } else {
                                     console.error("saving data:");
                                 }
@@ -3568,6 +3584,7 @@ switch (true) {
                                     console.log("Data saved successfully:", xhr.responseText);
                                     // alert("Data saved successfully.");
                                     // window.location.reload();
+                                    updateButtonAndFocusInput('gross_related_instructions_screening');
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
                                 }
@@ -3629,7 +3646,8 @@ switch (true) {
                                         // Optionally, reload the page after a short delay
                                         setTimeout(function() {
                                             // window.location.reload();
-                                        }, 2000);
+                                            updateButtonAndFocusInput('screening_done');
+                                        }, 100);
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
                                 }
@@ -3704,11 +3722,18 @@ switch (true) {
 
                                 xhr.onload = function() {
                                     if (xhr.status === 200) {
-                                        console.log("Data saved successfully:", xhr.responseText);
+                                        // console.log("Data saved successfully:", xhr.responseText);
 
                                         // Display success message and reload window
                                         // alert("Data saved successfully.");
                                         // window.location.reload();
+                                        showSuccessMessage("Data saved successfully.");
+
+                                        // Optionally, reload the page after a short delay
+                                        setTimeout(function() {
+                                            // window.location.reload();
+                                            updateButtonAndFocusInput('final-history-button');
+                                        }, 100);
                                     } else {
                                         console.error("Error saving data:", xhr.status, xhr.statusText);
                                     }
@@ -3842,9 +3867,10 @@ switch (true) {
 
                             xhr.onload = function() {
                                 if (xhr.status === 200) {
-                                    console.log("Data saved successfully:", xhr.responseText);
+                                    // console.log("Data saved successfully:", xhr.responseText);
                                     // alert("Data saved successfully.");
                                     // window.location.reload();
+                                    updateButtonAndFocusInput('final-screening-save-button');
                                 } else {
                                     console.error("saving data:");
                                 }
@@ -3891,9 +3917,10 @@ switch (true) {
                         })
                         .then(response => response.text())
                         .then(result => {
-                            console.log(result);
+                            // console.log(result);
                             // alert('Data saved successfully!');
                             // window.location.reload();
+                            updateButtonAndFocusInput('final_screening_gross_related_instructions');
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -3946,6 +3973,8 @@ switch (true) {
                                 if (xhr.status === 200) {
                                     // console.log("Data saved successfully:", xhr.responseText);
                                     // window.location.reload();
+                                    updateButtonAndFocusInput('Final_Screening_Done');
+                                    
                                 } else {
                                     console.error("Error saving data:", xhr.statusText);
                                 }
