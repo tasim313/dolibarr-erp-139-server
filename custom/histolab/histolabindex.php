@@ -1619,7 +1619,6 @@ echo '<div class="tab-container">
 
     echo('
         <div id="Re-Gross" class="tabcontent">
-            <h1>Regross</h1>
             <div class="container">
                 <input type="date" id="regrossfromDateTime" class="input-field" placeholder="From">
                 <input type="date" id="regrosstoDateTime" class="input-field" placeholder="To">
@@ -1748,10 +1747,85 @@ echo '<div class="tab-container">
                     alert(\'Failed to fetch regross data.\');
                 });
             });
+          
+            document.getElementById("regrossgeneratePdfBtn").addEventListener("click", function () {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF(\'p\', \'pt\', \'a4\');
+                    const marginLeft = 40;
+                    let currentY = 40;
+                    let lastLabNo = "";
 
-           
+                    doc.setFontSize(14);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("Re-Gross Report", marginLeft, currentY);
+                    currentY += 20;
 
+                    const table = document.getElementById(\'histoReGrossTable\');
+                    const rows = table.querySelectorAll(\'tr\');
 
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll("td");
+
+                        const clean = (value) => value.replace(/^.*?:\s*/, "").trim(); // Remove existing label if any
+
+                        const labNoRaw = cells[0] ? cells[0].innerText.trim() : "";
+                        const labNo = labNoRaw && !/^no|null|undefined$/i.test(labNoRaw) ? labNoRaw : "";
+                        const cassettes = cells[1] ? clean(cells[1].innerText) : "";
+                        const tissue = cells[2] ? clean(cells[2].innerText) : "";
+                        const bone = cells[3] ? clean(cells[3].innerText) : "";
+                        const boneSlide = cells[4] ? clean(cells[4].innerText) : "";
+
+                        let parts = [];
+
+                        if (cassettes && !/^no|null|undefined$/i.test(cassettes)) {
+                            parts.push(`Cassettes:${cassettes}`);
+                        }
+                        if (tissue && !/^no|null|undefined$/i.test(tissue)) {
+                            parts.push(`Tissue:${tissue}`);
+                        }
+                        if (bone && !/^no|null|undefined$/i.test(bone)) {
+                            parts.push(`Bone:${bone}`);
+                        }
+                        if (boneSlide && !/^no|null|undefined$/i.test(boneSlide)) {
+                            parts.push(`BoneSlide:${boneSlide}`);
+                        }
+
+                        if (labNo) {
+                            // New lab no block
+                            lastLabNo = labNo;
+                            if (currentY > 780) {
+                                doc.addPage();
+                                currentY = 40;
+                            }
+                            const line = `LabNo: ${labNo}` + (parts.length ? `, ${parts.join(", ")}` : "");
+                            const splitText = doc.splitTextToSize(line, 520);
+                            doc.text(splitText, marginLeft, currentY);
+                            currentY += splitText.length * 14;
+                        } else if (parts.length) {
+                            // Same lab no, indented
+                            if (currentY > 780) {
+                                doc.addPage();
+                                currentY = 40;
+                            }
+                            const line = `     ${parts.join(", ")}`;
+                            const splitText = doc.splitTextToSize(line, 520);
+                            doc.text(splitText, marginLeft, currentY);
+                            currentY += splitText.length * 14;
+                        }
+
+                        // Skip row if no parts and no lab no
+                    });
+
+                    const now = new Date().toISOString().split("T")[0];
+                    doc.save(`re-gross-report-${now}.pdf`);
+                } catch (error) {
+                    console.error("Error generating PDF:", error);
+                }
+            });
         </script>
         '
     );
