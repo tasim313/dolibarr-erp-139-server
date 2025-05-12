@@ -1162,17 +1162,23 @@ function specific_doctor_name_wise_histo_case_list($username) {
                 nl.normalized_lab_number,
                 nl.gross_status,
                 MAX(CASE WHEN ct.fk_status_id IN (15, 10) THEN 1 ELSE 0 END) AS has_status_15_or_10,
-                MAX(CASE WHEN ct.fk_status_id = 46 THEN 1 ELSE 0 END) AS has_status_46
+                MAX(CASE WHEN ct.fk_status_id = 46 THEN 1 ELSE 0 END) AS has_status_46,
+                -- Check if commande is delivered, draft or cancel
+                MAX(CASE WHEN c.fk_statut IN (3, -1, 0) THEN 1 ELSE 0 END) AS has_commande_delivered_draft_cancel
             FROM normalized_labs nl
             LEFT JOIN llx_commande_trackws ct 
                 ON REGEXP_REPLACE(ct.labno, '^[A-Z]+', '') = nl.normalized_lab_number
                 AND ct.fk_status_id IN (15, 10, 46)
+            LEFT JOIN llx_commande c 
+                ON c.ref = nl.normalized_lab_number
             GROUP BY nl.lab_number, nl.normalized_lab_number, nl.gross_status
         )
         SELECT lab_number
-            FROM status_check
-            WHERE has_status_15_or_10 = 0 
-        AND (has_status_46 = 1 OR (has_status_46 = 0 AND gross_status = 'Done'));
+        FROM status_check
+        WHERE has_status_15_or_10 = 0 
+        AND (has_status_46 = 1 OR (has_status_46 = 0 AND gross_status = 'Done'))
+        AND has_commande_delivered_draft_cancel = 0;  -- Exclude if commande is delivered, draft, cancel
+
     ";
 
     $stmt_name = "get_specific_doctor_name_wise_histo_case_list";
