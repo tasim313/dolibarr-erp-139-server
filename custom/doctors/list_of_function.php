@@ -1275,4 +1275,81 @@ function specific_doctor_name_wise_cyto_case_list($username) {
     }
 }
 
+function hpl_list($labnumber) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    $labnumber = trim($labnumber);
+
+    // Ensure the Lab Number is not empty
+    if (empty($labnumber)) {
+        return ['error' => 'Lab Number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT c.ref, ef.test_type
+        FROM llx_commande c
+        JOIN llx_commande_extrafields ef
+            ON ef.fk_object = c.rowid
+        WHERE ef.test_type = 'HPL' AND c.ref = $1
+    ";
+
+    $stmt_name = "get_hpl_list_by_labnumber";
+
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the labnumber as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$labnumber]);
+
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: [];
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
+function get_transcription_list() {
+    global $pg_con;
+
+    $sql = "SELECT u.rowid, u.firstname, u.lastname, u.login
+            FROM llx_usergroup_user AS ugu
+            JOIN llx_usergroup AS ug ON ugu.fk_usergroup = ug.rowid
+            JOIN llx_user AS u ON ugu.fk_user = u.rowid
+            WHERE ug.nom = 'Transcription'";
+    $result = pg_query($pg_con, $sql);
+
+    $assistants = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $assistants[] = ['assistants_name' =>$row['firstname'] . ' ' . $row['lastname'], 'username' => $row['login'], 'userId' => $row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $assistants;
+}
+
 ?>

@@ -93,6 +93,7 @@ $loggedInUsername = $user->login;
 $userGroupNames = getUserGroupNames($loggedInUserId);
 
 $hasConsultants = false;
+$hasDoctorCollaborateWithAssist = false;
 
 $LabNumberWithPrefix = "HPL" . $LabNumber;
 $fk_gross_id = getGrossIdByLabNumber($LabNumberWithPrefix);
@@ -135,6 +136,8 @@ $formattedCommentData = array_map(function ($entry) {
 
 $refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
 
+$hpl = hpl_list($LabNumber);
+
 
 
 // Check if "Bones" status exists in the $bone_status array
@@ -163,7 +166,10 @@ foreach ($bone_status as $status) {
 foreach ($userGroupNames as $group) {
     if ($group['group'] === 'Consultants') {
         $hasConsultants = true;
-    } 
+    }
+    if($group['group'] === 'Doctor Collaborate With Assist'){
+        $hasDoctorCollaborateWithAssist = true;
+    }
 }
 
 $isAdmin = isUserAdmin($loggedInUserId);
@@ -656,6 +662,49 @@ switch (true) {
             <button id="preliminary_report_release" type="button" class="btn btn-primary" style="display: none;">Preliminary Report Release</button>
         </div>
     <?php endif; ?>
+
+
+    <?php if ($hasDoctorCollaborateWithAssist): ?>
+            <form id="doctorCollaborateWithAssistForm" method="post" action="collaborate_with_assist.php" class="form-inline">
+                
+                <div class="form-group mr-3">
+                    <label for="assistant" class="mr-2">Assistant</label>
+                    <select name="assistant" id="assistant" class="form-control">
+                        <option value="">Select Assistant</option>
+                        <?php
+                        $assistants = get_transcription_list();
+                        foreach ($assistants as $assistant) {
+                            echo "<option value='{$assistant['username']}'>{$assistant['username']}</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <input type="hidden" id="lab_number" name="lab_number" value="<?php echo $LabNumber; ?>">
+                <input type="hidden" id="gross_created_user" name="gross_created_user" value="<?php echo $gross_created_user; ?>">
+
+                <button type="submit" class="btn btn-primary ml-3">Start</button>
+                <button type="submit" class="btn btn-primary ml-3">Finished</button>
+            </form>
+
+            <script>
+                window.onload = function() {
+                    const storedAssistant = sessionStorage.getItem('assistant');
+                    if (storedAssistant) {
+                        document.getElementById('assistant').value = storedAssistant;
+                    }
+                };
+
+                document.getElementById('doctorCollaborateWithAssistForm').addEventListener('submit', function(event) {
+                    const selectedAssistant = document.getElementById('assistant').value;
+                    if (selectedAssistant) {
+                        sessionStorage.setItem('assistant', selectedAssistant);
+                    }
+                });
+            </script>
+    <?php endif; ?>
+
+
 
     <!-- Notification Button -->
     <button id="notificationBtn" type="button" class="btn btn-primary d-none">
@@ -2640,12 +2689,19 @@ switch (true) {
                 </div>
                 
     </div>
-
-    <!-- Middle Panel: PDF View -->
-    <div class="col-md-6 panel">
-      <iframe id="reportFrame" style="width:110%; height:1200px; border:none; display:none;"></iframe>
-    </div>
-
+    
+    <?php
+         // Check if result is not an error and has data
+        if (isset($hpl[0])) {
+            ?>
+                <!-- Middle Panel: PDF View -->
+                <div class="col-md-6 panel">
+                    <iframe id="reportFrame" style="width:110%; height:1200px; border:none; display:none;"></iframe>
+                </div>
+            <?php
+        } 
+    
+   ?>
     
   </div>
 </div>
@@ -4024,20 +4080,27 @@ switch (true) {
         <script>
             $(document).ready(function() {
                 // Retrieve the lab numbers from PHP
-                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list()); ?>;
+                const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
+                const mfcLab = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
+                
 
                 function checkLabNumberAndRedirect(labno) {
                     if (labno) {
                         
                         // Check if the labno exists in cytoLab
-                        const found = cytoLab.some(lab => lab.lab_number === labno);
+                        const foundCyto = cytoLab.some(lab => lab.lab_number === labno);
+                        // Check if the labno exists in mfcLab
+                        const foundMfc = mfcLab.some(lab => lab.lab_number === 'MFC' + labno);
+                       
 
-                        if (found) {
-                            
-                            // Redirect to cytoindex.php if labno is valid
+                        if (foundCyto) {
+                            // Redirect to cytoindex.php if labno is in cytoLab
                             window.location.href = 'Cyto/index.php?labno=' + labno;
+                        } else if (foundMfc) {
+                            // Redirect to mfc_lab_status.php if labno is in mfcLab
+                            window.location.href = 'mfc_lab_status.php?labno=' + labno;
                         } else {
-                            
+                            // Redirect to lab_status.php if labno is not found in either list
                             window.location.href = 'lab_status.php?labno=' + labno;
                         }
                     } else {
@@ -4045,12 +4108,14 @@ switch (true) {
                     }
                 }
 
+                // Handle the form submission
                 $('#readlabno').on('submit', function(e) {
                     e.preventDefault();
                     let labno = $('#labno').val();
                     checkLabNumberAndRedirect(labno);
                 });
 
+                // Handle click events for the tabs
                 $('#tab-screening, #tab-final-screening, #tab-status').on('click', function() {
                     let labno = $('#labno').val();
                     checkLabNumberAndRedirect(labno);
