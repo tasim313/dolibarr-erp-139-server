@@ -78,6 +78,8 @@ $loggedInUsername = $user->login;
 $userGroupNames = getUserGroupNames($loggedInUserId);
 
 $hasConsultants = false;
+$hasDoctorCollaborateWithAssist = false;
+$lastStatus = get_last_doctor_collaboration_status($loggedInUsername); 
 
 $isAdmin = isUserAdmin($loggedInUserId);
 
@@ -85,6 +87,9 @@ $isAdmin = isUserAdmin($loggedInUserId);
 foreach ($userGroupNames as $group) {
     if ($group['group'] === 'Consultants') {
         $hasConsultants = true;
+    }
+    if($group['group'] === 'Doctor Collaborate With Assist'){
+        $hasDoctorCollaborateWithAssist = true;
     } 
 }
 
@@ -390,6 +395,49 @@ switch (true) {
                     <i class="fas fa-file-alt" aria-hidden="true"></i> Report
                 </button>
             </a>
+
+            <?php if ($hasDoctorCollaborateWithAssist): ?>
+                <form id="doctorCollaborateWithAssistForm" method="post" action="../insert/collaborate_with_assist.php" class="form-inline">
+                    
+                    <div class="form-group mr-3">
+                        <label for="assistant" class="mr-2">Assistant</label>
+                        <select name="assistant" id="assistant" class="form-control">
+                            <option value="">Select Assistant</option>
+                            <?php
+                            $assistants = get_transcription_list();
+                            foreach ($assistants as $assistant) {
+                                echo "<option value='{$assistant['username']}'>{$assistant['username']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="doctor_name" value="<?php echo $loggedInUsername; ?>">
+
+                    <?php if ($lastStatus === 'not_found' || $lastStatus === 'finished'): ?>
+                        <button type="submit" name="action" value="start" class="btn btn-primary ml-3">Start</button>
+                    <?php elseif ($lastStatus === 'start'): ?>
+                        <button type="submit" name="action" value="finished" class="btn btn-success ml-3">Finished</button>
+                    <?php endif; ?>
+                </form>
+
+                <script>
+                    window.onload = function() {
+                        const storedAssistant = sessionStorage.getItem('assistant');
+                        if (storedAssistant) {
+                            document.getElementById('assistant').value = storedAssistant;
+                        }
+                    };
+
+                    document.getElementById('doctorCollaborateWithAssistForm').addEventListener('submit', function(event) {
+                        const selectedAssistant = document.getElementById('assistant').value;
+                        if (selectedAssistant) {
+                            sessionStorage.setItem('assistant', selectedAssistant);
+                        }
+                    });
+                </script>
+            <?php endif; ?>
+
 
 
             

@@ -137,6 +137,7 @@ $formattedCommentData = array_map(function ($entry) {
 $refer_notification = doctor_referral_system_records_list_by_username($loggedInUsername);
 
 $hpl = hpl_list($LabNumber);
+$lastStatus = get_last_doctor_collaboration_status($loggedInUsername); 
 
 
 
@@ -665,7 +666,7 @@ switch (true) {
 
 
     <?php if ($hasDoctorCollaborateWithAssist): ?>
-            <form id="doctorCollaborateWithAssistForm" method="post" action="collaborate_with_assist.php" class="form-inline">
+            <form id="doctorCollaborateWithAssistForm" method="post" action="insert/collaborate_with_assist.php" class="form-inline">
                 
                 <div class="form-group mr-3">
                     <label for="assistant" class="mr-2">Assistant</label>
@@ -680,11 +681,13 @@ switch (true) {
                     </select>
                 </div>
 
-                <input type="hidden" id="lab_number" name="lab_number" value="<?php echo $LabNumber; ?>">
-                <input type="hidden" id="gross_created_user" name="gross_created_user" value="<?php echo $gross_created_user; ?>">
+                <input type="hidden" name="doctor_name" value="<?php echo $loggedInUsername; ?>">
 
-                <button type="submit" class="btn btn-primary ml-3">Start</button>
-                <button type="submit" class="btn btn-primary ml-3">Finished</button>
+                <?php if ($lastStatus === 'not_found' || $lastStatus === 'finished'): ?>
+                    <button type="submit" name="action" value="start" class="btn btn-primary ml-3">Start</button>
+                <?php elseif ($lastStatus === 'start'): ?>
+                    <button type="submit" name="action" value="finished" class="btn btn-success ml-3">Finished</button>
+                <?php endif; ?>
             </form>
 
             <script>
