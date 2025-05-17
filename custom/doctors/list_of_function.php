@@ -1352,4 +1352,30 @@ function get_transcription_list() {
     return $assistants;
 }
 
+
+function get_last_doctor_collaboration_status($doctorName) {
+    global $pg_con;
+
+    $sql = "SELECT rowid, Status, Finished_Date, Finished_Time 
+            FROM llx_doctor_collaboratewithAssist 
+            WHERE Doctor_name = $1 
+            ORDER BY rowid DESC LIMIT 1";
+    
+    $result = pg_query_params($pg_con, $sql, [$doctorName]);
+
+    if (!$result || pg_num_rows($result) === 0) {
+        return 'not_found'; // No previous record found
+    }
+
+    $row = pg_fetch_assoc($result);
+
+    if (empty($row['status']) || strtolower($row['status']) === 'start') {
+        return 'start'; // Started but not finished yet
+    } elseif (strtolower($row['status']) === 'finished') {
+        return 'finished'; // Finished already
+    } else {
+        return 'not_found'; // Unexpected data, treat as new
+    }
+}
+
 ?>
