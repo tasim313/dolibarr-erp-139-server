@@ -1378,4 +1378,28 @@ function get_last_doctor_collaboration_status($doctorName) {
     }
 }
 
+
+function get_last_doctor_finalization_status($lab_number) {
+    global $pg_con;
+
+    $sql = "SELECT id, create_time, labno, user_id, fk_status_id, 
+                   description, lab_room_status 
+            FROM llx_commande_trackws 
+            WHERE labno = $1 AND fk_status_id IN ('10', '15') 
+            ORDER BY id DESC LIMIT 1";
+
+    $result = pg_query_params($pg_con, $sql, [$lab_number]);
+
+    if (!$result || pg_num_rows($result) === 0) {
+        return ['status' => 'not_found'];
+    }
+
+    $row = pg_fetch_assoc($result);
+    return [
+        'status' => 'finalization_found',
+        'data' => $row
+    ];
+}
+
+
 ?>
