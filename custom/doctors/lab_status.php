@@ -138,7 +138,9 @@ $refer_notification = doctor_referral_system_records_list_by_username($loggedInU
 
 $hpl = hpl_list($LabNumber);
 $lastStatus = get_last_doctor_collaboration_status($loggedInUsername); 
+$finalization_status = get_last_doctor_finalization_status($LabNumber);
 
+$showModal = ($finalization_status['status'] === 'finalization_found');
 
 
 // Check if "Bones" status exists in the $bone_status array
@@ -2750,7 +2752,7 @@ switch (true) {
                         // Skip duplicates
                         $uniqueKey = $statusName . $list['description'] . $list['TrackCreateTime'];
                         if (in_array($uniqueKey, $shownStatuses)) {
-                        continue;
+                            continue;
                         }
                         $shownStatuses[] = $uniqueKey;
 
@@ -2758,12 +2760,12 @@ switch (true) {
                         if (in_array($statusName, [
                         'Diagnosis Completed', 'Start Screening', 'Final Screening Start'
                         ])) {
-                        continue;
+                            continue;
                         }
 
                         // Only process certain sections
                         if (!in_array($list['section'], ['Gross', 'Lab', 'Microscopy', 'Screening', 'description'])) {
-                        continue;
+                            continue;
                         }
 
                         // Determine color
@@ -2792,16 +2794,16 @@ switch (true) {
                             $statusColor = 'red';
                         }
                         } elseif (in_array($statusName, array_values($requestedCompletedPairs))) {
-                        $statusColor = 'green';
+                            $statusColor = 'green';
                         }
 
                         // Date formatting
                         try {
-                        $dateTime = new DateTime($list['TrackCreateTime'], new DateTimeZone('UTC'));
-                        $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
-                        $formattedTime = $dateTime->format('F j, Y g:i A');
+                            $dateTime = new DateTime($list['TrackCreateTime'], new DateTimeZone('UTC'));
+                            $dateTime->setTimezone(new DateTimeZone('Asia/Dhaka'));
+                            $formattedTime = $dateTime->format('F j, Y g:i A');
                         } catch (Exception $e) {
-                        $formattedTime = 'Invalid date';
+                            $formattedTime = 'Invalid date';
                         }
 
                         // Store cleaned data for output
@@ -2869,6 +2871,52 @@ switch (true) {
     </div>
   </div>
 </div>
+
+
+<!-- Finalization Modal -->
+<div class="modal fade" id="finalizationModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-fullscreen" role="document">
+    <div class="modal-content modal-content-fullscreen">
+      <div class="modal-header">
+      <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+        <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      
+        <div class="modal-body">
+            <div class="row">
+            <!-- Left Side: Buttons -->
+            <div class="col-md-6 border-right">
+                    <h5 class="mb-3">This case has been finalized.</h5>
+                    <p><strong>What would you like to do?</strong></p>
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item">
+                            <button class="btn btn-outline-primary btn-block" id="finalizeAgainBtn" data-dismiss="modal">🔁 Finalize Again</button>
+                        </li>
+                        <li class="list-group-item">
+                            <button class="btn btn-outline-success btn-block" id="previewPrelimBtn">📝 Preview Preliminary Report</button>
+                        </li>
+                        <li class="list-group-item">
+                            <button class="btn btn-outline-info btn-block" id="previewFinalBtn">📄 Preview Final Report</button>
+                        </li>
+                    </ul>
+            </div>
+
+            <!-- Right Side: Report Preview -->
+            <div class="col-md-6">
+                <iframe id="modalreportFrame" style="width:80%; height:1000px; border:none; display:none;"></iframe>
+                <div id="noReport" style="text-align:center; color:#999; padding-top:150px;">No report selected</div>
+            </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 
 
 
@@ -5529,6 +5577,40 @@ switch (true) {
     }
 </style>
 
+
+
+<script>
+  const modallabNumber = "<?php echo htmlspecialchars('HPL' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // Show modal if PHP variable set
+    <?php if ($showModal): ?>
+        $('#finalizationModal').modal('show');
+    <?php endif; ?>
+
+    document.getElementById('previewPrelimBtn').addEventListener('click', function () {
+        loadModalReport("preliminary");
+    });
+
+    document.getElementById('previewFinalBtn').addEventListener('click', function () {
+        loadModalReport("final");
+    });
+
+    function loadModalReport(type) {
+      const iframe = document.getElementById('modalreportFrame');
+      const noReport = document.getElementById('noReport');
+
+      if (type === "preliminary") {
+        iframe.src = "../transcription/preliminary_report/hpl/report.php?lab_number=" + modallabNumber;
+      } else if (type === "final") {
+        iframe.src = "../grossmodule/hpl_report.php?lab_number=" + modallabNumber;
+      }
+
+      iframe.style.display = "block";
+      noReport.style.display = "none";
+    }
+  });
+</script>
 
 
 </body>
