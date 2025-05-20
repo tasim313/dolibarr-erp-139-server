@@ -2878,7 +2878,8 @@ switch (true) {
   <div class="modal-dialog modal-dialog-centered modal-dialog-fullscreen" role="document">
     <div class="modal-content modal-content-fullscreen">
       <div class="modal-header">
-      <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      <!-- <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button> -->
+        <button type="button" class="btn btn-danger" onclick="history.back()">Back</button>
         <button type="button" class="close custom-close-btn" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
