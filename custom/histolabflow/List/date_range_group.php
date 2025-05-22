@@ -494,6 +494,53 @@ $cyto_special_instruction_json = json_encode($cyto_special_instruction_list);
         }
 
 
+        // Common function to export data to CSV
+        function exportToCsv(data, filename) {
+            // Check if data is empty
+            if (!data || data.length === 0) {
+                alert('No data to export!');
+                return;
+            }
+
+            // Extract headers from the first object
+            const headers = Object.keys(data[0]);
+            
+            // Create CSV content
+            let csvContent = headers.join(',') + '\n';
+            
+            // Add rows
+            data.forEach(item => {
+                const row = headers.map(header => {
+                    // Escape quotes and handle undefined/null values
+                    let value = item[header];
+                    if (value === undefined || value === null) {
+                        value = '';
+                    }
+                    // Escape double quotes and wrap in quotes if contains comma or newline
+                    value = String(value).replace(/"/g, '""');
+                    if (value.includes(',') || value.includes('\n') || value.includes('\r')) {
+                        value = `"${value}"`;
+                    }
+                    return value;
+                });
+                csvContent += row.join(',') + '\n';
+            });
+
+            // Create download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename || 'export.csv');
+            link.style.visibility = 'hidden';
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+
         // Function to display the user's reception details
         function displayUserDetails(userReceptions) {
             // Create a new tab dynamically (if needed)
@@ -641,11 +688,18 @@ $cyto_special_instruction_json = json_encode($cyto_special_instruction_list);
                 </div>
             `).join('');
 
+            // export button
+            const exportButton = document.createElement('button');
+            exportButton.className = 'btn btn-primary mb-3';
+            exportButton.textContent = 'Export to CSV';
+            exportButton.onclick = () => exportToCsv(userGrossInformation, 'gross_details.csv');
+
             // Insert the content into the tab
             tab.innerHTML = `
                 <span class="position-absolute top-0 end-0 m-2 text-danger" style="cursor: pointer;" aria-label="Remove Tab" onclick="closeTab()">
                     <i class="bi bi-trash"></i>
                 </span>
+                <div class="text-end mb-2">${exportButton.outerHTML}</div>
                 <h1>${userGrossInformation[0].gross_doctor_name || 'No Doctor Assigned'}</h1>
                 <h5>Gross Information</h5>
                 <div class="card">
