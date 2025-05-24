@@ -384,6 +384,22 @@ switch (true) {
 </head>
 <body>
 
+<!-- abbreviations -->
+<script>
+        const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
+        console.log('abbreviations :', abbreviations_value);
+        
+        const abbreviations = {};
+
+        // Loop through abbreviations_value and map it to the abbreviations object
+        abbreviations_value.forEach(item => {
+            // Remove HTML tags using replace with a regex
+            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
+            abbreviations[item.abbreviation_key] = plainText;
+        });
+
+</script>
+
 <div class="container-fluid">
   <div class="row">
 
@@ -817,171 +833,6 @@ switch (true) {
                         </form>
 
                         <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Define your abbreviations here:
-  const abbreviations = {
-    "sec": "section",
-    "smpl": "sample",
-    "desc": "description"
-  };
-
-  // Select all editor containers by matching the ID pattern
-  const editors = document.querySelectorAll("[id^='quill-editor-new-']");
-
-  // Store quill instances indexed by their index suffix
-  const quillInstances = {};
-
-  editors.forEach((editorDiv) => {
-    // Extract index from the ID, e.g., quill-editor-new-3 -> 3
-    const index = editorDiv.id.split("quill-editor-new-")[1];
-
-    // Initialize Quill editor
-    const quill = new Quill(editorDiv, {
-      theme: "snow",
-      modules: { toolbar: [] } // no toolbar or customize as needed
-    });
-
-    // Sync initial empty content to hidden textarea
-    const hiddenTextarea = document.getElementById(`hidden_description_new_${index}`);
-    hiddenTextarea.value = quill.root.innerHTML;
-
-    // On text-change update hidden textarea
-    quill.on("text-change", () => {
-      hiddenTextarea.value = quill.root.innerHTML;
-    });
-
-    // Abbreviation replacement on space key per editor
-    quill.root.addEventListener("keydown", (e) => {
-      if (e.key === " ") {
-        const selection = quill.getSelection();
-        if (!selection) return;
-
-        const caretPos = selection.index;
-        const textBeforeCaret = quill.getText(0, caretPos);
-        const words = textBeforeCaret.trim().split(/\s+/);
-        const lastWord = words[words.length - 1];
-
-        const abbrKey = Object.keys(abbreviations).find(
-          (key) => key.toLowerCase() === lastWord.toLowerCase()
-        );
-
-        if (abbrKey) {
-          e.preventDefault();
-
-          // Calculate start index of last word
-          const startIndex = textBeforeCaret.lastIndexOf(lastWord);
-
-          // Replace abbreviation with full word + space
-          quill.deleteText(startIndex, lastWord.length);
-          quill.insertText(startIndex, abbreviations[abbrKey] + " ");
-
-          // Move caret after inserted text
-          quill.setSelection(startIndex + abbreviations[abbrKey].length + 1);
-        }
-      }
-    });
-
-    // Save instance
-    quillInstances[index] = quill;
-  });
-
-  // On form submit, update all hidden textareas again to be safe
-  const form = document.querySelector(".micro-description-insert-form");
-  form.addEventListener("submit", () => {
-    Object.entries(quillInstances).forEach(([idx, quill]) => {
-      const hiddenTextarea = document.getElementById(`hidden_description_new_${idx}`);
-      hiddenTextarea.value = quill.root.innerHTML;
-    });
-  });
-});
-</script>
-
-
-
-                    
-                        <!-- <script>
-                            document.addEventListener("DOMContentLoaded", function () {
-                                // Helper to replace the last word with the abbreviation
-                                function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
-                                    const textBeforeCaret = editor.getText().substring(0, caretPosition);
-                                    const startOfWord = textBeforeCaret.lastIndexOf(word);
-
-                                    if (startOfWord !== -1) {
-                                        editor.deleteText(startOfWord, word.length);
-                                        editor.insertText(startOfWord, abbreviation.trim(), 'user');
-                                        editor.setSelection(startOfWord + abbreviation.length, 0);
-                                    }
-                                }
-
-                                // Set up abbreviation handling for a Quill editor
-                                function setupAbbreviationHandler(editor) {
-                                    editor.root.addEventListener('keydown', function(event) {
-                                        if (event.key === ' ') {
-                                            event.preventDefault();
-                                            const selection = editor.getSelection();
-                                            if (!selection) return;
-
-                                            const caretPosition = selection.index;
-                                            const text = editor.getText();
-                                            const textBeforeCaret = text.substring(0, caretPosition);
-                                            const words = textBeforeCaret.trim().split(/\s+/);
-                                            const lastWord = words[words.length - 1];
-
-                                            // Optional: prevent replacing e.g. ".ab" which might be part of an abbreviation with a dot
-                                            const charBeforeWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-                                            if (charBeforeWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                                                editor.insertText(caretPosition, ' ');
-                                                return;
-                                            }
-
-                                            const matchKey = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                                            if (matchKey) {
-                                                replaceLastWordWithAbbreviation(editor, lastWord, abbreviations[matchKey], caretPosition);
-                                            } else {
-                                                editor.insertText(caretPosition, ' ');
-                                            }
-                                        }
-                                    });
-                                }
-
-                                // Handle form submission
-                                var forms = document.querySelectorAll(".micro-description-insert-form");
-                                forms.forEach(function (form) {
-                                    form.addEventListener("submit", function () {
-                                        <?php foreach ($specimens_list as $index => $specimen) { ?>
-                                            var quillEditor = document.querySelector("#quill-editor-new-<?php echo $index; ?> .ql-editor");
-                                            if (quillEditor) {
-                                                document.getElementById("hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
-                                            }
-                                        <?php } ?>
-                                    });
-                                });
-
-                                // Initialize Quill editors and add abbreviation handling
-                                <?php foreach ($specimens_list as $index => $specimen) { ?>
-                                    var quill<?php echo $index; ?> = new Quill("#quill-editor-new-<?php echo $index; ?>", {
-                                        theme: "snow",
-                                        modules: {
-                                            toolbar: [] // Optional: customize toolbar as needed
-                                        }
-                                    });
-
-                                    quill<?php echo $index; ?>.on("text-change", function () {
-                                        document.getElementById("hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
-                                    });
-
-                                    setupAbbreviationHandler(quill<?php echo $index; ?>);
-                                <?php } ?>
-                            });
-                        </script> -->
-                        
-                        
-
-
-
-                    
-                    
-                        <!-- <script>
                             document.addEventListener("DOMContentLoaded", function () {
                                 var forms = document.querySelectorAll(".micro-description-insert-form");
                     
@@ -998,7 +849,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                                 <?php foreach ($specimens_list as $index => $specimen) { ?>
                                     var quill<?php echo $index; ?> = new Quill("#quill-editor-new-<?php echo $index; ?>", {
-                                        theme: "snow"
+                                        theme: "snow",
+                                        modules: {
+                                            toolbar: []
+                                        }
                                     });
                     
                                     quill<?php echo $index; ?>.on("text-change", function () {
@@ -1006,11 +860,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     });
                                 <?php } ?>
                             });
-                        </script> -->
-                    
-                        
-                    
-                    
+                        </script>
+
                         <?php
                     }else {
                         foreach ($existingMicroDescriptions as $key => $existingDescription) {
@@ -1045,6 +896,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <button type="submit" class="btn btn-primary">Save</button>
                                 </div>
                             </form>
+
+                                
+
                             <?php
                         }
                     }
@@ -1317,6 +1171,157 @@ document.addEventListener("DOMContentLoaded", () => {
                             </div>
                         </form>
 
+                                <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            
+                                            // Ctrl+S to submit the form globally
+                                            document.addEventListener('keydown', function (event) {
+                                                if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+                                                    event.preventDefault();
+                                                    document.getElementById('diagnosisDescriptionSaveButton').click();
+                                                }
+                                            });
+
+                                            // Handle shortcut input for textareas
+                                            function handleShortcutInput(inputElement, cursorPosition, shortcuts) {
+                                                let text = inputElement.value;
+                                                let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
+                                                let wordEnd = cursorPosition;
+                                                let word = text.substring(wordStart, wordEnd).trim();
+
+                                                if (shortcuts[word]) {
+                                                    inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
+                                                    inputElement.selectionEnd = wordStart + shortcuts[word].length;
+                                                }
+                                            }
+
+                                            // Helper function to replace the last word with the abbreviation
+                                            function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
+                                                const text = editor.getText();
+                                                const textBeforeCaret = text.substring(0, caretPosition);
+                                                const startOfWord = textBeforeCaret.lastIndexOf(word);
+                                                
+                                                editor.deleteText(startOfWord, word.length);
+                                                editor.insertText(startOfWord, abbreviation.trim(), 'user');
+                                                editor.setSelection(startOfWord + abbreviation.length, 0);
+                                            }
+
+                                            // Initialize Quill editors and set their content
+                                            <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+                                                // Initialize description editor
+                                                var descEditor<?= $index ?> = new Quill('#diagnosis-quill-editor-<?= $index ?>', {
+                                                    theme: 'snow',
+                                                    modules: {
+                                                        toolbar: []
+                                                    }
+                                                });
+
+                                                // Initialize comment editor
+                                                var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
+                                                    theme: 'snow',
+                                                    modules: {
+                                                        toolbar: []
+                                                    }
+                                                });
+
+                                                // Set unique content for each editor
+                                                descEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['description'] ?? '') ?>;
+                                                commentEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['comment'] ?? '') ?>;
+
+                                                // Add abbreviation functionality to description editor
+                                                descEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
+                                                    if (event.key === ' ') {
+                                                        event.preventDefault();
+                                                        
+                                                        const text = descEditor<?= $index ?>.getText();
+                                                        const selection = descEditor<?= $index ?>.getSelection();
+                                                        const caretPosition = selection.index;
+                                                        
+                                                        // Get the word before caret
+                                                        const textBeforeCaret = text.substring(0, caretPosition);
+                                                        const words = textBeforeCaret.trim().split(/\s+/);
+                                                        const lastWord = words[words.length - 1];
+                                                        
+                                                        // Check for period rule (e.g., ".word")
+                                                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+                                                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                                                            descEditor<?= $index ?>.insertText(caretPosition, ' ');
+                                                            return;
+                                                        }
+                                                        
+                                                        // Find matching abbreviation (case-insensitive)
+                                                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                                                        
+                                                        if (abbreviation) {
+                                                            replaceLastWordWithAbbreviation(descEditor<?= $index ?>, lastWord, abbreviations[abbreviation], caretPosition);
+                                                        } else {
+                                                            descEditor<?= $index ?>.insertText(caretPosition, ' ');
+                                                        }
+                                                    }
+                                                });
+
+                                                // Add abbreviation functionality to comment editor
+                                                commentEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
+                                                    if (event.key === ' ') {
+                                                        event.preventDefault();
+                                                        
+                                                        const text = commentEditor<?= $index ?>.getText();
+                                                        const selection = commentEditor<?= $index ?>.getSelection();
+                                                        const caretPosition = selection.index;
+                                                        
+                                                        // Get the word before caret
+                                                        const textBeforeCaret = text.substring(0, caretPosition);
+                                                        const words = textBeforeCaret.trim().split(/\s+/);
+                                                        const lastWord = words[words.length - 1];
+                                                        
+                                                        // Check for period rule (e.g., ".word")
+                                                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+                                                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                                                            commentEditor<?= $index ?>.insertText(caretPosition, ' ');
+                                                            return;
+                                                        }
+                                                        
+                                                        // Find matching abbreviation (case-insensitive)
+                                                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                                                        
+                                                        if (abbreviation) {
+                                                            replaceLastWordWithAbbreviation(commentEditor<?= $index ?>, lastWord, abbreviations[abbreviation], caretPosition);
+                                                        } else {
+                                                            commentEditor<?= $index ?>.insertText(caretPosition, ' ');
+                                                        }
+                                                    }
+                                                });
+                                            <?php endforeach; ?>
+
+                                            // Handle form submission
+                                            document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function (event) {
+                                                event.preventDefault();
+
+                                                // Update hidden fields with Quill content before submitting
+                                                <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
+                                                    document.getElementById('diagnosis-textarea-<?= $index ?>').value =
+                                                        descEditor<?= $index ?>.root.innerHTML;
+                                                    document.getElementById('comment-textarea-<?= $index ?>').value =
+                                                        commentEditor<?= $index ?>.root.innerHTML;
+                                                <?php endforeach; ?>
+
+                                                const formData = new FormData(this);
+
+                                                fetch("update_diagnosis_descriptions.php", {
+                                                    method: "POST",
+                                                    body: formData
+                                                })
+                                                    .then(response => response.text())
+                                                    .then(data => {
+                                                        window.location.reload();
+                                                    })
+                                                    .catch(error => {
+                                                        console.error("Error:", error);
+                                                    });
+                                            });
+                                        });
+                                </script>
+
                         <?php
                     }
                 ?>
@@ -1492,22 +1497,6 @@ document.addEventListener("DOMContentLoaded", () => {
 </html>
 
 <script>
-        const abbreviations_value = <?php echo json_encode($abbreviations); ?>;
-        console.log('abbreviations :', abbreviations_value);
-        
-        const abbreviations = {};
-
-        // Loop through abbreviations_value and map it to the abbreviations object
-        abbreviations_value.forEach(item => {
-            // Remove HTML tags using replace with a regex
-            const plainText = item.abbreviation_full_text.replace(/<[^>]*>/g, '');
-            abbreviations[item.abbreviation_key] = plainText;
-        });
-
-</script>
-
-
-<script>
     // Patient Information
     document.addEventListener('keydown', function(event) {
         // Check for Ctrl + S (or Command + S on Mac)
@@ -1596,9 +1585,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <!-- Gross Description Abbreviations -->
 <script>
-        
-
-        
         // Initialize Quill editor for each textarea
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.editor').forEach((element, index) => {
@@ -1918,190 +1904,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 </script>
 
-<script>
-    // Micro Description Update 
 
-    document.addEventListener('keydown', function(event) {
-            // Check for Ctrl + S (or Command + S on Mac)
-            if (event.ctrlKey && event.key === 's') {
-                event.preventDefault(); // Prevent default behavior of Enter key
-                document.getElementById('micro-button').click(); // Submit the form 
-            }
-    });
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('shortcuts.json')
-            .then(response => response.json())
-            .then(shortcuts => {
-                function handleShortcutInput(inputElement, cursorPosition) {
-                    let text = inputElement.value;
-                    let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
-                    let wordEnd = cursorPosition;
-
-                    let word = text.substring(wordStart, wordEnd).trim();
-
-                    if (shortcuts[word]) {
-                        inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                        inputElement.selectionEnd = wordStart + shortcuts[word].length;
-                    }
-                }
-
-                document.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.addEventListener('keydown', function(event) {
-                        if (event.key === 'Insert') { // Insert key
-                            let cursorPosition = this.selectionStart;
-                            handleShortcutInput(this, cursorPosition);
-                        }
-                    });
-                });
-            })
-            .catch(error => console.error('Error loading shortcuts:', error));
-    });
-
-
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     // Initialize all Quill editors
-    //     <?php foreach ($existingMicroDescriptions as $key => $existingDescription): ?>
-    //         var quillEditor<?php echo $key; ?> = new Quill('#quill-editor-<?php echo $key; ?>', {
-    //             theme: 'snow',
-    //             modules: {
-    //                 toolbar: [
-                        
-    //                 ]
-    //             }
-    //         });
-
-    //         // Set the initial content from hidden textarea
-    //         var hiddenTextarea<?php echo $key; ?> = document.getElementById('hidden_description<?php echo $key; ?>');
-    //         quillEditor<?php echo $key; ?>.root.innerHTML = hiddenTextarea<?php echo $key; ?>.value;
-
-    //         // Update hidden textarea when editor content changes
-    //         quillEditor<?php echo $key; ?>.on('text-change', function() {
-    //             hiddenTextarea<?php echo $key; ?>.value = quillEditor<?php echo $key; ?>.root.innerHTML;
-    //         });
-    //     <?php endforeach; ?>
-
-    //     // Update your form submission handler
-    //     document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
-    //         form.addEventListener("submit", function(event) {
-    //             event.preventDefault();
-                
-    //             // Update all hidden textareas before submission
-    //             var formId = this.id;
-    //             var key = formId.replace('microDescriptionForm', '');
-    //             var quillEditor = new Quill('#quill-editor-' + key);
-    //             document.getElementById('hidden_description' + key).value = quillEditor.root.innerHTML;
-
-    //             const formData = new FormData(this);
-                
-    //             fetch("update_micro_descriptions.php", {
-    //                 method: "POST",
-    //                 body: formData
-    //             })
-    //             .then(response => response.text())
-    //             .then(data => {
-    //                 window.location.reload();
-    //             })
-    //             .catch(error => {
-    //                 console.error("Error:", error);
-    //             });
-    //         });
-    //     });
-    // });
-
-    document.addEventListener('DOMContentLoaded', function() {
-    
-            // Initialize all Quill editors
-            <?php foreach ($existingMicroDescriptions as $key => $existingDescription): ?>
-                var quillEditor<?php echo $key; ?> = new Quill('#quill-editor-<?php echo $key; ?>', {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: []
-                    }
-                });
-
-                // Set the initial content from hidden textarea
-                var hiddenTextarea<?php echo $key; ?> = document.getElementById('hidden_description<?php echo $key; ?>');
-                quillEditor<?php echo $key; ?>.root.innerHTML = hiddenTextarea<?php echo $key; ?>.value;
-
-                // Update hidden textarea when editor content changes
-                quillEditor<?php echo $key; ?>.on('text-change', function() {
-                    hiddenTextarea<?php echo $key; ?>.value = quillEditor<?php echo $key; ?>.root.innerHTML;
-                });
-
-                // Add abbreviation functionality to this editor
-                quillEditor<?php echo $key; ?>.root.addEventListener('keydown', function(event) {
-                    if (event.key === ' ') {
-                        event.preventDefault();
-                        
-                        const text = quillEditor<?php echo $key; ?>.getText();
-                        const selection = quillEditor<?php echo $key; ?>.getSelection();
-                        const caretPosition = selection.index;
-                        
-                        // Get the word before caret
-                        const textBeforeCaret = text.substring(0, caretPosition);
-                        const words = textBeforeCaret.trim().split(/\s+/);
-                        const lastWord = words[words.length - 1];
-                        
-                        // Check for period rule (e.g., ".word")
-                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                            quillEditor<?php echo $key; ?>.insertText(caretPosition, ' ');
-                            return;
-                        }
-                        
-                        // Find matching abbreviation (case-insensitive)
-                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                        
-                        if (abbreviation) {
-                            replaceLastWordWithAbbreviation(quillEditor<?php echo $key; ?>, lastWord, abbreviations[abbreviation], caretPosition);
-                        } else {
-                            quillEditor<?php echo $key; ?>.insertText(caretPosition, ' ');
-                        }
-                    }
-                });
-            <?php endforeach; ?>
-
-            // Helper function to replace the last word with the abbreviation
-            function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
-                const text = editor.getText();
-                const textBeforeCaret = text.substring(0, caretPosition);
-                const startOfWord = textBeforeCaret.lastIndexOf(word);
-                
-                editor.deleteText(startOfWord, word.length);
-                editor.insertText(startOfWord, abbreviation.trim(), 'user');
-                editor.setSelection(startOfWord + abbreviation.length, 0);
-            }
-
-            // Update your form submission handler
-            document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
-                form.addEventListener("submit", function(event) {
-                    event.preventDefault();
-                    
-                    // Update all hidden textareas before submission
-                    var formId = this.id;
-                    var key = formId.replace('microDescriptionForm', '');
-                    var quillEditor = new Quill('#quill-editor-' + key);
-                    document.getElementById('hidden_description' + key).value = quillEditor.root.innerHTML;
-
-                    const formData = new FormData(this);
-                    
-                    fetch("update_micro_descriptions.php", {
-                        method: "POST",
-                        body: formData
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        window.location.reload();
-                    })
-                    .catch(error => {
-                        console.error("Error:", error);
-                    });
-                });
-            });
-    });
-</script>
 
 
 <!-- <script>
@@ -2217,172 +2020,105 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        // Ctrl+S to submit the form globally
-        document.addEventListener('keydown', function (event) {
-            if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-                event.preventDefault();
-                document.getElementById('diagnosisDescriptionSaveButton').click();
-            }
-        });
+    // Micro Description Update 
 
-        // Handle shortcut input for textareas
-        function handleShortcutInput(inputElement, cursorPosition, shortcuts) {
-            let text = inputElement.value;
-            let wordStart = text.lastIndexOf(' ', cursorPosition - 1) + 1;
-            let wordEnd = cursorPosition;
-            let word = text.substring(wordStart, wordEnd).trim();
-
-            if (shortcuts[word]) {
-                inputElement.value = text.substring(0, wordStart) + shortcuts[word] + text.substring(wordEnd);
-                inputElement.selectionEnd = wordStart + shortcuts[word].length;
-            }
+    document.addEventListener('keydown', function(event) {
+        // Check for Ctrl + S (or Command + S on Mac)
+        if (event.ctrlKey && event.key === 's') {
+            event.preventDefault(); // Prevent default behavior of Enter key
+            document.getElementById('micro-button').click(); // Submit the form 
         }
+    });
 
-        // Load shortcuts from JSON
-        fetch('shortcuts.json')
-            .then(response => response.json())
-            .then(shortcuts => {
-                document.querySelectorAll('textarea').forEach(textarea => {
-                    textarea.addEventListener('keydown', function (event) {
-                        if (event.key === 'Insert') {
-                            let cursorPosition = this.selectionStart;
-                            handleShortcutInput(this, cursorPosition, shortcuts);
-                        }
-
-                        if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-                            event.preventDefault();
-                            this.closest('form').submit();
-                        }
-                    });
+    document.addEventListener('DOMContentLoaded', function() {
+                                        
+        // Initialize all Quill editors
+        <?php foreach ($existingMicroDescriptions as $key => $existingDescription): ?>
+                var quillEditor<?php echo $key; ?> = new Quill('#quill-editor-<?php echo $key; ?>', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: []
+                    }
                 });
-            })
-            .catch(error => console.error('Error loading shortcuts:', error));
 
-        // Helper function to replace the last word with the abbreviation
-        function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
-            const text = editor.getText();
-            const textBeforeCaret = text.substring(0, caretPosition);
-            const startOfWord = textBeforeCaret.lastIndexOf(word);
-            
-            editor.deleteText(startOfWord, word.length);
-            editor.insertText(startOfWord, abbreviation.trim(), 'user');
-            editor.setSelection(startOfWord + abbreviation.length, 0);
-        }
+                // Set the initial content from hidden textarea
+                var hiddenTextarea<?php echo $key; ?> = document.getElementById('hidden_description<?php echo $key; ?>');
+                quillEditor<?php echo $key; ?>.root.innerHTML = hiddenTextarea<?php echo $key; ?>.value;
 
-        // Initialize Quill editors and set their content
-        <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
-            // Initialize description editor
-            var descEditor<?= $index ?> = new Quill('#diagnosis-quill-editor-<?= $index ?>', {
-                theme: 'snow',
-                modules: {
-                    toolbar: []
-                }
-            });
-
-            // Initialize comment editor
-            var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
-                theme: 'snow',
-                modules: {
-                    toolbar: []
-                }
-            });
-
-            // Set unique content for each editor
-            descEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['description'] ?? '') ?>;
-            commentEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['comment'] ?? '') ?>;
-
-            // Add abbreviation functionality to description editor
-            descEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
-                if (event.key === ' ') {
-                    event.preventDefault();
-                    
-                    const text = descEditor<?= $index ?>.getText();
-                    const selection = descEditor<?= $index ?>.getSelection();
-                    const caretPosition = selection.index;
-                    
-                    // Get the word before caret
-                    const textBeforeCaret = text.substring(0, caretPosition);
-                    const words = textBeforeCaret.trim().split(/\s+/);
-                    const lastWord = words[words.length - 1];
-                    
-                    // Check for period rule (e.g., ".word")
-                    const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-                    if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                        descEditor<?= $index ?>.insertText(caretPosition, ' ');
-                        return;
-                    }
-                    
-                    // Find matching abbreviation (case-insensitive)
-                    const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                    
-                    if (abbreviation) {
-                        replaceLastWordWithAbbreviation(descEditor<?= $index ?>, lastWord, abbreviations[abbreviation], caretPosition);
-                    } else {
-                        descEditor<?= $index ?>.insertText(caretPosition, ' ');
-                    }
-                }
-            });
-
-            // Add abbreviation functionality to comment editor
-            commentEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
-                if (event.key === ' ') {
-                    event.preventDefault();
-                    
-                    const text = commentEditor<?= $index ?>.getText();
-                    const selection = commentEditor<?= $index ?>.getSelection();
-                    const caretPosition = selection.index;
-                    
-                    // Get the word before caret
-                    const textBeforeCaret = text.substring(0, caretPosition);
-                    const words = textBeforeCaret.trim().split(/\s+/);
-                    const lastWord = words[words.length - 1];
-                    
-                    // Check for period rule (e.g., ".word")
-                    const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-                    if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                        commentEditor<?= $index ?>.insertText(caretPosition, ' ');
-                        return;
-                    }
-                    
-                    // Find matching abbreviation (case-insensitive)
-                    const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                    
-                    if (abbreviation) {
-                        replaceLastWordWithAbbreviation(commentEditor<?= $index ?>, lastWord, abbreviations[abbreviation], caretPosition);
-                    } else {
-                        commentEditor<?= $index ?>.insertText(caretPosition, ' ');
-                    }
-                }
-            });
-        <?php endforeach; ?>
-
-        // Handle form submission
-        document.getElementById("diagnosisDescriptionForm").addEventListener("submit", function (event) {
-            event.preventDefault();
-
-            // Update hidden fields with Quill content before submitting
-            <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
-                document.getElementById('diagnosis-textarea-<?= $index ?>').value =
-                    descEditor<?= $index ?>.root.innerHTML;
-                document.getElementById('comment-textarea-<?= $index ?>').value =
-                    commentEditor<?= $index ?>.root.innerHTML;
-            <?php endforeach; ?>
-
-            const formData = new FormData(this);
-
-            fetch("update_diagnosis_descriptions.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(response => response.text())
-                .then(data => {
-                    window.location.reload();
-                })
-                .catch(error => {
-                    console.error("Error:", error);
+                // Update hidden textarea when editor content changes
+                quillEditor<?php echo $key; ?>.on('text-change', function() {
+                    hiddenTextarea<?php echo $key; ?>.value = quillEditor<?php echo $key; ?>.root.innerHTML;
                 });
-        });
+
+                // Add abbreviation functionality to this editor
+                quillEditor<?php echo $key; ?>.root.addEventListener('keydown', function(event) {
+                            if (event.key === ' ') {
+                                event.preventDefault();
+                                
+                                const text = quillEditor<?php echo $key; ?>.getText();
+                                const selection = quillEditor<?php echo $key; ?>.getSelection();
+                                const caretPosition = selection.index;
+                                
+                                // Get the word before caret
+                                const textBeforeCaret = text.substring(0, caretPosition);
+                                const words = textBeforeCaret.trim().split(/\s+/);
+                                const lastWord = words[words.length - 1];
+                                
+                                // Check for period rule (e.g., ".word")
+                                const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
+                                if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
+                                    quillEditor<?php echo $key; ?>.insertText(caretPosition, ' ');
+                                    return;
+                                }
+                                
+                                // Find matching abbreviation (case-insensitive)
+                                const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
+                                
+                                if (abbreviation) {
+                                    replaceLastWordWithAbbreviation(quillEditor<?php echo $key; ?>, lastWord, abbreviations[abbreviation], caretPosition);
+                                } else {
+                                    quillEditor<?php echo $key; ?>.insertText(caretPosition, ' ');
+                                }
+                            }
+                });                                   
+                <?php endforeach; ?>
+
+                // Helper function to replace the last word with the abbreviation
+                function replaceLastWordWithAbbreviation(editor, word, abbreviation, caretPosition) {
+                        const text = editor.getText();
+                        const textBeforeCaret = text.substring(0, caretPosition);
+                        const startOfWord = textBeforeCaret.lastIndexOf(word);
+                                                    
+                        editor.deleteText(startOfWord, word.length);
+                        editor.insertText(startOfWord, abbreviation.trim(), 'user');
+                        editor.setSelection(startOfWord + abbreviation.length, 0);
+                }                                
+
+                // Update your form submission handler
+                document.querySelectorAll("form[id^='microDescriptionForm']").forEach(function(form) {
+                    form.addEventListener("submit", function(event) {
+                        event.preventDefault();
+                                                        
+                        // Update all hidden textareas before submission
+                        var formId = this.id;
+                        var key = formId.replace('microDescriptionForm', '');
+                        var quillEditor = new Quill('#quill-editor-' + key);
+                        document.getElementById('hidden_description' + key).value = quillEditor.root.innerHTML;
+
+                        const formData = new FormData(this);
+                        fetch("update_micro_descriptions.php", {
+                                    method: "POST",
+                                    body: formData
+                            })
+                            .then(response => response.text())
+                            .then(data => {
+                                window.location.reload();
+                            })
+                            .catch(error => {
+                                console.log("Error:");
+                            });
+                        });
+                    });                                     
+                                                                             
     });
 </script>
