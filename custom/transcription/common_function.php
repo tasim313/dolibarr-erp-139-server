@@ -227,40 +227,45 @@ function get_micro_description($fk_gross_id, $lab_number) {
 }
 
 
-function get_done_transcript_list() {
+function get_done_transcript_list($lab_number) {
     global $pg_con;
 
+    // Escape the input to prevent SQL injection
+    $lab_number_escaped = pg_escape_string($pg_con, $lab_number);
+
     $sql = "SELECT g.gross_id,
-    g.lab_number,
-    g.patient_code,
-    g.gross_assistant_name, 
-    g.gross_doctor_name
-    FROM llx_gross g
-        WHERE g.gross_status = 'Done' 
-        AND g.gross_is_completed = 'true'
-        AND  EXISTS (
-        SELECT 1
-        FROM llx_micro m
-        WHERE g.gross_id = CAST(m.fk_gross_id AS INTEGER)
-			AND m.status = 'Done'
-        )
-        AND EXISTS (
-        SELECT 1
-        FROM llx_diagnosis d
-        WHERE g.gross_id = CAST(d.fk_gross_id AS INTEGER)
-			AND d.status = 'Done'
-        )
-        AND  EXISTS (
-        SELECT 1
-        FROM llx_micro m
-        WHERE g.lab_number = m.lab_number
-        )
-        AND  EXISTS (
-        SELECT 1
-        FROM llx_diagnosis d
-        WHERE g.lab_number = d.lab_number
-        );
-    ";
+                   g.lab_number,
+                   g.patient_code,
+                   g.gross_assistant_name, 
+                   g.gross_doctor_name
+            FROM llx_gross g
+            WHERE g.gross_status = 'Done' 
+              AND g.gross_is_completed = 'true'
+              AND g.lab_number = '$lab_number_escaped'
+              AND EXISTS (
+                  SELECT 1
+                  FROM llx_micro m
+                  WHERE g.gross_id = CAST(m.fk_gross_id AS INTEGER)
+                    AND m.status = 'Done'
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM llx_diagnosis d
+                  WHERE g.gross_id = CAST(d.fk_gross_id AS INTEGER)
+                    AND d.status = 'Done'
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM llx_micro m
+                  WHERE g.lab_number = m.lab_number
+              )
+              AND EXISTS (
+                  SELECT 1
+                  FROM llx_diagnosis d
+                  WHERE g.lab_number = d.lab_number
+              )
+            ORDER BY g.gross_id DESC
+            LIMIT 20000;";
 
     $result = pg_query($pg_con, $sql);
 

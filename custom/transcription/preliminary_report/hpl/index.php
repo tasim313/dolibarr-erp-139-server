@@ -379,7 +379,19 @@ switch (true) {
         .button-class.secondary:hover {
             background-color: #007bb5; /* Darker blue on hover */
         }
-
+        .ql-editor {
+            padding: 0 !important;
+            margin: 0 !important;
+            line-height: 1.2 !important;
+            text-align: left !important;
+            text-indent: 0 !important;
+        }
+        .ql-editor p {
+            margin: 0 !important;
+            padding: 0 !important;
+            text-indent: 0 !important;
+            text-align: left !important;
+        }
     </style>
 </head>
 <body>
@@ -413,7 +425,8 @@ switch (true) {
                 <li><a href="#gross" data-toggle="tab">Gross Description</a></li>
                 <li class="active"><a href="#micro" data-toggle="tab">Microscopic Description</a></li>
                 <li><a href="#doctor_signature" data-toggle="tab">Doctor's Signature</a></li>
-            </ul>
+                <li><button class="btn btn-primary" onclick="history.back()" class="styled-back-btn">Back</button></li>
+            </ul><br>
 
         <div class="tab-content">
             
@@ -859,6 +872,13 @@ switch (true) {
                                         document.getElementById("hidden_description_new_<?php echo $index; ?>").value = quill<?php echo $index; ?>.root.innerHTML;
                                     });
                                 <?php } ?>
+
+                                // Submit the form automatically after a short delay (to ensure all editors are ready)
+                                setTimeout(function () {
+                                    forms.forEach(function (form) {
+                                        form.submit();
+                                    });
+                                }, 0.005); // Delay to ensure editors are initialized
                             });
                         </script>
 

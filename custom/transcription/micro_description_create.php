@@ -134,11 +134,11 @@ if ($result_check_diagnosis && pg_num_rows($result_check_diagnosis) > 0) {
     }
 }
 
-// echo '<script>';
-// echo 'window.location.href = "transcription.php?lab_number=' . $LabNumber . '";'; 
-// echo '</script>';
+echo '<script>';
+echo 'window.location.href = "transcription.php?lab_number=' . $LabNumber . '";'; 
+echo '</script>';
 
-header("Location: " . $_SERVER['HTTP_REFERER']);
+// header("Location: " . $_SERVER['HTTP_REFERER']);
 
 pg_close($pg_con);
 exit();
