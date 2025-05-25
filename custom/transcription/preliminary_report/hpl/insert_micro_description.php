@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Validate required fields
     if (empty($fk_gross_id) || empty($lab_number) || empty($created_user)) {
-        die("Error: Required fields are missing");
+        die("Error: Required fields are missing Please First Gross Complete then Enter Transcription Data");
     }
 
     // Process specimen and description arrays
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Insert into microscopic report table
         for ($i = 0; $i < count($specimens); $i++) {
             $specimen = pg_escape_string(trim($specimens[$i]));
-            $description = !empty(trim($descriptions[$i])) ? pg_escape_string(trim($descriptions[$i])) : 'N/A';
+            $description = !empty(trim($descriptions[$i])) ? pg_escape_string(trim($descriptions[$i])) : 'Sections show';
 
             $sql_micro = "INSERT INTO llx_preliminary_report_microscopic 
                          (fk_gross_id, specimen, lab_number, description, created_user, status)
