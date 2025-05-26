@@ -821,7 +821,7 @@ $information = get_doctor_degination_details();
 
                                         <!-- Hidden input fields -->
                                         <input type="hidden" name="fk_gross_id[]" value="<?php echo htmlspecialchars($existingDescription['fk_gross_id']); ?>">
-                                        <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($existingDescription['created_user']); ?>">
+                                        <input type="hidden" name="created_user[]" value="<?php echo htmlspecialchars($loggedInUsername); ?>">
                                         <input type="hidden" name="status[]" value="<?php echo htmlspecialchars($existingDescription['status']); ?>">
                                         <input type="hidden" name="lab_number[]" value="<?php echo htmlspecialchars($existingDescription['lab_number']); ?>">
                                         <input type="hidden" name="row_id[]" value="<?php echo htmlspecialchars($existingDescription['row_id']); ?>">

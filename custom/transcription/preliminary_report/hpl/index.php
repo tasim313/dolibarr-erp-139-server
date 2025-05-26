@@ -3,6 +3,7 @@ include('../connection.php');
 include('../preliminary_report_function.php');
 include('../../common_function.php');
 include('../../../grossmodule/gross_common_function.php');
+include('../../../doctors/list_of_function.php');
 
 $res = 0;
 
@@ -424,7 +425,23 @@ switch (true) {
                 <li><a href="#site_of_specimen" data-toggle="tab">Site Of Specimen</a></li>
                 <li><a href="#gross" data-toggle="tab">Gross Description</a></li>
                 <li class="active"><a href="#micro" data-toggle="tab">Microscopic Description</a></li>
+                <li><a href="#comment" data-toggle="tab">Comment</a></li>
                 <li><a href="#doctor_signature" data-toggle="tab">Doctor's Signature</a></li>
+                <!-- Preliminary Report Section -->
+                <?php 
+                $preliminary_report = preliminary_report__release_doctor_module($LabNumberWithoutPrefix )
+                ?>
+                <?php if (!empty($preliminary_report) && is_array($preliminary_report)): ?>
+                    <div class="d-flex align-items-center" style="gap: 10px;">
+                        <?php 
+                        $final_report = final_report__release_doctor_module($LabNumberWithoutPrefix );
+                        if (!$final_report):  // Show button only if $final_report is false/null/empty
+                        ?>
+                            <button type="button" class="btn" style="background-color: red; color: white;">Preliminary Report Released</button>
+                        <?php endif; ?>
+                    </div>
+                <?php else: ?>
+                <?php endif; ?>
                 <li><button class="btn btn-primary" onclick="history.back()" class="styled-back-btn">Back</button></li>
             </ul><br>
 
@@ -824,7 +841,7 @@ switch (true) {
                             <?php foreach ($specimens_list as $index => $specimen) { ?>
                                 <div class="form-group">
                                     <label for="specimen_<?php echo $index; ?>" class="bold-label">Specimen:</label>
-                                    <textarea class="specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars((string) $specimen['specimen']); ?></textarea>
+                                    <textarea class="specimen-textarea" name="specimen[]" readonly>Specimen:<?php echo htmlspecialchars((string) $specimen['specimen']); ?></textarea>
                     
                                     <div id="quill-editor-new-<?php echo $index; ?>" class="editor"></div>
                     
@@ -890,7 +907,7 @@ switch (true) {
                             <form action="" id="<?php echo $formId; ?>" class="micro-description-form">
                                 <div class="form-group">
                                     <label for="specimen" class="bold-label">Specimen:</label>
-                                    <textarea class="specimen-textarea" name="specimen[]" readonly><?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
+                                    <textarea class="specimen-textarea" name="specimen[]" readonly>Specimen:<?php echo htmlspecialchars($existingDescription['specimen']); ?></textarea>
                                     
                                     <!-- Quill Editor Container -->
                                     <div id="quill-editor-<?php echo $key; ?>" class="editor"></div>
@@ -1479,6 +1496,30 @@ switch (true) {
                         </div>
                 </div>
             </div>
+            <div class="tab-pane fade" id="comment">
+                <?php
+                        $collectData = get_preliminary_report_collect_date($LabNumberWithoutPrefix); 
+
+                        // Set default notice date
+                        $labNotice = "2nd June 2025";
+                        if (!empty($collectData)) {
+                            // Use the latest 'description' from your query
+                            $labNotice = htmlspecialchars($collectData[0]['description']);
+                        }
+
+                        // Define the static text with dynamic date inserted
+                        $predefinedText = "Bone is being decalcified, the status of which will be issued in an addendum report.
+Considering bone involvement, pTNM may change and it may be amended in the addendum report.
+$labNotice.";
+                ?>
+    
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="commentText">Comment</label>
+                    <textarea class="form-control" id="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $predefinedText; ?></textarea>
+                </div>
+            </div>
+
+        <!-- Tab Content end div -->
         </div>
 
       <!-- end of div left panel -->
@@ -2142,3 +2183,18 @@ switch (true) {
                                                                              
     });
 </script>
+
+
+<?php 
+  $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+  $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+  
+  
+  
+  print '</div></div>';
+  
+  // End of page
+  llxFooter();
+  $db->close();
+  
+?>

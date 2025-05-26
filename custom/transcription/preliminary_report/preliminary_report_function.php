@@ -162,4 +162,26 @@ function get_preliminary_report_doctor_finalized_by_signature_details($labNumber
     return $existingdata;
 }
 
+function get_preliminary_report_collect_date($labNumber) {
+    global $pg_con;
+    $existingdata = array();
+
+    $sql = "select description from llx_commande_trackws where labno = '$labNumber' and fk_status_id = '69' order by id DESC";
+
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'description' => $row['description']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>
