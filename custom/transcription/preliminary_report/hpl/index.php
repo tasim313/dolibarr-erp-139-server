@@ -980,12 +980,7 @@ switch (true) {
                                         <textarea name="description[]" id="diagnosis_hidden_description_new_<?php echo $index; ?>" style="display:none;"></textarea>
                                     </div>
 
-                                    <!-- Comment Section -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Comment:</label>
-                                        <div class="border rounded bg-white p-2" style="min-height: 120px;" id="comment-quill-editor-<?php echo $index; ?>"></div>
-                                        <textarea name="comment[]" id="comment-textarea-<?php echo $index; ?>" style="display:none;"><?php echo htmlspecialchars($comment); ?></textarea>
-                                    </div>
+                                    
                                 </div>
                             <?php } ?>
 
@@ -1101,11 +1096,6 @@ switch (true) {
                                             if (quillEditor) {
                                                 document.getElementById("diagnosis_hidden_description_new_<?php echo $index; ?>").value = quillEditor.innerHTML;
                                             }
-
-                                            var commentEditor = document.querySelector("#comment-quill-editor-<?php echo $index; ?> .ql-editor");
-                                            if (commentEditor) {
-                                                document.getElementById("comment-textarea-<?php echo $index; ?>").value = commentEditor.innerHTML;
-                                            }
                                         <?php } ?>
                                     });
                                 });
@@ -1127,22 +1117,6 @@ switch (true) {
 
                                     // Add abbreviation handler to diagnosis editor
                                     setupAbbreviationHandler(quill<?php echo $index; ?>);
-
-                                    // Initialize comment editor
-                                    var commentQuill<?php echo $index; ?> = new Quill("#comment-quill-editor-<?php echo $index; ?>", {
-                                        theme: "snow",
-                                        modules: {
-                                            toolbar: []
-                                        }
-                                    });
-
-                                    commentQuill<?php echo $index; ?>.on("text-change", function () {
-                                        document.getElementById("comment-textarea-<?php echo $index; ?>").value = 
-                                            commentQuill<?php echo $index; ?>.root.innerHTML;
-                                    });
-
-                                    // Add abbreviation handler to comment editor
-                                    setupAbbreviationHandler(commentQuill<?php echo $index; ?>);
                                     <?php } ?>
                             });
                         </script>
@@ -1186,12 +1160,7 @@ switch (true) {
                                         <textarea name="description[]" id="diagnosis-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($description) ?></textarea>
                                     </div>
 
-                                    <!-- Comment -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Comment:</label>
-                                        <div class="border rounded bg-white p-2" style="min-height: 120px;" id="comment-quill-editor-<?= $index ?>"><?= $comment ?></div>
-                                        <textarea name="comment[]" id="comment-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($comment) ?></textarea>
-                                    </div>
+                                    
 
                                     <!-- Hidden metadata -->
                                     <input type="hidden" name="fk_gross_id[]" value="<?= htmlspecialchars($fk_gross_id) ?>">
@@ -1253,17 +1222,8 @@ switch (true) {
                                                     }
                                                 });
 
-                                                // Initialize comment editor
-                                                var commentEditor<?= $index ?> = new Quill('#comment-quill-editor-<?= $index ?>', {
-                                                    theme: 'snow',
-                                                    modules: {
-                                                        toolbar: []
-                                                    }
-                                                });
-
                                                 // Set unique content for each editor
                                                 descEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['description'] ?? '') ?>;
-                                                commentEditor<?= $index ?>.root.innerHTML = <?= json_encode($specimen['comment'] ?? '') ?>;
 
                                                 // Add abbreviation functionality to description editor
                                                 descEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
@@ -1297,37 +1257,7 @@ switch (true) {
                                                     }
                                                 });
 
-                                                // Add abbreviation functionality to comment editor
-                                                commentEditor<?= $index ?>.root.addEventListener('keydown', function(event) {
-                                                    if (event.key === ' ') {
-                                                        event.preventDefault();
-                                                        
-                                                        const text = commentEditor<?= $index ?>.getText();
-                                                        const selection = commentEditor<?= $index ?>.getSelection();
-                                                        const caretPosition = selection.index;
-                                                        
-                                                        // Get the word before caret
-                                                        const textBeforeCaret = text.substring(0, caretPosition);
-                                                        const words = textBeforeCaret.trim().split(/\s+/);
-                                                        const lastWord = words[words.length - 1];
-                                                        
-                                                        // Check for period rule (e.g., ".word")
-                                                        const charBeforeLastWord = textBeforeCaret[caretPosition - lastWord.length - 1];
-                                                        if (charBeforeLastWord === '.' && textBeforeCaret[caretPosition - lastWord.length - 2] !== ' ') {
-                                                            commentEditor<?= $index ?>.insertText(caretPosition, ' ');
-                                                            return;
-                                                        }
-                                                        
-                                                        // Find matching abbreviation (case-insensitive)
-                                                        const abbreviation = Object.keys(abbreviations).find(key => key.toLowerCase() === lastWord.toLowerCase());
-                                                        
-                                                        if (abbreviation) {
-                                                            replaceLastWordWithAbbreviation(commentEditor<?= $index ?>, lastWord, abbreviations[abbreviation], caretPosition);
-                                                        } else {
-                                                            commentEditor<?= $index ?>.insertText(caretPosition, ' ');
-                                                        }
-                                                    }
-                                                });
+                                                
                                             <?php endforeach; ?>
 
                                             // Handle form submission
@@ -1338,8 +1268,7 @@ switch (true) {
                                                 <?php foreach ($existingDiagnosisDescriptions as $index => $specimen): ?>
                                                     document.getElementById('diagnosis-textarea-<?= $index ?>').value =
                                                         descEditor<?= $index ?>.root.innerHTML;
-                                                    document.getElementById('comment-textarea-<?= $index ?>').value =
-                                                        commentEditor<?= $index ?>.root.innerHTML;
+                                                    
                                                 <?php endforeach; ?>
 
                                                 const formData = new FormData(this);
@@ -1496,27 +1425,42 @@ switch (true) {
                         </div>
                 </div>
             </div>
+
             <div class="tab-pane fade" id="comment">
-                <?php
+                    <?php
+                        // Fetch latest related comment and collect data
                         $collectData = get_preliminary_report_collect_date($LabNumberWithoutPrefix); 
+                        $previous_comment = get_preliminary_report_comment($LabNumberWithoutPrefix);
 
                         // Set default notice date
                         $labNotice = "2nd June 2025";
                         if (!empty($collectData)) {
-                            // Use the latest 'description' from your query
                             $labNotice = htmlspecialchars($collectData[0]['description']);
                         }
 
-                        // Define the static text with dynamic date inserted
-                        $predefinedText = "Bone is being decalcified, the status of which will be issued in an addendum report.
-Considering bone involvement, pTNM may change and it may be amended in the addendum report.
-$labNotice.";
-                ?>
-    
-                <div class="form-group" style="margin-top: 15px;">
-                    <label for="commentText">Comment</label>
-                    <textarea class="form-control" id="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $predefinedText; ?></textarea>
-                </div>
+                        // Default predefined message
+                        $predefinedText = "Bone is being decalcified, the status of which will be issued in an addendum report. Considering bone involvement, pTNM may change and it may be amended in the addendum report. $labNotice.";
+
+                        // Determine comment text to show
+                        $commentTextToShow = (!empty($previous_comment)) 
+                            ? htmlspecialchars($previous_comment[0]['description']) 
+                            : $predefinedText;
+                    ?>
+
+                    <form method="POST" action="comment.php">
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="commentText">Comment</label>
+                            <textarea class="form-control" id="commentText" name="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $commentTextToShow; ?></textarea>
+                        </div>
+
+                        <!-- Hidden inputs to send extra metadata -->
+                        <input type="hidden" name="labNumber" value="<?php echo htmlspecialchars($LabNumberWithoutPrefix); ?>">
+                        <input type="hidden" name="sorsetype" value="commande">
+                        <input type="hidden" name="targettype" value="preliminary_report_microscopic">
+                        <input type="hidden" name="fk_user_author" value="<?php echo htmlspecialchars($loggedInUserId); ?>">
+
+                        <button type="submit" class="btn btn-primary mt-3">Save</button>
+                    </form>
             </div>
 
         <!-- Tab Content end div -->

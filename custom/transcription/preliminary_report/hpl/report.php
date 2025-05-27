@@ -464,6 +464,24 @@ if (!$Site_Of_Specimen_result) {
     die("Error in SQL query: " . pg_last_error());
 }
 
+// SQL operation for preliminary report comment
+$preliminary_report_comment_sql = "
+    SELECT c.description
+    FROM llx_comment c
+    JOIN llx_element_element e ON c.fk_element = e.rowid
+    JOIN llx_commande cmd ON cmd.rowid = e.fk_source
+    WHERE cmd.ref = '$LabNumberWithoutPrefix' AND c.element_type = 'Preliminary Report'
+    ORDER BY c.rowid DESC
+    LIMIT 1
+";
+
+$preliminary_report_comment_result = pg_query($pg_con, $preliminary_report_comment_sql);
+
+// Check if the query executed successfully
+if (!$preliminary_report_comment_result) {
+    die("Error in SQL query: " . pg_last_error());
+}
+
 // Prepare clinical details
 $clinical_details_info = "SELECT clinical_details FROM llx_clinical_details WHERE lab_number = '$LabNumber'";
 $clinical_details_result = pg_query($pg_con, $clinical_details_info);
@@ -711,13 +729,63 @@ while ($row = pg_fetch_assoc($diagnosis_details_result)) {
         $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description;
     } else {
         // Comment has valid content
-        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description . "<br><strong>Comment: </strong>" . $comment;
+        $diagnosis_description_rows[] = "<strong>$specimen,</strong>&nbsp;&nbsp;<strong>$title:</strong><br>" . $description;
     }
 }
 
 // Join the rows with a line break
 $html .= implode('<br/>', $diagnosis_description_rows);
 $html .= '</td></tr>';
+
+// Add preliminary comment
+$description_details_rows = [];
+while ($row = pg_fetch_assoc($preliminary_report_comment_result)) {
+    if (!empty($row['description'])) {
+        $description = html_entity_decode($row['description']);
+
+        // Replace paragraph tags with line breaks
+        $description = preg_replace('/<p[^>]*>(.*?)<\/p>/i', '$1<br>', $description);
+
+        // Collapse multiple <br> tags
+        $description = preg_replace('/(<br\s*\/?>\s*)+/', '<br>', $description);
+
+        // Remove trailing <br> tags
+        $description = preg_replace('/<br>\s*$/', '', $description);
+
+        // Make "Final Report available on ..." date bold using regex
+        $description = preg_replace_callback(
+            '/(Final Report available on\s+)([A-Za-z]+\s+\d{1,2},\s+\d{4}\s+\d{1,2}:\d{2}\s*(AM|PM))/i',
+            function ($matches) {
+                return $matches[1] . '<strong>' . $matches[2] . '</strong>';
+            },
+            $description
+        );
+
+        // Trim whitespace
+        $description = trim($description);
+
+        // Add cleaned description to array
+        $description_details_rows[] = $description;
+    }
+}
+
+// Combine multiple rows if needed
+$final_description = implode('<br>', $description_details_rows);
+
+// Skip if empty or just <br>
+if (trim($final_description) === '<br>' || trim($final_description) === '') {
+    $final_description = '';
+}
+
+// Display only if valid
+if (!empty($final_description)) {
+    $html .= '
+        <tr>
+            <th style="width: 26%;"><b>Comment:</b></th>
+            <td style="width: 74%;">' . $final_description . '</td>
+        </tr>';
+}
+
 
 $html .= '</table>';
 
