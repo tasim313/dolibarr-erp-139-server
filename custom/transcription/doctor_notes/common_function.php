@@ -63,7 +63,8 @@ function get_histo_doctor_instruction_progress_list() {
             u.login AS user_name,  
             ws.name AS status_name, 
             ws.section, 
-            ct.description
+            ct.description,
+            ct.status_update_user
         FROM 
             llx_commande_trackws ct
         JOIN 
@@ -91,6 +92,7 @@ function get_histo_doctor_instruction_progress_list() {
                 'Status Name' => $row['status_name'], 
                 'Section' => $row['section'], 
                 'Description' => $row['description'],
+                'StatusUpdateUser' => $row['status_update_user'],
                 'track_id' => $row['id']
             ];
         }
@@ -114,7 +116,8 @@ function get_histo_doctor_instruction_done_list() {
             u.login AS user_name,  
             ws.name AS status_name, 
             ws.section, 
-            ct.description
+            ct.description,
+            ct.status_update_user
         FROM 
             llx_commande_trackws ct
         JOIN 
@@ -142,6 +145,7 @@ function get_histo_doctor_instruction_done_list() {
                 'Status Name' => $row['status_name'], 
                 'Section' => $row['section'], 
                 'Description' => $row['description'],
+                'StatusUpdateUser' => $row['status_update_user'],
                 'track_id' => $row['id']
             ];
         }
@@ -165,7 +169,8 @@ function get_histo_doctor_instruction_on_hold_list() {
             u.login AS user_name,  
             ws.name AS status_name, 
             ws.section, 
-            ct.description
+            ct.description,
+            ct.status_update_user
         FROM 
             llx_commande_trackws ct
         JOIN 
@@ -193,6 +198,7 @@ function get_histo_doctor_instruction_on_hold_list() {
                 'Status Name' => $row['status_name'], 
                 'Section' => $row['section'], 
                 'Description' => $row['description'],
+                'StatusUpdateUser' => $row['status_update_user'],
                 'track_id' => $row['id']
             ];
         }

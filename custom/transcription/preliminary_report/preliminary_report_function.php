@@ -200,8 +200,8 @@ function get_preliminary_report_comment($labNumber) {
         e.fk_target,
         e.targettype,
         cmd.ref AS lab_number
-    FROM llx_comment c
-    JOIN llx_element_element e ON c.fk_element = e.rowid
+    FROM llx_custom_comment c
+    JOIN llx_custom_element_element e ON c.fk_element = e.rowid
     JOIN llx_commande cmd ON cmd.rowid = e.fk_source
     WHERE cmd.ref = '$labNumber' AND c.element_type = 'Preliminary Report'
     ORDER BY c.rowid DESC limit 1";

@@ -1498,6 +1498,22 @@ switch (true) {
   });
 </script>
 
+<script>
+        // Save active tab to localStorage when clicked
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            localStorage.setItem('activeTab', $(e.target).attr('href'));
+        });
+
+        // Restore last active tab on page load
+        $(document).ready(function () {
+            var activeTab = localStorage.getItem('activeTab');
+            if (activeTab) {
+            $('#myTab a[href="' + activeTab + '"]').tab('show');
+            }
+        });
+</script>
+
+
 </body>
 </html>
 

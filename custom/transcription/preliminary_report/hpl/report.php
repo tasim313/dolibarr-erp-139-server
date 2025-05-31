@@ -467,7 +467,7 @@ if (!$Site_Of_Specimen_result) {
 // SQL operation for preliminary report comment
 $preliminary_report_comment_sql = "
     SELECT c.description
-    FROM llx_comment c
+    FROM llx_custom_comment c
     JOIN llx_element_element e ON c.fk_element = e.rowid
     JOIN llx_commande cmd ON cmd.rowid = e.fk_source
     WHERE cmd.ref = '$LabNumberWithoutPrefix' AND c.element_type = 'Preliminary Report'
