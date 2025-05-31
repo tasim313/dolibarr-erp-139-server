@@ -415,6 +415,7 @@ $information = get_doctor_degination_details();
                     <li><a href="#site_of_specimen" data-toggle="tab">Site Of Specimen</a></li>
                     <li><a href="#gross" data-toggle="tab">Gross Description</a></li>
                     <li class="active"><a href="#micro" data-toggle="tab">Microscopic Description</a></li>
+                    <li><a href="#comment" data-toggle="tab">Comment</a></li>
                     <li><a href="#doctor_signature" data-toggle="tab">Doctor's Signature</a></li>
                     <li><button class="btn btn-primary" onclick="history.back()" class="styled-back-btn">Back</button></li>
                 </ul><br>
@@ -881,12 +882,7 @@ $information = get_doctor_degination_details();
                                                 <textarea name="description[]" id="diagnosis-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($description) ?></textarea>
                                             </div>
 
-                                            <!-- Comment Field -->
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold">Comment</label>
-                                                <div id="comment-quill-editor-<?= $index ?>" class="editor bg-white border rounded" style="min-height: 150px;"></div>
-                                                <textarea name="comment[]" id="comment-textarea-<?= $index ?>" style="display:none;"><?= htmlspecialchars($comment) ?></textarea>
-                                            </div>
+                                            
 
                                             <!-- Hidden fields -->
                                             <input type="hidden" name="fk_gross_id[]" value="<?= htmlspecialchars($fk_gross_id) ?>">
@@ -1045,6 +1041,32 @@ $information = get_doctor_degination_details();
                         </div>
                     </div>
 
+                    <div class="tab-pane fade" id="comment">
+                        <?php
+                             
+                            $previous_comment = get_final_report_comment($LabNumberWithoutPrefix);
+                            // Determine comment text to show
+                            $commentTextToShow = (!empty($previous_comment) && !empty($previous_comment[0]['description']))
+                                        ? htmlspecialchars($previous_comment[0]['description']) 
+                                        : '';
+                        ?>
+
+                        <form method="POST" action="comment.php">
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label for="commentText">Comment</label>
+                                <textarea class="form-control" id="commentText" name="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $commentTextToShow; ?></textarea>
+                            </div>
+
+                            <!-- Hidden inputs to send extra metadata -->
+                            <input type="hidden" name="labNumber" value="<?php echo htmlspecialchars($LabNumberWithoutPrefix); ?>">
+                            <input type="hidden" name="sorsetype" value="commande">
+                            <input type="hidden" name="targettype" value="final_report_microscopic">
+                            <input type="hidden" name="fk_user_author" value="<?php echo htmlspecialchars($loggedInUserId); ?>">
+
+                            <button type="submit" class="btn btn-primary mt-3">Save</button>
+                        </form>
+                    </div>
+
                     <!-- end of div tab content -->
                 </div>
                  <!-- end of div left panel -->
@@ -1083,6 +1105,22 @@ $information = get_doctor_degination_details();
             });
         });
     </script>
+    
+    <script>
+        // Save active tab to localStorage when clicked
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            localStorage.setItem('activeTab', $(e.target).attr('href'));
+        });
+
+        // Restore last active tab on page load
+        $(document).ready(function () {
+            var activeTab = localStorage.getItem('activeTab');
+            if (activeTab) {
+            $('#myTab a[href="' + activeTab + '"]').tab('show');
+            }
+        });
+    </script>
+
 </body>
 </html>
 
@@ -1794,23 +1832,7 @@ $information = get_doctor_degination_details();
                         diagnosisTextarea<?php echo $key; ?>.value = diagnosisquillEditor<?php echo $key; ?>.root.innerHTML;
                     });
 
-                    // Comment Quill Editor
-                    var commentquillEditor<?php echo $key; ?> = new Quill('#comment-quill-editor-<?php echo $key; ?>', {
-                        theme: 'snow',
-                        modules: {
-                            toolbar: []  // Customize toolbar if needed
-                        }
-                    });
-
-                    // Set content of hidden textarea for comment
-                    var commentTextarea<?php echo $key; ?> = document.getElementById('comment-textarea-<?php echo $key; ?>');
-                    commentquillEditor<?php echo $key; ?>.root.innerHTML = commentTextarea<?php echo $key; ?>.value;
-
-                    // Update hidden textarea when content changes for comment
-                    commentquillEditor<?php echo $key; ?>.on('text-change', function() {
-                        commentTextarea<?php echo $key; ?>.value = commentquillEditor<?php echo $key; ?>.root.innerHTML;
-                    });
-
+                    
                     // Handle space key and abbreviation replacement for both description and comment
                     diagnosisquillEditor<?php echo $key; ?>.root.addEventListener('keyup', function(event) {
                         if (event.key === ' ') {
@@ -1818,11 +1840,7 @@ $information = get_doctor_degination_details();
                         }
                     });
 
-                    commentquillEditor<?php echo $key; ?>.root.addEventListener('keyup', function(event) {
-                        if (event.key === ' ') {
-                            diagnosisreplaceAbbreviation(commentquillEditor<?php echo $key; ?>, abbreviations);
-                        }
-                    });
+                    
 
                 <?php endforeach; ?>
 

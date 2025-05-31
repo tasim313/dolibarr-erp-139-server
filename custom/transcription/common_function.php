@@ -797,4 +797,43 @@ WHERE
     return $existingdata;
 }
 
+
+function get_final_report_comment($labNumber) {
+    global $pg_con;
+    $existingdata = array();
+
+    $sql = "SELECT 
+        c.rowid AS comment_id,
+        c.datec,
+        c.description,
+        c.fk_user_author,
+        c.fk_element,
+        c.element_type,
+        e.fk_source,
+        e.sourcetype,
+        e.fk_target,
+        e.targettype,
+        cmd.ref AS lab_number
+    FROM llx_custom_comment c
+    JOIN llx_custom_element_element e ON c.fk_element = e.rowid
+    JOIN llx_commande cmd ON cmd.rowid = e.fk_source
+    WHERE cmd.ref = '$labNumber' AND c.element_type = 'Final Report'
+    ORDER BY c.rowid DESC limit 1";
+
+    $result = pg_query($pg_con, $sql);
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $existingdata[] = array(
+                'description' => $row['description']
+            );
+        }
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $existingdata;
+}
+
 ?>

@@ -330,15 +330,33 @@ print("<style>
 
 echo '<div class="tab-container">
          <!-- Tab Links -->
-        <div class="tabs">
-          <button style="border:none" class="tablink btn btn-primary btn-lg" onclick="openTab(event, \'DoctorRelatedInstructions\')">
-           <i class="fas fa-user-md" style="font-size: 35px;"></i>Doctor Notes</button>
-           <button style="border:none" class="tablink btn-success btn-lg" onclick="openTab(event, \'CaseStatus\')">
-           <i class="fas fas fa-bell" style="font-size: 35px;"></i>Case Status</button>
-           <button style="border:none" class="tablink btn btn-info btn-lg" onclick="openTab(event, \'ReportCompleteStatus\')">
-           <i class="fas fa-check-circle" style="font-size: 35px;"></i>Report Complete Status</button>
-        </div>
+        
+        <div class="container text-center" style="margin-top: 20px;">
+                <div class="row">
 
+                    <div class="col-sm-4">
+                    <button class="btn btn-primary btn-lg tablink" style="border-radius: 50%; width: 100px; height: 100px;" onclick="openTab(event, \'DoctorRelatedInstructions\')">
+                        <i class="glyphicon glyphicon-user" style="font-size: 24px;"></i><br>Notes
+                    </button>
+                    </div>
+
+                    <div class="col-sm-4">
+                    <button class="btn btn-success btn-lg tablink" style="border-radius: 50%; width: 100px; height: 100px;" onclick="openTab(event, \'CaseStatus\')">
+                        <i class="glyphicon glyphicon-bell" style="font-size: 24px;"></i><br>Status
+                    </button>
+                    </div>
+
+                    <div class="col-sm-4">
+                    <button class="btn btn-info btn-lg tablink" style="border-radius: 50%; width: 100px; height: 100px;" onclick="openTab(event, \'ReportCompleteStatus\')">
+                        <i class="glyphicon glyphicon-ok-circle" style="font-size: 24px;"></i><br>Done
+                    </button>
+                    </div>
+
+                </div>
+        </div>
+       <br><br><br><br><br><br><br><br>
+
+       
         <!-- Tab Content for Doctor Related Instructions -->
         <div id="DoctorRelatedInstructions" class="tabcontent">
               <!-- Sub-tab Links -->
@@ -378,6 +396,7 @@ echo '<div class="tab-container">
                         const doctorInstructionList = ' . json_encode($doctor_instruction_list) . ';
                         console.log("doctor Instructions : ", doctorInstructionList);
                         const loggedInUserId = ' . json_encode($loggedInUserId) . ';
+                        const loggedInUsername = ' . json_encode($loggedInUsername) . ';
 
                         let statusChanges = {};
 
@@ -468,7 +487,8 @@ echo '<div class="tab-container">
                             } else {
                                 statusChanges[trackId] = {
                                     labNumber: labNumber,
-                                    status: statusValue
+                                    status: statusValue,
+                                    username: loggedInUsername
                                 };
                             }
 
@@ -536,6 +556,7 @@ echo '<div class="tab-container">
                                 <th>Patient History</th>
                                 <th>Doctor Name</th>
                                 <th>Date</th>
+                                <th>Previous Status Update User</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -572,43 +593,100 @@ echo '<div class="tab-container">
                         }
 
                         // Function to filter and display the data
-                        function progress_generateFilteredTableRows(groupedData) {
-                                let rows = "";
-                                Object.keys(groupedData).forEach(labNumber => {
-                                    const descriptions = groupedData[labNumber].map(item => item["Description"]);
+                        // function progress_generateFilteredTableRows(groupedData) {
+                        //         let rows = "";
+                        //         Object.keys(groupedData).forEach(labNumber => {
+                        //             const descriptions = groupedData[labNumber].map(item => item["Description"]);
                                     
-                                    // If "Transcription" is found, show all descriptions for that lab number
-                                    if (descriptions.includes("Transcription")) {
-                                        groupedData[labNumber].forEach(item => {
-                                            rows += `
+                        //             // If "Transcription" is found, show all descriptions for that lab number
+                        //             if (descriptions.includes("Transcription")) {
+                        //                 groupedData[labNumber].forEach(item => {
+                        //                     rows += `
+                        //                         <tr>
+                        //                             <td>${item["Lab Number"]}</td>
+                        //                             <td>${item["Description"]}</td>
+                        //                             <td>${item["Status Name"]}</td>
+                        //                             <td>${item["User Name"]}</td>
+                        //                             <td>${formatDateTime(item.TrackCreateTime)}</td>
+                        //                             <td>${item["StatusUpdateUser"]}</td>
+                        //                             <td>
+                        //                                 <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
+                        //                                     <option value="">Select</option>
+                        //                                     <option value="In-Progress">In-Progress</option>
+                        //                                     <option value="On-Hold">On-Hold</option>
+                        //                                     <option value="Done">Done</option>
+                        //                                 </select>
+                        //                             </td>
+                        //                         </tr>
+                        //                     `;
+                        //                 });
+                        //             } 
+                        //             // If any of "IT Space," "4," or "Self" is found, skip this lab number entirely
+                        //             else if (!descriptions.some(desc => ["IT Space", "4", "Self"].includes(desc))) {
+                        //                 groupedData[labNumber].forEach(item => {
+                        //                     rows += `
+                        //                         <tr>
+                        //                             <td>${item["Lab Number"]}</td>
+                        //                             <td>${item["Description"]}</td>
+                        //                             <td>${item["Status Name"]}</td>
+                        //                             <td>${item["User Name"]}</td>
+                        //                             <td>${formatDateTime(item.TrackCreateTime)}</td>
+                        //                             <td>${item["StatusUpdateUser"]}</td>
+                        //                             <td>
+                        //                                 <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
+                        //                                     <option value="">Select</option>
+                        //                                     <option value="On-Hold">On-Hold</option>
+                        //                                     <option value="Done">Done</option>
+                        //                                 </select>
+                        //                             </td>
+                        //                         </tr>
+                        //                     `;
+                        //                 });
+                        //             }
+                        //         });
+                        //         return rows;
+                        // }
+
+                        function progress_generateFilteredTableRows(groupedData) {
+                                   let rows = "";
+                                    Object.keys(groupedData).forEach(labNumber => {
+                                        const descriptions = groupedData[labNumber].map(item => item["Description"]);
+
+                                        if (descriptions.includes("Transcription")) {
+                                            groupedData[labNumber].forEach(item => {
+                                                rows += generateRow(item);
+                                            });
+                                        } else if (!descriptions.some(desc => ["IT Space", "4", "Self"].includes(desc))) {
+                                            groupedData[labNumber].forEach(item => {
+                                                rows += generateRow(item);
+                                            });
+                                        }
+                                    });
+                                    return rows;
+
+                                    function generateRow(item) {
+                                            let statusUpdateUserFormatted = "";
+                                            try {
+                                                const userArr = JSON.parse(item["StatusUpdateUser"]);
+                                                if (Array.isArray(userArr) && userArr.length > 0) {
+                                                    const userObj = userArr[0]; // first object in array
+                                                    const key = Object.keys(userObj)[0]; // e.g., "in_progress"
+                                                    const value = userObj[key]; // e.g., "tasim"
+                                                    const readableKey = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()); // "In Progress"
+                                                    statusUpdateUserFormatted = `${readableKey} - ${value}`;
+                                                }
+                                            } catch (e) {
+                                                statusUpdateUserFormatted = item["StatusUpdateUser"]; // fallback
+                                            }
+
+                                            return `
                                                 <tr>
                                                     <td>${item["Lab Number"]}</td>
                                                     <td>${item["Description"]}</td>
                                                     <td>${item["Status Name"]}</td>
                                                     <td>${item["User Name"]}</td>
                                                     <td>${formatDateTime(item.TrackCreateTime)}</td>
-                                                    <td>
-                                                        <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
-                                                            <option value="">Select</option>
-                                                            <option value="In-Progress">In-Progress</option>
-                                                            <option value="On-Hold">On-Hold</option>
-                                                            <option value="Done">Done</option>
-                                                        </select>
-                                                    </td>
-                                                </tr>
-                                            `;
-                                        });
-                                    } 
-                                    // If any of "IT Space," "4," or "Self" is found, skip this lab number entirely
-                                    else if (!descriptions.some(desc => ["IT Space", "4", "Self"].includes(desc))) {
-                                        groupedData[labNumber].forEach(item => {
-                                            rows += `
-                                                <tr>
-                                                    <td>${item["Lab Number"]}</td>
-                                                    <td>${item["Description"]}</td>
-                                                    <td>${item["Status Name"]}</td>
-                                                    <td>${item["User Name"]}</td>
-                                                    <td>${formatDateTime(item.TrackCreateTime)}</td>
+                                                    <td>${statusUpdateUserFormatted}</td>
                                                     <td>
                                                         <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
                                                             <option value="">Select</option>
@@ -618,11 +696,10 @@ echo '<div class="tab-container">
                                                     </td>
                                                 </tr>
                                             `;
-                                        });
                                     }
-                                });
-                                return rows;
+
                         }
+
 
                         // Define the trackStatusChange function
                         function progress_trackStatusChange(trackId, labNumber, statusValue) {
@@ -631,7 +708,8 @@ echo '<div class="tab-container">
                             } else {
                                 statusChanges[trackId] = {
                                     labNumber: labNumber,
-                                    status: statusValue
+                                    status: statusValue,
+                                    username: loggedInUsername
                                 };
                             }
 
@@ -694,6 +772,7 @@ echo '<div class="tab-container">
                                     <th>Lab Number</th>
                                     <th>Instruction</th>
                                     <th>User Name</th>
+                                    <th>Previous Status Update User</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -734,20 +813,55 @@ echo '<div class="tab-container">
                             }
 
                             // Function to generate table rows with pagination
-                            function completed_generateTableRows(data, page = 1) {
-                                const start = (page - 1) * rowsPerPage;
-                                const end = start + rowsPerPage;
-                                const paginatedData = data.slice(start, end);
+                            // function completed_generateTableRows(data, page = 1) {
+                            //     const start = (page - 1) * rowsPerPage;
+                            //     const end = start + rowsPerPage;
+                            //     const paginatedData = data.slice(start, end);
 
-                                return paginatedData.map(item => `
-                                    <tr>
-                                        <td>${formatDateTime(item["TrackCreateTime"])}</td>
-                                        <td>${item["Lab Number"]}</td>
-                                        <td>${item["Status Name"]}</td>
-                                        <td>${item["User Name"]}</td>
-                                    </tr>
-                                `).join("");
+                            //     return paginatedData.map(item => `
+                            //         <tr>
+                            //             <td>${formatDateTime(item["TrackCreateTime"])}</td>
+                            //             <td>${item["Lab Number"]}</td>
+                            //             <td>${item["Status Name"]}</td>
+                            //             <td>${item["User Name"]}</td>
+                            //             <td>${item["StatusUpdateUser"]}</td>
+                            //         </tr>
+                            //     `).join("");
+                            // }
+
+                            function completed_generateTableRows(data, page = 1) {
+                                    const start = (page - 1) * rowsPerPage;
+                                    const end = start + rowsPerPage;
+                                    const paginatedData = data.slice(start, end);
+
+                                    return paginatedData.map(item => {
+                                        let statusUpdateUserFormatted = "";
+                                        try {
+                                            const userArr = JSON.parse(item["StatusUpdateUser"]);
+                                            if (Array.isArray(userArr)) {
+                                                statusUpdateUserFormatted = userArr.map(obj => {
+                                                    const key = Object.keys(obj)[0]; // e.g., "done"
+                                                    const value = obj[key]; // e.g., "tasim"
+                                                    const readableKey = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()); // "Done"
+                                                    return `${readableKey} - ${value}`;
+                                                }).join(", ");
+                                            }
+                                        } catch (e) {
+                                            statusUpdateUserFormatted = item["StatusUpdateUser"]; // fallback
+                                        }
+
+                                        return `
+                                            <tr>
+                                                <td>${formatDateTime(item["TrackCreateTime"])}</td>
+                                                <td>${item["Lab Number"]}</td>
+                                                <td>${item["Status Name"]}</td>
+                                                <td>${item["User Name"]}</td>
+                                                <td>${statusUpdateUserFormatted}</td>
+                                            </tr>
+                                        `;
+                                    }).join("");
                             }
+
 
                             // Function to render pagination controls
                             function renderPaginationControls() {
@@ -799,6 +913,7 @@ echo '<div class="tab-container">
                                 <th>Section</th>
                                 <th>Instruction</th>
                                 <th>Doctor Name</th>
+                                <th>Previous Status Update User</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -829,22 +944,59 @@ echo '<div class="tab-container">
                         }
 
                         // Function to generate table rows
+                        // function onHoldgenerateTableRows(data) {
+                        //     return data.map(item => `
+                        //         <tr>
+                        //             <td>${formatDateTime(item["TrackCreateTime"])}</td>
+                        //             <td>${item["Lab Number"]}</td>
+                        //             <td>${item["Description"]}</td>
+                        //             <td>${item["Status Name"]}</td>
+                        //             <td>${item["User Name"]}</td>
+                        //             <td>${item["StatusUpdateUser"]}</td>
+                        //             <td>
+                        //                 <select data-track-id="${item["track_id"]}" data-lab-number="${item["Lab Number"]}">
+                        //                     <option value="">Select</option>
+                        //                     <option value="In-Progress">In-Progress</option>
+                        //                 </select>
+                        //             </td>
+                        //         </tr>
+                        //     `).join("");
+                        // }
+
                         function onHoldgenerateTableRows(data) {
-                            return data.map(item => `
-                                <tr>
-                                    <td>${formatDateTime(item["TrackCreateTime"])}</td>
-                                    <td>${item["Lab Number"]}</td>
-                                    <td>${item["Description"]}</td>
-                                    <td>${item["Status Name"]}</td>
-                                    <td>${item["User Name"]}</td>
-                                    <td>
-                                        <select data-track-id="${item["track_id"]}" data-lab-number="${item["Lab Number"]}">
-                                            <option value="">Select</option>
-                                            <option value="In-Progress">In-Progress</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            `).join("");
+                                return data.map(item => {
+                                    let statusUpdateUserFormatted = "";
+                                    try {
+                                        const userArr = JSON.parse(item["StatusUpdateUser"]);
+                                        if (Array.isArray(userArr)) {
+                                            statusUpdateUserFormatted = userArr.map(obj => {
+                                                const key = Object.keys(obj)[0]; // e.g., "in_progress"
+                                                const value = obj[key]; // e.g., "tasim"
+                                                const readableKey = key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()); // "In Progress"
+                                                return `${readableKey} - ${value}`;
+                                            }).join(", ");
+                                        }
+                                    } catch (e) {
+                                        statusUpdateUserFormatted = item["StatusUpdateUser"]; // fallback
+                                    }
+
+                                    return `
+                                        <tr>
+                                            <td>${formatDateTime(item["TrackCreateTime"])}</td>
+                                            <td>${item["Lab Number"]}</td>
+                                            <td>${item["Description"]}</td>
+                                            <td>${item["Status Name"]}</td>
+                                            <td>${item["User Name"]}</td>
+                                            <td>${statusUpdateUserFormatted}</td>
+                                            <td>
+                                                <select data-track-id="${item["track_id"]}" data-lab-number="${item["Lab Number"]}">
+                                                    <option value="">Select</option>
+                                                    <option value="In-Progress">In-Progress</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join("");
                         }
 
                         // Track status changes with unique track_id
@@ -874,7 +1026,8 @@ echo '<div class="tab-container">
                                 },
                                 body: JSON.stringify({
                                     loggedInUserId: loggedInUserId,
-                                    values: statusChanges
+                                    values: statusChanges,
+                                    username: loggedInUsername
                                 })
                             })
                             .then(response => response.json())
