@@ -1110,6 +1110,7 @@ switch (true) {
                                     <div class="option-item" style="border:none" data-value="Gross">Gross</div>
                                     <div class="option-item" style="border:none" data-value="Microscopic">Microscopic</div>
                                     <div class="option-item" style="border:none" data-value="Diagnosis">Diagnosis</div>
+                                    <div class="option-item" style="border:none" data-value="Comment">Comment</div>
                                 </div>
                                 <input type="hidden" id="selectedOption" name="selectedOption">
                             </div>
@@ -1829,6 +1830,43 @@ switch (true) {
                                 ?>
                         </div>
 
+                        <div id="comment-form" class="form-container" style="display:none;">
+                            <?php
+                                // Fetch latest related comment and collect data
+                                $collectData = get_preliminary_report_collect_date($LabNumber); 
+                                $previous_comment = get_preliminary_report_comment($LabNumber);
+
+                                // Set default notice date
+                                $labNotice = "2nd June 2025";
+                                if (!empty($collectData)) {
+                                    $labNotice = htmlspecialchars($collectData[0]['description']);
+                                }
+
+                                // Default predefined message
+                                $predefinedText = "Bone is being decalcified, the status of which will be issued in an addendum report. Considering bone involvement, pTNM may change and it may be amended in the addendum report. $labNotice.";
+
+                                // Determine comment text to show
+                                $commentTextToShow = (!empty($previous_comment)) 
+                                    ? htmlspecialchars($previous_comment[0]['description']) 
+                                    : $predefinedText;
+                            ?>
+
+                            <form method="POST" action="../transcription/preliminary_report/hpl/comment.php">
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label for="commentText">Comment</label>
+                                    <textarea class="form-control" id="commentText" name="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $commentTextToShow; ?></textarea>
+                                </div>
+
+                                <!-- Hidden inputs to send extra metadata -->
+                                <input type="hidden" name="labNumber" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                                <input type="hidden" name="sorsetype" value="commande">
+                                <input type="hidden" name="targettype" value="preliminary_report_microscopic">
+                                <input type="hidden" name="fk_user_author" value="<?php echo htmlspecialchars($loggedInUserId); ?>">
+
+                                <button type="submit" class="btn btn-primary mt-3">Save</button>
+                            </form>
+                        </div>
+
                         
                 </div>
 
@@ -2108,6 +2146,7 @@ switch (true) {
                                     <div class="option-item" style="border:none" data-value="Final Gross">Gross</div>
                                     <div class="option-item" style="border:none" data-value="Final Microscopic">Microscopic</div>
                                     <div class="option-item" style="border:none" data-value="Final Diagnosis">Diagnosis</div>
+                                    <div class="option-item" style="border:none" data-value="Final Comment">Comment</div>
                                 </div>
                                 <input type="hidden" id="selectedOption" name="selectedOption">
                             </div>
@@ -2648,6 +2687,32 @@ switch (true) {
 
                                 }
                             ?>
+                        </div>
+
+                        <div id="final-comment-form" class="form-container" style="display:none;">
+                            <?php
+                                
+                                $previous_comment = get_final_report_comment($LabNumber);
+                                // Determine comment text to show
+                                $commentTextToShow = (!empty($previous_comment) && !empty($previous_comment[0]['description']))
+                                            ? htmlspecialchars($previous_comment[0]['description']) 
+                                            : '';
+                            ?>
+    
+                            <form method="POST" action="../transcription/comment.php">
+                                <div class="form-group" style="margin-top: 15px;">
+                                    <label for="commentText">Comment</label>
+                                    <textarea class="form-control" id="commentText" name="commentText" rows="6" style="resize: both; overflow: auto;"><?php echo $commentTextToShow; ?></textarea>
+                                </div>
+    
+                                <!-- Hidden inputs to send extra metadata -->
+                                <input type="hidden" name="labNumber" value="<?php echo htmlspecialchars($LabNumber); ?>">
+                                <input type="hidden" name="sorsetype" value="commande">
+                                <input type="hidden" name="targettype" value="final_report_microscopic">
+                                <input type="hidden" name="fk_user_author" value="<?php echo htmlspecialchars($loggedInUserId); ?>">
+    
+                                <button type="submit" class="btn btn-primary mt-3">Save</button>
+                            </form>
                         </div>
                 </div>
 

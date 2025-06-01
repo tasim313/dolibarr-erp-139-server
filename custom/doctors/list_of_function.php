@@ -1012,16 +1012,21 @@ function doctor_referral_system_records_list_by_username($username) {
         JOIN 
             llx_commande c ON c.ref = r.lab_number
         WHERE 
-            c.fk_statut = 1
-            AND (
-                r.refering_doctor_name = $1
+        c.fk_statut = 1
+        AND NOT EXISTS (
+            SELECT 1 
+            FROM llx_commande_trackws t 
+            WHERE t.fk_status_id = 11 AND t.labno = c.ref
+        )
+        AND (
+            r.refering_doctor_name = $1
 
-                -- OR: username is a key in any JSON object
-                OR EXISTS (
-                    SELECT 1
-                    FROM jsonb_array_elements(r.referal_reason::jsonb) AS elem
-                    WHERE elem::jsonb ? $1
-                )
+            -- OR: username is a key in any JSON object
+            OR EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements(r.referal_reason::jsonb) AS elem
+                WHERE elem::jsonb ? $1
+            )
 
             -- OR: username appears in any value string (e.g., '@username' mention)
             OR EXISTS (
@@ -1031,7 +1036,6 @@ function doctor_referral_system_records_list_by_username($username) {
                 WHERE kv.value ILIKE '%' || $1 || '%'
             )
         );
-
     ";
 
     $stmt_name = "get_doctor_referral_system_records_list_by_username";
