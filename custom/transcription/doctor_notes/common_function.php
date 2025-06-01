@@ -216,23 +216,29 @@ function get_histo_case_summary_list() {
 
     // Ensure indexes on columns used in WHERE, JOIN, ORDER BY
     $sql = "SELECT 
-                ct.id,
-                ct.create_time, 
-                ct.labno, 
-                u.login AS user_name,  
-                ws.name AS status_name, 
-                ws.section, 
-                ct.description
-            FROM 
-                llx_commande_trackws ct
-            JOIN 
-                llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
-            JOIN 
-                llx_user u ON ct.user_id = u.rowid
-            WHERE 
-                ct.create_time BETWEEN '2024-08-15' AND CURRENT_DATE + INTERVAL '1 day' - INTERVAL '1 second'
-            ORDER BY 
-                ct.id DESC";
+            ct.id,
+            ct.create_time, 
+            ct.labno, 
+            u.login AS user_name,  
+            ws.name AS status_name, 
+            ws.section, 
+            ct.description,
+            c.date_livraison,
+            e.test_type
+        FROM 
+            llx_commande_trackws ct
+        JOIN 
+            llx_commande_wsstatus ws ON ct.fk_status_id = ws.id
+        JOIN 
+            llx_user u ON ct.user_id = u.rowid
+        JOIN
+            llx_commande c ON c.ref = ct.labno
+        JOIN 
+            llx_commande_extrafields e ON c.rowid = e.fk_object
+        WHERE 
+            ct.create_time BETWEEN '2024-08-15' AND CURRENT_DATE + INTERVAL '1 day' - INTERVAL '1 second'
+        ORDER BY 
+            ct.id DESC";
 
     // Use a prepared statement if running this query multiple times
     $result = pg_query($pg_con, $sql);
@@ -250,5 +256,6 @@ function get_histo_case_summary_list() {
 
     return $existingdata;
 }
+
 
 ?>

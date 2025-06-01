@@ -386,6 +386,7 @@ echo '<div class="tab-container">
                                 <th>Patient History</th>
                                 <th>Doctor Name</th>
                                 <th>Date</th>
+                                <th>Notified Method</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -439,6 +440,15 @@ echo '<div class="tab-container">
                                                     <td>${item["Status Name"]}</td>
                                                     <td>${item["User Name"]}</td>
                                                     <td>${formatDateTime(item.TrackCreateTime)}</td>
+                                                     <td>
+                                                        <select data-communication-type="${item.track_id}">
+                                                            <option value="">Select Communication</option>
+                                                            <option value="Whatsapp">Whatsapp</option>
+                                                            <option value="By Call">By Call</option>
+                                                            <option value="Message">Message</option>
+                                                            <option value="Face-to-face conversations">Face-to-face conversations</option>
+                                                        </select>
+                                                    </td>
                                                     <td>
                                                         <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
                                                             <option value="">Select</option>
@@ -464,6 +474,15 @@ echo '<div class="tab-container">
                                                     <td>${item["User Name"]}</td>
                                                     <td>${formatDateTime(item.TrackCreateTime)}</td>
                                                     <td>
+                                                        <select data-communication-type="${item.track_id}">
+                                                            <option value="">Select Communication</option>
+                                                            <option value="Whatsapp">Whatsapp</option>
+                                                            <option value="By Call">By Call</option>
+                                                            <option value="Message">Message</option>
+                                                            <option value="Face-to-face conversations">Face-to-face conversations</option>
+                                                        </select>
+                                                    </td>
+                                                    <td>
                                                         <select data-track-id="${item.track_id}" data-lab-number="${item["Lab Number"]}">
                                                             <option value="">Select</option>
                                                             <option value="In-Progress">In-Progress</option>
@@ -481,16 +500,23 @@ echo '<div class="tab-container">
                         }
 
                         // Define the trackStatusChange function
-                        function trackStatusChange(trackId, labNumber, statusValue) {
-                            if (!statusValue) {
-                                delete statusChanges[trackId];
-                            } else {
-                                statusChanges[trackId] = {
-                                    labNumber: labNumber,
-                                    status: statusValue,
-                                    username: loggedInUsername
-                                };
-                            }
+                        function trackStatusChange(trackId, labNumber, statusValue, communicationMethod) {
+                                if (!statusValue && !communicationMethod) {
+                                    delete statusChanges[trackId];
+                                } else {
+                                    if (!statusChanges[trackId]) {
+                                        statusChanges[trackId] = {
+                                            labNumber: labNumber,
+                                            username: loggedInUsername
+                                        };
+                                    }
+                                    if (statusValue) {
+                                        statusChanges[trackId].status = statusValue;
+                                    }
+                                    if (communicationMethod) {
+                                        statusChanges[trackId].communication = communicationMethod;
+                                    }
+                                }
 
                             console.log("Status Changes:", statusChanges); // For debugging
                         }
@@ -498,19 +524,39 @@ echo '<div class="tab-container">
 
                        // Add the event listener for the select elements
                         document.addEventListener("DOMContentLoaded", () => {
-                            const groupedData = groupByLabNumber(doctorInstructionList);
-                            document.querySelector("#doctorInstructionTable tbody").innerHTML = generateFilteredTableRows(groupedData);
+                                const groupedData = groupByLabNumber(doctorInstructionList);
+                                document.querySelector("#doctorInstructionTable tbody").innerHTML = generateFilteredTableRows(groupedData);
 
-                            document.querySelectorAll("select").forEach(selectElement => {
-                                selectElement.addEventListener("change", function() {
-                                    const trackId = this.getAttribute("data-track-id");
-                                    const labNumber = this.getAttribute("data-lab-number");
-                                    const statusValue = this.value;
-                                    trackStatusChange(trackId, labNumber, statusValue);
+                                // Status dropdown listener
+                                document.querySelectorAll("select[data-track-id]").forEach(selectElement => {
+                                    selectElement.addEventListener("change", function () {
+                                        const trackId = this.getAttribute("data-track-id");
+                                        const labNumber = this.getAttribute("data-lab-number");
+                                        const statusValue = this.value;
+
+                                        // Get matching communication dropdown
+                                        const communicationSelect = document.querySelector(`select[data-communication-type=\'${trackId}\']`);
+                                        const communicationMethod = communicationSelect ? communicationSelect.value : "";
+
+                                        trackStatusChange(trackId, labNumber, statusValue, communicationMethod);
+                                    });
                                 });
-                            });
-                        });
 
+                                // Communication dropdown listener
+                                document.querySelectorAll("select[data-communication-type]").forEach(selectElement => {
+                                    selectElement.addEventListener("change", function () {
+                                        const trackId = this.getAttribute("data-communication-type");
+
+                                        // Get the lab number from matching status select
+                                        const statusSelect = document.querySelector(`select[data-track-id=\'${trackId}\']`);
+                                        const labNumber = statusSelect ? statusSelect.getAttribute("data-lab-number") : "";
+                                        const statusValue = statusSelect ? statusSelect.value : "";
+                                        const communicationMethod = this.value;
+
+                                        trackStatusChange(trackId, labNumber, statusValue, communicationMethod);
+                                    });
+                                });
+                        });
 
                         // Submit the status changes
                         document.getElementById("submitStatusChanges").addEventListener("click", function() {
@@ -1053,137 +1099,106 @@ echo '<div class="tab-container">
          
         <div id="CaseStatus" class="tabcontent">
                     
-            <div class="sub-tabs">
-                <div class="sub-tab-links">
-                  <button style="border:none" class="sub-tablink btn-primary" onclick="openSubTab(event, \'ScreeningDoneList\')">
-                  <i class="fas fa-microscope" style="font-size: 25px;"></i>&nbsp;&nbsp;Screening Done List</button>
-                  <button style="border:none" class="sub-tablink btn-success" onclick="openSubTab(event, \'FinalizedList\')">
-                  <i class="fa fa-gavel" style="font-size: 35px;"></i>Finalized List</button>
-                  <button style="border:none" class="sub-tablink btn btn-danger" onclick="openSubTab(event, \'UnSeen\')">
-                  <i class="fas fa-eye-slash" style="font-size: 35px;"></i>UnSeen</button>
-                  <button style="border:none" class="sub-tablink btn btn-info" onclick="openSubTab(event, \'ReportEnteryCompleted\')">
-                  <i class="fas fa-clipboard-check" style="font-size: 35px;"></i>Report Entery Completed</button>
-                </div>
+            
+                
+            <div class="form-group mb-3">
+                <label for="status-type-filter">Status Type:</label>
+                <select id="status-type-filter" class="form-control">
+                    <option value="">All</option>
+                    <option value="ScreeningDoneList">Screening Done List</option>
+                    <option value="FinalizedList">Finalized List</option>
+                    <option value="UnSeen">UnSeen</option>
+                    <option value="ReportEnteryCompleted">Report Entry Completed</option>
+                </select>
+            </div>
 
-                <!-- Sub-tab contents -->
-                <div id="ScreeningDoneList" class="subtabcontent">
+                <div id="all-status-contents">
+
+                    <!-- Sub-tab contents -->
+                    <div id="ScreeningDoneList" class="subtabcontent">
                             <!-- Filter Controls -->
                             <div class="mb-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <div class="form-group">
-                                                <label for="status-filter">Status:</label>
-                                                <select id="status-filter" class="form-control">
-                                                <option value="">All</option>
-                                                <!-- Options will be populated dynamically -->
-                                                </select>
-                                            </div>
+                                <div class="d-flex justify-content-start align-items-center mb-3">
+                                    <div class="form-group">
+                                        <label for="date-filter">Date:</label>
+                                        <input type="date" id="date-filter" class="form-control">
+                                    </div>
 
-                                            <div class="form-group" style="display: none;">
-                                                <label for="labroom-filter">Lab Room Status:</label>
-                                                <select id="labroom-filter" class="form-control">
-                                                <option value="">All</option>
-                                                <!-- Options will be populated dynamically -->
-                                                </select>
-                                            </div>
+                                    <div class="form-group mr-3">
+                                        <label for="delivery-date-filter">Delivery Date:</label>
+                                        <input type="date" id="delivery-date-filter" class="form-control">
+                                    </div>
 
-                                            <div class="form-group">
-                                                <label for="date-filter">Date:</label>
-                                                <input type="date" id="date-filter" class="form-control">
-                                            </div>
-
-                                            <button id="apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
+                                    <button id="apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
                                 </div>
                             </div>
 
                             <!-- Data Table -->
                             <div id="screening-done-count-display-container" class="mb-4"></div>
                             <div id="list-tab-content-container"></div>
-                </div>            
-                        
-                    
-                <div id="FinalizedList" class="subtabcontent">
-                        <!-- Filter Controls -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <!-- Status Filter -->
-                                <div class="form-group">
-                                    <label for="final-status-filter">Status:</label>
-                                    <select id="final-status-filter" class="form-control">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
+                    </div>
+          
+                    <div id="FinalizedList" class="subtabcontent">
+                            <!-- Filter Controls -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    
+                                    <!-- Date Filter -->
+                                    <div class="form-group">
+                                        <label for="final-date-filter">Date:</label>
+                                        <input type="date" id="final-date-filter" class="form-control">
+                                    </div>
 
-                                <!-- Lab Room Status Filter (Initially hidden) -->
-                                <div class="form-group" style="display: none;">
-                                    <label for="labroom-filter">Lab Room Status:</label>
-                                    <select id="labroom-filter" class="form-control">
-                                    <option value="">All</option>
-                                    <!-- Options will be populated dynamically -->
-                                    </select>
-                                </div>
+                                    <!-- Delivery Date Filter -->
+                                    <div class="form-group">
+                                        <label for="final-delivery-date-filter">Delivery Date:</label>
+                                        <input type="date" id="final-delivery-date-filter" class="form-control">
+                                    </div>
 
+                                    <!-- Apply Filter Button -->
+                                    <button id="final-apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
+                                </div>
+                            </div>
+
+                        <!-- Data Table -->
+                        <div id="doctor-wise-count-container" class="mb-4"></div>
+                        <div id="final-screening-done-count-display-container" class="mb-4"></div>
+                        <div id="final-list-tab-content-container"></div>
+                    </div>
+
+                    <div id="UnSeen" class="subtabcontent">
+                            <!-- Filter Controls -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                                
                                 <!-- Date Filter -->
                                 <div class="form-group">
-                                    <label for="final-date-filter">Date:</label>
-                                    <input type="date" id="final-date-filter" class="form-control">
+                                    <label for="unseen-date-filter">Date:</label>
+                                    <input type="date" id="unseen-date-filter" class="form-control">
+                                </div>
+
+                                <!-- Delivery Date Filter -->
+                                <div class="form-group">
+                                    <label for="unseen-delivery-date-filter">Delivery Date:</label>
+                                    <input type="date" id="unseen-delivery-date-filter" class="form-control">
                                 </div>
 
                                 <!-- Apply Filter Button -->
-                                <button id="final-apply-filter" class="btn btn-primary ml-3">Apply Filter</button>
+                                <button id="unseen-apply-filter" class="btn btn-primary ml-3 mt-2 mt-md-0">Apply Filter</button>
+                                </div>
                             </div>
-                        </div>
 
-                    <!-- Data Table -->
-                    <div id="final-screening-done-count-display-container" class="mb-4"></div>
-                    <div id="final-list-tab-content-container"></div>
+                            <!-- Data Table -->
+                            <div id="unseen-count-display-container" class="mb-4"></div>
+                            <div id="unseen-list-tab-content-container"></div>
+                    </div>
+
+
+                    <div id="ReportEnteryCompleted" class="subtabcontent">
+                        <h3>Completed List</h3>
+                    </div>
+
                 </div>
-
-                <div id="UnSeen" class="subtabcontent">
-                        <!-- Filter Controls -->
-                        <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-                            <!-- Status Filter -->
-                            <div class="form-group">
-                                <label for="unseen-status-filter">Status:</label>
-                                <select id="unseen-status-filter" class="form-control">
-                                <option value="">All</option>
-                                <!-- Options will be populated dynamically -->
-                                </select>
-                            </div>
-
-                            <!-- Lab Room Status Filter (Initially hidden) -->
-                            <div class="form-group" style="display: none;">
-                                <label for="labroom-filter">Lab Room Status:</label>
-                                <select id="labroom-filter" class="form-control">
-                                <option value="">All</option>
-                                <!-- Options will be populated dynamically -->
-                                </select>
-                            </div>
-
-                            <!-- Date Filter -->
-                            <div class="form-group">
-                                <label for="unseen-date-filter">Date:</label>
-                                <input type="date" id="unseen-date-filter" class="form-control">
-                            </div>
-
-                            <!-- Apply Filter Button -->
-                            <button id="unseen-apply-filter" class="btn btn-primary ml-3 mt-2 mt-md-0">Apply Filter</button>
-                            </div>
-                        </div>
-
-                        <!-- Data Table -->
-                        <div id="unseen-count-display-container" class="mb-4"></div>
-                        <div id="unseen-list-tab-content-container"></div>
-                </div>
-
-
-                 <div id="ReportEnteryCompleted" class="subtabcontent">
-                     <h3>Completed List</h3>
-                 </div>
-                
-
-             </div>
                 
                    
         </div>
@@ -1257,7 +1272,7 @@ echo '
     }
 </script>
 
-<script>
+<!-- <script>
         const case_summary_list = <?php echo json_encode($filtered_data); ?> 
 
         // Initialize filter options
@@ -1371,10 +1386,117 @@ echo '
         // Initialize the page
         generateFilterOptions();
         displayListData(case_summary_list);
+</script> -->
+
+<script>
+    const case_summary_list = <?php echo json_encode($filtered_data); ?>;
+
+    // Apply filters (only by date)
+    document.getElementById('apply-filter').addEventListener('click', () => {
+        const selectedCreateDate = document.getElementById('date-filter').value;
+        const selectedDeliveryDate = document.getElementById('delivery-date-filter').value;
+
+        function formatDateToInputString(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = (`0${d.getMonth() + 1}`).slice(-2);
+            const day = (`0${d.getDate()}`).slice(-2);
+            return `${year}-${month}-${day}`;
+        }
+
+        const filteredData = case_summary_list.filter(item => {
+            const createDate = formatDateToInputString(item['create_time']);
+            const deliveryDate = item['date_livraison'] ? formatDateToInputString(item['date_livraison']) : '';
+
+            const createDateMatch = selectedCreateDate ? (createDate === selectedCreateDate) : true;
+            const deliveryDateMatch = selectedDeliveryDate ? (deliveryDate === selectedDeliveryDate) : true;
+
+            return createDateMatch && deliveryDateMatch;
+        });
+
+        const uniqueLabnoCount = countUniqueLabnos(filteredData);
+        displayListData(filteredData, uniqueLabnoCount);
+    });
+
+    function countUniqueLabnos(data) {
+        const uniqueLabnos = new Set();
+        data.forEach(item => uniqueLabnos.add(item['labno']));
+        return uniqueLabnos.size;
+    }
+
+    function displayListData(data, uniqueLabnoCount) {
+            const countDisplayContainer = document.getElementById('screening-done-count-display-container');
+            const listDetailsContainer = document.getElementById('list-tab-content-container');
+            listDetailsContainer.innerHTML = '';
+
+            const total_case_summary_list = countUniqueLabnos(case_summary_list);
+
+            // Count how many times each doctor appears
+            const doctorCounts = {};
+            data.forEach(item => {
+                const doctor = item['user_name'] || 'Unknown';
+                doctorCounts[doctor] = (doctorCounts[doctor] || 0) + 1;
+            });
+
+            // Generate doctor count display HTML
+            let doctorCountHTML = '<ul>';
+            for (const doctor in doctorCounts) {
+                doctorCountHTML += `<li>${doctor}: ${doctorCounts[doctor]}</li>`;
+            }
+            doctorCountHTML += '</ul>';
+
+            if (countDisplayContainer) {
+                countDisplayContainer.innerHTML = `
+                    <br><br>
+                    <p>Total Screening Done: ${uniqueLabnoCount ?? total_case_summary_list}</p>
+                    <p><strong>Doctor-wise Count:</strong></p>
+                    ${doctorCountHTML}
+                `;
+            }
+
+            const listTable = document.createElement('table');
+            listTable.classList.add('table');
+            listTable.style.borderCollapse = 'collapse';
+            listTable.style.width = '100%';
+
+            const headerRow = document.createElement('tr');
+            ['Doctor', 'Lab Number', 'Delivery Date', 'Status Name', 'Date'].forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                th.style.border = '1px solid black';
+                th.style.padding = '8px';
+                headerRow.appendChild(th);
+            });
+            listTable.appendChild(headerRow);
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                ['user_name', 'labno', 'date_livraison', 'status_name', 'create_time'].forEach(key => {
+                    const td = document.createElement('td');
+                    if (key === 'create_time' || key === 'date_livraison') {
+                        const date = new Date(item[key]);
+                        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                        td.textContent = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-GB', options);
+                    } else {
+                        td.textContent = item[key] || 'N/A';
+                    }
+                    td.style.border = '1px solid black';
+                    td.style.padding = '8px';
+                    row.appendChild(td);
+                });
+                listTable.appendChild(row);
+            });
+
+            listDetailsContainer.appendChild(listTable);
+    }
+
+
+    displayListData(case_summary_list, countUniqueLabnos(case_summary_list));
 </script>
 
 
-<script>
+
+<!-- <script>
         // Sample Data
         const finalCaseSummaryList = <?php echo json_encode($finalized_filtered_data); ?>;
 
@@ -1405,22 +1527,24 @@ echo '
 
         // Apply filters
         document.getElementById('final-apply-filter').addEventListener('click', () => {
-            const selectedStatus = document.getElementById('final-status-filter').value;
-            const selectedLabRoomStatus = document.getElementById('labroom-filter').value;
-            const selectedDate = document.getElementById('final-date-filter').value;
+        const selectedDate = document.getElementById('final-date-filter').value;
+        const selectedDeliveryDate = document.getElementById('delivery-date-filter').value;
 
-            const filteredData = finalCaseSummaryList.filter(item => {
-                const matchesStatus = selectedStatus ? item['status_name'] === selectedStatus : true;
-                const matchesLabRoom = selectedLabRoomStatus ? item['LabRoomStatus'] === selectedLabRoomStatus : true;
-                const matchesDate = selectedDate ? new Date(item['create_time']).toISOString().split('T')[0] === selectedDate : true;
-                return matchesStatus && matchesLabRoom && matchesDate;
-            });
+        const filteredData = finalCaseSummaryList.filter(item => {
+            const matchesScreeningDate = selectedDate
+                ? new Date(item['create_time']).toISOString().split('T')[0] === selectedDate
+                : true;
 
-            // Get count of unique lab numbers
-            const FinalizeduniqueLabnoCount = countUniqueLabnos(filteredData);
+            const matchesDeliveryDate = selectedDeliveryDate
+                ? new Date(item['date_livraison']).toISOString().split('T')[0] === selectedDeliveryDate
+                : true;
 
-            renderFinalizedListTable(filteredData, FinalizeduniqueLabnoCount);
+            return matchesScreeningDate && matchesDeliveryDate;
         });
+
+        const FinalizeduniqueLabnoCount = countUniqueLabnos(filteredData);
+        renderFinalizedListTable(filteredData, FinalizeduniqueLabnoCount);
+    });
 
         // Display the data in a table format
         function renderFinalizedListTable(data, FinalizeduniqueLabnoCount) {
@@ -1451,7 +1575,7 @@ echo '
 
             // Create table header
             const headerRow = document.createElement('tr');
-            ['Lab Number', 'Status Name', 'Date', 'Doctor'].forEach(headerText => {
+            ['Doctor', 'Lab Number', 'Delivery Date', 'Status Name', 'Date'].forEach(headerText => {
                 const th = document.createElement('th');
                 th.textContent = headerText;
                 th.style.border = '1px solid black'; // Add border to header cells
@@ -1463,12 +1587,12 @@ echo '
             // Populate table rows
             data.forEach(item => {
                 const row = document.createElement('tr');
-                ['labno', 'status_name', 'create_time', 'user_name'].forEach(key => {
+                ['user_name', 'labno', 'date_livraison', 'status_name', 'create_time'].forEach(key => {
                     const td = document.createElement('td');
-                    if (key === 'create_time') {
+                    if (key === 'create_time' || key === 'date_livraison') {
                         const date = new Date(item[key]);
                         const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                        td.textContent = date.toLocaleDateString('en-GB', options);
+                        td.textContent = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-GB', options);
                     } else {
                         td.textContent = item[key] || 'N/A';
                     }
@@ -1485,10 +1609,128 @@ echo '
         // Initialize the page
         finalGenerateFilterOptions();
         renderFinalizedListTable(finalCaseSummaryList);
+</script> -->
+
+<script>
+    const finalCaseSummaryList = <?php echo json_encode($finalized_filtered_data); ?>;
+
+    document.getElementById('final-apply-filter').addEventListener('click', () => {
+        const selectedScreeningDate = document.getElementById('final-date-filter').value;
+        const selectedDeliveryDate = document.getElementById('final-delivery-date-filter').value;
+
+        function formatDateToInputString(dateStr) {
+            const date = new Date(dateStr);
+            if (isNaN(date)) return '';
+            const year = date.getFullYear();
+            const month = (`0${date.getMonth() + 1}`).slice(-2);
+            const day = (`0${date.getDate()}`).slice(-2);
+            return `${year}-${month}-${day}`;
+        }
+
+        const filteredData = finalCaseSummaryList.filter(item => {
+            const screeningDate = item['create_time'] ? formatDateToInputString(item['create_time']) : '';
+            let deliveryDate = '';
+
+            if (item['date_livraison']) {
+                const parts = item['date_livraison'].split('/');
+                if (parts.length === 3) {
+                    // Format: DD/MM/YYYY
+                    deliveryDate = formatDateToInputString(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                } else {
+                    // Try direct format
+                    deliveryDate = formatDateToInputString(item['date_livraison']);
+                }
+            }
+
+            const matchesScreeningDate = selectedScreeningDate
+                ? (screeningDate === selectedScreeningDate)
+                : true;
+
+            const matchesDeliveryDate = selectedDeliveryDate
+                ? (deliveryDate === selectedDeliveryDate)
+                : true;
+
+            return matchesScreeningDate && matchesDeliveryDate;
+        });
+
+        const uniqueLabnoCount = countUniqueLabnos(filteredData);
+        renderFinalizedListTable(filteredData, uniqueLabnoCount);
+    });
+
+    function countUniqueLabnos(data) {
+        const labnoSet = new Set(data.map(item => item.labno));
+        return labnoSet.size;
+    }
+
+    function renderFinalizedListTable(data, uniqueLabnoCount) {
+        const countDisplayContainer = document.getElementById('final-screening-done-count-display-container');
+        const listDetailsContainer = document.getElementById('final-list-tab-content-container');
+        const doctorCountContainer = document.getElementById('doctor-wise-count-container');
+
+        listDetailsContainer.innerHTML = '';
+        doctorCountContainer.innerHTML = '';
+        countDisplayContainer.innerHTML = '';
+
+        const doctorLabnoMap = {};
+        data.forEach(item => {
+            const doctor = item.user_name || 'Unknown';
+            if (!doctorLabnoMap[doctor]) doctorLabnoMap[doctor] = new Set();
+            doctorLabnoMap[doctor].add(item.labno);
+        });
+
+        let summaryText = `<br><p><strong>Total Finalization Done:</strong> ${uniqueLabnoCount}</p>`;
+        summaryText += `<p><strong>Doctor-wise Count:</strong></p>`;
+        Object.entries(doctorLabnoMap).forEach(([doctor, labnos]) => {
+            summaryText += `<p>${doctor}: ${labnos.size}</p>`;
+        });
+
+        doctorCountContainer.innerHTML = summaryText;
+
+        const listTable = document.createElement('table');
+        listTable.classList.add('table');
+        listTable.style.borderCollapse = 'collapse';
+        listTable.style.width = '100%';
+
+        const headerRow = document.createElement('tr');
+        ['Doctor', 'Lab Number', 'Delivery Date', 'Status Name', 'Screening Date'].forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            th.style.border = '1px solid black';
+            th.style.padding = '8px';
+            headerRow.appendChild(th);
+        });
+        listTable.appendChild(headerRow);
+
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            ['user_name', 'labno', 'date_livraison', 'status_name', 'create_time'].forEach(key => {
+                const td = document.createElement('td');
+                if (key === 'create_time' || key === 'date_livraison') {
+                    const date = new Date(item[key]);
+                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                    td.textContent = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-GB', options);
+                } else {
+                    td.textContent = item[key] || 'N/A';
+                }
+                td.style.border = '1px solid black';
+                td.style.padding = '8px';
+                row.appendChild(td);
+            });
+            listTable.appendChild(row);
+        });
+
+        listDetailsContainer.appendChild(listTable);
+    }
+
+    // Initial load
+    const initialCount = countUniqueLabnos(finalCaseSummaryList);
+    renderFinalizedListTable(finalCaseSummaryList, initialCount);
 </script>
 
 
-<script>
+
+
+<!-- <script>
         // Sample Data
         const unSeenCaseSummaryList = <?php echo json_encode($unseen_filtered_data); ?>;
 
@@ -1522,21 +1764,31 @@ echo '
 
         // Apply filters
         document.getElementById('unseen-apply-filter').addEventListener('click', () => {
-            const selectedStatus = document.getElementById('unseen-status-filter').value;
-            const selectedLabRoomStatus = document.getElementById('labroom-filter').value;
-            const selectedDate = document.getElementById('unseen-date-filter').value;
+            const selectedCreateDate = document.getElementById('unseen-date-filter').value;
+            const selectedDeliveryDate = document.getElementById('unseen-delivery-date-filter').value;
+
+            function formatDateToInputString(date) {
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = (`0${d.getMonth() + 1}`).slice(-2);
+                const day = (`0${d.getDate()}`).slice(-2);
+                return `${year}-${month}-${day}`;
+            }
 
             const filteredData = unSeenCaseSummaryList.filter(item => {
-                const matchesStatus = selectedStatus ? item['status_name'] === selectedStatus : true;
-                const matchesLabRoom = selectedLabRoomStatus ? item['LabRoomStatus'] === selectedLabRoomStatus : true;
-                const matchesDate = selectedDate ? new Date(item['create_time']).toISOString().split('T')[0] === selectedDate : true;
-                return matchesStatus && matchesLabRoom && matchesDate;
+                const createDate = item['create_time'] ? formatDateToInputString(item['create_time']) : '';
+                const deliveryDate = item['date_livraison'] ? formatDateToInputString(item['date_livraison']) : '';
+
+                const createDateMatch = selectedCreateDate ? (createDate === selectedCreateDate) : true;
+                const deliveryDateMatch = selectedDeliveryDate ? (deliveryDate === selectedDeliveryDate) : true;
+
+                return createDateMatch && deliveryDateMatch;
             });
-            
-            // Get count of unique lab numbers
+
             const unseenuniqueLabnoCount = countUniqueLabnos(filteredData);
             renderunSeenListTable(filteredData, unseenuniqueLabnoCount);
         });
+
 
         // Display the data in a table format
         function renderunSeenListTable(data, unseenuniqueLabnoCount) {
@@ -1567,7 +1819,7 @@ echo '
 
             // Create table header
             const headerRow = document.createElement('tr');
-            ['Lab Number', 'Status Name', 'Date', 'User'].forEach(headerText => {
+            ['User', 'Lab Number', 'Delivery Date', 'Status Name', 'Date'].forEach(headerText => {
                 const th = document.createElement('th');
                 th.textContent = headerText;
                 th.style.border = '1px solid black'; // Add border to header cells
@@ -1579,12 +1831,12 @@ echo '
             // Populate table rows
             data.forEach(item => {
                 const row = document.createElement('tr');
-                ['labno', 'status_name', 'create_time', 'user_name'].forEach(key => {
+                ['user_name', 'labno', 'date_livraison', 'status_name', 'create_time'].forEach(key => {
                     const td = document.createElement('td');
-                    if (key === 'create_time') {
+                    if (key === 'create_time' || key === 'date_livraison') {
                         const date = new Date(item[key]);
                         const options = { day: 'numeric', month: 'short', year: 'numeric' };
-                        td.textContent = date.toLocaleDateString('en-GB', options);
+                        td.textContent = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-GB', options);
                     } else {
                         td.textContent = item[key] || 'N/A';
                     }
@@ -1601,4 +1853,162 @@ echo '
         // Initialize the page
         unSeenGenerateFilterOptions();
         renderunSeenListTable(unSeenCaseSummaryList);
+</script> -->
+
+<script>
+    // Sample Data
+    const unSeenCaseSummaryList = <?php echo json_encode($unseen_filtered_data); ?>;
+
+    // Helper function: Count unique lab numbers
+    function countUniqueLabnos(data) {
+        const uniqueLabNos = new Set(data.map(item => item.labno));
+        return uniqueLabNos.size;
+    }
+
+    // Initialize filter options
+    function unSeenGenerateFilterOptions() {
+        const statusNames = new Set();
+        const labRoomStatuses = new Set();
+
+        unSeenCaseSummaryList.forEach(item => {
+            statusNames.add(item['status_name']);
+            if (item['LabRoomStatus']) {
+                labRoomStatuses.add(item['LabRoomStatus']);
+            }
+        });
+
+        populateSelectOptions('unseen-status-filter', Array.from(statusNames));
+        populateSelectOptions('labroom-filter', Array.from(labRoomStatuses));
+    }
+
+    // Populate select options
+    function populateSelectOptions(selectId, options) {
+        const selectElement = document.getElementById(selectId);
+        selectElement.innerHTML = ''; // Clear existing options
+
+        // Add a default empty option
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.text = '-- Select --';
+        selectElement.appendChild(defaultOpt);
+
+        options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option;
+            opt.text = option;
+            selectElement.add(opt);
+        });
+    }
+
+    // Apply filters
+    document.getElementById('unseen-apply-filter').addEventListener('click', () => {
+        const selectedCreateDate = document.getElementById('unseen-date-filter').value;
+        const selectedDeliveryDate = document.getElementById('unseen-delivery-date-filter').value;
+
+        function formatDateToInputString(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = (`0${d.getMonth() + 1}`).slice(-2);
+            const day = (`0${d.getDate()}`).slice(-2);
+            return `${year}-${month}-${day}`;
+        }
+
+        const filteredData = unSeenCaseSummaryList.filter(item => {
+            const createDate = item['create_time'] ? formatDateToInputString(item['create_time']) : '';
+            const deliveryDate = item['date_livraison'] ? formatDateToInputString(item['date_livraison']) : '';
+
+            const createDateMatch = selectedCreateDate ? (createDate === selectedCreateDate) : true;
+            const deliveryDateMatch = selectedDeliveryDate ? (deliveryDate === selectedDeliveryDate) : true;
+
+            return createDateMatch && deliveryDateMatch;
+        });
+
+        const unseenuniqueLabnoCount = countUniqueLabnos(filteredData);
+        renderunSeenListTable(filteredData, unseenuniqueLabnoCount);
+    });
+
+    // Display the data in a table format
+    function renderunSeenListTable(data, unseenuniqueLabnoCount) {
+        const countDisplayContainer = document.getElementById('unseen-count-display-container');
+        const listDetailsContainer = document.getElementById('unseen-list-tab-content-container');
+        listDetailsContainer.innerHTML = ''; // Clear existing details
+
+        // Display the total count of unique lab numbers
+        if (countDisplayContainer) {
+            countDisplayContainer.innerHTML = `<p>Total UnSeen: ${unseenuniqueLabnoCount || 0}</p>`;
+        } else {
+            console.error('Count display container not found.');
+        }
+
+        const listTable = document.createElement('table');
+        listTable.classList.add('table');
+        listTable.style.borderCollapse = 'collapse';
+        listTable.style.width = '100%';
+
+        // Create table header
+        const headerRow = document.createElement('tr');
+        ['User', 'Lab Number', 'Delivery Date', 'Status Name', 'Date'].forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            th.style.border = '1px solid black';
+            th.style.padding = '8px';
+            headerRow.appendChild(th);
+        });
+        listTable.appendChild(headerRow);
+
+        // Populate table rows
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            ['user_name', 'labno', 'date_livraison', 'status_name', 'create_time'].forEach(key => {
+                const td = document.createElement('td');
+                if (key === 'create_time' || key === 'date_livraison') {
+                    const date = new Date(item[key]);
+                    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+                    td.textContent = isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-GB', options);
+                } else {
+                    td.textContent = item[key] || 'N/A';
+                }
+                td.style.border = '1px solid black';
+                td.style.padding = '8px';
+                row.appendChild(td);
+            });
+            listTable.appendChild(row);
+        });
+
+        listDetailsContainer.appendChild(listTable);
+    }
+
+    // Initialize the page
+    unSeenGenerateFilterOptions();
+
+    // ✅ Render default table and count on page load
+    const defaultUnseenUniqueLabnoCount = countUniqueLabnos(unSeenCaseSummaryList);
+    renderunSeenListTable(unSeenCaseSummaryList, defaultUnseenUniqueLabnoCount);
+</script>
+
+
+<!-- Filter by Status Type (Dropdown) -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const statusFilter = document.getElementById("status-type-filter");
+        const allSubTabs = document.querySelectorAll(".subtabcontent");
+
+        function filterStatusType() {
+            const selected = statusFilter.value;
+
+            allSubTabs.forEach(tab => {
+                if (selected === "" || tab.id === selected) {
+                    tab.style.display = "block";
+                } else {
+                    tab.style.display = "none";
+                }
+            });
+        }
+
+        // Initial call
+        filterStatusType();
+
+        // Event listener for dropdown
+        statusFilter.addEventListener("change", filterStatusType);
+    });
 </script>

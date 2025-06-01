@@ -8,10 +8,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $loggedInUserId = $input['loggedInUserId'];
         $statusChanges = $input['values'];
 
+        // Communication to fk_status_id mapping
+        $communicationMap = [
+            'Whatsapp' => 72,
+            'By Call' => 73,
+            'Message' => 74,
+            'Face-to-face conversations' => 75
+        ];
+
         foreach ($statusChanges as $trackId => $data) {
             $labNumber = $data['labNumber'];
             $status = $data['status'];
-            $username = $data['username']; // new field
+            $username = $data['username'];
+            $communication = $data['communication'] ?? null;
             $labRoomStatus = '';
 
             switch ($status) {
@@ -29,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($labRoomStatus && $username) {
-                // Fetch current status_update_user
+                // Fetch existing status_update_user
                 $selectQuery = pg_prepare($pg_con, "select_user_$trackId", "SELECT status_update_user FROM llx_commande_trackws WHERE id = $1 AND labno = $2");
                 $selectResult = pg_execute($pg_con, "select_user_$trackId", array($trackId, $labNumber));
 
@@ -41,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                // Prepend new status update
+                // Add new update to status history
                 array_unshift($statusHistory, [ $labRoomStatus => $username ]);
                 $statusUpdateUserJson = json_encode($statusHistory);
 
@@ -51,6 +60,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (!$updateResult) {
                     echo json_encode(["success" => false, "message" => "Error updating data: " . pg_last_error($pg_con)]);
+                    exit;
+                }
+            }
+
+            // Handle communication insert
+            if ($communication && isset($communicationMap[$communication])) {
+                $fkStatusId = $communicationMap[$communication];
+
+                // Prepare insert for communication log
+                $insertQuery = pg_prepare($pg_con, "insert_comm_$trackId", "
+                    INSERT INTO llx_commande_trackws (labno, user_id, fk_status_id)
+                    VALUES ($1, $2, $3)
+                ");
+                $insertResult = pg_execute($pg_con, "insert_comm_$trackId", array($labNumber, $loggedInUserId, $fkStatusId));
+
+                if (!$insertResult) {
+                    echo json_encode(["success" => false, "message" => "Error inserting communication: " . pg_last_error($pg_con)]);
                     exit;
                 }
             }

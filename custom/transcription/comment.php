@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fk_target = $microscopic_row ? $microscopic_row['row_id'] : null;
 
     // 3. Check if the element relationship already exists
-    $check_query = "SELECT rowid FROM llx_element_element 
+    $check_query = "SELECT rowid FROM llx_custom_element_element 
                     WHERE fk_source = '$fk_source' 
                     AND sourcetype = '$sorsetype' 
                     AND fk_target = '$fk_target' 
@@ -51,25 +51,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $fk_element = $element_row['rowid'];
     } else {
         // Insert new relationship
-        $element_query = "INSERT INTO llx_element_element (fk_source, sourcetype, fk_target, targettype) 
+        $element_query = "INSERT INTO llx_custom_element_element (fk_source, sourcetype, fk_target, targettype) 
                           VALUES ('$fk_source', '$sorsetype', '$fk_target', '$targettype') RETURNING rowid";
         $element_result = pg_query($pg_con, $element_query);
         if (!$element_result) {
-            die("Error inserting into llx_element_element: " . pg_last_error($pg_con));
+            die("Error inserting into llx_custom_element_element: " . pg_last_error($pg_con));
         }
         $element_row = pg_fetch_assoc($element_result);
         $fk_element = $element_row['rowid'];
     }
 
-    // 4. Insert into llx_comment
+    // 4. Insert into llx_custom_comment
     date_default_timezone_set('Asia/Dhaka');
     $currentDate = date('Y-m-d H:i:s');
 
-    $comment_query = "INSERT INTO llx_comment (datec, description, fk_user_author, fk_element, element_type) 
+    $comment_query = "INSERT INTO llx_custom_comment (datec, description, fk_user_author, fk_element, element_type) 
                       VALUES ('$currentDate', '$comment', '$fk_user_author', '$fk_element', 'Final Report')";
     $comment_result = pg_query($pg_con, $comment_query);
     if (!$comment_result) {
-        die("Error inserting into llx_comment: " . pg_last_error($pg_con));
+        die("Error inserting into llx_custom_comment: " . pg_last_error($pg_con));
     }
 
     // Redirect back to previous page
