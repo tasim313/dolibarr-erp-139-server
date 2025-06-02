@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 // database connection and function file
 include('connection.php');
 include('../transcription/common_function.php');
@@ -90,6 +89,9 @@ $loggedInUserId = $user->id;
 $loggedInUsername = $user->login;
 
 $userGroupNames = getUserGroupNames($loggedInUserId);
+$previousLabData = other_report_doctor_module($LabNumber);
+$previousLabNumber = $previousLabData[0]['previous_lab_number'] ?? '';
+$previousLabNumberWithoutPrefix = substr($previousLabNumber, 3);
 
 $hasConsultants = false;
 
@@ -123,11 +125,16 @@ foreach ($userGroupNames as $group) {
     } 
 }
 
+$isAdmin = isUserAdmin($loggedInUserId);
+
 // Access control using switch statement
 switch (true) {
 	case $hasConsultants:
 		// Doctor has access, continue with the page content...
 		break;
+    case $isAdmin:
+        // Admin has access, continue with the page content...
+        break;
 	default:
 		echo "<h1>Access Denied</h1>";
 		echo "<p>You are not authorized to view this page.</p>";
@@ -522,7 +529,7 @@ switch (true) {
         <i class="fas fa-file-alt" aria-hidden="true"></i> Report
 </button>
 
-<a href="Cyto/mfc_edit.php?lab_number=<?php echo 'MFC' . $LabNumber; ?>">
+<a href="../transcription/duplicate_report/hpl/duplicate.php?LabNumber=<?php echo htmlspecialchars($previousLabNumberWithoutPrefix, ENT_QUOTES, 'UTF-8'); ?>">
     <button style="border:none; background-color: white; color: black;">
             <i class="fas fa-edit" aria-hidden="true"></i> Edit
     </button>
@@ -1116,7 +1123,8 @@ switch (true) {
 
     <div class="right-side">
         <!-- iframe to display the report -->
-        <iframe id="reportFrame" style="width:200%; height:1200px; border:none; display:none;"></iframe>
+        <div id="reportstatus" style="display: none;"></div>
+        <iframe id="reportFrame" style="width:155%; height:1200px; border:none; display:none;"></iframe>
         <div id="status" class="tab-content grayed-out">
                         <h3 class="semi-bold">
                             <center>Current  Status: <?php echo htmlspecialchars($LabNumber); ?></center>
@@ -2407,6 +2415,7 @@ switch (true) {
                 const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
                 const mfcLab = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
                 const ihrLab = <?php echo json_encode(get_ihr_labnumber_list()); ?>;
+                
 
                 function checkLabNumberAndRedirect(labno) {
                     if (labno) {
@@ -2502,17 +2511,26 @@ switch (true) {
         <script>
             // Function to show only the report iframe and hide the status
             function loadReport() {
-                var labNumber = "<?php echo htmlspecialchars('MFC' . $LabNumber, ENT_QUOTES, 'UTF-8'); ?>";
+                var labNumber = "<?php echo htmlspecialchars($previousLabNumber, ENT_QUOTES, 'UTF-8'); ?>";
                 var iframe = document.getElementById('reportFrame');
-                
-                // Set the report URL with the lab number and make the iframe visible
-                iframe.src = "/custom/transcription/MFC/mfc_report.php?LabNumber=" + labNumber;
-                iframe.style.display = "block";  // Show the report iframe
+                var statusDiv = document.getElementById('reportstatus');
 
-                // Hide the status section when the report is shown
-                document.getElementById('status').style.display = 'none';
+                if (labNumber && labNumber.trim() !== "") {
+                    // Lab number exists, load the report
+                    iframe.src = "/custom/transcription/duplicate_report/hpl/index.php?lab_number=" + encodeURIComponent(labNumber);
+                    iframe.style.display = "block";  // Show the iframe
+                    document.getElementById('status').style.display = 'none';
+                    statusDiv.style.display = "none";  // Hide the status/message section
+                } else {
+                    // Lab number not found, show message
+                    iframe.style.display = "none";  // Hide the iframe
+                    statusDiv.style.display = "block";  // Show the status/message section
+                    statusDiv.innerHTML = "<p style='color: red;'>Report not found or report not ready.</p>";
+                    document.getElementById('status').style.display = 'none';
+                }
             }
 
+            
             // Function to show only the status table and hide the report
             function showRightTab(tabId) {
                 if (tabId === 'status') {

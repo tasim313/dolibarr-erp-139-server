@@ -38,20 +38,30 @@ function get_gross_specimens_list($lab_number) {
     global $pg_con;
 
     $sql = "
-        SELECT de.fk_commande, de.fk_product, de.description as specimen,  c.ref, e.num_containers, de.rowid as specimen_id,
-        (
-            SELECT COUNT(*) 
-            FROM llx_commandedet AS inner_de 
-            WHERE inner_de.fk_commande = c.rowid
-        ) AS number_of_specimens
+        SELECT 
+            de.fk_commande, 
+            de.fk_product, 
+            (COALESCE(ef.sample_serial, '') || ' : ' || COALESCE(de.description, '')) AS specimen,
+            c.ref, 
+            e.num_containers, 
+            de.rowid AS specimen_id,
+            (
+                SELECT COUNT(*) 
+                FROM llx_commandedet AS inner_de 
+                WHERE inner_de.fk_commande = c.rowid
+            ) AS number_of_specimens
         FROM 
             llx_commande AS c 
         JOIN 
             llx_commandedet AS de ON de.fk_commande = c.rowid
         JOIN 
             llx_commande_extrafields AS e ON e.fk_object = c.rowid
+        LEFT JOIN 
+            llx_commandedet_extrafields AS ef ON ef.fk_object = de.rowid
         WHERE 
-            c.ref = '$lab_number' ORDER BY de.rowid ASC";
+            c.ref = '$lab_number'
+        ORDER BY 
+            de.rowid ASC";
 
     $result = pg_query($pg_con, $sql);
 

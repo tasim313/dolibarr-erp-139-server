@@ -1405,5 +1405,270 @@ function get_last_doctor_finalization_status($lab_number) {
     ];
 }
 
+function get_ihc_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'IHC'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+function get_dpr_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'DPR'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+function get_ihr_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'IHR'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+
+function get_ehr_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'EHR'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+
+function get_icr_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'ICR'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+
+function get_ecr_labnumber_list() {
+    global $pg_con;
+
+    $sql = "SELECT 
+            soc.code_client AS patient_code, 
+            CONCAT(e.test_type, '', c.ref) AS lab_number, 
+            c.rowid AS rowid
+        FROM 
+            llx_commande AS c
+        JOIN 
+            llx_commande_extrafields AS e ON e.fk_object = c.rowid 
+       
+        JOIN 
+            llx_societe AS soc ON c.fk_soc = soc.rowid
+        WHERE 
+            date_commande BETWEEN '2024-01-01' AND CURRENT_DATE 
+            AND e.test_type = 'ECR'";
+    $result = pg_query($pg_con, $sql);
+
+    $labnumbers = [];
+
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
+            $labnumbers[] = ['patient_code' => $row['patient_code'], 'lab_number' => $row['lab_number'],
+            'fk_commande'=>$row['rowid']];
+        }
+
+        pg_free_result($result);
+    } else {
+        echo 'Error: ' . pg_last_error($pg_con);
+    }
+
+    return $labnumbers;
+}
+
+
+function other_report_doctor_module($lab_number) {
+    global $pg_con;
+
+    // Ensure the database connection is available
+    if (!$pg_con) {
+        return ['error' => 'Database connection error.'];
+    }
+
+    // Validate the input
+    if (empty($lab_number)) {
+        return ['error' => 'Lab number is required.'];
+    }
+
+    // SQL query to fetch the required data
+    $sql = "
+        SELECT rowid, previous_lab_number, report_type, new_lab_number 
+        FROM llx_other_report 
+        WHERE new_lab_number = $1;
+    ";
+
+    // Statement name (unique within the connection session)
+    $stmt_name = "get_other_report_doctor_module";
+
+    // Check if the statement has already been prepared
+    static $prepared_statements = [];
+
+    if (!isset($prepared_statements[$stmt_name])) {
+        $prepare_result = pg_prepare($pg_con, $stmt_name, $sql);
+
+        if (!$prepare_result) {
+            error_log('Query preparation error: ' . pg_last_error($pg_con));
+            return ['error' => 'An error occurred while preparing the query.'];
+        }
+
+        $prepared_statements[$stmt_name] = true;
+    }
+
+    // Execute the prepared query with the lab number as a parameter
+    $result = pg_execute($pg_con, $stmt_name, [$lab_number]);
+
+    // Check if the query execution was successful
+    if ($result) {
+        $rows = pg_fetch_all($result);
+        pg_free_result($result);
+        return $rows ?: []; // Return empty array if no rows found
+    } else {
+        error_log('Query execution error: ' . pg_last_error($pg_con));
+        return ['error' => 'An error occurred while executing the query.'];
+    }
+}
+
 
 ?>

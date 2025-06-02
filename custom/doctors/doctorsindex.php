@@ -2324,7 +2324,8 @@ switch (true) {
                 // Retrieve the lab numbers from PHP
                 const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
                 const mfcLab = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
-                console.log('mfc lab number :', mfcLab);
+                const ihrLab = <?php echo json_encode(get_ihr_labnumber_list()); ?>;
+              
 
                 function checkLabNumberAndRedirect(labno) {
                     if (labno) {
@@ -2333,6 +2334,8 @@ switch (true) {
                         const foundCyto = cytoLab.some(lab => lab.lab_number === labno);
                         // Check if the labno exists in mfcLab
                         const foundMfc = mfcLab.some(lab => lab.lab_number === 'MFC' + labno);
+                        // Check if the labno exists in ihrLab
+                        const foundIhr = ihrLab.some(lab => lab.lab_number === 'IHR' + labno);
                        
 
                         if (foundCyto) {
@@ -2341,7 +2344,11 @@ switch (true) {
                         } else if (foundMfc) {
                             // Redirect to mfc_lab_status.php if labno is in mfcLab
                             window.location.href = 'mfc_lab_status.php?labno=' + labno;
-                        } else {
+                        } else if (foundIhr) {
+                            // Redirect to ihr_lab_status.php if labno is in mfcLab
+                            window.location.href = 'ihr_lab_status.php?labno=' + labno;
+                        }  
+                        else {
                             // Redirect to lab_status.php if labno is not found in either list
                             window.location.href = 'lab_status.php?labno=' + labno;
                         }

@@ -497,6 +497,7 @@ $abbreviations = get_abbreviations_list();
                     Preview
                 </a>
             </button>
+            <button class="button-class secondary" onclick="history.back()">Back</button>
         </div>
 
         <!-- Patient Information -->

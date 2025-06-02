@@ -4,7 +4,7 @@ include("../connection.php");
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Fetch data from the form submission
     $lab_number = $_POST['lab_number'];
-    $lab_number = 'FNA-' . $lab_number; 
+    $lab_number = 'FNA' . $lab_number; 
     $created_user = isset($_POST['created_user']) ? $_POST['created_user'] : '';
     $patient_code = isset($_POST['patient_code']) ? $_POST['patient_code'] : null; // Fetch patient_code
 

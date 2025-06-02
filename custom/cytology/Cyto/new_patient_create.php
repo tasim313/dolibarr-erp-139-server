@@ -6,7 +6,6 @@ $homeUrl = "http://" . $host . "/custom/cytology/cytologyindex.php";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // Extract values from POST with null coalescing operator for safety
     $doctor_name = $_POST['doctor_name'] ?? '';
     $assistant = $_POST['assistant'] ?? '';
     $cyto_station_type = $_POST['cyto_station_type'] ?? '';
@@ -27,148 +26,117 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $number_of_syringe = $_POST['number_of_syringe'] ?? '';
     $fixation_data = $_POST['fixation_data'] ?? [];
 
-
-    // Insert into llx_cyto table and return the generated rowid
-    $sql = "INSERT INTO llx_cyto
-        (
-            lab_number,
-            patient_code,
-            fna_station_type,
-            doctor,
-            assistant,
-            status,
-            created_user
-        )
-        VALUES (
-            '$lab_number',
-            '$patient_code',
-            '$cyto_station_type',
-            '$doctor_name',
-            '$assistant', 
-            '$status', 
-            '$created_user'
-        )
-        RETURNING rowid, lab_number";
-
-
-    $result = pg_query($pg_con, $sql);
-    if ($result) {
-        $row = pg_fetch_assoc($result);
-        $cyto_id = $row['rowid']; // Get the generated rowid
-
-        // Check if $reason_for_fnac is 'Others'
-        if ($reason_for_fnac == 'Others') {
-            $chief_complain = $other_reason;  // If 'Others', use $other_reason
-        } else {
-            $chief_complain = $reason_for_fnac;  // Otherwise, use $reason_for_fnac
-        }
-        
-        // Check if required fields are empty
-        if (empty($chief_complain) || empty($clinical_history) || empty($site_of_aspiration) || empty($clinical_impression)) {
-            echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
-            echo "<script>
-                Swal.fire({
-                    icon: 'error', // Red error icon
-                    title: 'Error!',
-                    text: 'Required clinical fields are missing. Please provide all required information.',
-                    confirmButtonColor: '#d33'
-                }).then(() => {
-                    window.history.back(); // Go back after closing
-                });
-            </script>";
-            exit;
-        }
-        
-        $sql_summary = "INSERT INTO llx_cyto_clinical_information (
-                            cyto_id,
-                            chief_complain,
-                            relevant_clinical_history,
-                            on_examination,
-                            clinical_impression
-                            
-                        ) VALUES (
-                            '$cyto_id',
-                            '$chief_complain',
-                            '$clinical_history',
-                            '$site_of_aspiration',
-                            '$clinical_impression'
-                        )";
-
-        $result_summary = pg_query($pg_con, $sql_summary);
-
-        $sql_fixation_additional = "INSERT INTO llx_cyto_fixation_additional_details (
-                            cyto_id,
-                            dry_slides_description,
-                            additional_notes_on_fixation,
-                            number_of_needle_used,
-                            number_of_syringe_used
-                        ) VALUES (
-                            '$cyto_id',
-                            '$dry_slides_description',
-                            '$fixation_comments',
-                            '$number_of_needle',
-                            '$number_of_syringe'
-                        )";
-
-        $result_fixation_additional = pg_query($pg_con, $sql_fixation_additional);
-
-        if (!$result_summary || !$result_fixation_additional) {
-            echo "<script>alert('Error: Data insertion failed. Please check all required fields and try again.'); window.history.back();</script>";
-            exit;
-        }
-
-
-        // Insert fixation data if available
-        if (!empty($fixation_data)) {
-            foreach ($fixation_data as $fixation) {
-                $slide_number = $fixation['slideNumber'] ?? ''; // Use the correct key
-                $location = $fixation['location'] ?? ''; // Use the correct key
-                $fixation_method = $fixation['fixationMethod'] ?? ''; // Use the correct key
-                $dry = $fixation['isDry'] ?? ''; // Use the correct key
-                $aspiration_materials = $fixation['aspirationMaterials'] ?? ''; // Use the correct key
-                $special_instructions = $fixation['specialInstruction'] ?? ''; // Use the correct key
-
-                // If $dry is 'Yes', set $fixation_method to null
-                if (strtolower($dry) === 'yes') {
-                    $fixation_method = null; // or an empty string if the database expects it
-                }
-
-                // Insert each fixation entry into llx_cyto_fixation_details
-                $sql_fixation = "INSERT INTO llx_cyto_fixation_details (
-                                    cyto_id,
-                                    slide_number,
-                                    location,
-                                    fixation_method,
-                                    dry,
-                                    aspiration_materials,
-                                    special_instructions
-                                ) VALUES (
-                                    '$cyto_id',
-                                    '$slide_number',
-                                    '$location',
-                                    " . ($fixation_method === null ? "NULL" : "'$fixation_method'") . ",
-                                    '$dry',
-                                    '$aspiration_materials',
-                                    '$special_instructions'
-                                )";
-                $result_fixation = pg_query($pg_con, $sql_fixation);
-                if (!$result_fixation) {
-                    echo "Error inserting fixation data: " . pg_last_error($pg_con);
-                }
-            }
-        }
-
-
-        // Redirect to the group URL
-        header("Location: $homeUrl");
-        exit; // Ensure script execution stops after redirection
-
-        // header("Location: " . $_SERVER['HTTP_REFERER']);  // Redirects to the previous page
-
-    } else {
-        echo "Error: " . $sql . "<br>" . pg_last_error($pg_con);
-    }
-        pg_close($pg_con);
-}
+    // Check if record already exists
+    $check_sql = "SELECT rowid FROM llx_cyto WHERE lab_number = '$lab_number' LIMIT 1";
+    $check_result = pg_query($pg_con, $check_sql);
     
+    if (pg_num_rows($check_result) > 0) {
+        $row = pg_fetch_assoc($check_result);
+        $cyto_id = $row['rowid'];
+    } else {
+        // Insert new record
+        $insert_sql = "INSERT INTO llx_cyto (lab_number, patient_code, fna_station_type, doctor, assistant, status, created_user)
+                       VALUES ('$lab_number', '$patient_code', '$cyto_station_type', '$doctor_name', '$assistant', '$status', '$created_user')
+                       RETURNING rowid";
+        $insert_result = pg_query($pg_con, $insert_sql);
+        if (!$insert_result) {
+            echo "Error inserting into llx_cyto: " . pg_last_error($pg_con);
+            exit;
+        }
+        $row = pg_fetch_assoc($insert_result);
+        $cyto_id = $row['rowid'];
+    }
+
+    // Clinical info insert/update
+    $chief_complain = ($reason_for_fnac == 'Others') ? $other_reason : $reason_for_fnac;
+
+    if (empty($chief_complain) || empty($clinical_history) || empty($site_of_aspiration) || empty($clinical_impression)) {
+        echo "<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>";
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Required clinical fields are missing.',
+                confirmButtonColor: '#d33'
+            }).then(() => { window.history.back(); });
+        </script>";
+        exit;
+    }
+
+    $check_clinical = pg_query($pg_con, "SELECT 1 FROM llx_cyto_clinical_information WHERE cyto_id = '$cyto_id'");
+    if (pg_num_rows($check_clinical) > 0) {
+        $update_sql = "UPDATE llx_cyto_clinical_information SET
+                        chief_complain = '$chief_complain',
+                        relevant_clinical_history = '$clinical_history',
+                        on_examination = '$site_of_aspiration',
+                        clinical_impression = '$clinical_impression'
+                       WHERE cyto_id = '$cyto_id'";
+        $result_summary = pg_query($pg_con, $update_sql);
+    } else {
+        $insert_clinical = "INSERT INTO llx_cyto_clinical_information (cyto_id, chief_complain, relevant_clinical_history, on_examination, clinical_impression)
+                            VALUES ('$cyto_id', '$chief_complain', '$clinical_history', '$site_of_aspiration', '$clinical_impression')";
+        $result_summary = pg_query($pg_con, $insert_clinical);
+    }
+
+    // Fixation additional details insert/update
+    $check_fixation = pg_query($pg_con, "SELECT 1 FROM llx_cyto_fixation_additional_details WHERE cyto_id = '$cyto_id'");
+    if (pg_num_rows($check_fixation) > 0) {
+        $update_fixation = "UPDATE llx_cyto_fixation_additional_details SET
+                            dry_slides_description = '$dry_slides_description',
+                            additional_notes_on_fixation = '$fixation_comments',
+                            number_of_needle_used = '$number_of_needle',
+                            number_of_syringe_used = '$number_of_syringe'
+                            WHERE cyto_id = '$cyto_id'";
+        $result_fixation_additional = pg_query($pg_con, $update_fixation);
+    } else {
+        $insert_fixation = "INSERT INTO llx_cyto_fixation_additional_details (
+                                cyto_id, dry_slides_description, additional_notes_on_fixation,
+                                number_of_needle_used, number_of_syringe_used
+                            ) VALUES (
+                                '$cyto_id', '$dry_slides_description', '$fixation_comments',
+                                '$number_of_needle', '$number_of_syringe'
+                            )";
+        $result_fixation_additional = pg_query($pg_con, $insert_fixation);
+    }
+
+
+    if (!$result_summary) {
+        echo "<script>alert('Clinical info save error: " . pg_last_error($pg_con) . "'); window.history.back();</script>";
+        exit;
+    }
+    if (!$result_fixation_additional) {
+        echo "<script>alert('Aspiration Note save error: " . pg_last_error($pg_con) . "'); window.history.back();</script>";
+        exit;
+    }
+    
+
+    // Insert fixation data (ALWAYS insert as multiple rows, no update assumed)
+    if (!empty($fixation_data)) {
+        foreach ($fixation_data as $fixation) {
+            $slide_number = $fixation['slideNumber'] ?? '';
+            $location = $fixation['location'] ?? '';
+            $fixation_method = $fixation['fixationMethod'] ?? '';
+            $dry = $fixation['isDry'] ?? '';
+            $aspiration_materials = $fixation['aspirationMaterials'] ?? '';
+            $special_instructions = $fixation['specialInstruction'] ?? '';
+
+            if (strtolower($dry) === 'yes') $fixation_method = null;
+
+            $sql_fixation = "INSERT INTO llx_cyto_fixation_details (
+                                cyto_id, slide_number, location, fixation_method, dry,
+                                aspiration_materials, special_instructions
+                             ) VALUES (
+                                '$cyto_id', '$slide_number', '$location',
+                                " . ($fixation_method === null ? "NULL" : "'$fixation_method'") . ",
+                                '$dry', '$aspiration_materials', '$special_instructions'
+                             )";
+            pg_query($pg_con, $sql_fixation); // log if needed
+        }
+    }
+
+    // Redirect
+    header("Location: $homeUrl");
+    exit;
+}
+
 ?>
