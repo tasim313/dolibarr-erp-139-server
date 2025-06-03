@@ -2954,7 +2954,7 @@ switch (true) {
             <div class="row">
             <!-- Left Side: Buttons -->
             <div class="col-md-6 border-right">
-                    <h5 class="mb-3">This case has been finalized.</h5>
+                    <h5 class="mb-3">This IHC case has been finalized.</h5>
                     <p><strong>What would you like to do?</strong></p>
                     <ul class="list-group mb-3">
                         <li class="list-group-item">
@@ -2973,6 +2973,7 @@ switch (true) {
             <div class="col-md-6">
                 <iframe id="modalreportFrame" style="width:80%; height:1000px; border:none; display:none;"></iframe>
                 <div id="noReport" style="text-align:center; color:#999; padding-top:150px;">No report selected</div>
+                <div id="messageBox" style="display:none; color: red; font-weight: bold; margin-top: 10px;"></div>
             </div>
             </div>
         </div>
@@ -4194,7 +4195,6 @@ switch (true) {
 
         </script>
         
-        <!-- changes Route path -->
         <script>
             $(document).ready(function() {
                 // Retrieve the lab numbers from PHP
@@ -5673,11 +5673,13 @@ switch (true) {
     <?php endif; ?>
 
     document.getElementById('previewPrelimBtn').addEventListener('click', function () {
-        loadModalReport("preliminary");
+        // loadModalReport("preliminary");
+        showMessage();
     });
 
     document.getElementById('previewFinalBtn').addEventListener('click', function () {
-        loadModalReport("final");
+        // loadModalReport("final");
+        showMessage();
     });
 
     function loadModalReport(type) {
@@ -5693,6 +5695,13 @@ switch (true) {
       iframe.style.display = "block";
       noReport.style.display = "none";
     }
+    function showMessage() {
+        const msg = "This IHC report is not in Dolibarr ERP. Please check lab_report/lab_report_current/IHC";
+        const box = document.getElementById('messageBox');
+        box.innerText = msg;
+        box.style.display = "block";
+    }
+
   });
 </script>
 
@@ -5702,13 +5711,13 @@ switch (true) {
 
 
 <?php 
-$NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
-$max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+    $NBMAX = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
+    $max = $conf->global->MAIN_SIZE_SHORTLIST_LIMIT;
 
 
-print '</div></div>';
+    print '</div></div>';
 
-// End of page
-llxFooter();
-$db->close();
+    // End of page
+    llxFooter();
+    $db->close();
 ?>

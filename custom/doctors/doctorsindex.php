@@ -2325,6 +2325,9 @@ switch (true) {
                 const cytoLab = <?php echo json_encode(get_cyto_labnumber_list_doctor_module()); ?>;
                 const mfcLab = <?php echo json_encode(get_mfc_labnumber_list()); ?>;
                 const ihrLab = <?php echo json_encode(get_ihr_labnumber_list()); ?>;
+                const dprLab = <?php echo json_encode(get_dpr_labnumber_list()); ?>;
+                const ihcLab = <?php echo json_encode(get_ihc_labnumber_list()); ?>;
+                
               
 
                 function checkLabNumberAndRedirect(labno) {
@@ -2336,6 +2339,9 @@ switch (true) {
                         const foundMfc = mfcLab.some(lab => lab.lab_number === 'MFC' + labno);
                         // Check if the labno exists in ihrLab
                         const foundIhr = ihrLab.some(lab => lab.lab_number === 'IHR' + labno);
+                        // Check if the labno exists in dprLab
+                        const founddpr = dprLab.some(lab => lab.lab_number === 'DPR' + labno);
+                        const foundihc = ihcLab.some(lab => lab.lab_number === 'IHC' + labno);
                        
 
                         if (foundCyto) {
@@ -2345,9 +2351,16 @@ switch (true) {
                             // Redirect to mfc_lab_status.php if labno is in mfcLab
                             window.location.href = 'mfc_lab_status.php?labno=' + labno;
                         } else if (foundIhr) {
-                            // Redirect to ihr_lab_status.php if labno is in mfcLab
+                            // Redirect to ihr_lab_status.php if labno is in ihrLab
                             window.location.href = 'ihr_lab_status.php?labno=' + labno;
-                        }  
+                        }
+                        else if (founddpr) {
+                            // Redirect to dpr_lab_status.php if labno is in dprLab
+                            window.location.href = 'dpr_lab_status.php?labno=' + labno;
+                        }else if (foundihc) {
+                            // Redirect to ihc_lab_status.php if labno is in ihcLab
+                            window.location.href = 'ihc_lab_status.php?labno=' + labno;
+                        }     
                         else {
                             // Redirect to lab_status.php if labno is not found in either list
                             window.location.href = 'lab_status.php?labno=' + labno;
